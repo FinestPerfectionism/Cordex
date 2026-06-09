@@ -39,17 +39,17 @@ class Cordex(commands.Bot):
 
         # ⸻ Aiosqlite
 
-        self.cases_db = await asq.connect("data/cases.db")
-        def read_schema() -> str:
-            with Path("schemas/cases.sql").open() as file:
-                return file.read()
+        # self.cases_db = await asq.connect("data/cases.db")
+        # def read_schema() -> str:
+        #     with Path("schemas/cases.sql").open() as file:
+        #         return file.read()
 
-        schema_sql = await asyncio.to_thread(read_schema)
-        _ = await self.cases_db.executescript(schema_sql)
-        try:
-            await self.cases_db.commit()
-        except asq.OperationalError:
-            log.exception("Unable to open database file")
+        # schema_sql = await asyncio.to_thread(read_schema)
+        # _ = await self.cases_db.executescript(schema_sql)
+        # try:
+        #     await self.cases_db.commit()
+        # except asq.OperationalError:
+        #     log.exception("Unable to open database file")
 
         # ⸻ Cogs
 
