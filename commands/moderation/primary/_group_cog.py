@@ -1,292 +1,233 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
-import discord
-from discord import app_commands
+from discord.app_commands import Group, guild_only
+from discord.app_commands import command as app_command
 from discord.ext import commands
 
+from bot import Interaction
+from core.permissions import (
+    director_cmd,
+    moderator_cmd,
+    senior_moderator_cmd,
+    staff_cmd,
+)
+
+from .ban.add import run_mod_primary_ban_add
+from .ban.remove import run_mod_primary_ban_remove
+from .ban.view import run_mod_primary_ban_view
+from .kick import run_mod_primary_kick
+from .lockdown.add import run_mod_primary_lockdown_add
+from .lockdown.remove import run_mod_primary_lockdown_remove
+from .purge import run_mod_primary_purge
+from .quarantine.add import run_mod_primary_quarantine_add
+from .quarantine.remove import run_mod_primary_quarantine_remove
+from .quarantine.view import run_mod_primary_quarantine_view
+from .timeout.add import run_mod_primary_timeout_add
+from .timeout.remove import run_mod_primary_timeout_remove
+from .timeout.view import run_mod_primary_timeout_view
+
 if TYPE_CHECKING:
-    from bot import UtilityBot
-
-from constants import SENIOR_MODERATORS_ROLE_ID
-from core.help import ArgDependency, ArgType, ArgumentInfo, OrNode, RoleNode, help_description
-
-from ._base import ModerationBase
-from .ban import run_ban
-from .bans import run_bans
-from .kick import run_kick
-from .purge import run_purge
-from .quarantine import run_quarantine
-from .quarantines import run_quarantines
-from .timeout import run_timeout
-from .timeouts import run_timeouts
-from .unban import run_unban
-from .unquarantine import run_unquarantine
-from .untimeout import run_untimeout
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Moderation Commmands
+# Moderation Primary Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class ModerationCommands(
+class ModerationPrimaryCommands(
     commands.GroupCog,
-    ModerationBase,
     name        = "moderation",
-    description = "Moderators only —— Moderation commands.",
+    description = "Moderators only — Primary moderation commands.",
 ):
-    def __init__(self, bot : "UtilityBot") -> None:
-        ModerationBase.__init__(self, bot)
-        commands.GroupCog.__init__(self)
+    def __init__(self, bot : "Cordex") -> None:
+        super().__init__()
+        self.bot : "Cordex" = bot
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation ban Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @app_commands.command(
+    lockdown   : Group = Group(
+        name        = "lockdown",
+        description = "Moderation lockdown commands",
+    )
+    ban        : Group = Group(
         name        = "ban",
-        description = "Ban a member from the server.",
+        description = "Moderation ban commands",
     )
-    @app_commands.describe(
-        member          = "The member to ban.",
-        reason          = "Reason for the ban.",
-        delete_messages = "Delete messages from the last 1-7 days.",
-        proof           = "Optional proof attachment.",
+    quarantine : Group = Group(
+        name        = "quarantine",
+        description = "Moderation quarantine commands",
     )
-    @app_commands.rename(delete_messages = "delete-messages")
-    @help_description(
-        desc         = "Bans a member from the server.",
-        command_name = "moderation ban",
-        prefix       = False,
-        slash        = True,
-        access_node  = OrNode(children = [RoleNode(role_id = SENIOR_MODERATORS_ROLE_ID)]),
-        arguments   = {
-            "member"          : ArgumentInfo(
-                arg_type          = ArgType.MemberSelect,
-                description       = "Member to ban.",
-                required          = True,
-                shown_as_optional = True,
-                empty_behavior    = "Mass Moderation — See `.help mm` for help",
-            ),
-            "reason"          : ArgumentInfo(
-                arg_type          = ArgType.Text,
-                description       = "Reason for the ban.",
-                required          = True,
-                shown_as_optional = True,
-                depends_on        = [ArgDependency(argument = "member")],
-            ),
-            "delete-messages" : ArgumentInfo(
-                arg_type        = ArgType.Integer,
-                arg_type_detail = "1-7",
-                description     = "Delete messages from the last 1-7 days.",
-                required        = False,
-                default         = "7",
-                depends_on      = [ArgDependency(argument = "member")],
-            ),
-            "proof"           : ArgumentInfo(
-                arg_type    = ArgType.Attachment,
-                description = "File proof.",
-                required    = False,
-                depends_on  = [ArgDependency(argument = "member")],
-            ),
-        },
+    timeout    : Group = Group(
+        name        = "timeout",
+        description = "Moderation timeout commands",
     )
-    async def ban(
-        self,
-        interaction     : discord.Interaction,
-        member          : discord.Member     | None,
-        reason          : str                | None = None,
-        delete_messages : int                | None = 7,
-        proof           : discord.Attachment | None = None,
-    ) -> None:
-        await run_ban(self, interaction, member, reason, delete_messages, proof)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation un-ban Command
+    # /moderation lockdown add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "un-ban",
-        description = "Un-ban a member from the server.",
+    @lockdown.command(
+        name        = "add",
+        description = "Add channel(s) or the server to lockdown.",
     )
-    @app_commands.describe(
-        user   = "The member ID, username, or tag to un-ban.",
-        users  = "Comma-separated member IDs/tags for mass un-ban.",
-        reason = "Reason for the un-ban.",
+    @guild_only()
+    @senior_moderator_cmd()
+    async def cmd_lockdown_add(self, interaction : Interaction) -> None:
+        await run_mod_primary_lockdown_add(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation lockdown remove Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @lockdown.command(
+        name        = "remove",
+        description = "Remove channel(s) or the server from lockdown.",
     )
-    async def unban(
-        self,
-        interaction : discord.Interaction,
-        user        : str | None = None,
-        users       : str | None = None,
-        reason      : str | None = None,
-    ) -> None:
-        await run_unban(self, interaction, user, users, reason)
+    @guild_only()
+    @director_cmd()
+    async def cmd_lockdown_remove(self, interaction : Interaction) -> None:
+        await run_mod_primary_lockdown_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation bans Command
+    # /moderation ban add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "bans",
+    @ban.command(
+        name        = "add",
+        description = "Ban member(s) from the server.",
+    )
+    @guild_only()
+    @senior_moderator_cmd()
+    async def cmd_ban_add(self, interaction : Interaction) -> None:
+        await run_mod_primary_ban_add(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation ban view Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @ban.command(
+        name        = "view",
         description = "View all banned members.",
     )
-    async def bans(self, interaction : discord.Interaction) -> None:
-        await run_bans(self, interaction)
+    @guild_only()
+    @staff_cmd()
+    async def cmd_ban_view(self, interaction : Interaction) -> None:
+        await run_mod_primary_ban_view(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation ban remove Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @ban.command(
+        name        = "remove",
+        description = "Remove ban from member(s).",
+    )
+    @guild_only()
+    @director_cmd()
+    async def cmd_ban_remove(self, interaction : Interaction) -> None:
+        await run_mod_primary_ban_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation kick Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
+    @app_command(
         name        = "kick",
-        description = "Kick a member from the server.",
+        description = "Kick member(s) from the server.",
     )
-    @app_commands.describe(
-        member = "The member to kick.",
-        reason = "Reason for the kick.",
-        proof  = "Optional proof attachment.",
-    )
-    async def kick(
-        self,
-        interaction : discord.Interaction,
-        member      : discord.Member     | None,
-        reason      : str                | None = None,
-        proof       : discord.Attachment | None = None,
-    ) -> None:
-        await run_kick(self, interaction, member, reason, proof)
+    @guild_only()
+    @senior_moderator_cmd()
+    async def cmd_kick(self, interaction : Interaction) -> None:
+        await run_mod_primary_kick(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation timeout Command
+    # /moderation quarantine add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "timeout",
-        description = "Timeout a member.",
+    @quarantine.command(
+        name        = "add",
+        description = "Add member(s) to quarantine.",
     )
-    @app_commands.describe(
-        member   = "The member to timeout.",
-        duration = "Duration (e.g. 30s, 5m, 1h, 2d, 1w).",
-        reason   = "Reason for the timeout.",
-        proof    = "Optional proof attachment.",
+    @guild_only()
+    @senior_moderator_cmd()
+    async def cmd_quarantine_add(self, interaction : Interaction) -> None:
+        await run_mod_primary_quarantine_add(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation quarantine view Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @quarantine.command(
+        name        = "view",
+        description = "View all quarantined members.",
     )
-    async def timeout(
-        self,
-        interaction : discord.Interaction,
-        member      : discord.Member     | None,
-        duration    : str = "5m",
-        reason      : str                | None = None,
-        proof       : discord.Attachment | None = None,
-    ) -> None:
-        await run_timeout(self, interaction, member, duration, reason, proof)
+    @guild_only()
+    @staff_cmd()
+    async def cmd_quarantine_view(self, interaction : Interaction) -> None:
+        await run_mod_primary_quarantine_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation un-timeout Command
+    # /moderation quarantine remove Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "un-timeout",
-        description = "Un-timeout a member.",
+    @quarantine.command(
+        name        = "remove",
+        description = "Remove member(s) from quarantine.",
     )
-    @app_commands.describe(
-        member = "The member to un-timeout.",
-        reason = "Reason for the un-timeout.",
+    @guild_only()
+    @senior_moderator_cmd()
+    async def cmd_quarantine_remove(self, interaction : Interaction) -> None:
+        await run_mod_primary_quarantine_remove(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation timeout add Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @timeout.command(
+        name        = "add",
+        description = "Add member(s) to timeout.",
     )
-    async def untimeout(
-        self,
-        interaction : discord.Interaction,
-        member      : discord.Member | None,
-        reason      : str            | None = None,
-    ) -> None:
-        await run_untimeout(self, interaction, member, reason)
+    @guild_only()
+    @moderator_cmd()
+    async def cmd_timeout_add(self, interaction : Interaction) -> None:
+        await run_mod_primary_timeout_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation timeouts Command
+    # /moderation timeout view Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "timeouts",
+    @timeout.command(
+        name        = "view",
         description = "View all timed out members.",
     )
-    async def timeouts(self, interaction : discord.Interaction) -> None:
-        await run_timeouts(self, interaction)
+    @guild_only()
+    @staff_cmd()
+    async def cmd_timeout_view(self, interaction : Interaction) -> None:
+        await run_mod_primary_timeout_view(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation timeout remove Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @timeout.command(
+        name        = "remove",
+        description = "Remove member(s) from timeout.",
+    )
+    @guild_only()
+    @senior_moderator_cmd()
+    async def cmd_timeout_remove(self, interaction : Interaction) -> None:
+        await run_mod_primary_timeout_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation purge Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
+    @app_command(
         name        = "purge",
-        description = "Delete a specified number of messages.",
+        description = "Purge messages from member(s) or channel(s).",
     )
-    @app_commands.describe(
-        amount = "Number of messages to delete (1-100).",
-        reason = "Reason for the purge.",
-        member = "Only delete messages from this member. Leave empty for mass moderation.",
-        proof  = "Optional proof attachment.",
-    )
-    async def purge(
-        self,
-        interaction : discord.Interaction,
-        amount      : int                | None = 25,
-        reason      : str                | None = None,
-        member      : discord.Member     | None = None,
-        proof       : discord.Attachment | None = None,
-    ) -> None:
-        await run_purge(self, interaction, amount or 25, reason, member, proof)
+    @guild_only()
+    @senior_moderator_cmd()
+    async def cmd_purge(self, interaction : Interaction) -> None:
+        await run_mod_primary_purge(interaction)
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation quarantines Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @app_commands.command(
-        name        = "quarantines",
-        description = "View all quarantined members.",
-    )
-    async def quarantines(self, interaction : discord.Interaction) -> None:
-        await run_quarantines(self, interaction)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation quarantine Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @app_commands.command(
-        name        = "quarantine",
-        description = "Quarantine a member.",
-    )
-    @app_commands.describe(
-        member = "The member to quarantine.",
-        reason = "Reason for the quarantine.",
-        proof  = "Optional proof attachment.",
-    )
-    async def quarantine(
-        self,
-        interaction : discord.Interaction,
-        member      : discord.Member     | None,
-        reason      : str                | None = None,
-        proof       : discord.Attachment | None = None,
-    ) -> None:
-        await run_quarantine(self, interaction, member, reason, proof)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation un-quarantine Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @app_commands.command(
-        name        = "un-quarantine",
-        description = "Un-quarantine a member.",
-    )
-    @app_commands.describe(
-        member = "The member to un-quarantine.",
-        reason = "Reason for the un-quarantine.",
-        proof  = "Optional proof attachment.",
-    )
-    async def unquarantine(
-        self,
-        interaction : discord.Interaction,
-        member      : discord.Member     | None,
-        reason      : str                | None = None,
-        proof       : discord.Attachment | None = None,
-    ) -> None:
-        await run_unquarantine(self, interaction, member, reason, proof)
-
-async def setup(bot : commands.Bot) -> None:
-    await bot.add_cog(ModerationCommands(cast("UtilityBot", bot)))
+async def setup(bot : "Cordex") -> None:
+    cog = ModerationPrimaryCommands(bot)
+    await bot.add_cog(cog)

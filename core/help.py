@@ -16,7 +16,6 @@ from discord.ext import commands
 from discord.ui import (
     Container,
     LayoutView,
-    Separator,
     TextDisplay,
 )
 
@@ -28,9 +27,7 @@ if TYPE_CHECKING:
         Sequence,
     )
 
-    from discord import SeparatorSpacing
     from discord.app_commands import Group as AppGroup
-
 
 from constants import (
     ACCEPTED_EMOJI,
@@ -41,7 +38,15 @@ from constants import (
     CONTESTED_EMOJI,
     DENIED_EMOJI,
 )
+from core import exceptions as e
+from core.utilities import VisibleLargeSeparator
 
+if TYPE_CHECKING:
+    from bot import Cordex, CtxOrInteraction
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Help Management
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @runtime_checkable
 class _AppCommand(Protocol):
@@ -49,10 +54,6 @@ class _AppCommand(Protocol):
     qualified_name : str
     callback       : object
     commands       : list[object]
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Help Management
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 P    = ParamSpec("P")
 T_co = TypeVar("T_co", covariant = True)
@@ -95,7 +96,11 @@ def evaluate_access(node : AccessNode, member : discord.Member) -> bool:
         return not evaluate_access(node.child, member)
     return False
 
-def describe_access_node(node : AccessNode, *, _parent : type[AndNode | OrNode] | None = None) -> str:
+def describe_access_node(
+    node    : AccessNode,
+    *,
+    _parent : type[AndNode | OrNode] | None = None,
+) -> str:
     if isinstance(node, RoleNode):
         return f"<@&{node.role_id}>"
     if isinstance(node, UserNode):
@@ -128,6 +133,65 @@ def describe_access_node(node : AccessNode, *, _parent : type[AndNode | OrNode] 
             return f"**NOT** ({inner})"
         return f"**NOT** {inner}"
     return "Unknown"
+
+@dataclass
+class AccessData:
+    command_node   : AccessNode | None        = None
+    argument_nodes : dict[str, AccessNode]    = field(default_factory = dict)
+    channel_rules  : list[ChannelRestriction] = field(default_factory = list)
+
+def resolve_member(ctx_or_interaction : CtxOrInteraction) -> discord.Member | None:
+    if isinstance(ctx_or_interaction, commands.Context):
+        author = ctx_or_interaction.author
+        if isinstance(author, discord.Member):
+            return author
+        return None
+    user = ctx_or_interaction.user
+    if isinstance(user, discord.Member):
+        return user
+    return None
+
+def get_access_data(ctx_or_interaction : CtxOrInteraction) -> AccessData | None:
+    cmd = ctx_or_interaction.command
+    if cmd is None:
+        return None
+
+    if isinstance(ctx_or_interaction, commands.Context):
+        cb : object = getattr(cmd, "callback", None)
+    else:
+        cb = getattr(cmd, "callback", None) or getattr(cmd, "_callback", None)
+
+    if cb is not None and isinstance(getattr(cb, "__dict__", None), dict):
+        cb_dict = cast(dict[str, object], cb.__dict__)
+        if "__access_data__" in cb_dict:
+            cb_data: object = cb_dict["__access_data__"]
+            if isinstance(cb_data, AccessData):
+                return cb_data
+
+    return None
+
+def check_argument_access(
+    ctx_or_interaction : CtxOrInteraction,
+    argument           : str,
+) -> None:
+    data = get_access_data(ctx_or_interaction)
+    if data is None:
+        return
+
+    node = data.argument_nodes.get(argument)
+    if node is None:
+        return
+
+    member = resolve_member(ctx_or_interaction)
+    if member is None:
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            raise e.AppBadPermissionsArgument(argument)
+        raise e.BadPermissionsArgument(argument)
+
+    if not evaluate_access(node, member):
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            raise e.AppBadPermissionsArgument(argument)
+        raise e.BadPermissionsArgument(argument)
 
 class ArgType(Enum):
     Integer       = "Integer"
@@ -175,16 +239,37 @@ class CommandHelpData:
     access_node   : AccessNode | None        = None
     channel_rules : list[ChannelRestriction] = field(default_factory = list)
     has_inverse   : bool       | str         = False
-    arguments     : dict[str, ArgumentInfo]  = field(default_factory = dict)
+    arguments     : dict[
+        str,
+        ArgumentInfo,
+    ]                                        = field(default_factory = dict)
     aliases       : list[str]                = field(default_factory = list)
 
 @runtime_checkable
 class HelpCallback(Protocol[P, T_co]):
     __help_data__ : CommandHelpData
-    def __call__(self, *args : P.args, **kwargs : P.kwargs) -> Coroutine[None, None, T_co]: ...
+    def __call__(self, *args : P.args, **kwargs : P.kwargs) -> Coroutine[None, None, T_co]:
+        ...
 
 class HelpedCallable:
     __help_data__ : CommandHelpData = cast("CommandHelpData", cast(object, None))
+
+def merge_access_into_help(func : object, data : CommandHelpData) -> None:
+    access : AccessData | None = getattr(func, "__access_data__", None)
+    if access is None:
+        return
+
+    if data.access_node is None and access.command_node is not None:
+        data.access_node = access.command_node
+
+    if not data.channel_rules and access.channel_rules:
+        data.channel_rules = access.channel_rules.copy()
+
+    for arg_name, node in access.argument_nodes.items():
+        if arg_name in data.arguments:
+            arg_info = data.arguments[arg_name]
+            if arg_info.access_node is None:
+                arg_info.access_node = node
 
 def help_description(
     desc          : str,
@@ -197,12 +282,46 @@ def help_description(
     has_inverse   : bool                      | str  = False,
     arguments     : dict[str, ArgumentInfo]   | None = None,
     aliases       : list[str]                 | None = None,
-) -> Callable[[Callable[P, Coroutine[None, None, T_co]]], Callable[P, Coroutine[None, None, T_co]]]:
+) -> Callable[
+    [Callable[
+        P,
+        Coroutine[
+            None,
+            None,
+            T_co,
+        ],
+    ],
+    ],
+    Callable[
+        P,
+        Coroutine[
+            None,
+            None,
+            T_co,
+        ],
+    ],
+]:
     _channel_rules = channel_rules or []
     _arguments     = arguments     or {}
     _aliases       = aliases       or []
 
-    def decorator(func : Callable[P, Coroutine[None, None, T_co]]) -> Callable[P, Coroutine[None, None, T_co]]:
+    def decorator(
+        func : Callable[
+            P,
+            Coroutine[
+                None,
+                None,
+                T_co,
+            ],
+        ],
+    ) -> Callable[
+        P,
+        Coroutine[
+            None,
+            None,
+            T_co,
+        ],
+    ]:
         data = CommandHelpData(
             desc          = desc,
             prefix        = prefix,
@@ -214,6 +333,7 @@ def help_description(
             arguments     = _arguments,
             aliases       = _aliases,
         )
+        merge_access_into_help(func, data)
         cast("HelpedCallable", func).__help_data__ = data
         return func
 
@@ -222,12 +342,20 @@ def help_description(
 def check_access(
     member : discord.Member,
     data   : CommandHelpData,
-) -> tuple[str, list[str], list[str], list[int]]:
+) -> tuple[
+    str,
+    list[str],
+    list[str],
+    list[int],
+]:
     if data.access_node is None:
         accessible_args   : list[str] = []
         inaccessible_args : list[str] = []
         for arg_name, arg_info in data.arguments.items():
-            if arg_info.access_node is None or evaluate_access(arg_info.access_node, member):
+            if arg_info.access_node is None or evaluate_access(
+                arg_info.access_node,
+                member,
+            ):
                 accessible_args.append(arg_name)
             else:
                 inaccessible_args.append(arg_name)
@@ -236,14 +364,20 @@ def check_access(
             return "partial", accessible_args, inaccessible_args, []
         return "full", accessible_args, inaccessible_args, []
 
-    has_access = evaluate_access(data.access_node, member)
+    has_access = evaluate_access(
+        data.access_node,
+        member,
+    )
     if not has_access:
-        return "none", [], list(data.arguments.keys()), []
+        return "none", [], list(data.arguments), []
 
     accessible_args   = []
     inaccessible_args = []
     for arg_name, arg_info in data.arguments.items():
-        if arg_info.access_node is None or evaluate_access(arg_info.access_node, member):
+        if arg_info.access_node is None or evaluate_access(
+            arg_info.access_node,
+            member,
+        ):
             accessible_args.append(arg_name)
         else:
             inaccessible_args.append(arg_name)
@@ -257,7 +391,10 @@ def check_access(
         return "partial", accessible_args, inaccessible_args, allowed_channels
     return "full", accessible_args, inaccessible_args, allowed_channels
 
-async def resolve_command_ref(bot : commands.Bot, data : CommandHelpData) -> str:
+async def resolve_command_ref(
+    bot  : Cordex,
+    data : CommandHelpData,
+) -> str:
     name = data.command_name
     if name is None:
         return ""
@@ -280,7 +417,7 @@ async def resolve_command_ref(bot : commands.Bot, data : CommandHelpData) -> str
 
 _NOTICE_LOGICAL_OR = "-# In the absence of advanced restrictions, multiple listings are governed by the **Logical OR** operator.\n"
 
-def _format_arg_type(info : ArgumentInfo) -> str:
+def format_arg_type(info : ArgumentInfo) -> str:
     if info.arg_type_detail is not None:
         return f"{info.arg_type.value} ({info.arg_type_detail})"
     return info.arg_type.value
@@ -299,10 +436,10 @@ def build_argument_line(name : str, info : ArgumentInfo) -> str:
 
     return f"{{{name}}}" if display_required else f"[{name}]"
 
-def _build_arg_block(name : str, info : ArgumentInfo) -> str:
+def build_arg_block(name : str, info : ArgumentInfo) -> str:
     bracket = build_argument_line(name, info)
     lines : list[str] = [f"### {bracket.capitalize()}"]
-    lines.append(f"-# **Type:** {_format_arg_type(info)}")
+    lines.append(f"-# **Type:** {format_arg_type(info)}")
 
     if info.description:
         lines.append(info.description)
@@ -331,12 +468,11 @@ def _build_arg_block(name : str, info : ArgumentInfo) -> str:
     if info.access_node is not None:
         lines.append(f"- Restricted to: {describe_access_node(info.access_node)}")
 
-    for note in info.extra_notes:
-        lines.append(note)
+    lines.extend(info.extra_notes)
 
     return "\n".join(lines)
 
-def _build_authority_section(data : CommandHelpData, member : discord.Member) -> tuple[str, int]:
+def build_authority_section(data : CommandHelpData, member : discord.Member) -> tuple[str, int]:
     status, _, _, allowed_channels = check_access(member, data)
 
     if status == "full":
@@ -344,7 +480,7 @@ def _build_authority_section(data : CommandHelpData, member : discord.Member) ->
         text   = (
             f"## Authority\n"
             f"{ACCEPTED_EMOJI} **Authorized.**\n"
-             "You are authorized to to run this command.\n"
+             "You are authorized to run this command.\n"
              "-# Full permissions."
         )
 
@@ -365,47 +501,55 @@ def _build_authority_section(data : CommandHelpData, member : discord.Member) ->
             channel_detail = f"\nYou may only use this command in: {channels_str}"
 
         text = (
-            "## Authority\n"
+             "## Authority\n"
             f"{CONTESTED_EMOJI} **Partially Authorized.**\n"
-            "You are authorized to run this command, but not all of its arguments or channels are available to you."
+             "You are authorized to run this command, but not all of its arguments or channels are available to you."
             f"{channel_detail}\n"
-            "-# Partial permissions."
+             "-# Partial permissions."
         )
 
     return text, int(colour)
 
-def _collect_role_nodes(node : AccessNode, *, negated : bool = False) -> list[tuple[RoleNode, bool]]:
+def collect_role_nodes(
+    node    : AccessNode,
+    *,
+    negated : bool = False,
+) -> list[tuple[RoleNode, bool]]:
     if isinstance(node, RoleNode):
         return [(node, negated)]
     if isinstance(node, NotNode):
-        return _collect_role_nodes(node.child, negated = not negated)
+        return collect_role_nodes(node.child, negated = not negated)
     if isinstance(node, OrNode | AndNode):
         result : list[tuple[RoleNode, bool]] = []
         for child in node.children:
-            result.extend(_collect_role_nodes(child, negated = negated))
+            result.extend(collect_role_nodes(child, negated = negated))
         return result
     return []
 
-def _collect_user_nodes(node : AccessNode, *, negated : bool = False) -> list[tuple[UserNode, bool]]:
+def collect_user_nodes(
+    node    : AccessNode,
+    *,
+    negated : bool = False,
+) -> list[tuple[UserNode, bool]]:
     if isinstance(node, UserNode):
         return [(node, negated)]
     if isinstance(node, NotNode):
-        return _collect_user_nodes(node.child, negated = not negated)
+        return collect_user_nodes(node.child, negated = not negated)
     if isinstance(node, OrNode | AndNode):
         result : list[tuple[UserNode, bool]] = []
         for child in node.children:
-            result.extend(_collect_user_nodes(child, negated = negated))
+            result.extend(collect_user_nodes(child, negated = negated))
         return result
     return []
 
-def _build_authorized_section(data : CommandHelpData) -> str:
+def build_authorized_section(data : CommandHelpData) -> str:
     lines : list[str] = ["## Authorized"]
 
     user_entries : list[tuple[UserNode, bool]] = (
-        _collect_user_nodes(data.access_node) if data.access_node is not None else []
+        collect_user_nodes(data.access_node) if data.access_node is not None else []
     )
     role_entries : list[tuple[RoleNode, bool]] = (
-        _collect_role_nodes(data.access_node) if data.access_node is not None else []
+        collect_role_nodes(data.access_node) if data.access_node is not None else []
     )
 
     lines.append("### Users")
@@ -442,7 +586,7 @@ def _build_authorized_section(data : CommandHelpData) -> str:
 
     return "\n".join(lines)
 
-def _build_arguments_section(command_name: str, data : CommandHelpData) -> str:
+def build_arguments_section(command_name : str, data : CommandHelpData) -> str:
     arg_tokens  = " ".join(build_argument_line(n, i) for n, i in data.arguments.items())
     usage_lines : list[str] = []
     if data.prefix:
@@ -451,7 +595,7 @@ def _build_arguments_section(command_name: str, data : CommandHelpData) -> str:
         usage_lines.append(f"/{command_name} {arg_tokens}".strip())
     usage_block = "\n".join(usage_lines)
 
-    arg_blocks = "\n".join(_build_arg_block(n, i) for n, i in data.arguments.items())
+    arg_blocks = "\n".join(build_arg_block(n, i) for n, i in data.arguments.items())
 
     return (
         f"## Arguments\n"
@@ -494,18 +638,16 @@ def build_help_view(
         f"{inverse_line}"
     )
 
-    authority_text, _ = _build_authority_section(data, member)
-    authorized_text   = _build_authorized_section(data)
-    arguments_text    = _build_arguments_section(command_name, data)
-
-    spacing : SeparatorSpacing = discord.SeparatorSpacing.large
+    authority_text, _ = build_authority_section(data, member)
+    authorized_text   = build_authorized_section(data)
+    arguments_text    = build_arguments_section(command_name, data)
 
     _header_td     : TextDisplay[LayoutView] = TextDisplay(content = header_text)
-    _sep_1         : Separator[LayoutView]   = Separator(spacing = spacing)
+    _sep_1         : VisibleLargeSeparator   = VisibleLargeSeparator()
     _authority_td  : TextDisplay[LayoutView] = TextDisplay(content = authority_text)
-    _sep_2         : Separator[LayoutView]   = Separator(spacing = spacing)
+    _sep_2         : VisibleLargeSeparator   = VisibleLargeSeparator()
     _authorized_td : TextDisplay[LayoutView] = TextDisplay(content = authorized_text)
-    _sep_3         : Separator[LayoutView]   = Separator(spacing = spacing)
+    _sep_3         : VisibleLargeSeparator   = VisibleLargeSeparator()
     _arguments_td  : TextDisplay[LayoutView] = TextDisplay(content = arguments_text)
 
     class HelpView(LayoutView):
@@ -524,7 +666,7 @@ def build_help_view(
 def member_has_role(member : discord.Member, role_id : int) -> bool:
     return any(r.id == role_id for r in member.roles)
 
-def resolve_command(bot : commands.Bot, name : str) -> Callable[..., Awaitable[object]] | None:
+def resolve_command(bot : Cordex, name : str) -> Callable[..., Awaitable[object]] | None:
     cmd = bot.get_command(name)
     if cmd:
         return cmd.callback
@@ -535,7 +677,7 @@ def resolve_command(bot : commands.Bot, name : str) -> Callable[..., Awaitable[o
 
     return None
 
-def find_nested_command(bot : commands.Bot, parts : list[str]) -> object | None:
+def find_nested_command(bot : Cordex, parts : list[str]) -> object | None:
     full   = " ".join(parts)
     result = resolve_command(bot, full)
     if result:
@@ -580,25 +722,20 @@ def collect_slash_commands(
             )
 
 async def run_help(
-    bot          : commands.Bot,
-    ctx_or_inter : commands.Context[commands.Bot] | discord.Interaction,
-    command_name : str                            | None,
+    bot                : Cordex,
+    ctx_or_interaction : CtxOrInteraction,
+    command_name       : str | None,
 ) -> None:
-    if isinstance(ctx_or_inter, commands.Context):
-        if not isinstance(ctx_or_inter.author, discord.Member):
-            _ = await ctx_or_inter.send("Cannot resolve guild member context.")
-            return
-        member  = ctx_or_inter.author
-        respond = ctx_or_inter.send
+    if isinstance(ctx_or_interaction, commands.Context):
+        if not isinstance(ctx_or_interaction.author, discord.Member):
+            raise e.BadEnvironmentDMs
+        member  = ctx_or_interaction.author
+        respond = ctx_or_interaction.send
     else:
-        if not isinstance(ctx_or_inter.user, discord.Member):
-            _ = await ctx_or_inter.response.send_message(
-                "Cannot resolve guild member context.",
-                ephemeral = True,
-            )
-            return
-        member  = ctx_or_inter.user
-        respond = ctx_or_inter.response.send_message
+        if not isinstance(ctx_or_interaction.user, discord.Member):
+            raise e.AppBadEnvironmentDMs
+        member  = ctx_or_interaction.user
+        respond = ctx_or_interaction.response.send_message
 
     if not command_name:
         seen_callbacks : set[int] = set()
@@ -630,11 +767,9 @@ async def run_help(
     callback = find_nested_command(bot, parts)
 
     if callback is None or not hasattr(callback, "__help_data__"):
-        _ = await respond(
-            f"Command `{command_name}` not found or has no help data.",
-            ephemeral = True,
-        )
-        return
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            raise e.AppBadArgument({"command-name" : f"Command `{command_name}` not found or has no help data."})
+        raise e.BadArgument({"command-name" : f"Command `{command_name}` not found or has no help data."})
 
     data        = cast("HelpedCallable", callback).__help_data__
     command_ref = await resolve_command_ref(bot, data)
@@ -645,7 +780,4 @@ async def run_help(
         member       = member,
         command_ref  = command_ref,
     )
-    _ = await respond(
-        view             = view,
-        allowed_mentions = discord.AllowedMentions.none(),
-    )
+    _ = await respond(view = view, allowed_mentions = discord.AllowedMentions.none())

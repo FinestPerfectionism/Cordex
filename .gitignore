@@ -3,12 +3,7 @@ __pycache__/
 .replit
 .venv/
 .env
-data/
-build/
-storage/
-!data/runtime/.gitkeep
-!storage/.gitkeep
-*.log
 *.json
-utility_bot.egg-info/
+cordex.egg-info/
+build/
 uv.lock

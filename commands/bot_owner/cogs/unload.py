@@ -1,72 +1,48 @@
-import logging
+from typing import TYPE_CHECKING
 
-import discord
-from discord.ext import commands
-
-import core.responses as cr
-from constants import BOT_OWNER_ID
+from bot import Interaction, log
+from core import exceptions
 from core.responses import send_custom_message
 
-log = logging.getLogger("Utility Bot")
+if TYPE_CHECKING:
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner unload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_unload(
-    bot         : commands.Bot,
-    interaction : discord.Interaction,
+async def run_bo_cogs_unload(
+    bot         : "Cordex",
+    interaction : Interaction,
     cog         : str,
     cogs        : list[str],
 ) -> None:
-    if interaction.user.id != BOT_OWNER_ID:
-        _ = await send_custom_message(
-            interaction,
-            msg_type = cr.error,
-            title    = "run command",
-            subtitle = "You are not authorized to run this command.",
-            footer   = "No permissions.",
-        )
-        return
+    if cog == "commands.bot_owner._group_cog":
+        raise exceptions.AppBadArgument({"cog": "You may not explicitly unload the bot-owner cog."})
 
     if cog not in cogs:
-        await send_custom_message(
-            interaction,
-            msg_type = cr.warning,
-            title    = "unload cog",
-            subtitle = f"Failed to unload cog `{cog}`: cog `{cog}` not found.",
-            footer   = "Bad argument.",
-        )
-        return
+        raise exceptions.AppBadArgument({"cog" : f"Cog `{cog}` not found."})
 
     if cog not in bot.extensions:
-        await send_custom_message(
-            interaction,
-            msg_type = cr.warning,
-            title    =  "unload cog",
-            subtitle = f"Cog `{cog}` is not currently loaded.",
-            footer   =  "Bad argument.",
-        )
-        return
+        raise exceptions.AppBadArgument({"cog" : f"Cog `{cog}` is not currently loaded."})
 
     try:
         await bot.unload_extension(cog)
         _ = await send_custom_message(
             interaction,
-            msg_type = cr.success,
+            msg_type =  "success",
             title    =  "unloaded cog",
             subtitle = f"Unloaded cog `{cog}`.",
         )
         log.info("Unloaded cog %s", cog)
     except Exception as e:
-        await send_custom_message(
-            interaction,
-            msg_type = cr.error,
-            title    =  "unload cog",
-            subtitle = f"Failed to unload cog `{cog}`:\n"
-                        "```py\n"
-                       f"{e}"
-                        "```",
-            footer   =  "Bad operation.",
-        )
         log.exception("Failed to unload cog %s", cog)
+        raise exceptions.AppBadOperation(
+            title    = "unload cog",
+            subtitle = (
+               f"Failed to unload cog `{cog}`:\n"
+                "```py\n"
+               f"{e}"
+                "```"
+            ),
+        ) from None

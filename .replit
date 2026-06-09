@@ -2,12 +2,12 @@
 pattern = "**/*.py"
 
 [languages.python.lsp]
-name = "basedpyright"
+name    = "basedpyright"
 command = ["./.venv/bin/basedpyright-langserver", "--stdio"]
 
 [languages.python.languageServer]
 start = "./.venv/bin/basedpyright-langserver --stdio"
-run = "python3 main.py"
+run   = "python3 main.py"
 
 [nix]
 channel = "stable-24_05"
@@ -16,8 +16,8 @@ channel = "stable-24_05"
 runButton = "Project"
 
 [[workflows.workflow]]
-name = "Project"
-mode = "parallel"
+name   = "Project"
+mode   = "parallel"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -29,7 +29,7 @@ task = "shell.exec"
 args = "source .bashrc && python3 main.py"
 
 [[workflows.workflow]]
-name = "Run Bot"
+name   = "Run Bot"
 author = "agent"
 
 [[workflows.workflow.tasks]]
@@ -40,7 +40,7 @@ args = "python3 main.py"
 expertMode = true
 
 [[ports]]
-localPort = 5904
+localPort    = 5904
 externalPort = 80
 
 [shell]

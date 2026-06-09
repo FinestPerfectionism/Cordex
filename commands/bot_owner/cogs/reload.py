@@ -1,101 +1,78 @@
-import logging
+from typing import TYPE_CHECKING
 
-import discord
-from discord.ext import commands
-
-import core.responses as cr
-from constants import BOT_OWNER_ID
+from bot import Interaction, log
+from core import exceptions
 from core.responses import send_custom_message
 
-log = logging.getLogger("Utility Bot")
+if TYPE_CHECKING:
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner reload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_reload(
-    bot         : commands.Bot,
-    interaction : discord.Interaction,
+async def run_bo_cogs_reload(
+    bot         : "Cordex",
+    interaction : Interaction,
     cog         : str | None,
     cogs        : list[str],
 ) -> None:
-    if interaction.user.id != BOT_OWNER_ID:
-        _ = await send_custom_message(
-            interaction,
-            msg_type = cr.error,
-            title    = "run command",
-            subtitle = "You are not authorized to run this command.",
-            footer   = "No permissions.",
-        )
-        return
-
     if cog:
         if cog not in cogs:
-            await send_custom_message(
-                interaction,
-                msg_type = cr.warning,
-                title    =  "reload cog",
-                subtitle = f"Failed to reload cog `{cog}`: cog `{cog}` not found.",
-                footer   =  "Bad argument.",
-            )
-            return
-
+            raise exceptions.AppBadArgument({"cog" : f"Cog `{cog}` not found."})
         try:
             await bot.reload_extension(cog)
             _ = await send_custom_message(
                 interaction,
-                msg_type = cr.success,
-                title    = "reloaded cog",
+                msg_type =  "success",
+                title    =  "reloaded cog",
                 subtitle = f"Reloaded cog `{cog}`.",
             )
             log.info("Reloaded cog %s", cog)
         except Exception as e:
-            await send_custom_message(
-                interaction,
-                msg_type = cr.error,
-                title    =  "reload cog",
-                subtitle = f"Failed to reload cog `{cog}`:\n"
-                            "```py\n"
-                           f"{e}"
-                            "```",
-                footer   = "Bad operation.",
-            )
             log.exception("Failed to reload cog %s", cog)
-    else:
-        failed : list[tuple[str, Exception]] = []
+            raise exceptions.AppBadOperation(
+                title    =  "reload cog",
+                subtitle = (
+                   f"Failed to reload cog `{cog}`:\n"
+                    "```py\n"
+                   f"{e}"
+                    "```"
+                ),
+            ) from None
+        return
 
-        for c in cogs:
-            try:
-                await bot.reload_extension(c)
-                log.info("Reloaded cog %s", c)
-            except Exception as e:
-                failed.append((c, e))
-                log.exception("Failed to reload cog %s", c)
+    failed : list[tuple[str, Exception]] = []
+    for c in cogs:
+        try:
+            await bot.reload_extension(c)
+            log.info("Reloaded cog %s", c)
+        except Exception as e:
+            failed.append((c, e))
+            log.exception("Failed to reload cog %s", c)
 
-        if failed:
-            msg = "\n".join(f"{c}: {e}" for c, e in failed)
-
-            if len(failed) == len(cogs):
-                status_text = "All cogs failed to reload."
-            elif len(failed) > 1:
-                status_text = "Multiple cogs failed to reload."
-            else:
-                status_text = "A cog failed to reload."
-
-            await send_custom_message(
-                interaction,
-                msg_type = cr.warning,
-                title    =  "reload cog(s)",
-                subtitle = f"{status_text}\n"
-                            "```py\n"
-                           f"{msg[:1800]}\n"
-                            "```",
-                footer   =  "Bad operation.",
-            )
+    if failed:
+        msg = "\n".join(f"{c}: {e}" for c, e in failed)
+        if len(failed) == len(cogs):
+            status = "All cogs failed to reload."
+        elif len(failed) > 1:
+            status = "Multiple cogs failed to reload."
         else:
-            _ = await send_custom_message(
-                interaction,
-                msg_type = cr.success,
-                title    = "reloaded cogs",
-                subtitle = "Reloaded all cogs successfully.",
-            )
+            status = "A cog failed to reload."
+        amount = "cogs" if len(cogs) > 1 else "cog"
+        raise exceptions.AppBadOperation(
+            title    = f"reload {amount}",
+            subtitle = (
+               f"{status}\n"
+                "```py\n"
+               f"{msg[:1800]}\n"
+                "```"
+            ),
+        )
+
+    _ = await send_custom_message(
+        interaction,
+        msg_type = "success",
+        title    = "reloaded cogs",
+        subtitle = "Reloaded all cogs successfully.",
+    )

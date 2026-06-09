@@ -1,7 +1,7 @@
 [project]
-name            = "utility-bot"
+name            = "cordex"
 version         = "0.1.0"
-description     = "Development for the discord Utility Bot"
+description     = "Development for the discord bot Cordex"
 requires-python = ">=3.11"
 dependencies    = [
     "discord.py",
@@ -12,15 +12,18 @@ dependencies    = [
 package = false
 
 [tool.basedpyright]
+stubPath         = "./typings"
 typeCheckingMode = "all"
 venvPath         = "."
 venv             = ".venv"
 pythonVersion    = "3.11"
 include          = ["."]
+exclude          = ["build"]
 
-reportAny                           = "error"
-reportExplicitAny                   = "error"
-reportInvalidCast                   = "error"
+reportDeprecated                    = "error"
+reportShadowedVariable              = "error"
+reportImplicitStringConcatenation   = "error"
+reportUnknownResultType             = "error"
 reportUnannotatedClassAttribute     = "error"
 reportIgnoreCommentWithoutRule      = "error"
 reportMissingParameterType          = "error"
@@ -60,36 +63,59 @@ reportImplicitOverride              = "error"
 reportUnusedCallResult              = "error"
 reportMissingTypeStubs              = "error"
 reportMatchNotExhaustive            = "error"
-useLibraryCodeForTypes              = false
+useLibraryCodeForTypes              = true
 
 [tool.ruff]
 target-version = "py311"
-line-length    = 100
-extend-exclude = [".cache"]
+line-length    = 88
+extend-exclude = [
+    ".cache",
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    ".venv",
+    "env",
+    "lib/python*",
+]
 
 [tool.ruff.lint]
 select = ["ALL"]
+preview = true
 ignore = [
-    "E501", 
-    "D",    
-    "ANN101",
-    "ANN102",
+    "D",
+    "BLE",
+    "PD011",
 ]
 
 [tool.ruff.lint.mccabe]
-max-complexity = 50
+max-complexity = 10
 
 [tool.ruff.lint.pylint]
-max-args     = 50
-max-branches = 50
-max-returns  = 50
+max-args     = 10
+max-branches = 10
+max-returns  = 10
 
 [tool.ruff.lint.flake8-annotations]
 allow-star-arg-any      = false
 suppress-none-returning = false
 
-[tool.ruff.lint.pyupgrade]
-keep-runtime-typing = true
-
 [tool.setuptools]
-packages = ["core", "data", "events", "commands", "guild_info"]
+packages = ["guild_info", "core", "events", "commands"]

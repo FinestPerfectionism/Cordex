@@ -1,1 +1,15 @@
-OWNER_PRIVILEGE_ENABLED = True
+from .partnerships import (
+    IMAGE_DIR,
+    PartnershipData,
+    PartnershipEntry,
+    load_partnership_data,
+    save_partnership_data,
+)
+
+__all__ = [
+    "IMAGE_DIR",
+    "PartnershipData",
+    "PartnershipEntry",
+    "save_partnership_data",
+    "load_partnership_data",
+]

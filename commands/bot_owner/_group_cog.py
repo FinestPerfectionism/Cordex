@@ -1,20 +1,29 @@
-import logging
+from typing import TYPE_CHECKING
 
 import discord
-from discord import app_commands
+from discord.app_commands import autocomplete, describe, rename
+from discord.app_commands import command as app_command
 from discord.ext import commands
 
+from bot import Context, Interaction, log
+from core.permissions import bot_owner_cmd
+
 from ._base import cog_autocomplete, get_cogs
-from .cogs.load import run_load
-from .cogs.pull_reload import run_pull_reload
-from .cogs.reload import run_reload
-from .cogs.unload import run_unload
-from .misc import run_eval, run_say, run_status
-from .state.restart import run_restart
-from .state.shutdown import run_shutdown
+from .cogs.load import run_bo_cogs_load
+from .cogs.pullreload import run_bo_cogs_pullreload
+from .cogs.reload import run_bo_cogs_reload
+from .cogs.unload import run_bo_cogs_unload
+from .misc import run_bo_misc_eval, run_bo_misc_say, run_bo_misc_sync
+from .state.restart import run_bo_state_restart
+from .state.shutdown import run_bo_state_shutdown
+
+if TYPE_CHECKING:
+    from logging import Logger
+
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Owner Commands
+# Bot Owner Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class BotOwnerCommands(
@@ -22,161 +31,115 @@ class BotOwnerCommands(
     name        = "bot-owner",
     description = "Bot Owner only —— Bot owner commands.",
 ):
-    def __init__(self, bot : commands.Bot) -> None:
-        self.bot            = bot
-        self.logger         = logging.getLogger("bot")
-        self.restarting_ref = [False]
+    def __init__(self, bot : "Cordex") -> None:
         super().__init__()
+        self.bot            : "Cordex"   = bot
+        self.logger         : Logger     = log
+        self.restarting_ref : list[bool] = [False]
 
     @property
     def cogs(self) -> list[str]:
         return get_cogs()
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner pull-reload Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
+    @app_command(
         name        = "pull-reload",
         description = "Pull from main, then reload all cogs.",
     )
-    async def pull_reload(self, interaction : discord.Interaction) -> None:
-        await run_pull_reload(self.bot, interaction, get_cogs())
+    @bot_owner_cmd()
+    async def cmd_pullreload(self, interaction : Interaction) -> None:
+        await run_bo_cogs_pullreload(self.bot, interaction, get_cogs())
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner reload Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "reload",
-        description = "Reload a cog or all cogs.",
-    )
-    @app_commands.describe(
-        cog = "The cog to reload. Leave empty to reload all cogs.",
-    )
-    @app_commands.autocomplete(cog = cog_autocomplete)
-    async def reload(self, interaction : discord.Interaction, cog: str | None = None) -> None:
-        await run_reload(self.bot, interaction, cog, get_cogs())
+    @app_command(description = "Reload a cog or all cogs.")
+    @describe(cog = "The cog to reload. Leave empty to reload all cogs.")
+    @autocomplete(cog = cog_autocomplete)
+    @bot_owner_cmd()
+    async def cmd_reload(self, interaction : Interaction,  cog : str | None) -> None:
+        await run_bo_cogs_reload(self.bot, interaction, cog, get_cogs())
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner load Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "load",
-        description = "Load a cog.",
-    )
-    @app_commands.describe(
-        cog = "The cog to load.",
-    )
-    @app_commands.autocomplete(cog = cog_autocomplete)
-    async def load(self, interaction : discord.Interaction, cog: str) -> None:
-        await run_load(self.bot, interaction, cog, get_cogs())
+    @app_command(description = "Load a cog.")
+    @describe(cog = "The cog to load.")
+    @autocomplete(cog = cog_autocomplete)
+    @bot_owner_cmd()
+    async def cmd_load(self, interaction : Interaction,  cog : str) -> None:
+        await run_bo_cogs_load(self.bot, interaction, cog, get_cogs())
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner unload Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "unload",
-        description = "Unload a cog.",
-    )
-    @app_commands.describe(
-        cog = "The cog to unload.",
-    )
-    @app_commands.autocomplete(cog = cog_autocomplete)
-    async def unload(self, interaction : discord.Interaction, cog : str) -> None:
-        await run_unload(self.bot, interaction, cog, get_cogs())
+    @app_command(description = "Unload a cog.")
+    @describe(cog = "The cog to unload.")
+    @autocomplete(cog = cog_autocomplete)
+    @bot_owner_cmd()
+    async def cmd_unload(self, interaction : Interaction,  cog : str) -> None:
+        await run_bo_cogs_unload(self.bot, interaction, cog, get_cogs())
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .shutdown/.shut Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.command(name = "shutdown", aliases = ["shut"])
-    async def shutdown(self, ctx : commands.Context[commands.Bot]) -> None:
-        await run_shutdown(self.bot, ctx)
+    @bot_owner_cmd()
+    async def cmd_shutdown(self, ctx : Context) -> None:
+        await run_bo_state_shutdown(self.bot, ctx)
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .restart/.r Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.command(name = "restart", aliases = ["r"])
-    async def restart(self, ctx : commands.Context[commands.Bot]) -> None:
-        await run_restart(self.bot, ctx, self.restarting_ref, self.logger)
+    @bot_owner_cmd()
+    async def cmd_restart(self, ctx : Context) -> None:
+        await run_bo_state_restart(self.bot, ctx, self.restarting_ref, self.logger)
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner status Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # .sync Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(
-        name        = "status",
-        description = "Sets the bot's presence status.",
-    )
-    @app_commands.describe(
-        activity_type  = "Activity type.",
-        text           = "Status text.",
-        url            = "Twitch URL.",
-        state          = "Online status.",
-    )
-    @app_commands.rename(
-        activity_type = "type",
-    )
-    @app_commands.choices(
-        activity_type = [
-            app_commands.Choice(name = "Playing",   value = "playing"),
-            app_commands.Choice(name = "Watching",  value = "watching"),
-            app_commands.Choice(name = "Listening", value = "listening"),
-            app_commands.Choice(name = "Competing", value = "competing"),
-            app_commands.Choice(name = "Streaming", value = "streaming"),
-            app_commands.Choice(name = "Custom",    value = "custom"),
-        ],
-        state         = [
-            app_commands.Choice(name = "Online",         value = "online"),
-            app_commands.Choice(name = "Idle",           value = "idle"),
-            app_commands.Choice(name = "Do Not Disturb", value = "dnd"),
-            app_commands.Choice(name = "Invisible",      value = "invisible"),
-        ],
-    )
-    async def status(
-        self,
-        interaction   : discord.Interaction,
-        activity_type : app_commands.Choice[str],
-        text          : str,
-        state         : app_commands.Choice[str] | None = None,
-        url           : str                      | None = None,
-    ) -> None:
-        await run_status(self.bot, interaction, activity_type, text, state, url)
+    @commands.command(name = "sync")
+    @bot_owner_cmd()
+    async def cmd_sync(self, _ctx : Context) -> None:
+        await run_bo_misc_sync()
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.command(name = "eval")
-    async def _eval(
-        self,
-        ctx  : commands.Context[commands.Bot],
-        *,
-        body : str,
-    ) -> None:
-        await run_eval(self.bot, ctx, body)
+    @bot_owner_cmd()
+    async def cmd_eval(self, ctx : Context, *, body : str) -> None:
+        await run_bo_misc_eval(self.bot, ctx, body)
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner say Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_commands.command(name = "say", description = "Make the bot say something.")
-    @app_commands.describe(
+    @app_command(description = "Make the bot say something.")
+    @describe(
         message        = "The text to send.",
         target_channel = "The channel to send the message in.",
         reply_id       = "The ID of the message to reply to.",
     )
-    @app_commands.rename(
+    @rename(
         target_channel = "target-channel",
         reply_id       = "reply-id",
     )
-    async def say(
+    @bot_owner_cmd()
+    async def cmd_say(
         self,
-        interaction    : discord.Interaction,
+        interaction    : Interaction,
         message        : str,
         target_channel : discord.TextChannel | None = None,
         reply_id       : str                 | None = None,
@@ -186,12 +149,13 @@ class BotOwnerCommands(
         if not isinstance(target, discord.abc.Messageable):
             return
 
-        await run_say(
+        await run_bo_misc_say(
             interaction = interaction,
             channel     = target,
             text        = message,
             message_id  = reply_id,
         )
 
-async def setup(bot : commands.Bot) -> None:
-    await bot.add_cog(BotOwnerCommands(bot))
+async def setup(bot : "Cordex") -> None:
+    cog = BotOwnerCommands(bot)
+    await bot.add_cog(cog)

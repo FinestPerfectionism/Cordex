@@ -1,122 +1,187 @@
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable, Coroutine
+from typing import Protocol, cast
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
+from bot import CtxOrInteraction
 from constants import (
     ADMINISTRATORS_ROLE_ID,
     BOT_OWNER_ID,
     DIRECTORS_ROLE_ID,
-    GUILD_ID,
-    MODERATORS_AND_ADMINISTRATORS_ROLE_ID,
     MODERATORS_ROLE_ID,
+    SENIOR_ADMINISTRATORS_ROLE_ID,
     SENIOR_MODERATORS_ROLE_ID,
-    STAFF_COMMITTEE_ROLE_ID,
     STAFF_ROLE_ID,
 )
-from core import state
+from core import exceptions as e
+
+from .help import (
+    AccessData,
+    AccessNode,
+    ChannelRestriction,
+    P,
+    RoleNode,
+    T_co,
+    UserNode,
+    evaluate_access,
+    get_access_data,
+    resolve_member,
+)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permissions Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Wrong Guild Check
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+class AccessControlled(Protocol):
+    __access_data__ : AccessData
 
-class WrongGuild(app_commands.CheckFailure):
-    pass
+CommandCallback = Callable[P, Coroutine[None, None, T_co]]
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Permissions Denied Check
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-class PermissionDenied(app_commands.CheckFailure):
-    pass
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Main Guild Only Check
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-def main_guild_only() -> Callable[[Any], Any]:
-    async def predicate(interaction : discord.Interaction) -> bool:
-        if interaction.guild is None or interaction.guild.id != GUILD_ID:
-            raise WrongGuild
+async def access_predicate(ctx_or_interaction : CtxOrInteraction) -> bool:
+    data = get_access_data(ctx_or_interaction)
+    if data is None or data.command_node is None:
         return True
 
-    return app_commands.check(predicate)
+    member = resolve_member(ctx_or_interaction)
+    if member is None:
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            raise e.BadEnvironmentDMs
+        raise e.BadEnvironmentDMs
+
+    if not evaluate_access(data.command_node, member):
+        if isinstance(ctx_or_interaction, discord.Interaction):
+            raise e.AppBadPermissionsCommand
+        raise e.BadPermissionsCommand
+
+    if data.channel_rules:
+        channel_id = (
+            ctx_or_interaction.channel_id
+            if isinstance(ctx_or_interaction, discord.Interaction)
+            else (ctx_or_interaction.channel.id if ctx_or_interaction.channel else None)
+        )
+        if channel_id is not None:
+            allowed : list[int] = []
+            for rule in data.channel_rules:
+                if evaluate_access(rule.node, member):
+                    allowed.extend(rule.channels)
+            if allowed and channel_id not in allowed:
+                if isinstance(ctx_or_interaction, discord.Interaction):
+                    raise e.AppBadPermissionsCommand
+                raise e.BadPermissionsCommand
+
+    return True
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Require Role Check
+# @access_control
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def require_role(role_id : int) -> Callable[[Any], Any]:
-    async def predicate(interaction : discord.Interaction) -> bool:
-        if interaction.user.id == BOT_OWNER_ID and state.OWNER_PRIVILEGE_ENABLED:
-            return True
+def access_control(
+    *,
+    command          : AccessNode               | None = None,
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    def decorator(func : CommandCallback[P, T_co]) -> CommandCallback[P, T_co]:
+        data = AccessData(
+            command_node   = command,
+            argument_nodes = dict(argument_nodes),
+            channel_rules  = list(channel_rules or []),
+        )
+        cast("AccessControlled", func).__access_data__ = data
 
-        if not isinstance(interaction.user, discord.Member):
-            raise PermissionDenied
+        func = commands.check(access_predicate)(func)
+        return app_commands.check(access_predicate)(func)
 
-        if not any(role.id == role_id for role in interaction.user.roles):
-            raise PermissionDenied
-
-        return True
-
-    return app_commands.check(predicate)
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Role Application Checks
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-def directors_only() -> Callable[[Any], Any]:
-    return require_role(DIRECTORS_ROLE_ID)
-
-def mod_and_admin_only() -> Callable[[Any], Any]:
-    return require_role(MODERATORS_AND_ADMINISTRATORS_ROLE_ID)
-
-def mod_only() -> Callable[[Any], Any]:
-    return require_role(MODERATORS_ROLE_ID)
-
-def admin_only() -> Callable[[Any], Any]:
-    return require_role(ADMINISTRATORS_ROLE_ID)
-
-def staff_only() -> Callable[[Any], Any]:
-    return require_role(STAFF_ROLE_ID)
-
-def committee_only() -> Callable[[Any], Any]:
-    return require_role(STAFF_COMMITTEE_ROLE_ID)
+    return decorator
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Role Prefix Checks
+# @bot_owner_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def has_director_role() -> Callable[[Any], Any]:
-    async def predicate(ctx : commands.Context[commands.Bot]) -> bool:
-        if not isinstance(ctx.author, discord.Member):
-            return False
-        return any(role.id == DIRECTORS_ROLE_ID for role in ctx.author.roles)
-    return commands.check(predicate)
+def bot_owner_cmd(
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    return access_control(
+        command       = UserNode(user_id = BOT_OWNER_ID),
+        channel_rules = channel_rules,
+        **argument_nodes,
+    )
 
-def has_role(member : discord.Member, role_id : int) -> bool:
-    return any(role.id == role_id for role in member.roles)
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# @director_cmd
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def is_director(member : discord.Member) -> bool:
-    return has_role(member, DIRECTORS_ROLE_ID)
+def director_cmd(
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    return access_control(
+        command       = RoleNode(role_id = DIRECTORS_ROLE_ID),
+        channel_rules = channel_rules,
+        **argument_nodes,
+    )
 
-def is_staff(member : discord.Member) -> bool:
-    return has_role(member, STAFF_ROLE_ID)
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# @administrator/senior_administrator_cmd
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def is_staff_committee(member : discord.Member) -> bool:
-    return has_role(member, STAFF_COMMITTEE_ROLE_ID)
+def administrator_cmd(
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    return access_control(
+        command       = RoleNode(role_id = ADMINISTRATORS_ROLE_ID),
+        channel_rules = channel_rules,
+        **argument_nodes,
+    )
 
-def is_moderator(member : discord.Member) -> bool:
-    return has_role(member, MODERATORS_ROLE_ID)
+def senior_administrator_cmd(
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    return access_control(
+        command       = RoleNode(role_id = SENIOR_ADMINISTRATORS_ROLE_ID),
+        channel_rules = channel_rules,
+        **argument_nodes,
+    )
 
-def is_administrator(member : discord.Member) -> bool:
-    return has_role(member, ADMINISTRATORS_ROLE_ID)
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# @moderator/senior_moderator_cmd
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def is_senior_moderator(member : discord.Member) -> bool:
-    return has_role(member, SENIOR_MODERATORS_ROLE_ID)
+def moderator_cmd(
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    return access_control(
+        command       = RoleNode(role_id = MODERATORS_ROLE_ID),
+        channel_rules = channel_rules,
+        **argument_nodes,
+    )
+
+def senior_moderator_cmd(
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    return access_control(
+        command       = RoleNode(role_id = SENIOR_MODERATORS_ROLE_ID),
+        channel_rules = channel_rules,
+        **argument_nodes,
+    )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# @staff_cmd
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def staff_cmd(
+    channel_rules    : list[ChannelRestriction] | None = None,
+    **argument_nodes : AccessNode,
+) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+    return access_control(
+        command = RoleNode(role_id = STAFF_ROLE_ID),
+        channel_rules = channel_rules,
+        **argument_nodes,
+    )

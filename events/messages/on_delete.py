@@ -1,56 +1,40 @@
-from typing import Any
+from typing import TYPE_CHECKING
 
 import discord
+from discord import AuditLogAction
 from discord.ext import commands
+from discord.utils import utcnow
 
-from constants import (
-    COLOR_RED,
-    CONTESTED_EMOJI,
-    COUNTING_CHANNEL_ID,
-    DIRECTORSHIP_CATEGORY_ID,
-    MESSAGE_DELETE_LOG_CHANNEL_ID,
+from constants import COLOR_RED, MESSAGE_DELETE_LOG_CHANNEL_ID
+
+from ._base import (
+    channel_display,
+    format_attachments,
+    is_directorship_channel,
+    truncate_text,
 )
-from core.state.automod_state import AUTOMOD_DELETIONS
-from core.utils import channel_display, format_attachments
+
+if TYPE_CHECKING:
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Message Deletion
+# Message Delete Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class MessageDeleteHandler(commands.Cog):
-    def __init__(self, bot : commands.Bot) -> None:
-        self.bot = bot
-
-    def is_directorship_channel(
-        self,
-        channel : discord.abc.Messageable,
-    ) -> bool:
-        return (
-            isinstance(channel, discord.TextChannel | discord.VoiceChannel | discord.StageChannel)
-            and channel.category_id == DIRECTORSHIP_CATEGORY_ID
-        ) or (
-            isinstance(channel, discord.Thread)
-            and getattr(channel.parent, "category_id", None) == DIRECTORSHIP_CATEGORY_ID
-        )
+    def __init__(self, bot : "Cordex") -> None:
+        super().__init__()
+        self.bot : "Cordex" = bot
 
     @commands.Cog.listener("on_message_delete")
-    async def on_message_delete(self, message: discord.Message) -> None:
+    async def message_delete_handling(self, message : discord.Message) -> None:
         if message.guild is None:
             return
 
-        if message.channel.id == COUNTING_CHANNEL_ID:
-            from events.messages.on_send import MessageSendHandler
-            counting_cog = self.bot.get_cog("MessageSendHandler")
-            if isinstance(counting_cog, MessageSendHandler):
-                last_id : int | None = counting_cog.state["last_message_id"]
-                if last_id is not None and message.id == last_id:
-                    _ = await message.channel.send(
-                        f"{CONTESTED_EMOJI} **Warning!**\n"
-                        f"{message.author.name} has deleted their message. The next number is {counting_cog.state['count'] + 1}.",
-                    )
+        if is_directorship_channel(message.channel):
             return
 
-        if self.is_directorship_channel(message.channel):
+        if message.author.bot:
             return
 
         log_channel = message.guild.get_channel(MESSAGE_DELETE_LOG_CHANNEL_ID)
@@ -59,39 +43,31 @@ class MessageDeleteHandler(commands.Cog):
 
         deleter = "Unknown"
         try:
-            async for entry in message.guild.audit_logs(
-                limit=5,
-                action=discord.AuditLogAction.message_delete,
-            ):
+            async for entry in message.guild.audit_logs(limit = 5, action = AuditLogAction.message_delete):
                 if not isinstance(entry.target, discord.User | discord.Member):
                     continue
                 if entry.target.id != message.author.id:
                     continue
-                extra: Any = entry.extra
-                channel = getattr(extra, "channel", None)
-                if not isinstance(channel, discord.abc.GuildChannel):
+                extra = entry.extra
+                if extra is None:
                     continue
-                if channel.id != message.channel.id:
+
+                if getattr(extra, "channel", None) != message.channel:
                     continue
-                n_5 = 5
-                if (discord.utils.utcnow() - entry.created_at).total_seconds() > n_5:
+                max_log_age_seconds = 5
+                if (utcnow() - entry.created_at).total_seconds() > max_log_age_seconds:
                     continue
                 if entry.user:
                     deleter = f"`{entry.user}`\n`{entry.user.id}`"
                 break
+
         except (discord.Forbidden, discord.HTTPException):
             pass
-
-        if message.id in AUTOMOD_DELETIONS:
-            deleter = "UB Auto-Moderation"
-            AUTOMOD_DELETIONS.discard(message.id)
-        elif deleter == "Unknown":
-            deleter = "Self"
 
         embed = discord.Embed(
             title     = "Message Deleted",
             color     = COLOR_RED,
-            timestamp = discord.utils.utcnow(),
+            timestamp = utcnow(),
         )
         _ = embed.add_field(
             name   = "Author",
@@ -108,12 +84,10 @@ class MessageDeleteHandler(commands.Cog):
             value  = channel_display(message.channel),
             inline = True,
         )
-        content         = message.content or "[No content, likely an embed or attachment]"
-        n_1024          = 1024
-        display_content = (content[:1021] + "...") if len(content) > n_1024 else content
+        content = message.content or "[No content, likely an embed or attachment]"
         _ = embed.add_field(
             name   = "Content",
-            value  = display_content,
+            value  = truncate_text(content),
             inline = True,
         )
         _ = embed.add_field(
@@ -124,5 +98,6 @@ class MessageDeleteHandler(commands.Cog):
         _ = embed.set_footer(text = 'Please note that the "Deleted By" section guesses by checking the audit log, and may not always be accurate')
         _ = await log_channel.send(embed = embed)
 
-async def setup(bot : commands.Bot) -> None:
-    await bot.add_cog(MessageDeleteHandler(bot))
+async def setup(bot : "Cordex") -> None:
+    cog = MessageDeleteHandler(bot)
+    await bot.add_cog(cog)

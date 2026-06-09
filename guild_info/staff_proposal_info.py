@@ -1,15 +1,32 @@
+# ruff: noqa: E501
+
 from inspect import cleandoc
 
-import discord
-from discord import ButtonStyle, SeparatorSpacing
-from discord.ui import ActionRow, Button, Container, LayoutView, Separator, TextDisplay
+from discord.ui import (
+    ActionRow,
+    Button,
+    Container,
+    LayoutView,
+    TextDisplay,
+)
 from typing_extensions import override
+
+from core.utilities import (
+    VisibleLargeSeparator,
+    VisibleSmallSeparator,
+    blurple,
+    green,
+    red,
+)
+
+from bot import Interaction
 
 
 class AdministratorsRolesComponents(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay[LayoutView](
-            content = cleandoc("""
+            content = cleandoc(
+                """
                 # Goobers Administration Team\n
                 The Goobers Administration Team is responsible for overseeing server management and ensuring that all approved structural or operational changes are properly carried out.\n\n
                 **Tasks**\n
@@ -18,33 +35,23 @@ class AdministratorsRolesComponents(LayoutView):
                 """,
             ),
         ),
-        Separator(
-            visible = True,
-            spacing = SeparatorSpacing.large,
-        ),
-        TextDisplay(
-            content =
-                "-# **Note:** Administrators are held under the same rules and are expected to also do the same jobs as guild Trustees *and* Moderators. No exceptions.",
-        ),
+        VisibleLargeSeparator(),
+        TextDisplay("-# **Note:** Administrators are held under the same rules and are expected to also do the same jobs as guild Trustees *and* Moderators. No exceptions."),
         accent_color = 0xff8cd5,
     )
 
 class ModeratorsRolesComponents(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay[LayoutView](
-            content = cleandoc("""
-                # Goobers Moderation Team\n
-                The Goobers Moderation Team is responsible for overseeing rule enforcement, maintaining community safety, and supporting the server's overall stability.\n\n
-                **Tasks**\n
-                > *To vote on and raise proposals that improve The Goobers server and its community.*\n\n
-                All Moderators may raise Staff Proposals and vote on them. Senior Moderators+ may assist in directing or reviewing proposands for clarity or practicality. All proposands are expected to be formal, precise, and beneficial to the server's growth and function.
-                """,
+            content = (
+                "# Goobers Moderation Team\n"
+                "The Goobers Moderation Team is responsible for overseeing rule enforcement, maintaining community safety, and supporting the server's overall stability.\n\n"
+                "**Tasks**\n"
+                "> *To vote on and raise proposals that improve The Goobers server and its community.*\n\n"
+                "All Moderators may raise Staff Proposals and vote on them. Senior Moderators+ may assist in directing or reviewing proposands for clarity or practicality. All proposands are expected to be formal, precise, and beneficial to the server's growth and function."
             ),
         ),
-        Separator(
-            visible = True,
-            spacing = SeparatorSpacing.large,
-        ),
+        VisibleLargeSeparator(),
         TextDisplay(
             content =
                 "-# **Note:** Moderators are held under the same rules and are expected to also do the same jobs as guild Trustees. No exceptions.",
@@ -55,12 +62,13 @@ class ModeratorsRolesComponents(LayoutView):
 class TrusteeRolesComponents(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay(
-            content =
+            content = (
                 "# Goobers Guild Trustees\n"
                 "Guild Trustees are members of the community who contribute to the server's improvement through proposals and suggestions.\n\n"
                 "**Tasks**\n"
                 "> *To raise proposals that improve The Goobers server and its community.*\n\n"
-                "Guild Trustees may raise Staff Proposals to suggest improvements, changes, or additions to the server. All proposands are expected to be formal, precise, and beneficial to the server's growth and function.",
+                "Guild Trustees may raise Staff Proposals to suggest improvements, changes, or additions to the server. All proposands are expected to be formal, precise, and beneficial to the server's growth and function."
+            ),
         ),
         accent_color = 0xfacd6c,
     )
@@ -68,12 +76,13 @@ class TrusteeRolesComponents(LayoutView):
 class CommitteeRolesComponents(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay(
-            content =
+            content = (
                 "# Goobers Staff Committee\n"
                 "The Staff Committee is the final decision-making body for Staff Proposals. After the advisory poll period concludes, the committee reviews all vote data, staff discussion, and operational considerations before issuing a binding decision.\n\n"
                 "**Tasks**\n"
                 "> *To review advisory poll results and issue final decisions on Staff Proposals.*\n\n"
-                "The Staff Committee may Accept, Accept with minor revisions, Request revision, Deny, or place a proposal into Standstill. When acting contrary to strong staff consensus, the committee is expected to provide brief reasoning for their decision.",
+                "The Staff Committee may Accept, Accept with minor revisions, Request revision, Deny, or place a proposal into Standstill. When acting contrary to strong staff consensus, the committee is expected to provide brief reasoning for their decision."
+            ),
         ),
         accent_color = 0xf9a56b,
     )
@@ -81,16 +90,13 @@ class CommitteeRolesComponents(LayoutView):
 class AdministratorsRoles(Button[LayoutView]):
     def __init__(self) -> None:
         super().__init__(
-            style     = ButtonStyle.success,
+            style     = green,
             label     = "Administrator's Roles",
             custom_id = "persistent_administrator_button",
         )
 
     @override
-    async def callback(
-        self,
-        interaction : discord.Interaction,
-    ) -> None:
+    async def callback(self, interaction : Interaction) -> None:
         _ = await interaction.response.send_message(
             view      = AdministratorsRolesComponents(),
             ephemeral = True,
@@ -99,16 +105,13 @@ class AdministratorsRoles(Button[LayoutView]):
 class ModeratorsRoles(Button[LayoutView]):
     def __init__(self) -> None:
         super().__init__(
-            style     = ButtonStyle.success,
+            style     = green,
             label     = "Moderator's Roles",
             custom_id = "persistent_moderator_button",
         )
 
     @override
-    async def callback(
-        self,
-        interaction : discord.Interaction,
-    ) -> None:
+    async def callback(self, interaction : Interaction) -> None:
         _ = await interaction.response.send_message(
             view      = ModeratorsRolesComponents(),
             ephemeral = True,
@@ -117,16 +120,13 @@ class ModeratorsRoles(Button[LayoutView]):
 class TrusteeRoles(Button[LayoutView]):
     def __init__(self) -> None:
         super().__init__(
-            style     = ButtonStyle.primary,
+            style     = blurple,
             label     = "Trustee's Roles",
             custom_id = "persistent_trustee_button",
         )
 
     @override
-    async def callback(
-        self,
-        interaction : discord.Interaction,
-    ) -> None:
+    async def callback(self, interaction : Interaction) -> None:
         _ = await interaction.response.send_message(
             view      = TrusteeRolesComponents(),
             ephemeral = True,
@@ -135,16 +135,13 @@ class TrusteeRoles(Button[LayoutView]):
 class CommitteeRoles(Button[LayoutView]):
     def __init__(self) -> None:
         super().__init__(
-            style     = ButtonStyle.danger,
+            style     = red,
             label     = "Committee's Roles",
             custom_id = "persistent_committee_button",
         )
 
     @override
-    async def callback(
-        self,
-        interaction : discord.Interaction,
-    ) -> None:
+    async def callback(self, interaction : Interaction) -> None:
         _ = await interaction.response.send_message(
             view      = CommitteeRolesComponents(),
             ephemeral = True,
@@ -153,9 +150,10 @@ class CommitteeRoles(Button[LayoutView]):
 class StaffProposalComponents1(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay(
-            content =
+            content = (
                 "# Welcome to Staff Proposals!\n"
-                "A branch of the server dedicated to making improvements to the server that will benefit the community and its members.",
+                "A branch of the server dedicated to making improvements to the server that will benefit the community and its members."
+            ),
         ),
     )
 
@@ -164,26 +162,18 @@ class StaffProposalComponents2a(LayoutView):
         super().__init__(timeout = None)
         self.container : Container[LayoutView] = Container(
             TextDisplay(
-                content =
+                content = (
                     "# Staff Proposal Information\n"
                     f"Staff proposals last updated <t:{timestamp}:D>.\n"
                     "-# All below is subject to change at any time based on Directorate decision or structural updates.\n"
-                    "-# Assembled by the Directorate team. Primarily written by <@1311394031640776716>.",
+                    "-# Assembled by the Directorate team. Primarily written by <@1311394031640776716>."
+                ),
             ),
-            Separator(
-                visible = False,
-                spacing = SeparatorSpacing.small,
-            ),
-            Separator(
-                visible = True,
-                spacing = SeparatorSpacing.small,
-            ),
-            Separator(
-                visible = False,
-                spacing = SeparatorSpacing.small,
-            ),
+            VisibleSmallSeparator(),
+            VisibleSmallSeparator(),
+            VisibleSmallSeparator(),
             TextDisplay(
-                content =
+                content = (
                     "Any member of the **Goobers Staff Team** (Administrators + Moderators + Directors + Owner) is allowed to vote in a proposal, or raise a proposal. All proposals are expected to be beneficial to the Goobers and its community.\n"
                     "## Important Information\n"
                     "### Advisory Votes\n"
@@ -199,10 +189,11 @@ class StaffProposalComponents2a(LayoutView):
                     "If a proposal's poll expires with missing Staff votes, it proceeds to the Staff Committee as-is with whatever vote data was collected.\n"
                     "### Vote Changes\n"
                     "- Staff may change their votes at any time before the poll ends.\n"
-                    "- Once the poll expires, votes are locked for the record.",
+                    "- Once the poll expires, votes are locked for the record."
+                ),
             ),
             TextDisplay(
-                content =
+                content = (
                     "## Staff Groups\n"
                     "**Staff** consists of:\n"
                     "- **Owner**\n"
@@ -232,12 +223,10 @@ class StaffProposalComponents2a(LayoutView):
                     "Staff may make suggestions to the items listed above __in the appropriate channel__, such as <#1444452435006590996>, <#1386133249373376665>, or <#1436345318554996976>.\n"
                     "Guild Trustees may *not* suggest the items listed above anywhere in the server. \n\n"
                     "-# **Proposand:** the core idea of a raised proposal.\n"
-                    "-# **Guild Trustees:** those with the <@&1463694813525180477> role.",
+                    "-# **Guild Trustees:** those with the <@&1463694813525180477> role."
+                ),
             ),
-            Separator(
-                visible = True,
-                spacing = SeparatorSpacing.large,
-            ),
+            VisibleLargeSeparator(),
             ActionRow(
                 AdministratorsRoles(),
                 ModeratorsRoles(),
@@ -250,7 +239,7 @@ class StaffProposalComponents2a(LayoutView):
 class StaffProposalComponents2b(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay(
-            content =
+            content = (
                 "## Proposal Review\n"
                 "### Staff Committee\n"
                 "After the advisory poll concludes, the **Staff Committee** reviews the proposal. The committee considers vote totals, staff discussion, technical feasibility, and operational concerns before issuing a final decision.\n"
@@ -269,7 +258,7 @@ class StaffProposalComponents2b(LayoutView):
                 "A simple majority of present committee members is sufficient to issue Accept, Accept with minor revisions, or Deny decisions. Standstill and Contested status require unanimous agreement among present members.\n"
                 "### Review Timelines\n"
                 "The Staff Committee must issue a final decision within **5 days** of the advisory poll concluding. If no decision is reached within this window, the proposal automatically enters Contested status.\n"
-                "### discord.Interaction with Vetos\n"
+                "### Interaction with Vetos\n"
                 "Director veto powers operate independently of the Staff Committee review process. A veto may be exercised at any point before the committee issues a final decision. Once a final decision has been issued, veto powers may not be retroactively applied.\n"
                 "## Directorate Review\n"
                 "Certain proposals are not subject to the standard Staff Committee process and are instead passed directly to the **Directorate** for review. This applies to specific circumstances where the nature of the proposal falls outside the scope of staff advisory voting, such as the addition of bots to the server.\n"
@@ -291,59 +280,59 @@ class StaffProposalComponents2b(LayoutView):
                 "> Why the proposand should be accepted.\n"
                 "### Additional Notes\n"
                 "> Any additional notes.\n"
-                "```",
+                "```"
+            ),
         ),
     )
 
 class StaffProposalComponents3(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay(
-            content = cleandoc("""
-                # Proposal Accepted\n
-                A proposal is Accepted when the Staff Committee issues an Accept decision after reviewing the advisory poll and associated discussion.\n
-                ## Acceptance\n
-                The Staff Committee may Accept a proposal if:\n
-                - The advisory vote reflects sufficient staff support.\n
-                - The proposand is technically feasible and sufficiently specified.\n
-                - No unresolved operational or policy concerns remain.\n
-                The committee may also **Accept with minor revisions**, in which case Administrators implement the proposand with the noted adjustments.\n
-                ### Implementation\n
-                Administrators implement all accepted proposals. If the proposal requires the Owner or Supporting Director specifically, the relevant tag is used.\n
-                # Proposal Contested\n
-                A proposal is Contested when the Staff Committee determines that the advisory vote and discussion do not produce a clear or actionable outcome.\n
-                ## Contested Conditions\n
-                The Staff Committee may place a proposal into Contested if:\n
-                - Advisory votes are closely divided with no clear signal.\n
-                - Staff discussion raises significant unresolved disagreements.\n
-                - The committee requires additional input before issuing a final decision.\n
-                ### Contested Period\n
-                A **3-day discussion period** begins.\n
-                - Staff may revise their advisory votes.\n
-                - Staff may provide additional reasoning or objections.\n
-                - If the committee reaches a decision during this period, the proposal resolves immediately.\n
-                ### After 3 Days\n
-                If the committee still cannot reach a decision:\n
-                - The **Owner** issues a final deciding determination.\n
-                - The Owner's decision determines Accepted or Denied.\n"
-                The Owner may not override a clear Staff Committee decision at any time.\n"
-                # Proposal Denied\n"
-                A proposal is Denied when the Staff Committee issues a Deny decision after reviewing the advisory poll and associated discussion.\n"
-                ## Denial\n"
-                The Staff Committee may Deny a proposal if:\n
-                - The advisory vote reflects insufficient staff support.\n
-                - The proposand is technically infeasible or insufficiently specified.\n
-                - Operational, policy, or structural concerns cannot be resolved.\n
-                # Proposal Standstill\n
-                The **Standstill** status is used only for rare, special circumstances. This status is not triggered automatically and must be entered manually by the Staff Committee.\n
-                ## Standstill Conditions\n
-                A proposal may enter Standstill if:\n
-                - Motion and votes conflict severely.\n
-                - Staff statements contradict each other.\n
-                - The proposal becomes halted for administrative, technical, or logistical reasons.\n
-                - The situation is too mixed to evaluate.\n
-                - The Staff Committee explicitly determines that normal evaluation cannot proceed.\n
-                A proposal must exit Standstill before any final status (Accepted, Contested, Denied) is applied.
-                """,
+            content = (
+                "# Proposal Accepted\n"
+                "A proposal is Accepted when the Staff Committee issues an Accept decision after reviewing the advisory poll and associated discussion.\n"
+                "## Acceptance\n"
+                "The Staff Committee may Accept a proposal if:\n"
+                "- The advisory vote reflects sufficient staff support.\n"
+                "- The proposand is technically feasible and sufficiently specified.\n"
+                "- No unresolved operational or policy concerns remain.\n"
+                "The committee may also **Accept with minor revisions**, in which case Administrators implement the proposand with the noted adjustments.\n"
+                "### Implementation\n"
+                "Administrators implement all accepted proposals. If the proposal requires the Owner or Supporting Director specifically, the relevant tag is used.\n"
+                "# Proposal Contested\n"
+                "A proposal is Contested when the Staff Committee determines that the advisory vote and discussion do not produce a clear or actionable outcome.\n"
+                "## Contested Conditions\n"
+                "The Staff Committee may place a proposal into Contested if:\n"
+                "- Advisory votes are closely divided with no clear signal.\n"
+                "- Staff discussion raises significant unresolved disagreements.\n"
+                "- The committee requires additional input before issuing a final decision.\n"
+                "### Contested Period\n"
+                "A **3-day discussion period** begins.\n"
+                "- Staff may revise their advisory votes.\n"
+                "- Staff may provide additional reasoning or objections.\n"
+                "- If the committee reaches a decision during this period, the proposal resolves immediately.\n"
+                "### After 3 Days\n"
+                "If the committee still cannot reach a decision:\n"
+                "- The **Owner** issues a final deciding determination.\n"
+                "- The Owner's decision determines Accepted or Denied.\n"
+                "The Owner may not override a clear Staff Committee decision at any time.\n"
+                "# Proposal Denied\n"
+                "A proposal is Denied when the Staff Committee issues a Deny decision after reviewing the advisory poll and associated discussion.\n"
+                "## Denial\n"
+                "The Staff Committee may Deny a proposal if:\n"
+                "- The advisory vote reflects insufficient staff support.\n"
+                "- The proposand is technically infeasible or insufficiently specified.\n"
+                "- Operational, policy, or structural concerns cannot be resolved.\n"
+                "# Proposal Standstill\n"
+                "The **Standstill** status is used only for rare, special circumstances. This status is not triggered automatically and must be entered manually by the Staff Committee.\n"
+                "## Standstill Conditions\n"
+                "A proposal may enter Standstill if:\n"
+                "- Motion and votes conflict severely.\n"
+                "- Staff statements contradict each other.\n"
+                "- The proposal becomes halted for administrative, technical, or logistical reasons.\n"
+                "- The situation is too mixed to evaluate.\n"
+                "- The Staff Committee explicitly determines that normal evaluation cannot proceed.\n"
+                "A proposal must exit Standstill before any final status (Accepted, Contested, Denied) is applied."
             ),
         ),
     )
@@ -351,7 +340,8 @@ class StaffProposalComponents3(LayoutView):
 class StaffProposalComponents4(LayoutView):
     container : Container[LayoutView] = Container(
         TextDisplay(
-            content = cleandoc("""
+            content = cleandoc(
+                """
                 # Non-Status Tags\n
                 ## NEEDS REVISION\n
                 Used when a proposal receives positive motion, but Administrator(s) state implementation is not possible in its current form, or, when Directors veto a proposal and the original poster chooses to rewrite.\n

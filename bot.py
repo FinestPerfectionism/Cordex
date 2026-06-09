@@ -1,62 +1,91 @@
+import asyncio
 import logging
-from typing import Any
+from pathlib import Path
+from typing import TypeAlias
 
+import aiosqlite as asq
 import discord
+from discord import CustomActivity, Intents
 from discord.ext import commands
 from typing_extensions import override
 
-from core.cases import CasesManager
+from core.cog_loader import discover_cogs
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Bot Management
+# Bot & Client Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class UtilityBot(commands.Bot):
-    cases_manager : CasesManager
-    mod_data      : dict[str, Any]
-    notes_manager : Any
+log : logging.Logger = logging.getLogger("Cordex")
 
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Cordex Class
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class Cordex(commands.Bot):
     def __init__(self) -> None:
-        intents : discord.Intents = discord.Intents.default()
-        intents.guilds            = True
-        intents.members           = True
-        intents.message_content   = True
+        intents : Intents       = Intents.default()
+        intents.guilds          = True
+        intents.members         = True
+        intents.message_content = True
 
         super().__init__(
-            command_prefix   = ".",
+            command_prefix   = commands.when_mentioned_or("."),
             intents          = intents,
             case_insensitive = True,
+            help_command     = None,
+            activity         = CustomActivity(name = "Utility Bot 2.0!"),
         )
-        self.cases_manager : CasesManager = CasesManager(self)
-        self.mod_data      : dict[str, Any] = {}
-        self.notes_manager : Any = None
+        self.cases_db   : asq.Connection
+        self.start_time : float
 
     @override
     async def setup_hook(self) -> None:
-        from core.cog_loader import discover_cogs
 
-        _ = self.remove_command("help")
+        # ⸻ Aiosqlite
 
-        log: logging.Logger = logging.getLogger("Utility Bot")
+        self.cases_db = await asq.connect("data/cases.db")
+        def read_schema() -> str:
+            with Path("schemas/cases.sql").open() as file:
+                return file.read()
 
-        priority_load : list[str] = [
-            "events.systems.antinuke",
-            "events.systems.verification",
-            "core.startup",
-        ]
+        schema_sql = await asyncio.to_thread(read_schema)
+        _ = await self.cases_db.executescript(schema_sql)
+        await self.cases_db.commit()
 
-        cogs : list[str] = discover_cogs(
+        # ⸻ Cogs
+
+        priority_load : list[str] = ["core.startup"]
+        cogs          : list[str] = discover_cogs(
             "commands",
             "events",
             "core",
             priority = priority_load,
         )
 
-        for cog in cogs:
+        for cog  in cogs:
             try:
                 await self.load_extension(cog)
-                log.info("Loaded cog: %s", cog)
+                log.info("Loaded cog %s", cog)
             except Exception:
-                log.exception("Failed to load cog: %s", cog)
+                log.exception("Failed to load cog %s", cog)
 
-bot : UtilityBot = UtilityBot()
+    @override
+    async def close(self) -> None:
+        if hasattr(self, "cases_db"):
+            await self.cases_db.close()
+            log.info("Cases database connection closed successfully.")
+
+        await super().close()
+
+bot  = Cordex()
+tree = bot.tree
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Context and Interaction Classes
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+Context     : TypeAlias = commands.Context[Cordex]
+Interaction : TypeAlias = discord.Interaction[Cordex] | discord.Interaction
+# We union with discord.Interaction since numerous discord.ui Callbacks do not like discord.Interaction as a generic.
+
+CtxOrInteraction = Context | Interaction

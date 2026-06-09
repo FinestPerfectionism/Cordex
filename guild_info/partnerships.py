@@ -1,25 +1,37 @@
+# ruff: noqa: E501
+
 from __future__ import annotations
 
-import logging
 import time
-from typing import Any
+from typing import TypeAlias
 
 import discord
-from discord import SeparatorSpacing
-from discord.ui import Container, LayoutView, Section, Separator, TextDisplay, Thumbnail
+from discord.mentions import AllowedMentions
+from discord.ui import (
+    Container,
+    LayoutView,
+    Section,
+    TextDisplay,
+    Thumbnail,
+)
 
 from constants import PARTNERSHIP_REQUIREMENTS_CHANNEL_ID, TICKET_CHANNEL_ID
-from core.state.partnership_state import (
+from core.state import (
     IMAGE_DIR,
     PartnershipData,
     PartnershipEntry,
     save_partnership_data,
 )
+from core.utilities import (
+    HiddenSmallSeparator,
+    VisibleLargeSeparator,
+    VisibleSmallSeparator,
+)
 
-log = logging.getLogger("Utility Bot")
+CHARACTERS_PER_GROUP_LIMIT = 4000
 
-_CHARS_PER_GROUP_LIMIT: int = 3200
-_NO_PINGS = discord.AllowedMentions(users = False)
+EntryList       : TypeAlias = list[PartnershipEntry]
+EntryNestedList : TypeAlias = list[list[PartnershipEntry]]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership Views
@@ -28,101 +40,83 @@ _NO_PINGS = discord.AllowedMentions(users = False)
 class PartnershipComponents1(LayoutView):
     def __init__(self) -> None:
         super().__init__(timeout = None)
-        _ = self.add_item(self.container)
-
-    container : Container[LayoutView] = Container(
-        TextDisplay(
-            content =
-                "# Welcome to our Partnerships!\n"
-                f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}>"
-                f" then open a __director__ ticket in <#{TICKET_CHANNEL_ID}>.\n"
-                "-# **Note:** It is within Directors' discretion as to whether we choose to partner with your server. "
-                "Directors are not required to provide a reason when denying a partnership.",
-        ),
-    )
+        _ = self.add_item(
+            Container[LayoutView](
+                TextDisplay[LayoutView](
+                    content = (
+                        "# Welcome to our Partnerships!\n"
+                        f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}>"
+                        f" then open a __director__ ticket in <#{TICKET_CHANNEL_ID}>.\n"
+                        "-# **Note:** It is within Directors' discretion as to whether we choose to partner with your server. "
+                        "Directors are not required to provide a reason when denying a partnership."
+                    ),
+                ),
+            ),
+        )
 
 class PartnershipComponents2(LayoutView):
-    def __init__(
-        self,
-        partnerships : list[PartnershipEntry],
-        timestamp    : int,
-    ) -> None:
+    def __init__(self, partnerships : EntryList, timestamp : int) -> None:
         super().__init__(timeout = None)
 
-        children : list[Any] = [
+        children : list[TextDisplay[LayoutView] | Section[LayoutView] | VisibleLargeSeparator | VisibleSmallSeparator | HiddenSmallSeparator] = [
             TextDisplay(
-                content =
+                content = (
                     "# Partnerships\n"
                     f"Partnerships last updated <t:{timestamp}:D>.\n"
                     "-# All partnerships below are subject to removal or update at any time based on Directorate decision. Partnerships are not influenced by the public or other staff.\n"
-                    "-# Partnerships assembled by the Directorate team.",
+                    "-# Partnerships assembled by the Directorate team."
+                ),
             ),
-            Separator(visible = False, spacing = SeparatorSpacing.small),
-            Separator(visible = True,  spacing = SeparatorSpacing.small),
-            Separator(visible = False, spacing = SeparatorSpacing.small),
+            HiddenSmallSeparator(),
+            VisibleSmallSeparator(),
+            HiddenSmallSeparator(),
         ]
 
         if not partnerships:
-            children.append(
-                TextDisplay(
-                    content =
-                        "Looks like this server has no partnerships! :[",
-                ),
-            )
+            children.append(TextDisplay("Looks like this server has no partnerships! :["))
         else:
             for i, p in enumerate(partnerships):
                 children.append(
                     Section(
                         TextDisplay[LayoutView](
-                            content =
+                            content = (
                                 f"# {p['server_name']}\n"
                                 "**Description:**\n"
                                 f"> {p['server_description']}\n"
                                 "**Server Owner**\n"
                                 f"> <@{p['server_owner_id']}>\n"
-                                f"[Join Here!]({p['server_link']})",
+                                f"[Join Here!]({p['server_link']})"
+                            ),
                         ),
-                        accessory = Thumbnail(
-                            media = f"attachment://{p['image_filename']}",
-                        ),
+                        accessory = Thumbnail(media = f"attachment://{p['image_filename']}"),
                     ),
                 )
                 if i < len(partnerships) - 1:
-                    children.append(
-                        Separator(
-                            visible = True,
-                            spacing = SeparatorSpacing.large,
-                        ),
-                    )
+                    children.append(VisibleLargeSeparator())
 
-        self.container = Container(*children)
+        self.container : Container[LayoutView] = Container(*children)
         _ = self.add_item(self.container)
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Helpers
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-def _estimate_chars(p : PartnershipEntry) -> int:
+def estimate_chars(p : PartnershipEntry) -> int:
     return len(
-        f"# {p['server_name']}\n"
-        "**Description:**\n"
-        f"> {p['server_description']}\n"
-        "**Server Owner**\n"
-        f"> <@{p['server_owner_id']}>\n"
-        f"[Join Here!]({p['server_link']})",
+
+            f"# {p['server_name']}\n"
+            "**Description:**\n"
+            f"> {p['server_description']}\n"
+            "**Server Owner**\n"
+            f"> <@{p['server_owner_id']}>\n"
+            f"[Join Here!]({p['server_link']})",
+
     )
 
-
-def split_partnerships(
-    partnerships : list[PartnershipEntry],
-) -> list[list[PartnershipEntry]]:
-    groups        : list[list[PartnershipEntry]] = []
-    current       : list[PartnershipEntry]       = []
-    current_chars : int                          = 0
+def split_partnerships(partnerships : EntryList) -> EntryNestedList:
+    groups        : EntryNestedList = []
+    current       : EntryList       = []
+    current_chars : int             = 0
 
     for p in partnerships:
-        p_chars = _estimate_chars(p)
-        if current and current_chars + p_chars > _CHARS_PER_GROUP_LIMIT:
+        p_chars = estimate_chars(p)
+        if current and current_chars + p_chars > CHARACTERS_PER_GROUP_LIMIT:
             groups.append(current)
             current       = [p]
             current_chars = p_chars
@@ -135,11 +129,7 @@ def split_partnerships(
 
     return groups
 
-
-async def rebuild_partnership_layout(
-    channel : discord.TextChannel,
-    data    : PartnershipData,
-) -> None:
+async def rebuild_partnership_layout(channel : discord.TextChannel, data : PartnershipData) -> None:
     for msg_id in data["message_ids"]:
         try:
             msg = await channel.fetch_message(msg_id)
@@ -164,7 +154,7 @@ async def rebuild_partnership_layout(
     if not partnerships:
         empty_msg = await channel.send(
             view             = PartnershipComponents2([], timestamp),
-            allowed_mentions =_NO_PINGS,
+            allowed_mentions = AllowedMentions.none(),
         )
         new_message_ids.append(empty_msg.id)
     else:
@@ -179,7 +169,7 @@ async def rebuild_partnership_layout(
             msg = await channel.send(
                 view             = PartnershipComponents2(group, timestamp),
                 files            = files,
-                allowed_mentions = _NO_PINGS,
+                allowed_mentions = AllowedMentions.none(),
             )
             new_message_ids.append(msg.id)
 

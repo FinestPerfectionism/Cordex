@@ -1,41 +1,28 @@
+import platform
+import time
+
 import discord
-from discord import SeparatorSpacing, app_commands
+import psutil
+from discord import app_commands
 from discord.ext import commands
-from discord.ui import LayoutView, Separator, TextDisplay
 
-import core.responses as cr
-from constants import BOT_OWNER_ID, HOLY_FATHER_ID
+from bot import Context, Cordex, Interaction
+from constants import (
+    ACCEPTED_EMOJI,
+    BOT_OWNER_ID,
+    CONTESTED_EMOJI,
+    DENIED_EMOJI,
+    HOLY_FATHER_ID,
+)
 from core.responses import send_custom_message
-
-
-class Ping(LayoutView):
-    def __init__(self, ping : int) -> None:
-        super().__init__()
-
-        _ = self.add_item(
-            TextDisplay(content = "# I HAVE BEEN AWAKENEDDDD."),
-        )
-        _ = self.add_item(
-            Separator(
-                visible = True,
-                spacing = SeparatorSpacing.small,
-            ),
-        )
-        _ = self.add_item(
-            TextDisplay(
-                content = f"*cough cough* My ping is {ping} milliseconds.",
-            ),
-        )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Miscellaneous Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class MiscCommands(commands.Cog):
-    bot : commands.Bot
-
-    def __init__(self, bot : commands.Bot) -> None:
-        self.bot = bot
+    def __init__(self, bot : "Cordex") -> None:
+        self.bot : "Cordex" = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /femboy Command
@@ -45,36 +32,26 @@ class MiscCommands(commands.Cog):
         name        = "femboy",
         description = "Such a good little utility kitten.",
     )
-    async def femboy(self, interaction : discord.Interaction) -> None:
-        _ = await interaction.response.defer()
-        await interaction.followup.send(
-            "i-i'm such a submissive wittle kitty UwU. *snuggles* I hewp cwose proposals... naa~~",
-        )
+    async def cmd_femboy(self, interaction : Interaction) -> None:
+        _ = await interaction.response.send_message("i-i'm such a submissive wittle kitty UwU. *snuggles* I hewp cwose proposals... naa~~")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .super_secret_command Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.command(
-        name = "super_secret_command",
-    )
-    async def super_secret_command(self, ctx : commands.Context[commands.Bot]) -> None:
+    @commands.command(name = "super_secret_command")
+    async def cmd_super_secret_command(self, ctx : Context) -> None:
         author_id = ctx.author.id
 
         if author_id == BOT_OWNER_ID:
-            _ = await ctx.send(
-                "This is a super super secret command that is used by people that will use it super super secretly.",
-            )
+            _ = await ctx.send("This is a super super secret command that is used by people that will use it super super secretly.")
             return
 
         if author_id == HOLY_FATHER_ID:
-            _ = await ctx.send(
-                "Hello daddy! <:puppy3:1464256700344303771> This is a super super secret command that is used by people that will use it super super secretly.",
-            )
+            _ = await ctx.send("Hello daddy! <:puppy3:1464256700344303771> This is a super super secret command that is used by people that will use it super super secretly.")
             return
 
-        _ = await ctx.send(
-            "Hmm… I don't think you're super super secret enough to use this super super secret command.",
+        _ = await ctx.send("Hmm… I don't think you're super super secret enough to use this super super secret command.",
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -85,22 +62,23 @@ class MiscCommands(commands.Cog):
         name        = "roulette",
         description = "Have fun...",
     )
-    async def roulette(self, interaction : discord.Interaction) -> None:
+    async def cmd_roulette(self, interaction : Interaction) -> None:
         guild  = interaction.guild
         member = interaction.user
 
         if guild is None:
-            await send_custom_message(
+            _ = await send_custom_message(
                 interaction,
-                msg_type = cr.warning,
+                msg_type = "warning",
                 title    = "run command",
                 subtitle = "This command can only be used in a server.",
                 footer   = "Bad environment",
             )
             return
 
-        cheese = 1167207694424350740
-        if interaction.user.id == cheese:
+        # We don't want the cheese blud running the command.
+        cheese_blud = 1167207694424350740
+        if interaction.user.id == cheese_blud:
             _ = await interaction.response.send_message(
                 "My developer is so fucking tired of unbanning you and adding your roles back that he has decided that you can never touch this command again. Dumbass. <:laugh5:1481288430150484111>",
             )
@@ -114,32 +92,64 @@ class MiscCommands(commands.Cog):
 
         if chamber == 1:
             try:
-                await guild.ban(
-                    member,
-                    reason                 = "Played a stupid game, won a stupid prize.",
-                    delete_message_seconds = 0,
-                )
-                await interaction.followup.send(
-                    "<a:CatShoot:1466460098955313294> *Click,* ***BAM***.",
-                )
+                await interaction.followup.send("<a:CatShoot:1466460098955313294> *Click,* ***BAM***.")
+                await guild.ban(member, reason = "Played a stupid game, won a stupid prize.", delete_message_seconds = 0)
             except discord.Forbidden:
-                await interaction.followup.send(
-                    "*Click,* ***Ba***… wait… the gun's jammed!",
-                )
+                await interaction.followup.send("*Click,* ***Ba***… wait… the gun's jammed!")
         else:
-            await interaction.followup.send(
-                "*Click.* You live.",
-            )
+            await interaction.followup.send("*Click.* You live.")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # .ping Command
+    # .info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.command(name = "bot-ping")
-    async def ping(self, ctx : commands.Context[commands.Bot]) -> None:
-        latency_ms = round(self.bot.latency * 1000)
-        _ = await ctx.send(view = Ping(latency_ms))
+    @commands.command(name = "info")
+    async def cmd_info(self, ctx : Context) -> None:
+        ping = round(self.bot.latency * 1000)
 
-async def setup(bot : commands.Bot) -> None:
+        good_ping = 100
+        okay_ping = 200
+        if ping < good_ping:
+            emoji = ACCEPTED_EMOJI
+        elif good_ping <= ping <= okay_ping:
+            emoji = CONTESTED_EMOJI
+        else:
+            emoji = DENIED_EMOJI
+
+        start_time : float = getattr(self.bot, "start_time", time.time())
+        uptime_seconds     = int(time.time() - start_time)
+
+        hours,   remainder = divmod(uptime_seconds, 3600)
+        minutes, seconds   = divmod(remainder, 60)
+        days,    hours     = divmod(hours, 24)
+
+        uptime_str = f"{days}d {hours}h {minutes}m {seconds}s"
+
+        total_guilds = len(self.bot.guilds)
+
+        shard_id = ctx.guild.shard_id if ctx.guild else 0
+
+        cpu_usage = float(psutil.cpu_percent())
+        ram_usage = float(psutil.virtual_memory().percent) # type: ignore[implicitAny]
+
+
+        _ = await ctx.send(
+            content = (
+                f"{emoji} # Beep Boop,\n"
+                f"**Ping:** `{ping}ms`\n"
+                f"**Uptime:** `{uptime_str}`\n"
+                f"**Servers:** `{total_guilds}`\n"
+                f"**Shard ID:** `{shard_id}`\n"
+                f"### Performance\n"
+                f"**CPU Usage:** `{cpu_usage}%`\n"
+                f"**RAM Usage:** `{ram_usage}%`\n\n"
+                f"### Environment\n"
+                f"**Library:** `discord.py v{discord.__version__}`\n"
+                f"**Python:** `v{platform.python_version()}`"
+            ),
+        )
+
+
+async def setup(bot : "Cordex") -> None:
     cog = MiscCommands(bot)
     await bot.add_cog(cog)
