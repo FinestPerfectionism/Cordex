@@ -23,11 +23,7 @@ log : logging.Logger = logging.getLogger("Cordex")
 
 class Cordex(commands.Bot):
     def __init__(self) -> None:
-        intents : Intents       = Intents.default()
-        intents.guilds          = True
-        intents.members         = True
-        intents.message_content = True
-
+        intents : Intents = Intents.all()
         super().__init__(
             command_prefix   = commands.when_mentioned_or("."),
             intents          = intents,
@@ -50,7 +46,10 @@ class Cordex(commands.Bot):
 
         schema_sql = await asyncio.to_thread(read_schema)
         _ = await self.cases_db.executescript(schema_sql)
-        await self.cases_db.commit()
+        try:
+            await self.cases_db.commit()
+        except asq.OperationalError:
+            log.exception("Unable to open database file")
 
         # ⸻ Cogs
 
@@ -73,7 +72,7 @@ class Cordex(commands.Bot):
     async def close(self) -> None:
         if hasattr(self, "cases_db"):
             await self.cases_db.close()
-            log.info("Cases database connection closed successfully.")
+            log.info("Cases database connection closed successfully")
 
         await super().close()
 
