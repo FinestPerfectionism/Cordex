@@ -138,5 +138,5 @@ class CogAutoReloading(commands.Cog):
                 pass
 
 async def setup(bot : commands.Bot) -> None:
-    cog = CogAutoReloading(bot, "event", "core", "commands")
+    cog = CogAutoReloading(bot, "events", "core", "commands")
     await bot.add_cog(cog)
