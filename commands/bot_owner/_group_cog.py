@@ -6,6 +6,7 @@ from discord.app_commands import command as app_command
 from discord.ext import commands
 
 from bot import Context, Interaction, log
+from core.exceptions import UnknownError
 from core.permissions import bot_owner_cmd
 
 from ._base import cog_autocomplete, get_cogs
@@ -40,6 +41,11 @@ class BotOwnerCommands(
     @property
     def cogs(self) -> list[str]:
         return get_cogs()
+
+    @commands.command()
+    @bot_owner_cmd()
+    async def testing(self, _ctx : Context):
+        raise UnknownError
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner pull-reload Command

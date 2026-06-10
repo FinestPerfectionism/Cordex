@@ -85,6 +85,5 @@ tree = bot.tree
 
 Context     : TypeAlias = commands.Context[Cordex]
 Interaction : TypeAlias = discord.Interaction[Cordex] | discord.Interaction
-# We union with discord.Interaction since numerous discord.ui Callbacks do not like discord.Interaction as a generic.
 
 CtxOrInteraction = Context | Interaction

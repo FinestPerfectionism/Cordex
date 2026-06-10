@@ -10,11 +10,13 @@ from discord import ui
 from discord.ext import commands
 
 from bot import Context, Interaction, tree
+from core.exceptions import AppBadArgument, AppUnknownError, BadOperation
 from core.utilities import (
     HiddenLargeSeparator,
     HiddenSmallSeparator,
     VisibleLargeSeparator,
     VisibleSmallSeparator,
+    format_values,
 )
 
 if TYPE_CHECKING:
@@ -26,8 +28,15 @@ from constants import (
     ACCEPTED_EMOJI,
     CONTESTED_EMOJI,
     DENIED_EMOJI,
+    STANDSTILL_EMOJI,
+    COLOR_BLURPLE,
+    COLOR_GREEN,
+    COLOR_YELLOW,
+    COLOR_ORANGE,
+    COLOR_RED,
+    COLOR_GREY,
+    COLOR_BLACK,
 )
-from core import exceptions as e
 from core.responses import multi_custom_message, send_custom_message
 from events.messages.on_edit import MessageEditHandler
 
@@ -35,8 +44,25 @@ from events.messages.on_edit import MessageEditHandler
 # .sync Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_misc_sync() -> None:
-    _ = await tree.sync()
+async def run_bo_misc_sync(ctx : Context) -> None:
+    try:
+        _ = await tree.sync()
+        _ = await send_custom_message(
+            ctx,
+            msg_type = "success",
+            title    = "synced app command tree",
+            subtitle = "Successfully globally synced the app command tree.",
+        )
+
+    except discord.DiscordException as e:
+        raise BadOperation(
+            title    = "sync app command tree",
+            subtitle = (
+                "```py\n"
+               f"{e}\n"
+                "```"
+            ),
+        )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
@@ -46,6 +72,7 @@ async def run_bo_misc_eval(bot : "Cordex", ctx : Context, body : str) -> None:
     env : dict[str, object] = {
         "bot"                  : bot,
         "ctx"                  : ctx,
+        "tree"                 : tree,
         "channel"              : ctx.channel,
         "author"               : ctx.author,
         "guild"                : ctx.guild,
@@ -58,10 +85,20 @@ async def run_bo_misc_eval(bot : "Cordex", ctx : Context, body : str) -> None:
         "ACCEPTED_EMOJI"       : ACCEPTED_EMOJI,
         "CONTESTED_EMOJI"      : CONTESTED_EMOJI,
         "DENIED_EMOJI"         : DENIED_EMOJI,
+        "STANDSTILL_EMOJI"     : STANDSTILL_EMOJI,
+
+        "COLOR_BLURPLE"        : COLOR_BLURPLE,
+        "COLOR_GREEN"          : COLOR_GREEN,
+        "COLOR_YELLOW"         : COLOR_YELLOW,
+        "COLOR_ORANGE"         : COLOR_ORANGE,
+        "COLOR_RED"            : COLOR_RED,
+        "COLOR_GREY"           : COLOR_GREY,
+        "COLOR_BLACK"          : COLOR_BLACK,
 
         "discord"              : discord,
         "ui"                   : ui,
 
+        "format_values"        : format_values,
         "send_custom_message"  : send_custom_message,
         "multi_custom_message" : multi_custom_message,
 
@@ -172,7 +209,7 @@ async def run_bo_misc_say(
                 if channel:
                     reply_reference = await channel.fetch_message(int(message_id))
             except (discord.NotFound, ValueError, discord.HTTPException):
-                raise e.AppBadArgument({"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."}) from None
+                raise AppBadArgument({"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."}) from None
 
         if hasattr(channel, "typing"):
             async with channel.typing():
@@ -186,4 +223,4 @@ async def run_bo_misc_say(
         await interaction.followup.send("Sent!", ephemeral = True)
 
     except discord.Forbidden:
-        raise e.AppUnknownError from None
+        raise AppUnknownError from None

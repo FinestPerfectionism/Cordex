@@ -1,2 +1,5 @@
-async def run_mod_primary_ban_add() -> None:
-    ...
+from bot import Interaction
+
+
+async def run_mod_primary_ban_add(interaction : Interaction) -> None:
+    _ = await interaction.response.send_message("You shouldn't be able to see this!")

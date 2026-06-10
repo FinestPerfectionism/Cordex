@@ -104,39 +104,10 @@ GUILD_ID = 1385650154832662688
 # Emoji IDs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-EMOJI_FORUM_ID      = "<:forum:1435423893887127562>"
-EMOJI_FORUM_LOCK_ID = "<:forum_lc:1435423872739442699>"
+EMOJI_FORUM_ID      = "<:forum:1514059505997054244>"
+EMOJI_FORUM_LOCK_ID = "<:forum_lc:1514059599530037329>"
 
-ACCEPTED_EMOJI      = "<:accepted:1433910623586095255>"
-CONTESTED_EMOJI     = "<:contested:1438163284997046283>"
-DENIED_EMOJI        = "<:denied:1433910544032858324>"
-STANDSTILL_EMOJI = "<:standstill:1442307018647142582>"
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Emoji Definitions
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-TAG_STATUS = {
-    "accepted"   : 1433586899296981126,
-    "contested"  : 1434860598793076847,
-    "denied"     : 1433586850337132574,
-    "standstill" : 1444408668542996500,
-}
-
-TAG_ACTION = {
-    "owner_action"     : 1433819235120976023,
-    "sdirector_action" : 1433819201759481978,
-}
-
-TAG_SPECIAL = {
-    "needs_implementation" : 1438525819533263058,
-    "needs_revision"       : 1433587078008012932,
-    "locked"               : 1433819271716147391,
-}
-
-EMOJI_STATUS = {
-    "accepted"   : "<:accepted:1433910623586095255>",
-    "contested"  : "<:contested:1438163284997046283>",
-    "denied"     : "<:denied:1433910544032858324>",
-    "standstill" : "<:standstill:1442307018647142582>",
-}
+ACCEPTED_EMOJI   = "<:accepted:1514059180682514605>"
+CONTESTED_EMOJI  = "<:contested:1514059240967245996>"
+DENIED_EMOJI     = "<:denied:1514059386711048264>"
+STANDSTILL_EMOJI = "<:standstill:1514059459721429042>
