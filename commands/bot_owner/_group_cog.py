@@ -6,7 +6,6 @@ from discord.app_commands import command as app_command
 from discord.ext import commands
 
 from bot import Context, Interaction, log
-from core.exceptions import UnknownError
 from core.permissions import bot_owner_cmd
 
 from ._base import cog_autocomplete, get_cogs
@@ -42,11 +41,6 @@ class BotOwnerCommands(
     def cogs(self) -> list[str]:
         return get_cogs()
 
-    @commands.command()
-    @bot_owner_cmd()
-    async def testing(self, _ctx : Context):
-        raise UnknownError
-
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner pull-reload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -63,33 +57,42 @@ class BotOwnerCommands(
     # /bot-owner reload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(description = "Reload a cog or all cogs.")
+    @app_command(
+        name        = "reload",
+        description = "Reload a cog or all cogs.",
+    )
     @describe(cog = "The cog to reload. Leave empty to reload all cogs.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_reload(self, interaction : Interaction,  cog : str | None) -> None:
+    async def cmd_reload(self, interaction : Interaction, cog : str | None) -> None:
         await run_bo_cogs_reload(self.bot, interaction, cog, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner load Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(description = "Load a cog.")
+    @app_command(
+        name        = "load",
+        description = "Load a cog.",
+    )
     @describe(cog = "The cog to load.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_load(self, interaction : Interaction,  cog : str) -> None:
+    async def cmd_load(self, interaction : Interaction, cog : str) -> None:
         await run_bo_cogs_load(self.bot, interaction, cog, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner unload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(description = "Unload a cog.")
+    @app_command(
+        name        = "unload",
+        description = "Unload a cog.",
+    )
     @describe(cog = "The cog to unload.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_unload(self, interaction : Interaction,  cog : str) -> None:
+    async def cmd_unload(self, interaction : Interaction, cog : str) -> None:
         await run_bo_cogs_unload(self.bot, interaction, cog, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -116,8 +119,8 @@ class BotOwnerCommands(
 
     @commands.command(name = "sync")
     @bot_owner_cmd()
-    async def cmd_sync(self, _ctx : Context) -> None:
-        await run_bo_misc_sync()
+    async def cmd_sync(self, ctx : Context) -> None:
+        await run_bo_misc_sync(ctx)
 
    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command
@@ -132,7 +135,10 @@ class BotOwnerCommands(
     # /bot-owner say Command
    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(description = "Make the bot say something.")
+    @app_command(
+        name        = "say",
+        description = "Make the bot say something.",
+    )
     @describe(
         message        = "The text to send.",
         target_channel = "The channel to send the message in.",

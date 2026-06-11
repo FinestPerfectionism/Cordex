@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from bot import Interaction, log
-from core import exceptions
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import send_custom_message
 
 if TYPE_CHECKING:
@@ -18,13 +18,16 @@ async def run_bo_cogs_unload(
     cogs        : list[str],
 ) -> None:
     if cog == "commands.bot_owner._group_cog":
-        raise exceptions.AppBadArgument({"cog": "You may not explicitly unload the bot-owner cog."})
+        await send_bad_argument(interaction, subtitle = {"cog": "You may not explicitly unload the bot-owner cog."})
+        return
 
     if cog not in cogs:
-        raise exceptions.AppBadArgument({"cog" : f"Cog `{cog}` not found."})
+        await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` not found."})
+        return
 
     if cog not in bot.extensions:
-        raise exceptions.AppBadArgument({"cog" : f"Cog `{cog}` is not currently loaded."})
+        await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` is not currently loaded."})
+        return
 
     try:
         await bot.unload_extension(cog)
@@ -37,7 +40,8 @@ async def run_bo_cogs_unload(
         log.info("Unloaded cog %s", cog)
     except Exception as e:
         log.exception("Failed to unload cog %s", cog)
-        raise exceptions.AppBadOperation(
+        await send_bad_operation(
+            interaction,
             title    = "unload cog",
             subtitle = (
                f"Failed to unload cog `{cog}`:\n"
@@ -45,4 +49,5 @@ async def run_bo_cogs_unload(
                f"{e}"
                 "```"
             ),
-        ) from None
+        )
+        return

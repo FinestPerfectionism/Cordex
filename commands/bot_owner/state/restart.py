@@ -9,7 +9,7 @@ import discord
 
 from bot import Context
 from constants import DENIED_EMOJI
-from core.exceptions import BadOperation
+from core.exceptions import send_bad_operation
 from core.responses import send_custom_message
 
 if TYPE_CHECKING:
@@ -26,10 +26,12 @@ async def run_bo_state_restart(
     log            : logging.Logger,
 ) -> None:
     if restarting_ref[0]:
-        raise BadOperation(
+        await send_bad_operation(
+            ctx,
             title    = "restart bot",
             subtitle = "A restart is already in progress.",
         )
+        return
 
     restarting_ref[0] = True
     

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import time
-from typing import TypeAlias
 
 import discord
 from discord.mentions import AllowedMentions
@@ -30,8 +29,8 @@ from core.utilities import (
 
 CHARACTERS_PER_GROUP_LIMIT = 4000
 
-EntryList       : TypeAlias = list[PartnershipEntry]
-EntryNestedList : TypeAlias = list[list[PartnershipEntry]]
+type EntryList       = list[PartnershipEntry]
+type EntryNestedList = list[list[PartnershipEntry]]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership Views
@@ -77,8 +76,8 @@ class PartnershipComponents2(LayoutView):
         else:
             for i, p in enumerate(partnerships):
                 children.append(
-                    Section(
-                        TextDisplay[LayoutView](
+                    Section[LayoutView](
+                        TextDisplay(
                             content = (
                                 f"# {p['server_name']}\n"
                                 "**Description:**\n"
@@ -99,14 +98,14 @@ class PartnershipComponents2(LayoutView):
 
 def estimate_chars(p : PartnershipEntry) -> int:
     return len(
-
+        (
             f"# {p['server_name']}\n"
             "**Description:**\n"
             f"> {p['server_description']}\n"
             "**Server Owner**\n"
             f"> <@{p['server_owner_id']}>\n"
-            f"[Join Here!]({p['server_link']})",
-
+            f"[Join Here!]({p['server_link']})"
+        ),
     )
 
 def split_partnerships(partnerships : EntryList) -> EntryNestedList:

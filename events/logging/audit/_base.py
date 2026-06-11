@@ -2,7 +2,7 @@ import asyncio
 import logging as log
 from asyncio import Queue
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
 import discord
 from discord import (
@@ -107,7 +107,7 @@ class AuditCog(commands.Cog):
 
         return "\n".join(perms) if perms else "None"
 
-    ChannelOverwrites : TypeAlias = dict[Role | Member | Object, PermissionOverwrite]
+    type ChannelOverwrites = dict[Role | Member | Object, PermissionOverwrite]
     def get_overwrite_changes(self, before_overwrites : ChannelOverwrites, after_overwrites : ChannelOverwrites) -> list[str]:
         changes : list[str] = []
         all_targets         = set(before_overwrites.keys()) | set(after_overwrites.keys())
@@ -120,36 +120,37 @@ class AuditCog(commands.Cog):
             target_name = getattr(target, "name", str(target))
             target_id   = target.id if hasattr(target, "id") else "Unknown"
 
-            if before_ow is None and after_ow is not None:
-                perms : list[str] = []
-                for perm, value in after_ow:
-                    if value is not None:
-                        status = "Allow" if value else "Deny"
-                        perms.append(f"{perm.replace('_', ' ').title()}: {status}")
-                if perms:
-                    changes.append(
-                        f"**Added {target_type}** `{target_name}`\n`{target_id}`\n" + "\n".join(perms),
-                    )
+            match (before_ow, after_ow):
+                case (None, after_ow) if after_ow is not None:
+                    perms : list[str] = []
+                    for perm, value in after_ow:
+                        if value is not None:
+                            status = "Allow" if value else "Deny"
+                            perms.append(f"{perm.replace('_', ' ').title()}: {status}")
+                    if perms:
+                        changes.append(
+                            f"**Added {target_type}** `{target_name}`\n`{target_id}`\n" + "\n".join(perms),
+                        )
 
-            elif after_ow is None:
-                changes.append(f"**Removed {target_type}** `{target_name}`\n`{target_id}`")
+                case (_, None):
+                    changes.append(f"**Removed {target_type}** `{target_name}`\n`{target_id}`")
 
-            else:
-                before_perms : dict[str, bool | None] = dict(before_ow) if before_ow is not None else {}
-                after_perms  : dict[str, bool | None] = dict(after_ow)
+                case _:
+                    before_perms : dict[str, bool | None] = dict(before_ow) if before_ow is not None else {}
+                    after_perms  : dict[str, bool | None] = dict(after_ow)
 
-                modified_perms : list[str] = []
-                for perm in set(before_perms.keys()) | set(after_perms.keys()):
-                    before_val = before_perms.get(perm)
-                    after_val  = after_perms.get(perm)
+                    modified_perms : list[str] = []
+                    for perm in set(before_perms.keys()) | set(after_perms.keys()):
+                        before_val = before_perms.get(perm)
+                        after_val  = after_perms.get(perm)
 
-                    if before_val != after_val:
-                        perm_name     = perm.replace("_", " ").title()
-                        before_status = "Allow" if before_val else ("Deny" if before_val is False else "Neutral")
-                        after_status  = "Allow" if after_val else ("Deny" if after_val is False else "Neutral")
-                        modified_perms.append(f"{perm_name}: {before_status} → {after_status}")
+                        if before_val != after_val:
+                            perm_name     = perm.replace("_", " ").title()
+                            before_status = "Allow" if before_val else ("Deny" if before_val is False else "Neutral")
+                            after_status  = "Allow" if after_val else ("Deny" if after_val is False else "Neutral")
+                            modified_perms.append(f"{perm_name}: {before_status} → {after_status}")
 
-                if modified_perms:
-                    changes.append(f"**Modified {target_type}** `{target_name}`\n`{target_id}`\n" + "\n".join(modified_perms))
+                    if modified_perms:
+                        changes.append(f"**Modified {target_type}** `{target_name}`\n`{target_id}`\n" + "\n".join(modified_perms))
 
         return changes

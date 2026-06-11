@@ -1,6 +1,5 @@
 import re
 from collections.abc import Sequence
-from typing import TypeAlias
 
 from discord import (
     AllowedMentions,
@@ -29,19 +28,20 @@ from typing_extensions import override
 
 from bot import Interaction
 from constants import ACCEPTED_EMOJI
-from core.exceptions import AppBadArgument, AppBadOperation
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import send_custom_message
 from core.utilities import (
     VisibleLargeSeparator,
     blurple,
+    check_role_hierarchy,
     format_values,
     green,
     grey,
     red,
 )
 
-StateEntry : TypeAlias = dict[str, str | bool | None]
-StateMap   : TypeAlias = dict[int, StateEntry]
+type StateEntry = dict[str, str | bool | None]
+type StateMap   = dict[int, StateEntry]
 
 def build_member_label(member : Member, state : StateEntry | None) -> str:
     if not state:
@@ -97,7 +97,8 @@ class ActionButton(Button[LayoutView]):
         try:
             _ = await interaction.response.send_modal(ReasonModal(self.target, self.editor))
         except Exception:
-            raise AppBadOperation(title = "open modal") from None
+            await send_bad_operation(interaction, title = "open modal")
+            raise
 
 class ReasonModal(Modal):
     def __init__(self, target : Member | None, editor : "EditorView") -> None:
@@ -217,7 +218,8 @@ class EditorView(LayoutView):
                         ),
                     )
                 except Exception:
-                    raise AppBadOperation(title = "compile window") from None
+                    await send_bad_operation(interaction, title = "compile window")
+                    raise
                 return
 
             try:
@@ -255,7 +257,8 @@ class EditorView(LayoutView):
                 _ = await interaction.response.edit_message(view = FinalizedView())
 
             except Exception:
-                raise AppBadOperation(title = "compile window") from None
+                await send_bad_operation(interaction, title = "compile window")
+                raise
 
         execute_button : Button[LayoutView] = Button(style = red, label = "Execute")
         execute_button.callback             = handle_execute
@@ -276,7 +279,8 @@ class EditorView(LayoutView):
                 allowed_mentions = AllowedMentions.none(),
             )
         except Exception:
-            raise AppBadOperation(title = "compile window") from None
+            await send_bad_operation(interaction, title = "compile window")
+            raise
 
 class MemberSelectView(View):
     def __init__(self) -> None:
@@ -294,19 +298,24 @@ class MemberSelectView(View):
             user.mention for user in chosen
             if isinstance(user, Member)
             and isinstance(interaction.user, Member)
-            and user.top_role >= interaction.user.top_role
+            and check_role_hierarchy(interaction.user, user, ">=")
         ]
 
         if ineligible:
             word_user = "user" if len(ineligible) == 1 else "users"
             word_is   = "is"   if len(ineligible) == 1 else "are"
 
-            raise AppBadArgument({
-                "chosen" : f"The {word_user} {format_values(ineligible)} {word_is} higher in the hierarchy than you."
-            })
+            await send_bad_argument(
+                interaction,
+                subtitle = {
+                    "chosen" : f"The {word_user} {format_values(ineligible)} {word_is} higher in the hierarchy than you."
+                }
+            )
+            return
 
         members = [user for user in select.values if isinstance(user, Member)]
         try:
             _ = await interaction.response.edit_message(view = EditorView(members = members))
         except Exception:
-            raise AppBadOperation(title = "compile window") from None
+            await send_bad_operation(interaction, title = "compile window")
+            raise

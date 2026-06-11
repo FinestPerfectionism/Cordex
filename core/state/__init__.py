@@ -10,6 +10,6 @@ __all__ = [
     "IMAGE_DIR",
     "PartnershipData",
     "PartnershipEntry",
-    "save_partnership_data",
     "load_partnership_data",
+    "save_partnership_data",
 ]

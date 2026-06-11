@@ -1,22 +1,15 @@
 import contextlib
-from typing import TYPE_CHECKING
 
 import discord
 
-from bot import Context
+from bot import Cordex, Context
 from core.responses import send_custom_message
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .shutdown Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_state_shutdown(
-    bot : "Cordex",
-    ctx : Context,
-) -> None:
+async def run_bo_state_shutdown(bot : "Cordex", ctx : Context) -> None:
     with contextlib.suppress(discord.HTTPException, discord.Forbidden):
         await ctx.message.delete()
 

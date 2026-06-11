@@ -1,11 +1,10 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import TypeAlias
 
 import aiosqlite as asq
 import discord
-from discord import CustomActivity, Intents
+from discord import CustomActivity, Intents, Status
 from discord.ext import commands
 from typing_extensions import override
 
@@ -29,6 +28,7 @@ class Cordex(commands.Bot):
             intents          = intents,
             case_insensitive = True,
             help_command     = None,
+            status           = Status.online,
             activity         = CustomActivity(name = "Utility Bot 2.0!"),
         )
         self.cases_db   : asq.Connection
@@ -83,7 +83,7 @@ tree = bot.tree
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-Context     : TypeAlias = commands.Context[Cordex]
-Interaction : TypeAlias = discord.Interaction[Cordex] | discord.Interaction
+type Context     = commands.Context[Cordex]
+type Interaction = discord.Interaction[Cordex] | discord.Interaction
 
 CtxOrInteraction = Context | Interaction

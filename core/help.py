@@ -6,7 +6,6 @@ from typing import (
     TYPE_CHECKING,
     ParamSpec,
     Protocol,
-    TypeVar,
     cast,
     runtime_checkable,
 )
@@ -48,6 +47,8 @@ if TYPE_CHECKING:
 # Help Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+type AsyncFunc[**P, T_co] = Callable[P, Coroutine[None, None, T_co]]
+
 @runtime_checkable
 class _AppCommand(Protocol):
     name           : str
@@ -55,8 +56,7 @@ class _AppCommand(Protocol):
     callback       : object
     commands       : list[object]
 
-P    = ParamSpec("P")
-T_co = TypeVar("T_co", covariant = True)
+P = ParamSpec("P")
 
 class AccessNode:
     pass
@@ -170,10 +170,7 @@ def get_access_data(ctx_or_interaction : CtxOrInteraction) -> AccessData | None:
 
     return None
 
-def check_argument_access(
-    ctx_or_interaction : CtxOrInteraction,
-    argument           : str,
-) -> None:
+async def check_argument_access(ctx_or_interaction : CtxOrInteraction, argument : str) -> None:
     data = get_access_data(ctx_or_interaction)
     if data is None:
         return
@@ -185,13 +182,15 @@ def check_argument_access(
     member = resolve_member(ctx_or_interaction)
     if member is None:
         if isinstance(ctx_or_interaction, discord.Interaction):
-            raise e.AppBadPermissionsArgument(argument)
-        raise e.BadPermissionsArgument(argument)
+            await e.send_bad_permissions_argument(ctx_or_interaction, argument)
+        await e.send_bad_permissions_argument(ctx_or_interaction, argument)
+        return
 
     if not evaluate_access(node, member):
         if isinstance(ctx_or_interaction, discord.Interaction):
-            raise e.AppBadPermissionsArgument(argument)
-        raise e.BadPermissionsArgument(argument)
+            await e.send_bad_permissions_argument(ctx_or_interaction, argument)
+        await e.send_bad_permissions_argument(ctx_or_interaction, argument)
+        return
 
 class ArgType(Enum):
     Integer       = "Integer"
@@ -246,7 +245,7 @@ class CommandHelpData:
     aliases       : list[str]                = field(default_factory = list)
 
 @runtime_checkable
-class HelpCallback(Protocol[P, T_co]):
+class HelpCallback[**P, T_co](Protocol):
     __help_data__ : CommandHelpData
     def __call__(self, *args : P.args, **kwargs : P.kwargs) -> Coroutine[None, None, T_co]:
         ...
@@ -271,7 +270,7 @@ def merge_access_into_help(func : object, data : CommandHelpData) -> None:
             if arg_info.access_node is None:
                 arg_info.access_node = node
 
-def help_description(
+def help_description[**P, T_co](
     desc          : str,
     *,
     command_name  : str                       | None = None,
@@ -283,45 +282,14 @@ def help_description(
     arguments     : dict[str, ArgumentInfo]   | None = None,
     aliases       : list[str]                 | None = None,
 ) -> Callable[
-    [Callable[
-        P,
-        Coroutine[
-            None,
-            None,
-            T_co,
-        ],
-    ],
-    ],
-    Callable[
-        P,
-        Coroutine[
-            None,
-            None,
-            T_co,
-        ],
-    ],
+    [Callable[P, Coroutine[None, None, T_co]]],
+    Callable[P, Coroutine[None, None, T_co]],
 ]:
     _channel_rules = channel_rules or []
     _arguments     = arguments     or {}
     _aliases       = aliases       or []
 
-    def decorator(
-        func : Callable[
-            P,
-            Coroutine[
-                None,
-                None,
-                T_co,
-            ],
-        ],
-    ) -> Callable[
-        P,
-        Coroutine[
-            None,
-            None,
-            T_co,
-        ],
-    ]:
+    def decorator(func : Callable[P, Coroutine[None, None, T_co]]) -> Callable[P, Coroutine[None, None, T_co]]:
         data = CommandHelpData(
             desc          = desc,
             prefix        = prefix,
@@ -339,15 +307,7 @@ def help_description(
 
     return decorator
 
-def check_access(
-    member : discord.Member,
-    data   : CommandHelpData,
-) -> tuple[
-    str,
-    list[str],
-    list[str],
-    list[int],
-]:
+def check_access(member : discord.Member, data : CommandHelpData) -> tuple[str, list[str], list[str], list[int]]:
     if data.access_node is None:
         accessible_args   : list[str] = []
         inaccessible_args : list[str] = []
@@ -392,7 +352,7 @@ def check_access(
     return "full", accessible_args, inaccessible_args, allowed_channels
 
 async def resolve_command_ref(
-    bot  : Cordex,
+    bot  : "Cordex",
     data : CommandHelpData,
 ) -> str:
     name = data.command_name
@@ -510,11 +470,7 @@ def build_authority_section(data : CommandHelpData, member : discord.Member) -> 
 
     return text, int(colour)
 
-def collect_role_nodes(
-    node    : AccessNode,
-    *,
-    negated : bool = False,
-) -> list[tuple[RoleNode, bool]]:
+def collect_role_nodes(node : AccessNode, *, negated : bool = False) -> list[tuple[RoleNode, bool]]:
     if isinstance(node, RoleNode):
         return [(node, negated)]
     if isinstance(node, NotNode):
@@ -526,11 +482,7 @@ def collect_role_nodes(
         return result
     return []
 
-def collect_user_nodes(
-    node    : AccessNode,
-    *,
-    negated : bool = False,
-) -> list[tuple[UserNode, bool]]:
+def collect_user_nodes(node : AccessNode, *, negated : bool = False) -> list[tuple[UserNode, bool]]:
     if isinstance(node, UserNode):
         return [(node, negated)]
     if isinstance(node, NotNode):
@@ -722,18 +674,20 @@ def collect_slash_commands(
             )
 
 async def run_help(
-    bot                : Cordex,
+    bot                : "Cordex",
     ctx_or_interaction : CtxOrInteraction,
     command_name       : str | None,
 ) -> None:
     if isinstance(ctx_or_interaction, commands.Context):
         if not isinstance(ctx_or_interaction.author, discord.Member):
-            raise e.BadEnvironmentDMs
+            await e.send_bad_environment_dms(ctx_or_interaction)
+            return
         member  = ctx_or_interaction.author
         respond = ctx_or_interaction.send
     else:
         if not isinstance(ctx_or_interaction.user, discord.Member):
-            raise e.AppBadEnvironmentDMs
+            await e.send_bad_environment_dms(ctx_or_interaction)
+            return
         member  = ctx_or_interaction.user
         respond = ctx_or_interaction.response.send_message
 
@@ -768,8 +722,9 @@ async def run_help(
 
     if callback is None or not hasattr(callback, "__help_data__"):
         if isinstance(ctx_or_interaction, discord.Interaction):
-            raise e.AppBadArgument({"command-name" : f"Command `{command_name}` not found or has no help data."})
-        raise e.BadArgument({"command-name" : f"Command `{command_name}` not found or has no help data."})
+            await e.send_bad_argument(ctx_or_interaction, subtitle = {"command-name" : f"Command `{command_name}` not found or has no help data."})
+        await e.send_bad_argument(ctx_or_interaction, subtitle = {"command-name" : f"Command `{command_name}` not found or has no help data."})
+        return
 
     data        = cast("HelpedCallable", callback).__help_data__
     command_ref = await resolve_command_ref(bot, data)

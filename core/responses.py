@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import (
     Literal,
-    TypeAlias,
     cast,
     overload,
 )
@@ -21,7 +20,7 @@ from constants import (
 )
 from core.utilities import VisibleSmallSeparator
 
-TextDisplayOrSeparator : TypeAlias = list[TextDisplay[LayoutView] | VisibleSmallSeparator]
+type TextDisplayOrSeparator = list[TextDisplay[LayoutView] | VisibleSmallSeparator]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Response Management

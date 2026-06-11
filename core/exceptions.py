@@ -1,5 +1,6 @@
-from discord import app_commands
-from discord.ext import commands
+from core.responses import send_custom_message
+
+from bot import CtxOrInteraction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management
@@ -9,92 +10,101 @@ from discord.ext import commands
 # Unknown Error Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class UnknownError(commands.CommandError):
-    pass
-
-class AppUnknownError(app_commands.AppCommandError):
-    pass
+async def send_unknown_error(target : CtxOrInteraction) -> None:
+    _ = await send_custom_message(
+        target,
+        msg_type          = "error",
+        title             = "run command",
+        subtitle          = "An unknown exception occurred while running this command.",
+        footer            = "Unknown error",
+        contact_bot_owner = True,
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Operation Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class BadOperation(commands.CommandError):
-    def __init__(
-        self,
-        title    : str,
-        subtitle : str | None = "An exception occured while running this command.",
-    ) -> None:
-        self.title    : str        = title
-        self.subtitle : str | None = subtitle
-        super().__init__()
-
-class AppBadOperation(app_commands.AppCommandError):
-    def __init__(
-        self,
-        title    : str,
-        subtitle : str | None = "An exception occured while running this command.",
-    ) -> None:
-        self.title    : str        = title
-        self.subtitle : str | None = subtitle
-        super().__init__()
+async def send_bad_operation(
+    target   : CtxOrInteraction,
+    *,
+    title    : str,
+    subtitle : str | None = "An exception occured while running this command.",
+) -> None:
+    _ = await send_custom_message(
+        target,
+        msg_type = "error",
+        title    = title,
+        subtitle = subtitle if subtitle else "An exception occurred while running this command.",
+        footer   = "Bad operation",
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class BadArgument(commands.CommandError):
-    def __init__(self, subtitle : dict[str, str]) -> None:
-        self.subtitle : dict[str, str] = subtitle
-        msg = ", ".join(f"{k}: {v}" for k, v in subtitle.items())
-        super().__init__(msg)
-
-class AppBadArgument(app_commands.AppCommandError):
-    def __init__(self, subtitle : dict[str, str]) -> None:
-        self.subtitle : dict[str, str] = subtitle
-        msg = ", ".join(f"{k}: {v}" for k, v in subtitle.items())
-        super().__init__(msg)
+async def send_bad_argument(target : CtxOrInteraction, *, subtitle : dict[str, str]) -> None:
+    _ = await send_custom_message(
+        target,
+        msg_type = "warning",
+        title    = "run command",
+        subtitle = "\n".join(f"`{arg}`: {notice}" for arg, notice in subtitle.items()),
+        footer   = "Bad argument",
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Permissions Command Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class BadPermissionsCommand(commands.CommandError):
-    pass
-
-class AppBadPermissionsCommand(app_commands.AppCommandError):
-    pass
+async def send_bad_permissions_command(target : CtxOrInteraction) -> None:
+    _ = await send_custom_message(
+        target,
+        msg_type = "error",
+        title    = "run command",
+        subtitle = "You are not authorized to run this command.",
+        footer   = "Bad request",
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Permissions Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class BadPermissionsArgument(commands.CommandError):
-    def __init__(self, *args : str) -> None:
-        self.arguments : tuple[str, ...] = args
-        super().__init__(f"Bad argument permissions for: {', '.join(args)}")
-
-class AppBadPermissionsArgument(app_commands.AppCommandError):
-    def __init__(self, *args : str) -> None:
-        self.arguments : tuple[str, ...] = args
-        super().__init__(f"Bad argument permissions for: {', '.join(args)}")
+async def send_bad_permissions_argument(target : CtxOrInteraction, *args : str) -> None:
+    arguments : tuple[str, ...] = args
+    formatted_args = [f"`{arg}`" for arg in arguments]
+    if len(formatted_args) == 1:
+        subtitle = f"You are not authorized to use the {formatted_args[0]} argument."
+    subtitle = f"You are not authorized to use these arguments: {', '.join(formatted_args)}"
+    
+    _ = await send_custom_message(
+        target,
+        msg_type = "error",
+        title    = "run command",
+        subtitle = subtitle,
+        footer   = "Bad request",
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Environment Channel Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class BadEnvironmentChannel(commands.CommandError):
-    pass
-
-class AppBadEnvironmentChannel(app_commands.AppCommandError):
-    pass
+async def send_bad_environment_channel(target : CtxOrInteraction) -> None:
+    _ = await send_custom_message(
+        target,
+        msg_type = "warning",
+        title    = "run command",
+        subtitle = "This command cannot be run in this channel or thread.",
+        footer   = "Bad environment",
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Environment DMs Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class BadEnvironmentDMs(commands.CommandError):
-    pass
-
-class AppBadEnvironmentDMs(app_commands.AppCommandError):
-    pass
+async def send_bad_environment_dms(target : CtxOrInteraction) -> None:
+    _ = await send_custom_message(
+        target,
+        msg_type = "warning",
+        title    = "run command",
+        subtitle = "This command can only be run in a guild.",
+        footer   = "Bad environment",
+    )

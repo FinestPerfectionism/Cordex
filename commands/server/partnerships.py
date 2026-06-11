@@ -11,7 +11,7 @@ from discord.ext import commands
 
 from bot import Cordex, Interaction, log
 from constants import PARTNERSHIPS_CHANNEL_ID
-from core.exceptions import AppBadArgument, AppBadOperation
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.permissions import director_cmd
 from core.responses import send_custom_message
 from core.state import (
@@ -84,7 +84,8 @@ class PartnershipCommands(commands.GroupCog):
         server_link        : str,
     ) -> None:
         if not INVITE_RE.match(server_link):
-            raise AppBadArgument({"server-link" : "The server link must be a valid Discord invite."})
+            await send_bad_argument(interaction, subtitle = {"server-link" : "The server link must be a valid Discord invite."})
+            return
 
         _ = await interaction.response.defer(ephemeral = True)
 
@@ -104,11 +105,13 @@ class PartnershipCommands(commands.GroupCog):
 
         except discord.HTTPException:
             log.exception("Failed to download partnership attachment")
-            raise AppBadOperation(title = "download the server picture")
-
+            await send_bad_operation(interaction, title = "download the server picture")
+            raise
+        
         except OSError:
             log.exception("Failed to save partnership attachment to disk")
-            raise AppBadOperation(title = "save the server picture")
+            await send_bad_operation(interaction, title = "save the server picture")
+            raise
 
         data        = load_partnership_data()
         description = server_description.replace("\\n", "\n")
@@ -134,10 +137,12 @@ class PartnershipCommands(commands.GroupCog):
             log.exception("Failed to rebuild partnership layout after add")
             _ = data["partnerships"].pop()
             image_path.unlink(missing_ok = True)
-            raise AppBadOperation(
+            await send_bad_operation(
+                interaction,
                 title    = "update the partnerships channel",
                 subtitle = f"**{server_name}** was added to the data but the channel failed to rebuild. The entry has been rolled back.",
             )
+            raise
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /partnership remove

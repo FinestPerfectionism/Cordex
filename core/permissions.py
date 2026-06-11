@@ -1,11 +1,11 @@
 from collections.abc import Callable, Coroutine
-from typing import Protocol, cast
+from typing import Protocol, cast, ParamSpec, TypeVar
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import CtxOrInteraction
+from bot import Context, CtxOrInteraction, Interaction
 from constants import (
     ADMINISTRATORS_ROLE_ID,
     BOT_OWNER_ID,
@@ -21,9 +21,7 @@ from .help import (
     AccessData,
     AccessNode,
     ChannelRestriction,
-    P,
     RoleNode,
-    T_co,
     UserNode,
     evaluate_access,
     get_access_data,
@@ -37,23 +35,25 @@ from .help import (
 class AccessControlled(Protocol):
     __access_data__ : AccessData
 
-CommandCallback = Callable[P, Coroutine[None, None, T_co]]
+P = ParamSpec("P")
+T = TypeVar("T")
 
-async def access_predicate(ctx_or_interaction : CtxOrInteraction) -> bool:
+type CommandCallback[**P, T] = Callable[P, Coroutine[None, None, T]]
+type Decorator[**P, T] = Callable[[CommandCallback[P, T]], CommandCallback[P, T]]
+
+async def execute_access_check(ctx_or_interaction : CtxOrInteraction) -> bool:
     data = get_access_data(ctx_or_interaction)
     if data is None or data.command_node is None:
         return True
 
     member = resolve_member(ctx_or_interaction)
     if member is None:
-        if isinstance(ctx_or_interaction, discord.Interaction):
-            raise e.BadEnvironmentDMs
-        raise e.BadEnvironmentDMs
+        await e.send_bad_environment_dms(ctx_or_interaction)
+        return False
 
     if not evaluate_access(data.command_node, member):
-        if isinstance(ctx_or_interaction, discord.Interaction):
-            raise e.AppBadPermissionsCommand
-        raise e.BadPermissionsCommand
+        await e.send_bad_permissions_command(ctx_or_interaction)
+        return False
 
     if data.channel_rules:
         channel_id = (
@@ -63,15 +63,22 @@ async def access_predicate(ctx_or_interaction : CtxOrInteraction) -> bool:
         )
         if channel_id is not None:
             allowed : list[int] = []
+
             for rule in data.channel_rules:
                 if evaluate_access(rule.node, member):
                     allowed.extend(rule.channels)
+
             if allowed and channel_id not in allowed:
-                if isinstance(ctx_or_interaction, discord.Interaction):
-                    raise e.AppBadPermissionsCommand
-                raise e.BadPermissionsCommand
+                await e.send_bad_permissions_command(ctx_or_interaction)
+                return False
 
     return True
+
+async def prefix_access_predicate(ctx : Context) -> bool:
+    return await execute_access_check(ctx)
+
+async def app_access_predicate(interaction : Interaction) -> bool:
+    return await execute_access_check(interaction)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # @access_control
@@ -82,8 +89,8 @@ def access_control(
     command          : AccessNode               | None = None,
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
-    def decorator(func : CommandCallback[P, T_co]) -> CommandCallback[P, T_co]:
+) -> Decorator[P, T]:
+    def decorator(func : CommandCallback[P, T]) -> CommandCallback[P, T]:
         data = AccessData(
             command_node   = command,
             argument_nodes = dict(argument_nodes),
@@ -91,8 +98,8 @@ def access_control(
         )
         cast("AccessControlled", func).__access_data__ = data
 
-        func = commands.check(access_predicate)(func)
-        return app_commands.check(access_predicate)(func)
+        func = commands.check(prefix_access_predicate)(func)
+        return app_commands.check(app_access_predicate)(func)
 
     return decorator
 
@@ -103,7 +110,7 @@ def access_control(
 def bot_owner_cmd(
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+) -> Decorator[P, T]:
     return access_control(
         command       = UserNode(user_id = BOT_OWNER_ID),
         channel_rules = channel_rules,
@@ -117,7 +124,7 @@ def bot_owner_cmd(
 def director_cmd(
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+) -> Decorator[P, T]:
     return access_control(
         command       = RoleNode(role_id = DIRECTORS_ROLE_ID),
         channel_rules = channel_rules,
@@ -131,7 +138,7 @@ def director_cmd(
 def administrator_cmd(
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+) -> Decorator[P, T]:
     return access_control(
         command       = RoleNode(role_id = ADMINISTRATORS_ROLE_ID),
         channel_rules = channel_rules,
@@ -141,7 +148,7 @@ def administrator_cmd(
 def senior_administrator_cmd(
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+) -> Decorator[P, T]:
     return access_control(
         command       = RoleNode(role_id = SENIOR_ADMINISTRATORS_ROLE_ID),
         channel_rules = channel_rules,
@@ -155,7 +162,7 @@ def senior_administrator_cmd(
 def moderator_cmd(
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+) -> Decorator[P, T]:
     return access_control(
         command       = RoleNode(role_id = MODERATORS_ROLE_ID),
         channel_rules = channel_rules,
@@ -165,7 +172,7 @@ def moderator_cmd(
 def senior_moderator_cmd(
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+) -> Decorator[P, T]:
     return access_control(
         command       = RoleNode(role_id = SENIOR_MODERATORS_ROLE_ID),
         channel_rules = channel_rules,
@@ -179,9 +186,9 @@ def senior_moderator_cmd(
 def staff_cmd(
     channel_rules    : list[ChannelRestriction] | None = None,
     **argument_nodes : AccessNode,
-) -> Callable[[CommandCallback[P, T_co]], CommandCallback[P, T_co]]:
+) -> Decorator[P, T]:
     return access_control(
-        command = RoleNode(role_id = STAFF_ROLE_ID),
+        command       = RoleNode(role_id = STAFF_ROLE_ID),
         channel_rules = channel_rules,
         **argument_nodes,
     )

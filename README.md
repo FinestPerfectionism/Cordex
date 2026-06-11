@@ -5,7 +5,7 @@ Forking this project for purposes other than direct contribution is highly disco
 ### Why?
 There are minimal configuration options and many things are hardcoded, like roles, users, and channels.
 ## Built with...
-* python 3.11
+* python 3.12
 * discord.py 2.7.1
 * basedpyright - All rules enabled
 * ruff - All rules enabled

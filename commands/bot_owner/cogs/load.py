@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from bot import Interaction, log
-from core import exceptions
+from core.exceptions import send_bad_operation, send_bad_argument
 from core.responses import send_custom_message
 
 if TYPE_CHECKING:
@@ -18,9 +18,11 @@ async def run_bo_cogs_load(
     cogs        : list[str],
 ) -> None:
     if cog not in cogs:
-        raise exceptions.AppBadArgument({"cog" : f"Cog `{cog}` not found."})
+        await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` not found."})
+        return
     if cog in bot.extensions:
-        raise exceptions.AppBadArgument({"cog" : f"Cog `{cog}` is already loaded."})
+        await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` is already loaded."})
+        return
     try:
         await bot.load_extension(cog)
         _ = await send_custom_message(
@@ -32,7 +34,8 @@ async def run_bo_cogs_load(
         log.info("Loaded cog %s", cog)
     except Exception as e:
         log.exception("Failed to load cog %s", cog)
-        raise exceptions.AppBadOperation(
+        await send_bad_operation(
+            interaction,
             title    = "load cog",
             subtitle = (
                f"Failed to load cog `{cog}`:\n"
@@ -40,4 +43,5 @@ async def run_bo_cogs_load(
                f"{e}"
                 "```"
             ),
-        ) from None
+        )
+        return

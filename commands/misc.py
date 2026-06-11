@@ -106,15 +106,16 @@ class MiscCommands(commands.Cog):
     @commands.command(name = "info")
     async def cmd_info(self, ctx : Context) -> None:
         ping = round(self.bot.latency * 1000)
-
         good_ping = 100
         okay_ping = 200
-        if ping < good_ping:
-            emoji = ACCEPTED_EMOJI
-        elif good_ping <= ping <= okay_ping:
-            emoji = CONTESTED_EMOJI
-        else:
-            emoji = DENIED_EMOJI
+
+        match ping:
+            case _ if ping < good_ping:
+                emoji = ACCEPTED_EMOJI
+            case _ if good_ping <= ping <= okay_ping:
+                emoji = CONTESTED_EMOJI
+            case _:
+                emoji = DENIED_EMOJI
 
         start_time : float = getattr(self.bot, "start_time", time.time())
         uptime_seconds     = int(time.time() - start_time)

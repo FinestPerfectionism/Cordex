@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING
 
 import discord
-from discord.app_commands import Choice, choices, describe, guild_only, rename
-from discord.app_commands import command as app_command
+from discord.app_commands import command as app_command, describe, rename, choices, Choice, guild_only
 from discord.ext import commands
 
 from bot import Interaction

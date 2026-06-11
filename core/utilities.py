@@ -1,7 +1,7 @@
-from typing import TypeAlias
-
-from discord import Button, ButtonStyle, SeparatorSpacing, Emoji, PartialEmoji
-from discord.ui import Separator, button, LayoutView
+from collections.abc import Callable
+from discord import ButtonStyle, Role, SeparatorSpacing, Member
+from discord.ui import Separator, LayoutView
+from typing import TypeAlias, Literal
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
@@ -12,7 +12,6 @@ from discord.ui import Separator, button, LayoutView
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 LVSep : TypeAlias = Separator[LayoutView]
-LVBtn : TypeAlias = Button
 
 large = SeparatorSpacing.large
 small = SeparatorSpacing.small
@@ -66,3 +65,23 @@ def format_values(
         return f"{items[0]} {conj} {items[1]}"
 
     return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
+
+import operator
+
+def check_role_hierarchy(
+    actor      : Member, 
+    target     : Member, 
+    comparison : Literal[">", "<", "=", ">=", "<="]
+) -> bool:
+    actor_role  = actor.top_role
+    target_role = target.top_role
+    
+    ops : dict[str, Callable[[Role, Role], bool]] = {
+        ">"  : operator.gt,
+        "<"  : operator.lt,
+        "="  : operator.eq,
+        ">=" : operator.ge,
+        "<=" : operator.le
+    }
+
+    return ops[comparison](actor_role, target_role)

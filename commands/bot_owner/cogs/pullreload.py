@@ -2,7 +2,7 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from bot import Interaction, log
-from core import exceptions
+from core.exceptions import send_bad_operation
 from core.responses import send_custom_message
 
 if TYPE_CHECKING:
@@ -28,7 +28,8 @@ async def run_bo_cogs_pullreload(
 
     if proc.returncode != 0:
         log.error("git pull failed (exit %s):\n%s", proc.returncode, pull_output)
-        raise exceptions.AppBadOperation(
+        await send_bad_operation(
+            interaction,
             title    =  "pull from git",
             subtitle = (
                f"Failed to pull from git:\n"
@@ -37,6 +38,7 @@ async def run_bo_cogs_pullreload(
                 "```"
             ),
         )
+        return
 
     failed : list[tuple[str, Exception]] = []
     for c in cogs:
@@ -55,7 +57,8 @@ async def run_bo_cogs_pullreload(
             status = "Multiple cogs failed to reload."
         else:
             status = "A cog failed to reload."
-        raise exceptions.AppBadOperation(
+        await send_bad_operation(
+            interaction,
             title    =  "reload cog",
             subtitle = (
                f"Pull succeeded. {status}\n"
@@ -64,6 +67,7 @@ async def run_bo_cogs_pullreload(
                 "```"
             ),
         )
+        return
 
     _ = await send_custom_message(
         interaction,

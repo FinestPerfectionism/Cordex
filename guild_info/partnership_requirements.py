@@ -23,7 +23,7 @@ class RequirementComponents2(LayoutView):
         super().__init__(timeout = None)
         _ = self.add_item(
             Container(
-                Section(
+                Section[LayoutView](
                     TextDisplay("# Partnership Requirements"),
                     accessory = Button(
                         url   =  "https://discord.com/terms",

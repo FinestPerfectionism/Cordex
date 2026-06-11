@@ -10,7 +10,7 @@ from discord import ui
 from discord.ext import commands
 
 from bot import Context, Interaction, tree
-from core.exceptions import AppBadArgument, AppUnknownError, BadOperation
+from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import (
     HiddenLargeSeparator,
     HiddenSmallSeparator,
@@ -55,7 +55,8 @@ async def run_bo_misc_sync(ctx : Context) -> None:
         )
 
     except discord.DiscordException as e:
-        raise BadOperation(
+        await send_bad_operation(
+            ctx,
             title    = "sync app command tree",
             subtitle = (
                 "```py\n"
@@ -63,6 +64,7 @@ async def run_bo_misc_sync(ctx : Context) -> None:
                 "```"
             ),
         )
+        return
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
@@ -209,7 +211,8 @@ async def run_bo_misc_say(
                 if channel:
                     reply_reference = await channel.fetch_message(int(message_id))
             except (discord.NotFound, ValueError, discord.HTTPException):
-                raise AppBadArgument({"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."}) from None
+                await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
+                return
 
         if hasattr(channel, "typing"):
             async with channel.typing():
@@ -223,4 +226,5 @@ async def run_bo_misc_say(
         await interaction.followup.send("Sent!", ephemeral = True)
 
     except discord.Forbidden:
-        raise AppUnknownError from None
+        _ = await send_unknown_error(interaction)
+        return
