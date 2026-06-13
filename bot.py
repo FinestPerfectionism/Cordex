@@ -24,7 +24,7 @@ class Cordex(commands.Bot):
     def __init__(self) -> None:
         intents : Intents = Intents.all()
         super().__init__(
-            command_prefix   = commands.when_mentioned_or("."),
+            command_prefix   = commands.when_mentioned_or("c!"),
             intents          = intents,
             case_insensitive = True,
             help_command     = None,

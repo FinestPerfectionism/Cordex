@@ -139,6 +139,8 @@ class AccessData:
     command_node   : AccessNode | None        = None
     argument_nodes : dict[str, AccessNode]    = field(default_factory = dict)
     channel_rules  : list[ChannelRestriction] = field(default_factory = list)
+    guild_only     : bool                     = False
+    dm_only        : bool                     = False
 
 def resolve_member(ctx_or_interaction : CtxOrInteraction) -> discord.Member | None:
     if isinstance(ctx_or_interaction, commands.Context):
@@ -212,16 +214,16 @@ class ArgDependency:
 @dataclass
 class ArgumentInfo:
     arg_type          : ArgType
-    arg_type_detail   : str        | None   = None
+    arg_type_detail   : str          | None = None
     description       : str                 = ""
     required          : bool                = True
     shown_as_optional : bool                = False
-    default           : str        | None   = None
-    empty_behavior    : str        | None   = None
+    default           : str          | None = None
+    empty_behavior    : str          | None = None
     choices           : list[str]           = field(default_factory = list)
     is_flag           : bool                = False
     depends_on        : list[ArgDependency] = field(default_factory = list)
-    access_node       : AccessNode | None   = None
+    access_node       : AccessNode   | None = None
     extra_notes       : list[str]           = field(default_factory = list)
 
 @dataclass
@@ -234,15 +236,14 @@ class CommandHelpData:
     desc          : str
     prefix        : bool
     slash         : bool
-    command_name  : str        | None        = None
-    access_node   : AccessNode | None        = None
+    command_name  : str                | None = None
+    access_node   : AccessNode         | None = None
     channel_rules : list[ChannelRestriction] = field(default_factory = list)
-    has_inverse   : bool       | str         = False
-    arguments     : dict[
-        str,
-        ArgumentInfo,
-    ]                                        = field(default_factory = dict)
+    has_inverse   : bool               | str = False
+    arguments     : dict[str, ArgumentInfo]  = field(default_factory = dict)
     aliases       : list[str]                = field(default_factory = list)
+    guild_only    : bool                     = False
+    dm_only       : bool                     = False
 
 @runtime_checkable
 class HelpCallback[**P, T_co](Protocol):
@@ -264,6 +265,12 @@ def merge_access_into_help(func : object, data : CommandHelpData) -> None:
     if not data.channel_rules and access.channel_rules:
         data.channel_rules = access.channel_rules.copy()
 
+    if access.guild_only:
+        data.guild_only = True
+
+    if access.dm_only:
+        data.dm_only = True
+
     for arg_name, node in access.argument_nodes.items():
         if arg_name in data.arguments:
             arg_info = data.arguments[arg_name]
@@ -273,14 +280,15 @@ def merge_access_into_help(func : object, data : CommandHelpData) -> None:
 def help_description[**P, T_co](
     desc          : str,
     *,
-    command_name  : str                       | None = None,
-    prefix        : bool                             = False,
-    slash         : bool                             = True,
-    access_node   : AccessNode                | None = None,
-    channel_rules : list[ChannelRestriction]  | None = None,
-    has_inverse   : bool                      | str  = False,
-    arguments     : dict[str, ArgumentInfo]   | None = None,
-    aliases       : list[str]                 | None = None,
+    command_name  : str                      | None = None,
+    prefix        : bool                            = False,
+    slash         : bool                            = True,
+    access_node   : AccessNode               | None = None,
+    channel_rules : list[ChannelRestriction] | None = None,
+    has_inverse   : bool                     | str  = False,
+    arguments     : dict[str, ArgumentInfo]  | None = None,
+    aliases       : list[str]                | None = None,
+    guild_only    : bool                            = False,
 ) -> Callable[
     [Callable[P, Coroutine[None, None, T_co]]],
     Callable[P, Coroutine[None, None, T_co]],
@@ -300,6 +308,7 @@ def help_description[**P, T_co](
             has_inverse   = has_inverse,
             arguments     = _arguments,
             aliases       = _aliases,
+            guild_only    = guild_only,
         )
         merge_access_into_help(func, data)
         cast("HelpedCallable", func).__help_data__ = data
@@ -351,10 +360,7 @@ def check_access(member : discord.Member, data : CommandHelpData) -> tuple[str, 
         return "partial", accessible_args, inaccessible_args, allowed_channels
     return "full", accessible_args, inaccessible_args, allowed_channels
 
-async def resolve_command_ref(
-    bot  : "Cordex",
-    data : CommandHelpData,
-) -> str:
+async def resolve_command_ref(bot : "Cordex", data : CommandHelpData) -> str:
     name = data.command_name
     if name is None:
         return ""
@@ -432,7 +438,31 @@ def build_arg_block(name : str, info : ArgumentInfo) -> str:
 
     return "\n".join(lines)
 
-def build_authority_section(data : CommandHelpData, member : discord.Member) -> tuple[str, int]:
+def build_authority_section(
+    data     : CommandHelpData,
+    member   : discord.Member,
+    in_guild : bool,
+) -> tuple[str, int]:
+    if data.guild_only and not in_guild:
+        colour = COLOR_RED
+        text   = (
+             "## Authority\n"
+            f"{DENIED_EMOJI} **Unathorized.**\n"
+             "This command is restricted to servers.\n"
+             "-# Bad environment."
+        )
+        return text, int(colour)
+
+    if data.dm_only and in_guild:
+        colour = COLOR_RED
+        text   = (
+             "## Authority\n"
+            f"{DENIED_EMOJI} **Unauthorized.**\n"
+             "This command is restricted to direct messages.\n"
+             "-# Bad environment."
+        )
+        return text, int(colour)
+
     status, _, _, allowed_channels = check_access(member, data)
 
     if status == "full":
@@ -564,11 +594,14 @@ def build_help_view(
     data         : CommandHelpData,
     member       : discord.Member,
     command_ref  : str,
+    in_guild     : bool,
 ) -> LayoutView:
     display_name = command_ref or f"`/{command_name}`"
 
-    prefix_emoji = ACCEPTED_EMOJI if data.prefix else DENIED_EMOJI
-    slash_emoji  = ACCEPTED_EMOJI if data.slash  else DENIED_EMOJI
+    prefix_emoji     = ACCEPTED_EMOJI if data.prefix     else DENIED_EMOJI
+    slash_emoji      = ACCEPTED_EMOJI if data.slash      else DENIED_EMOJI
+    guild_only_emoji = ACCEPTED_EMOJI if data.guild_only else DENIED_EMOJI
+    dm_only_emoji    = ACCEPTED_EMOJI if data.dm_only    else DENIED_EMOJI
 
     aliases_line = ""
     if data.aliases:
@@ -579,18 +612,34 @@ def build_help_view(
     if data.has_inverse and isinstance(data.has_inverse, str):
         inverse_line = f"\nThis command has an inverse, **{data.has_inverse}**."
 
+    environment_notice = ""
+    if data.guild_only:
+        environment_notice = "-# Guild-only command. This command can only be used inside a server.\n"
+    elif data.dm_only:
+        environment_notice = "-# DM-only command. This command can only be used in direct messages.\n"
+
+    variant_lines : list[str] = [
+        f"- {prefix_emoji} **Prefix**",
+        f"- {slash_emoji} **Application**",
+    ]
+    if data.guild_only:
+        variant_lines.append(f"- {guild_only_emoji} **Guild Only**")
+    if data.dm_only:
+        variant_lines.append(f"- {dm_only_emoji} **DM Only**")
+    variants_block = "\n".join(variant_lines)
+
     header_text = (
         f"# {display_name} Command\n"
          "## Description\n"
         f"{data.desc}\n"
+        f"{environment_notice}"
          "## Variants\n"
-        f"- {prefix_emoji} **Prefix**\n"
-        f"- {slash_emoji} **Application**"
+        f"{variants_block}"
         f"{aliases_line}"
         f"{inverse_line}"
     )
 
-    authority_text, _ = build_authority_section(data, member)
+    authority_text, _ = build_authority_section(data, member, in_guild)
     authorized_text   = build_authorized_section(data)
     arguments_text    = build_arguments_section(command_name, data)
 
@@ -682,14 +731,16 @@ async def run_help(
         if not isinstance(ctx_or_interaction.author, discord.Member):
             await e.send_bad_environment_dms(ctx_or_interaction)
             return
-        member  = ctx_or_interaction.author
-        respond = ctx_or_interaction.send
+        member   = ctx_or_interaction.author
+        respond  = ctx_or_interaction.send
+        in_guild = ctx_or_interaction.guild is not None
     else:
         if not isinstance(ctx_or_interaction.user, discord.Member):
             await e.send_bad_environment_dms(ctx_or_interaction)
             return
-        member  = ctx_or_interaction.user
-        respond = ctx_or_interaction.response.send_message
+        member   = ctx_or_interaction.user
+        respond  = ctx_or_interaction.response.send_message
+        in_guild = ctx_or_interaction.guild is not None
 
     if not command_name:
         seen_callbacks : set[int] = set()
@@ -723,6 +774,7 @@ async def run_help(
     if callback is None or not hasattr(callback, "__help_data__"):
         if isinstance(ctx_or_interaction, discord.Interaction):
             await e.send_bad_argument(ctx_or_interaction, subtitle = {"command-name" : f"Command `{command_name}` not found or has no help data."})
+            return
         await e.send_bad_argument(ctx_or_interaction, subtitle = {"command-name" : f"Command `{command_name}` not found or has no help data."})
         return
 
@@ -734,5 +786,6 @@ async def run_help(
         data         = data,
         member       = member,
         command_ref  = command_ref,
+        in_guild     = in_guild,
     )
     _ = await respond(view = view, allowed_mentions = discord.AllowedMentions.none())

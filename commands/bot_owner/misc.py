@@ -16,6 +16,7 @@ from core.utilities import (
     HiddenSmallSeparator,
     VisibleLargeSeparator,
     VisibleSmallSeparator,
+    codeblock,
     format_values,
 )
 
@@ -38,7 +39,6 @@ from constants import (
     COLOR_BLACK,
 )
 from core.responses import multi_custom_message, send_custom_message
-from events.messages.on_edit import MessageEditHandler
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .sync Logic
@@ -58,17 +58,15 @@ async def run_bo_misc_sync(ctx : Context) -> None:
         await send_bad_operation(
             ctx,
             title    = "sync app command tree",
-            subtitle = (
-                "```py\n"
-               f"{e}\n"
-                "```"
-            ),
+            subtitle = codeblock(f"{e}"),
         )
         return
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+eval_message_ids : set[int] = set()
 
 async def run_bo_misc_eval(bot : "Cordex", ctx : Context, body : str) -> None:
     env : dict[str, object] = {
@@ -100,6 +98,7 @@ async def run_bo_misc_eval(bot : "Cordex", ctx : Context, body : str) -> None:
         "discord"              : discord,
         "ui"                   : ui,
 
+        "codeblock"            : codeblock,
         "format_values"        : format_values,
         "send_custom_message"  : send_custom_message,
         "multi_custom_message" : multi_custom_message,
@@ -172,21 +171,18 @@ async def run_bo_misc_eval(bot : "Cordex", ctx : Context, body : str) -> None:
     except Exception:
         value = stdout.getvalue()
         _ = await ctx.message.add_reaction(f"{CONTESTED_EMOJI}")
-        _ = await ctx.send(f"```py\n{value}{traceback.format_exc()}\n```")
+        _ = await ctx.send(codeblock(f"{value}{traceback.format_exc()}"))
     else:
         value = stdout.getvalue()
         _ = await ctx.message.add_reaction(f"{ACCEPTED_EMOJI}")
 
-        resp = None
         if ret is None:
             if value:
-                resp = await ctx.send(f"```py\n{value}\n```")
+                _ = await ctx.send(codeblock(value))
         else:
-            resp = await ctx.send(f"```py\n{value}{ret}\n```")
+            _ = await ctx.send(codeblock(f"{value}{ret}"))
 
-        handler = bot.get_cog("MessageEditHandler")
-        if resp and isinstance(handler, MessageEditHandler):
-            handler.eval_responses[ctx.message.id] = resp.id
+    eval_message_ids.add(ctx.message.id)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner say Logic

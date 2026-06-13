@@ -84,6 +84,19 @@ async def send_bad_permissions_argument(target : CtxOrInteraction, *args : str) 
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Bad Environment Guild Exception
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+async def send_bad_environment_guild(target : CtxOrInteraction) -> None:
+    _ = await send_custom_message(
+        target,
+        msg_type = "warning",
+        title    = "run command",
+        subtitle = "This command can only be run in DMs",
+        footer   = "Bad environment",
+    )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Environment Channel Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 

@@ -3,6 +3,8 @@ from discord import ButtonStyle, Role, SeparatorSpacing, Member
 from discord.ui import Separator, LayoutView
 from typing import TypeAlias, Literal
 
+import operator
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -66,8 +68,6 @@ def format_values(
 
     return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
 
-import operator
-
 def check_role_hierarchy(
     actor      : Member, 
     target     : Member, 
@@ -85,3 +85,10 @@ def check_role_hierarchy(
     }
 
     return ops[comparison](actor_role, target_role)
+
+def codeblock(text : str, language : str = "py") -> str:
+    return (
+       f"```{language}\n"
+       f"{text}\n"
+        "```"
+    )

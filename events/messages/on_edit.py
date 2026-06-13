@@ -6,6 +6,8 @@ from discord import Message
 from discord.abc import Messageable
 from discord.ext import commands
 
+from commands.bot_owner.misc import eval_message_ids
+
 from constants import (
     COLOR_GREY,
     MESSAGE_EDIT_LOG_CHANNEL_ID,
@@ -30,11 +32,10 @@ if TYPE_CHECKING:
 class MessageEditHandler(commands.Cog):
     def __init__(self, bot : "Cordex") -> None:
         super().__init__()
-        self.bot            : "Cordex"       = bot
-        self.eval_responses : dict[int, int] = {}
+        self.bot : "Cordex" = bot
 
     @commands.Cog.listener("on_message_edit")
-    async def message_edit_handling(self, before : Message, after : Message) -> None:
+    async def message_edit_handler(self, before : Message, after : Message) -> None:
         if before.author.bot or before.guild is None:
             return
 
@@ -44,6 +45,13 @@ class MessageEditHandler(commands.Cog):
                 with contextlib.suppress(discord.HTTPException):
                     await after.delete()
                 return
+
+        if before.id in eval_message_ids:
+            with contextlib.suppress(discord.HTTPException):
+                await before.clear_reactions()
+            ctx = await self.bot.get_context(after)
+            await self.bot.invoke(ctx)
+            return
 
         if is_directorship_channel(before.channel):
             return
@@ -92,19 +100,7 @@ class MessageEditHandler(commands.Cog):
         )
         _ = await log_channel.send(embed = embed)
 
-        ctx = await self.bot.get_context(after)
-        if ctx.valid and ctx.command and ctx.command.name == "eval":
-            with contextlib.suppress(discord.HTTPException):
-                await after.clear_reactions()
-
-            response_id = self.eval_responses.pop(after.id, None)
-
-            if response_id:
-                with contextlib.suppress(discord.NotFound, discord.HTTPException):
-                    msg = await after.channel.fetch_message(response_id)
-                    await msg.delete()
-
-            await self.bot.invoke(ctx)
+        await self.bot.process_commands(after)
 
 async def setup(bot : "Cordex") -> None:
     cog = MessageEditHandler(bot)

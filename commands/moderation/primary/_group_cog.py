@@ -67,8 +67,7 @@ class ModerationPrimaryCommands(
         name        = "add",
         description = "Add channel(s) or the server to lockdown.",
     )
-    @guild_only()
-    @senior_moderator_cmd()
+    @senior_moderator_cmd(guild_only = True)
     async def cmd_lockdown_add(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_add(interaction)
 
@@ -80,8 +79,7 @@ class ModerationPrimaryCommands(
         name        = "remove",
         description = "Remove channel(s) or the server from lockdown.",
     )
-    @guild_only()
-    @director_cmd()
+    @director_cmd(guild_only = True)
     async def cmd_lockdown_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_remove(interaction)
 
@@ -93,8 +91,7 @@ class ModerationPrimaryCommands(
         name        = "add",
         description = "Ban member(s) from the server.",
     )
-    @guild_only()
-    @senior_moderator_cmd()
+    @senior_moderator_cmd(guild_only = True)
     async def cmd_ban_add(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_add(interaction)
 
@@ -106,8 +103,7 @@ class ModerationPrimaryCommands(
         name        = "view",
         description = "View all banned members.",
     )
-    @guild_only()
-    @staff_cmd()
+    @staff_cmd(guild_only = True)
     async def cmd_ban_view(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_view(interaction)
 
@@ -119,8 +115,7 @@ class ModerationPrimaryCommands(
         name        = "remove",
         description = "Remove ban from member(s).",
     )
-    @guild_only()
-    @director_cmd()
+    @director_cmd(guild_only = True)
     async def cmd_ban_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_remove(interaction)
 
@@ -132,8 +127,7 @@ class ModerationPrimaryCommands(
         name        = "kick",
         description = "Kick member(s) from the server.",
     )
-    @guild_only()
-    @senior_moderator_cmd()
+    @senior_moderator_cmd(guild_only = True)
     async def cmd_kick(self, interaction : Interaction) -> None:
         await run_mod_primary_kick(interaction)
 
@@ -145,8 +139,7 @@ class ModerationPrimaryCommands(
         name        = "add",
         description = "Add member(s) to quarantine.",
     )
-    @guild_only()
-    @senior_moderator_cmd()
+    @senior_moderator_cmd(guild_only = True)
     async def cmd_quarantine_add(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_add(interaction)
 
@@ -158,8 +151,7 @@ class ModerationPrimaryCommands(
         name        = "view",
         description = "View all quarantined members.",
     )
-    @guild_only()
-    @staff_cmd()
+    @staff_cmd(guild_only = True)
     async def cmd_quarantine_view(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_view(interaction)
 
@@ -171,8 +163,7 @@ class ModerationPrimaryCommands(
         name        = "remove",
         description = "Remove member(s) from quarantine.",
     )
-    @guild_only()
-    @senior_moderator_cmd()
+    @senior_moderator_cmd(guild_only = True)
     async def cmd_quarantine_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_remove(interaction)
 
@@ -184,8 +175,7 @@ class ModerationPrimaryCommands(
         name        = "add",
         description = "Add member(s) to timeout.",
     )
-    @guild_only()
-    @moderator_cmd()
+    @moderator_cmd(guild_only = True)
     async def cmd_timeout_add(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_add(interaction)
 
@@ -197,8 +187,7 @@ class ModerationPrimaryCommands(
         name        = "view",
         description = "View all timed out members.",
     )
-    @guild_only()
-    @staff_cmd()
+    @staff_cmd(guild_only = True)
     async def cmd_timeout_view(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_view(interaction)
 
@@ -210,8 +199,7 @@ class ModerationPrimaryCommands(
         name        = "remove",
         description = "Remove member(s) from timeout.",
     )
-    @guild_only()
-    @senior_moderator_cmd()
+    @senior_moderator_cmd(guild_only = True)
     async def cmd_timeout_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_remove(interaction)
 
@@ -223,8 +211,7 @@ class ModerationPrimaryCommands(
         name        = "purge",
         description = "Purge messages from member(s) or channel(s).",
     )
-    @guild_only()
-    @senior_moderator_cmd()
+    @senior_moderator_cmd(guild_only = True)
     async def cmd_purge(self, interaction : Interaction) -> None:
         await run_mod_primary_purge(interaction)
 

@@ -42,10 +42,7 @@ def truncate_text(text : str, max_length : int = 1024) -> str:
 
 def is_directorship_channel(channel : discord.abc.Messageable) -> bool:
     return (
-        isinstance(
-            channel,
-            discord.TextChannel | discord.VoiceChannel | discord.StageChannel,
-        )
+        isinstance(channel, discord.TextChannel | discord.VoiceChannel | discord.StageChannel)
         and channel.category_id == DIRECTORSHIP_CATEGORY_ID
     ) or (
         isinstance(channel, discord.Thread)

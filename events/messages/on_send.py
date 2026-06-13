@@ -40,7 +40,7 @@ class MessageSendHandler(commands.Cog):
         self.bot : "Cordex" = bot
 
     @commands.Cog.listener("on_message")
-    async def message_send_handling(self, message : discord.Message) -> None:
+    async def message_send_handler(self, message : discord.Message) -> None:
         if message.author.bot:
             return
 

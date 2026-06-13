@@ -55,8 +55,7 @@ class RoleCommands(
             Choice(name = "Both",   value = "both"),
         ],
     )
-    @guild_only()
-    @administrator_cmd()
+    @administrator_cmd(guild_only = True)
     async def cmd_members(
         self,
         interaction   : Interaction,
@@ -82,8 +81,7 @@ class RoleCommands(
         role1 = "The first role to compare.",
         role2 = "The second role to compare.",
     )
-    @guild_only()
-    @administrator_cmd()
+    @administrator_cmd(guild_only = True)
     async def cmd_permissionscompare(
         self,
         interaction : Interaction,
@@ -112,8 +110,7 @@ class RoleCommands(
             Choice(name = "Disabled", value = "disabled"),
         ],
     )
-    @guild_only()
-    @administrator_cmd()
+    @administrator_cmd(guild_only = True)
     async def cmd_permissions(
         self,
         interaction : Interaction,

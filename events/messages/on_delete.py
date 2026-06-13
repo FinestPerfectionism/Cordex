@@ -27,7 +27,7 @@ class MessageDeleteHandler(commands.Cog):
         self.bot : "Cordex" = bot
 
     @commands.Cog.listener("on_message_delete")
-    async def message_delete_handling(self, message : discord.Message) -> None:
+    async def message_delete_handler(self, message : discord.Message) -> None:
         if message.guild is None:
             return
 

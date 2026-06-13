@@ -40,10 +40,25 @@ T = TypeVar("T")
 
 type CommandCallback[**P, T] = Callable[P, Coroutine[None, None, T]]
 type Decorator[**P, T] = Callable[[CommandCallback[P, T]], CommandCallback[P, T]]
+type ChannelRules = list[ChannelRestriction] | None
+type ArgumentNodes = dict[str, AccessNode] | None
 
 async def execute_access_check(ctx_or_interaction : CtxOrInteraction) -> bool:
     data = get_access_data(ctx_or_interaction)
-    if data is None or data.command_node is None:
+    if data is None or (data.command_node is None and not data.guild_only and not data.dm_only):
+        return True
+
+    in_guild = ctx_or_interaction.guild is not None
+
+    if data.guild_only and not in_guild:
+        await e.send_bad_environment_dms(ctx_or_interaction)
+        return False
+
+    if data.dm_only and in_guild:
+        await e.send_bad_environment_guild(ctx_or_interaction)
+        return False
+
+    if data.command_node is None:
         return True
 
     member = resolve_member(ctx_or_interaction)
@@ -86,15 +101,19 @@ async def app_access_predicate(interaction : Interaction) -> bool:
 
 def access_control(
     *,
-    command          : AccessNode               | None = None,
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    command        : AccessNode | None = None,
+    channel_rules  : ChannelRules      = None,
+    guild_only     : bool              = False,
+    dm_only        : bool              = False,
+    argument_nodes : ArgumentNodes     = None,
 ) -> Decorator[P, T]:
     def decorator(func : CommandCallback[P, T]) -> CommandCallback[P, T]:
         data = AccessData(
             command_node   = command,
-            argument_nodes = dict(argument_nodes),
+            argument_nodes = dict(argument_nodes or {}),
             channel_rules  = list(channel_rules or []),
+            guild_only     = guild_only,
+            dm_only        = dm_only,
         )
         cast("AccessControlled", func).__access_data__ = data
 
@@ -108,13 +127,17 @@ def access_control(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def bot_owner_cmd(
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    channel_rules  : ChannelRules  = None,
+    guild_only     : bool          = False,
+    dm_only        : bool          = False,
+    argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
     return access_control(
-        command       = UserNode(user_id = BOT_OWNER_ID),
-        channel_rules = channel_rules,
-        **argument_nodes,
+        command        = UserNode(user_id = BOT_OWNER_ID),
+        channel_rules  = channel_rules,
+        guild_only     = guild_only,
+        dm_only        = dm_only,
+        argument_nodes = argument_nodes,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -122,13 +145,14 @@ def bot_owner_cmd(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def director_cmd(
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    channel_rules  : ChannelRules  = None,
+    argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
     return access_control(
-        command       = RoleNode(role_id = DIRECTORS_ROLE_ID),
-        channel_rules = channel_rules,
-        **argument_nodes,
+        command        = RoleNode(role_id = DIRECTORS_ROLE_ID),
+        channel_rules  = channel_rules,
+        guild_only     = True,
+        argument_nodes = argument_nodes,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -136,23 +160,25 @@ def director_cmd(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def administrator_cmd(
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    channel_rules  : ChannelRules  = None,
+    argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
     return access_control(
-        command       = RoleNode(role_id = ADMINISTRATORS_ROLE_ID),
-        channel_rules = channel_rules,
-        **argument_nodes,
+        command        = RoleNode(role_id = ADMINISTRATORS_ROLE_ID),
+        channel_rules  = channel_rules,
+        guild_only     = True,
+        argument_nodes = argument_nodes,
     )
 
 def senior_administrator_cmd(
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    channel_rules  : ChannelRules  = None,
+    argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
     return access_control(
-        command       = RoleNode(role_id = SENIOR_ADMINISTRATORS_ROLE_ID),
-        channel_rules = channel_rules,
-        **argument_nodes,
+        command        = RoleNode(role_id = SENIOR_ADMINISTRATORS_ROLE_ID),
+        channel_rules  = channel_rules,
+        guild_only     = True,
+        argument_nodes = argument_nodes,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -160,23 +186,25 @@ def senior_administrator_cmd(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def moderator_cmd(
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    channel_rules  : ChannelRules  = None,
+    argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
     return access_control(
-        command       = RoleNode(role_id = MODERATORS_ROLE_ID),
-        channel_rules = channel_rules,
-        **argument_nodes,
+        command        = RoleNode(role_id = MODERATORS_ROLE_ID),
+        channel_rules  = channel_rules,
+        guild_only     = True,
+        argument_nodes = argument_nodes,
     )
 
 def senior_moderator_cmd(
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    channel_rules  : ChannelRules  = None,
+    argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
     return access_control(
-        command       = RoleNode(role_id = SENIOR_MODERATORS_ROLE_ID),
-        channel_rules = channel_rules,
-        **argument_nodes,
+        command        = RoleNode(role_id = SENIOR_MODERATORS_ROLE_ID),
+        channel_rules  = channel_rules,
+        guild_only     = True,
+        argument_nodes = argument_nodes,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -184,11 +212,12 @@ def senior_moderator_cmd(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def staff_cmd(
-    channel_rules    : list[ChannelRestriction] | None = None,
-    **argument_nodes : AccessNode,
+    channel_rules  : ChannelRules  = None,
+    argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
     return access_control(
-        command       = RoleNode(role_id = STAFF_ROLE_ID),
-        channel_rules = channel_rules,
-        **argument_nodes,
+        command        = RoleNode(role_id = STAFF_ROLE_ID),
+        channel_rules  = channel_rules,
+        guild_only     = True,
+        argument_nodes = argument_nodes,
     )

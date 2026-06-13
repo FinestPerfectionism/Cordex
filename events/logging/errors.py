@@ -125,7 +125,7 @@ class ErrorLogger(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.Cog.listener("on_error")
-    async def on_error(
+    async def error_handler(
         self,
         event     : str,
         *_args    : str,
@@ -163,7 +163,7 @@ class ErrorLogger(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.Cog.listener("on_command_error")
-    async def on_command_error(
+    async def command_error_handler(
         self,
         ctx   : Context,
         error : commands.CommandError,
@@ -204,6 +204,9 @@ class ErrorLogger(commands.Cog):
     ) -> None:
         actual_error = error.original if isinstance(error, app_commands.CommandInvokeError) else error
 
+        if isinstance(error, app_commands.CheckFailure):
+            return
+
         if isinstance(actual_error, discord.HTTPException) and actual_error.status == n_429:
             cmd      = interaction.command
             cmd_name = f"/{cmd.qualified_name}" if cmd else "Unknown"
@@ -229,7 +232,7 @@ class ErrorLogger(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.Cog.listener("on_extension_error")
-    async def on_extension_error(
+    async def extension_error_handler(
         self,
         extension : str,
         error     : commands.ExtensionError,
