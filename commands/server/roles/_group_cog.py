@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 import discord
-from discord.app_commands import command as app_command, describe, rename, choices, Choice, guild_only
+from discord.app_commands import command as app_command, describe, rename, choices, Choice
 from discord.ext import commands
 
 from bot import Interaction
@@ -55,7 +55,7 @@ class RoleCommands(
             Choice(name = "Both",   value = "both"),
         ],
     )
-    @administrator_cmd(guild_only = True)
+    @administrator_cmd()
     async def cmd_members(
         self,
         interaction   : Interaction,
@@ -81,7 +81,7 @@ class RoleCommands(
         role1 = "The first role to compare.",
         role2 = "The second role to compare.",
     )
-    @administrator_cmd(guild_only = True)
+    @administrator_cmd()
     async def cmd_permissionscompare(
         self,
         interaction : Interaction,
@@ -110,7 +110,7 @@ class RoleCommands(
             Choice(name = "Disabled", value = "disabled"),
         ],
     )
-    @administrator_cmd(guild_only = True)
+    @administrator_cmd()
     async def cmd_permissions(
         self,
         interaction : Interaction,

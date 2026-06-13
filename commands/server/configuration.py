@@ -51,7 +51,7 @@ class ConfigurationCommands(
         name        = "configure",
         description = "Configure guild settings.",
     )
-    @director_cmd(guild_only = True)
+    @director_cmd()
     async def cmd_configure(self, interaction : Interaction) -> None:
         _ = await interaction.response.send_message(view = ConfigurationView(), ephemeral = True)
 
