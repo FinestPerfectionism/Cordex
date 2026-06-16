@@ -1,5 +1,6 @@
 import platform
 import time
+from secrets import randbelow
 
 import discord
 import psutil
@@ -21,8 +22,8 @@ from core.responses import send_custom_message
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class MiscCommands(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
-        self.bot : "Cordex" = bot
+    def __init__(self, bot : Cordex) -> None:
+        self.bot : Cordex = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /femboy Command
@@ -86,9 +87,7 @@ class MiscCommands(commands.Cog):
 
         _ = await interaction.response.defer(ephemeral = False)
 
-        import secrets
-
-        chamber = secrets.randbelow(6) + 1
+        chamber = randbelow(6) + 1
 
         if chamber == 1:
             try:
@@ -131,8 +130,7 @@ class MiscCommands(commands.Cog):
         shard_id = ctx.guild.shard_id if ctx.guild else 0
 
         cpu_usage = float(psutil.cpu_percent())
-        ram_usage = float(psutil.virtual_memory().percent) # type: ignore[implicitAny]
-
+        ram_usage = float(psutil.virtual_memory().percent)  # type: ignore[implicitAny]
 
         _ = await ctx.send(
             content = (
@@ -151,6 +149,6 @@ class MiscCommands(commands.Cog):
         )
 
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = MiscCommands(bot)
     await bot.add_cog(cog)

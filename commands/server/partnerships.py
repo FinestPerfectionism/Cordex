@@ -107,7 +107,7 @@ class PartnershipCommands(commands.GroupCog):
             log.exception("Failed to download partnership attachment")
             await send_bad_operation(interaction, title = "download the server picture")
             raise
-        
+
         except OSError:
             log.exception("Failed to save partnership attachment to disk")
             await send_bad_operation(interaction, title = "save the server picture")

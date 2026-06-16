@@ -1,20 +1,42 @@
-import asyncio
-import logging
-from pathlib import Path
+from logging import Logger, getLogger
+from typing import TYPE_CHECKING, override
 
-import aiosqlite as asq
 import discord
-from discord import CustomActivity, Intents, Status
+from discord import Client, CustomActivity, Intents, Status
+from discord.app_commands import CommandTree
 from discord.ext import commands
-from typing_extensions import override
 
 from core.cog_loader import discover_cogs
+
+if TYPE_CHECKING:
+    import aiosqlite as asq
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-log : logging.Logger = logging.getLogger("Cordex")
+log : Logger = getLogger("Cordex")
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Context and Interaction Classes
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class ContextClass(commands.Context["Cordex"]):
+    ...
+
+class InteractionClass(discord.Interaction):
+    ...
+
+class Tree(CommandTree):
+    @override
+    async def interaction_check(self, interaction : discord.Interaction) -> bool:
+        interaction.__class__ = InteractionClass
+        return await super().interaction_check(interaction)
+
+
+type Context          = ContextClass
+type Interaction      = InteractionClass | discord.Interaction
+type CtxOrInteraction = Interaction | Context
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cordex Class
@@ -29,27 +51,25 @@ class Cordex(commands.Bot):
             case_insensitive = True,
             help_command     = None,
             status           = Status.online,
-            activity         = CustomActivity(name = "Utility Bot 2.0!"),
+            activity         = CustomActivity(name = "Utility Bot 1.5."),
+            tree_cls         = Tree,
         )
         self.cases_db   : asq.Connection
         self.start_time : float
 
     @override
+    async def get_context[ContextT : commands.Context[Cordex]](
+        self,
+        origin : discord.Message | discord.Interaction[Client],
+        *,
+        cls    : type[ContextT]  | None = None,
+    ) -> ContextT | Context:
+        return await super().get_context(origin, cls = cls or ContextClass)
+
+    @override
     async def setup_hook(self) -> None:
 
         # ⸻ Aiosqlite
-
-        # self.cases_db = await asq.connect("data/cases.db")
-        # def read_schema() -> str:
-        #     with Path("schemas/cases.sql").open() as file:
-        #         return file.read()
-
-        # schema_sql = await asyncio.to_thread(read_schema)
-        # _ = await self.cases_db.executescript(schema_sql)
-        # try:
-        #     await self.cases_db.commit()
-        # except asq.OperationalError:
-        #     log.exception("Unable to open database file")
 
         # ⸻ Cogs
 
@@ -76,14 +96,6 @@ class Cordex(commands.Bot):
 
         await super().close()
 
+
 bot  = Cordex()
 tree = bot.tree
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Context and Interaction Classes
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-type Context     = commands.Context[Cordex]
-type Interaction = discord.Interaction[Cordex] | discord.Interaction
-
-CtxOrInteraction = Context | Interaction

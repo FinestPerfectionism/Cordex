@@ -1,9 +1,7 @@
-import discord
-from discord.app_commands import Choice
+from discord import Embed, Role
 
 from bot import Interaction
-
-from ._base import create_base_embed
+from constants import COLOR_BLURPLE
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role members Logic
@@ -11,9 +9,9 @@ from ._base import create_base_embed
 
 async def run_role_members(
     interaction   : Interaction,
-    role          : discord.Role,
-    role_filter   : Choice[str],
-    person_filter : Choice[str],
+    role          : Role,
+    role_filter   : str,
+    person_filter : str | None = None,
 ) -> None:
     _ = await interaction.response.defer(ephemeral = True)
 
@@ -21,40 +19,39 @@ async def run_role_members(
     if guild is None:
         return
 
-    match (role_filter.value, person_filter.value):
+    match (role_filter, person_filter):
         case ("whohas", "humans"):
             filtered = [m for m in guild.members if role in m.roles and not m.bot]
-
         case ("whohas", "bots"):
             filtered = [m for m in guild.members if role in m.roles and m.bot]
-
         case ("whohas", _):
             filtered = [m for m in guild.members if role in m.roles]
-
         case (_, "humans"):
             filtered = [m for m in guild.members if role not in m.roles and not m.bot]
-
         case (_, "bots"):
             filtered = [m for m in guild.members if role not in m.roles and m.bot]
-
         case _:
             filtered = [m for m in guild.members if role not in m.roles]
 
-
     formatted : str = "\n".join(f"- {m.mention}" for m in filtered) if filtered else "No members found."
 
-    embed : discord.Embed = create_base_embed(
+    embed = Embed(
         title       = f"Members for {role.name}",
         description = formatted,
+        color       = COLOR_BLURPLE,
     )
+
+    role_filter_name   = "Not a Member of" if role_filter == "whodoesnthave" else "Member of"
+    person_filter_name = "Both" if person_filter is None else person_filter.capitalize()
+
     _ = embed.add_field(
         name   = "Role Filter",
-        value  = role_filter.name,
+        value  = role_filter_name,
         inline = True,
     )
     _ = embed.add_field(
         name   = "Person Filter",
-        value  = person_filter.name,
+        value  = person_filter_name,
         inline = True,
     )
     _ = embed.set_footer(text = f"{len(filtered)} member(s) found.")

@@ -3,21 +3,21 @@ import sys
 import traceback
 from asyncio import Task
 from collections.abc import Coroutine
+from typing import override
 
 import aiohttp
 import discord
 from discord import Guild, app_commands
 from discord.abc import User
 from discord.ext import commands
-from typing_extensions import override
 
+from bot import Context, Cordex, Interaction
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
     BOT_OWNER_ID,
     COLOR_RED,
 )
-
-from bot import Context, Cordex, Interaction
+from core.utilities import codeblock
 
 MAX_ERRORS = 5
 n_429      = 429
@@ -27,8 +27,8 @@ n_429      = 429
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class ErrorLogger(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
-        self.bot             : "Cordex"          = bot
+    def __init__(self, bot : Cordex) -> None:
+        self.bot             : Cordex            = bot
         self.tasks           : set[Task[object]] = set()
         self.rate_limit_hits : int               = 0
         _ = bot.tree.error(self.app_command_error_handler)
@@ -59,14 +59,14 @@ class ErrorLogger(commands.Cog):
 
         if user:
             _ = embed.add_field(
-                name   ="User",
+                name   =  "User",
                 value  = f"`{user}`\n`{user.id}`",
                 inline = True,
             )
 
         if guild:
             _ = embed.add_field(
-                name   = "Guild",
+                name   =  "Guild",
                 value  = f"`{guild}`\n`{guild.id}`",
                 inline = True,
             )
@@ -74,14 +74,14 @@ class ErrorLogger(commands.Cog):
         if command_display:
             _ = embed.add_field(
                 name   = "Command",
-                value  = f"```{command_display}```",
+                value  = codeblock(command_display, language = None),
                 inline = True,
             )
 
         if error_text:
             _ = embed.add_field(
                 name   = "Error",
-                value  = f"```python\n{error_text}\n```",
+                value  = codeblock(error_text),
                 inline = False,
             )
 
@@ -205,6 +205,8 @@ class ErrorLogger(commands.Cog):
         actual_error = error.original if isinstance(error, app_commands.CommandInvokeError) else error
 
         if isinstance(error, app_commands.CheckFailure):
+            if not interaction.response.is_done():
+                _ = await interaction.response.defer(thinking = False, ephemeral = True)
             return
 
         if isinstance(actual_error, discord.HTTPException) and actual_error.status == n_429:
@@ -355,6 +357,6 @@ class ErrorLogger(commands.Cog):
         loop = asyncio.get_running_loop()
         loop.set_exception_handler(self.loop_exception_handler)
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = ErrorLogger(bot)
     await bot.add_cog(cog)

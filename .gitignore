@@ -8,3 +8,4 @@ cordex.egg-info/
 build/
 uv.lock
 replit.nix
+*.db

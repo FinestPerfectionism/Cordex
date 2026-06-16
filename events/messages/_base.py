@@ -57,9 +57,9 @@ def channel_display(channel : discord.abc.Messageable | discord.abc.GuildChannel
     if isinstance(channel, Thread):
         parent = channel.parent
         if isinstance(parent, ForumChannel):
-            return f"{parent.mention} → {channel.mention}"
+            return f"{parent.mention} / {channel.mention}"
         if parent is not None:
-            return f"{parent.mention} → {channel.mention}"
+            return f"{parent.mention} / {channel.mention}"
         return channel.mention
 
     if isinstance(channel, TextChannel):

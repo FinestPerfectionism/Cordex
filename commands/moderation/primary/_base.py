@@ -1,5 +1,6 @@
 import re
 from collections.abc import Sequence
+from typing import override
 
 from discord import (
     AllowedMentions,
@@ -24,7 +25,6 @@ from discord.ui import (
     View,
     select,
 )
-from typing_extensions import override
 
 from bot import Interaction
 from constants import ACCEPTED_EMOJI
@@ -47,10 +47,14 @@ def build_member_label(member : Member, state : StateEntry | None) -> str:
     if not state:
         return member.mention
 
-    lines = [member.mention, f"**Reason:** \"{state['r']}\""]
-    lines.append(f"**Timer:** `{state['t']}`")
-    lines.append(f"**Appealable:** `{state.get('a', False)}`")
-    lines.append(f"**DM:** `{state.get('d', False)}`")
+    lines = [member.mention, f'**Reason:** "{state['r']}"']
+    lines.extend(
+        [
+            f"**Timer:** `{state['t']}`",
+            f"**Appealable:** `{state.get('a', False)}`",
+            f"**DM:** `{state.get('d', False)}`",
+        ],
+    )
 
     if "f" in state:
         lines.append(f"**File:** `{state['f']}`")
@@ -143,8 +147,8 @@ class ReasonModal(Modal):
         if timer_value and not re.match(r"^(\d+[hmds])+$", timer_value):
             _ = await send_custom_message(
                 interaction,
-                msg_type = "warning",
-                title    = "compile window",
+                msg_type =  "warning",
+                title    =  "compile window",
                 subtitle = f"The time signature `{self.timer_input.value}` is not valid. Use formats like 10m, 2h, 1d.",
             )
             return
@@ -203,8 +207,7 @@ class EditorView(LayoutView):
                 if not entry or not entry.get("t"):
                     missing.append("timer")
                 if missing:
-                    missing_string = format_values(missing)
-                    errors.append(f"- {member.mention}: Missing {missing_string}")
+                    errors.append(f"- {member.mention}: Missing {format_values(missing)}")
 
             if errors:
                 try:
@@ -307,9 +310,7 @@ class MemberSelectView(View):
 
             await send_bad_argument(
                 interaction,
-                subtitle = {
-                    "chosen" : f"The {word_user} {format_values(ineligible)} {word_is} higher in the hierarchy than you."
-                }
+                subtitle = {None : f"The {word_user} {format_values(ineligible)} {word_is} higher in the hierarchy than you."},
             )
             return
 

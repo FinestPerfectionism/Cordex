@@ -1,6 +1,5 @@
-from core.responses import send_custom_message
-
 from bot import CtxOrInteraction
+from core.responses import send_custom_message
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management
@@ -34,7 +33,7 @@ async def send_bad_operation(
         target,
         msg_type = "error",
         title    = title,
-        subtitle = subtitle if subtitle else "An exception occurred while running this command.",
+        subtitle = subtitle or "An exception occurred while running this command.",
         footer   = "Bad operation",
     )
 
@@ -42,12 +41,29 @@ async def send_bad_operation(
 # Bad Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_argument(target : CtxOrInteraction, *, subtitle : dict[str, str]) -> None:
+async def send_bad_argument(
+    target   : CtxOrInteraction,
+    *,
+    subtitle : dict[
+        str | tuple[str, ...] | set[str] | None,
+        str,
+    ],
+) -> None:
+    formatted_lines = []
+    for arg, notice in subtitle.items():
+        if arg is None:
+            formatted_lines.append(notice)
+        elif isinstance(arg, set | tuple | list):
+            joined_args = ", ".join(f"`{a}`" for a in arg)
+            formatted_lines.append(f"{joined_args}: {notice}")
+        else:
+            formatted_lines.append(f"`{arg}`: {notice}")
+
     _ = await send_custom_message(
         target,
         msg_type = "warning",
         title    = "run command",
-        subtitle = "\n".join(f"`{arg}`: {notice}" for arg, notice in subtitle.items()),
+        subtitle = "\n".join(formatted_lines),
         footer   = "Bad argument",
     )
 
@@ -74,7 +90,7 @@ async def send_bad_permissions_argument(target : CtxOrInteraction, *args : str) 
     if len(formatted_args) == 1:
         subtitle = f"You are not authorized to use the {formatted_args[0]} argument."
     subtitle = f"You are not authorized to use these arguments: {', '.join(formatted_args)}"
-    
+
     _ = await send_custom_message(
         target,
         msg_type = "error",

@@ -2,7 +2,7 @@ import asyncio
 import logging as log
 from asyncio import Queue
 from collections.abc import Iterable
-from typing import TYPE_CHECKING
+from typing import override
 
 import discord
 from discord import (
@@ -17,12 +17,9 @@ from discord import (
 )
 from discord.abc import Messageable
 from discord.ext import commands, tasks
-from typing_extensions import override
 
+from bot import Cordex
 from constants import CHANGE_LOG_CHANNEL_ID
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Audit Logging Base
@@ -31,8 +28,8 @@ if TYPE_CHECKING:
 SEND_INTERVAL = 1.0
 
 class AuditQueue(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
-        self.bot   : "Cordex"                         = bot
+    def __init__(self, bot : Cordex) -> None:
+        self.bot   : Cordex                           = bot
         self.queue : Queue[tuple[Messageable, Embed]] = Queue()
         _ = self.queue_worker.start()
 
@@ -64,10 +61,10 @@ class AuditQueue(commands.Cog):
         await self.queue.put((channel, embed))
 
 class AuditCog(commands.Cog):
-    def __init__(self, bot : "Cordex", queue : AuditQueue) -> None:
-        self.bot            : "Cordex"     = bot
-        self.log_channel_id : int          = CHANGE_LOG_CHANNEL_ID
-        self._queue         : AuditQueue   = queue
+    def __init__(self, bot : Cordex, queue : AuditQueue) -> None:
+        self.bot            : Cordex     = bot
+        self.log_channel_id : int        = CHANGE_LOG_CHANNEL_ID
+        self._queue         : AuditQueue = queue
 
     async def enqueue(self, channel : Messageable, embed : Embed) -> None:
         await self._queue.enqueue(channel, embed)
@@ -108,6 +105,7 @@ class AuditCog(commands.Cog):
         return "\n".join(perms) if perms else "None"
 
     type ChannelOverwrites = dict[Role | Member | Object, PermissionOverwrite]
+
     def get_overwrite_changes(self, before_overwrites : ChannelOverwrites, after_overwrites : ChannelOverwrites) -> list[str]:
         changes : list[str] = []
         all_targets         = set(before_overwrites.keys()) | set(after_overwrites.keys())

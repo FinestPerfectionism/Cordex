@@ -1,10 +1,11 @@
 from typing import cast
 
-import discord
+from discord import Embed, Role
 
 from bot import Interaction
+from constants import COLOR_BLURPLE
 
-from ._base import create_base_embed, format_permission
+from ._base import format_permission
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role permissions-compare Logic
@@ -12,8 +13,8 @@ from ._base import create_base_embed, format_permission
 
 async def run_role_permissionscompare(
     interaction : Interaction,
-    role1       : discord.Role,
-    role2       : discord.Role,
+    role1       : Role,
+    role2       : Role,
 ) -> None:
     _ = await interaction.response.defer(ephemeral = False)
 
@@ -26,7 +27,10 @@ async def run_role_permissionscompare(
             diffs_role1.append(format_permission(perm_name, value = value1))
             diffs_role2.append(format_permission(perm_name, value = value2))
 
-    embed : discord.Embed = create_base_embed(title = f"Permission Differences for {role1.name} and {role2.name}")
+    embed = Embed(
+        title = f"Permission Differences for {role1.name} and {role2.name}",
+        color = COLOR_BLURPLE,
+    )
 
     if not diffs_role1:
         embed.description = "Roles have identical permissions."

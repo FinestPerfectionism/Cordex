@@ -5,7 +5,7 @@ from discord.app_commands import autocomplete, describe, rename
 from discord.app_commands import command as app_command
 from discord.ext import commands
 
-from bot import Context, Interaction, log
+from bot import Context, Cordex, Interaction, log
 from core.permissions import bot_owner_cmd
 
 from ._base import cog_autocomplete, get_cogs
@@ -20,8 +20,6 @@ from .state.shutdown import run_bo_state_shutdown
 if TYPE_CHECKING:
     from logging import Logger
 
-    from bot import Cordex
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -31,9 +29,9 @@ class BotOwnerCommands(
     name        = "bot-owner",
     description = "Bot Owner only —— Bot owner commands.",
 ):
-    def __init__(self, bot : "Cordex") -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot            : "Cordex"   = bot
+        self.bot            :  Cordex    = bot
         self.logger         : Logger     = log
         self.restarting_ref : list[bool] = [False]
 
@@ -122,18 +120,18 @@ class BotOwnerCommands(
     async def cmd_sync(self, ctx : Context) -> None:
         await run_bo_misc_sync(ctx)
 
-   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command
-   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.command(name = "eval")
     @bot_owner_cmd()
     async def cmd_eval(self, ctx : Context, *, body : str) -> None:
         await run_bo_misc_eval(self.bot, ctx, body)
 
-   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner say Command
-   # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @app_command(
         name        = "say",
@@ -168,6 +166,6 @@ class BotOwnerCommands(
             message_id  = reply_id,
         )
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = BotOwnerCommands(bot)
     await bot.add_cog(cog)

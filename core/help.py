@@ -28,6 +28,8 @@ if TYPE_CHECKING:
 
     from discord.app_commands import Group as AppGroup
 
+from itertools import starmap
+
 from constants import (
     ACCEPTED_EMOJI,
     COLOR_BLURPLE,
@@ -55,6 +57,7 @@ class _AppCommand(Protocol):
     qualified_name : str
     callback       : object
     commands       : list[object]
+
 
 P = ParamSpec("P")
 
@@ -248,6 +251,7 @@ class CommandHelpData:
 @runtime_checkable
 class HelpCallback[**P, T_co](Protocol):
     __help_data__ : CommandHelpData
+
     def __call__(self, *args : P.args, **kwargs : P.kwargs) -> Coroutine[None, None, T_co]:
         ...
 
@@ -360,7 +364,7 @@ def check_access(member : discord.Member, data : CommandHelpData) -> tuple[str, 
         return "partial", accessible_args, inaccessible_args, allowed_channels
     return "full", accessible_args, inaccessible_args, allowed_channels
 
-async def resolve_command_ref(bot : "Cordex", data : CommandHelpData) -> str:
+async def resolve_command_ref(bot : Cordex, data : CommandHelpData) -> str:
     name = data.command_name
     if name is None:
         return ""
@@ -380,6 +384,7 @@ async def resolve_command_ref(bot : "Cordex", data : CommandHelpData) -> str:
         return f"</{parts[0]}:{parent.id}>"
 
     return f"</{name}:{parent.id}>"
+
 
 _NOTICE_LOGICAL_OR = "-# In the absence of advanced restrictions, multiple listings are governed by the **Logical OR** operator.\n"
 
@@ -441,6 +446,7 @@ def build_arg_block(name : str, info : ArgumentInfo) -> str:
 def build_authority_section(
     data     : CommandHelpData,
     member   : discord.Member,
+    *,
     in_guild : bool,
 ) -> tuple[str, int]:
     if data.guild_only and not in_guild:
@@ -541,8 +547,12 @@ def build_authorized_section(data : CommandHelpData) -> str:
             lines.append(f"{prefix}<@{un.user_id}>")
         lines.append(_NOTICE_LOGICAL_OR.strip())
     else:
-        lines.append("Not applicable.")
-        lines.append(_NOTICE_LOGICAL_OR.strip())
+        lines.extend(
+            [
+                "Not applicable.",
+                _NOTICE_LOGICAL_OR.strip(),
+            ],
+        )
 
     lines.append("### Roles")
     if role_entries:
@@ -551,8 +561,12 @@ def build_authorized_section(data : CommandHelpData) -> str:
             lines.append(f"{prefix}<@&{rn.role_id}>")
         lines.append(_NOTICE_LOGICAL_OR.strip())
     else:
-        lines.append("Not applicable.")
-        lines.append(_NOTICE_LOGICAL_OR.strip())
+        lines.extend(
+            [
+                "Not applicable.",
+                _NOTICE_LOGICAL_OR.strip(),
+            ],
+        )
 
     lines.append("### Advanced Restrictions")
     if data.channel_rules:
@@ -563,13 +577,15 @@ def build_authorized_section(data : CommandHelpData) -> str:
             "-# **What are advanced restrictions?** Advanced Restrictions provide a logic specification detailing how command behavior behaves across different contexts. This framework is intended to explain the interdependent relationships between users, roles, and environments (such as specific channels) when working with arguments, sub-arguments, and nested-arguments when they may be accessible or restricted depending on a user's unique permission profile.",
         )
     else:
-        lines.append("Not applicable.")
-        lines.append("-# **What are advanced restrictions?** Advanced Restrictions provide a logic specification detailing how command behavior behaves across different contexts. This framework is intended to explain the interdependent relationships between users, roles, and environments (such as specific channels) when working with arguments, sub-arguments, and nested-arguments when they may be accessible or restricted depending on a user's unique permission profile.")
+        lines.append(
+            "Not applicable."
+            "-# **What are advanced restrictions?** Advanced Restrictions provide a logic specification detailing how command behavior behaves across different contexts. This framework is intended to explain the interdependent relationships between users, roles, and environments (such as specific channels) when working with arguments, sub-arguments, and nested-arguments when they may be accessible or restricted depending on a user's unique permission profile.",
+        )
 
     return "\n".join(lines)
 
 def build_arguments_section(command_name : str, data : CommandHelpData) -> str:
-    arg_tokens  = " ".join(build_argument_line(n, i) for n, i in data.arguments.items())
+    arg_tokens  = " ".join(starmap(build_argument_line, data.arguments.items()))
     usage_lines : list[str] = []
     if data.prefix:
         usage_lines.append(f".{command_name} {arg_tokens}".strip())
@@ -577,16 +593,16 @@ def build_arguments_section(command_name : str, data : CommandHelpData) -> str:
         usage_lines.append(f"/{command_name} {arg_tokens}".strip())
     usage_block = "\n".join(usage_lines)
 
-    arg_blocks = "\n".join(build_arg_block(n, i) for n, i in data.arguments.items())
+    arg_blocks = "\n".join(starmap(build_arg_block, data.arguments.items()))
 
     return (
-        f"## Arguments\n"
-        f"```\n"
-        f"{usage_block}\n"
-        f"```\n"
-         "{...} denotes a required argument.\n"
-         "[...] denotes an optional argument.\n"
-        f"{arg_blocks}"
+       f"## Arguments\n"
+       f"```\n"
+       f"{usage_block}\n"
+       f"```\n"
+        "{...} denotes a required argument.\n"
+        "[...] denotes an optional argument.\n"
+       f"{arg_blocks}"
     )
 
 def build_help_view(
@@ -594,6 +610,7 @@ def build_help_view(
     data         : CommandHelpData,
     member       : discord.Member,
     command_ref  : str,
+    *,
     in_guild     : bool,
 ) -> LayoutView:
     display_name = command_ref or f"`/{command_name}`"
@@ -723,7 +740,7 @@ def collect_slash_commands(
             )
 
 async def run_help(
-    bot                : "Cordex",
+    bot                : Cordex,
     ctx_or_interaction : CtxOrInteraction,
     command_name       : str | None,
 ) -> None:

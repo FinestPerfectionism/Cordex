@@ -1,8 +1,7 @@
 # ruff: noqa: E501
 
-from __future__ import annotations
-
 import time
+from typing import Self
 
 import discord
 from discord.mentions import AllowedMentions
@@ -40,8 +39,8 @@ class PartnershipComponents1(LayoutView):
     def __init__(self) -> None:
         super().__init__(timeout = None)
         _ = self.add_item(
-            Container[LayoutView](
-                TextDisplay[LayoutView](
+            Container(
+                TextDisplay(
                     content = (
                         "# Welcome to our Partnerships!\n"
                         f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}>"
@@ -57,7 +56,7 @@ class PartnershipComponents2(LayoutView):
     def __init__(self, partnerships : EntryList, timestamp : int) -> None:
         super().__init__(timeout = None)
 
-        children : list[TextDisplay[LayoutView] | Section[LayoutView] | VisibleLargeSeparator | VisibleSmallSeparator | HiddenSmallSeparator] = [
+        children : list[TextDisplay[Self] | Section[Self] | VisibleLargeSeparator | VisibleSmallSeparator | HiddenSmallSeparator] = [
             TextDisplay(
                 content = (
                     "# Partnerships\n"
@@ -76,7 +75,7 @@ class PartnershipComponents2(LayoutView):
         else:
             for i, p in enumerate(partnerships):
                 children.append(
-                    Section[LayoutView](
+                    Section[Self](
                         TextDisplay(
                             content = (
                                 f"# {p['server_name']}\n"

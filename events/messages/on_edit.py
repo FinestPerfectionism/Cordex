@@ -1,13 +1,12 @@
 import contextlib
-from typing import TYPE_CHECKING
 
 import discord
 from discord import Message
 from discord.abc import Messageable
 from discord.ext import commands
 
+from bot import Cordex
 from commands.bot_owner.misc import eval_message_ids
-
 from constants import (
     COLOR_GREY,
     MESSAGE_EDIT_LOG_CHANNEL_ID,
@@ -22,17 +21,14 @@ from ._base import (
     truncate_text,
 )
 
-if TYPE_CHECKING:
-    from bot import Cordex
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Edit Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class MessageEditHandler(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : "Cordex" = bot
+        self.bot : Cordex = bot
 
     @commands.Cog.listener("on_message_edit")
     async def message_edit_handler(self, before : Message, after : Message) -> None:
@@ -49,6 +45,10 @@ class MessageEditHandler(commands.Cog):
         if before.id in eval_message_ids:
             with contextlib.suppress(discord.HTTPException):
                 await before.clear_reactions()
+                old_res_id = eval_message_ids.pop(before.id, None)
+                if old_res_id is not None:
+                    old_msg = await before.channel.fetch_message(old_res_id)
+                    await old_msg.delete()
             ctx = await self.bot.get_context(after)
             await self.bot.invoke(ctx)
             return
@@ -72,7 +72,7 @@ class MessageEditHandler(commands.Cog):
             timestamp = after.edited_at or discord.utils.utcnow(),
         )
         _ = embed.add_field(
-            name   = "Edited By",
+            name   =  "Edited By",
             value  = f"`{before.author}`\n`{before.author.id}`",
             inline = True,
         )
@@ -102,6 +102,6 @@ class MessageEditHandler(commands.Cog):
 
         await self.bot.process_commands(after)
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = MessageEditHandler(bot)
     await bot.add_cog(cog)

@@ -1,10 +1,9 @@
-from typing import TYPE_CHECKING
-
 import discord
 from discord import AuditLogAction
 from discord.ext import commands
 from discord.utils import utcnow
 
+from bot import Cordex
 from constants import COLOR_RED, MESSAGE_DELETE_LOG_CHANNEL_ID
 
 from ._base import (
@@ -14,17 +13,14 @@ from ._base import (
     truncate_text,
 )
 
-if TYPE_CHECKING:
-    from bot import Cordex
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Delete Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class MessageDeleteHandler(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : "Cordex" = bot
+        self.bot : Cordex = bot
 
     @commands.Cog.listener("on_message_delete")
     async def message_delete_handler(self, message : discord.Message) -> None:
@@ -98,6 +94,6 @@ class MessageDeleteHandler(commands.Cog):
         _ = embed.set_footer(text = 'Please note that the "Deleted By" section guesses by checking the audit log, and may not always be accurate')
         _ = await log_channel.send(embed = embed)
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = MessageDeleteHandler(bot)
     await bot.add_cog(cog)

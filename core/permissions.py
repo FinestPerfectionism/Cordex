@@ -1,5 +1,5 @@
 from collections.abc import Callable, Coroutine
-from typing import Protocol, cast, ParamSpec, TypeVar
+from typing import ParamSpec, Protocol, cast
 
 import discord
 from discord import app_commands
@@ -35,8 +35,8 @@ from .help import (
 class AccessControlled(Protocol):
     __access_data__ : AccessData
 
+
 P = ParamSpec("P")
-T = TypeVar("T")
 
 type CommandCallback[**P, T] = Callable[P, Coroutine[None, None, T]]
 type Decorator[**P, T] = Callable[[CommandCallback[P, T]], CommandCallback[P, T]]
@@ -60,17 +60,26 @@ async def execute_access_check(ctx_or_interaction : CtxOrInteraction) -> bool:
 
     if data.command_node is None:
         return True
-
-    member = resolve_member(ctx_or_interaction)
-    if member is None:
+    
+    member      = resolve_member(ctx_or_interaction)
+    eval_target = member if member is not None else getattr(ctx_or_interaction, "user", getattr(ctx_or_interaction, "author", None))
+    
+    if eval_target is None:
         await e.send_bad_environment_dms(ctx_or_interaction)
         return False
-
-    if not evaluate_access(data.command_node, member):
+    
+    if member is None and isinstance(data.command_node, RoleNode):
+        await e.send_bad_environment_dms(ctx_or_interaction)
+        return False
+    
+    if not evaluate_access(data.command_node, eval_target):
         await e.send_bad_permissions_command(ctx_or_interaction)
         return False
-
+    
     if data.channel_rules:
+        if not in_guild:
+            return True
+    
         channel_id = (
             ctx_or_interaction.channel_id
             if isinstance(ctx_or_interaction, discord.Interaction)
@@ -78,15 +87,15 @@ async def execute_access_check(ctx_or_interaction : CtxOrInteraction) -> bool:
         )
         if channel_id is not None:
             allowed : list[int] = []
-
+    
             for rule in data.channel_rules:
-                if evaluate_access(rule.node, member):
+                if evaluate_access(rule.node, eval_target):
                     allowed.extend(rule.channels)
-
+    
             if allowed and channel_id not in allowed:
                 await e.send_bad_permissions_command(ctx_or_interaction)
                 return False
-
+    
     return True
 
 async def prefix_access_predicate(ctx : Context) -> bool:
@@ -99,7 +108,7 @@ async def app_access_predicate(interaction : Interaction) -> bool:
 # @access_control
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def access_control(
+def access_control[**P, T](
     *,
     command        : AccessNode | None = None,
     channel_rules  : ChannelRules      = None,
@@ -117,8 +126,8 @@ def access_control(
         )
         cast("AccessControlled", func).__access_data__ = data
 
-        func = commands.check(prefix_access_predicate)(func)
-        return app_commands.check(app_access_predicate)(func)
+        prefix_wrapped = commands.check(prefix_access_predicate)(func)
+        return app_commands.check(app_access_predicate)(prefix_wrapped)
 
     return decorator
 
@@ -126,8 +135,9 @@ def access_control(
 # @bot_owner_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def bot_owner_cmd(
+def bot_owner_cmd[**P, T](
     channel_rules  : ChannelRules  = None,
+    *,
     guild_only     : bool          = False,
     dm_only        : bool          = False,
     argument_nodes : ArgumentNodes = None,
@@ -144,7 +154,7 @@ def bot_owner_cmd(
 # @director_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def director_cmd(
+def director_cmd[**P, T](
     channel_rules  : ChannelRules  = None,
     argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
@@ -159,7 +169,7 @@ def director_cmd(
 # @administrator/senior_administrator_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def administrator_cmd(
+def administrator_cmd[**P, T](
     channel_rules  : ChannelRules  = None,
     argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
@@ -170,7 +180,7 @@ def administrator_cmd(
         argument_nodes = argument_nodes,
     )
 
-def senior_administrator_cmd(
+def senior_administrator_cmd[**P, T](
     channel_rules  : ChannelRules  = None,
     argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
@@ -185,7 +195,7 @@ def senior_administrator_cmd(
 # @moderator/senior_moderator_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def moderator_cmd(
+def moderator_cmd[**P, T](
     channel_rules  : ChannelRules  = None,
     argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
@@ -196,7 +206,7 @@ def moderator_cmd(
         argument_nodes = argument_nodes,
     )
 
-def senior_moderator_cmd(
+def senior_moderator_cmd[**P, T](
     channel_rules  : ChannelRules  = None,
     argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:
@@ -211,7 +221,7 @@ def senior_moderator_cmd(
 # @staff_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def staff_cmd(
+def staff_cmd[**P, T](
     channel_rules  : ChannelRules  = None,
     argument_nodes : ArgumentNodes = None,
 ) -> Decorator[P, T]:

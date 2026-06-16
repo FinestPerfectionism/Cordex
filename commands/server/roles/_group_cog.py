@@ -1,18 +1,14 @@
-from typing import TYPE_CHECKING
-
-import discord
-from discord.app_commands import command as app_command, describe, rename, choices, Choice
+from discord import Role
+from discord.app_commands import Choice, choices, describe, rename
+from discord.app_commands import command as app_command
 from discord.ext import commands
 
-from bot import Interaction
+from bot import Cordex, Interaction
 from core.permissions import administrator_cmd
 
 from .members import run_role_members
 from .permissions import run_role_permissions
 from .permissionscompare import run_role_permissionscompare
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Role Group Commands
@@ -23,9 +19,9 @@ class RoleCommands(
     name        = "roles",
     description = "Administrators only — Role commands.",
 ):
-    def __init__(self, bot : "Cordex") -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : "Cordex" = bot
+        self.bot : Cordex = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role members Command
@@ -36,9 +32,9 @@ class RoleCommands(
         description = "List members based on role possession and human/bot filtering.",
     )
     @describe(
-        role          = "Select a role.",
-        role_filter   = "Select whether to check who has or who doesn't have the role.",
-        person_filter = "Select whether to list humans, bots, or both.",
+        role          = "The role to view members or the lack thereof for.",
+        role_filter   = "Whether to check who has or who doesn't have the role selectec.",
+        person_filter = "The type of users to show. Leave empty for both.",
     )
     @rename(
         role_filter   = "role-filter",
@@ -52,18 +48,17 @@ class RoleCommands(
         person_filter = [
             Choice(name = "Humans", value = "humans"),
             Choice(name = "Bots",   value = "bots"),
-            Choice(name = "Both",   value = "both"),
         ],
     )
     @administrator_cmd()
     async def cmd_members(
         self,
         interaction   : Interaction,
-        role          : discord.Role,
-        role_filter   : Choice[str],
-        person_filter : Choice[str],
+        role          : Role,
+        role_filter   : str,
+        person_filter : str | None = None,
     ) -> None:
-        _ = run_role_members(interaction, role, role_filter, person_filter)
+        _ = await run_role_members(interaction, role, role_filter, person_filter)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role permissions-compare Command
@@ -85,10 +80,10 @@ class RoleCommands(
     async def cmd_permissionscompare(
         self,
         interaction : Interaction,
-        role1       : discord.Role,
-        role2       : discord.Role,
+        role1       : Role,
+        role2       : Role,
     ) -> None:
-        _ = run_role_permissionscompare(interaction, role1, role2)
+        _ = await run_role_permissionscompare(interaction, role1, role2)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role permissions Command
@@ -96,16 +91,15 @@ class RoleCommands(
 
     @app_command(
         name        = "permissions",
-        description = "List all permissions for a selected role.",
+        description = "List permissions for a selected role.",
     )
     @rename(perm_filter = "filter")
     @describe(
         role        = "The role to list permissions for.",
-        perm_filter = "Whether to show enabled, disabled, or all permissions.",
+        perm_filter = "The permissions to show, or all permissions. Leave empty for both.",
     )
     @choices(
         perm_filter = [
-            Choice(name = "All",      value = "all"),
             Choice(name = "Enabled",  value = "enabled"),
             Choice(name = "Disabled", value = "disabled"),
         ],
@@ -114,11 +108,11 @@ class RoleCommands(
     async def cmd_permissions(
         self,
         interaction : Interaction,
-        role        : discord.Role,
-        perm_filter : str = "all",
+        role        : Role,
+        perm_filter : str | None = None,
     ) -> None:
-        _ = run_role_permissions(interaction, role, perm_filter)
+        _ = await run_role_permissions(interaction, role, perm_filter)
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = RoleCommands(bot)
     await bot.add_cog(cog)

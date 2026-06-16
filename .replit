@@ -2,12 +2,12 @@
 pattern = "**/*.py"
 
 [languages.python.lsp]
-name = "basedpyright"
+name    = "basedpyright"
 command = ["./.venv/bin/basedpyright-langserver", "--stdio"]
 
 [languages.python.languageServer]
 start = "./.venv/bin/basedpyright-langserver --stdio"
-run = "python3 main.py"
+run   = "python3 main.py"
 
 [nix]
 channel = "stable-24_05"

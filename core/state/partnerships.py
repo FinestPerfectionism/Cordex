@@ -39,19 +39,19 @@ def load_partnership_data() -> PartnershipData:
     if not _DATA_FILE.exists():
         return default()
     try:
-        with Path.open(_DATA_FILE) as f: 
+        with Path.open(_DATA_FILE) as f:
             data = cast("dict[str, object]", json.load(f))
-        
+
         partnerships      = data.get("partnerships")
         message_ids       = data.get("message_ids")
         header_message_id = data.get("header_message_id")
         timestamp         = data.get("timestamp")
 
-        return { 
-            "partnerships"      : partnerships if isinstance(partnerships, list) else [], 
-            "message_ids"       : message_ids if isinstance(message_ids, list) else [], 
-            "header_message_id" : header_message_id if isinstance(header_message_id, int) else None, 
-            "timestamp"         : timestamp if isinstance(timestamp, int) else 0, 
+        return {
+            "partnerships"      : partnerships if isinstance(partnerships, list) else [],
+            "message_ids"       : message_ids if isinstance(message_ids, list) else [],
+            "header_message_id" : header_message_id if isinstance(header_message_id, int) else None,
+            "timestamp"         : timestamp if isinstance(timestamp, int) else 0,
         }
     except (json.JSONDecodeError, OSError):
         log.exception("Failed to load partnership data")

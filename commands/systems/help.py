@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 import discord
 from discord.ext import commands
 from discord.ui import (
@@ -8,12 +6,9 @@ from discord.ui import (
     TextDisplay,
 )
 
-from bot import Context
+from bot import Context, Cordex
 from constants import BOT_OWNER_ID, COLOR_BLURPLE
 from core.help import run_help
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Help Commands
@@ -34,27 +29,25 @@ BOT_INFO_TEXT = (
      "Run `.help <cmd>` for detailed information on a specific command."
 )
 
-def build_info_view() -> LayoutView:
-    class InfoView(LayoutView):
-        container : Container[LayoutView] = Container(
-            TextDisplay(content = BOT_INFO_TEXT),
-            accent_color = COLOR_BLURPLE,
-        )
-    return InfoView()
+class InfoView(LayoutView):
+    container : Container[LayoutView] = Container(
+        TextDisplay(content = BOT_INFO_TEXT),
+        accent_color = COLOR_BLURPLE,
+    )
 
 class HelpCommands(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
-        self.bot : "Cordex" = bot
+    def __init__(self, bot : Cordex) -> None:
+        self.bot : Cordex = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .help Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.command()
-    async def help(self, ctx : Context, *, command_name : str | None = None) -> None:
+    @commands.command(name = "help")
+    async def cmd_help(self, ctx : Context, *, command_name : str | None = None) -> None:
         if not command_name:
             _ = await ctx.send(
-                view             = build_info_view(),
+                view             = InfoView(),
                 allowed_mentions = discord.AllowedMentions.none(),
             )
             return
@@ -62,6 +55,7 @@ class HelpCommands(commands.Cog):
         query = command_name.lower().strip()
 
         special_responses : dict[str, str] = {
+            "cmd"                  : "Your stupidity is unfathomable.",
             "<cmd>"                : "Your stupidity is unfathomable.",
             "super_secret_command" : "There is no super secret command in ba sing se.",
             "help"                 : "Help²",
@@ -74,6 +68,6 @@ class HelpCommands(commands.Cog):
 
         await run_help(self.bot, ctx, command_name)
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = HelpCommands(bot)
     await bot.add_cog(cog)

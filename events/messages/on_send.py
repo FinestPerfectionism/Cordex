@@ -1,11 +1,10 @@
 import contextlib
 import re
-from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 
-from bot import log
+from bot import Cordex, log
 from constants import (
     ACCEPTED_EMOJI,
     DIRECTOR_TASKS_CHANNEL_ID,
@@ -17,9 +16,6 @@ from constants import (
 )
 
 from ._base import WAPPLE_PATTERN
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 FACTOIDS = {
     "bump"   : (
@@ -35,9 +31,9 @@ FACTOIDS = {
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class MessageSendHandler(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : "Cordex" = bot
+        self.bot : Cordex = bot
 
     @commands.Cog.listener("on_message")
     async def message_send_handler(self, message : discord.Message) -> None:
@@ -64,7 +60,7 @@ class MessageSendHandler(commands.Cog):
 
         if isinstance(message.channel, discord.Thread):
             thread = message.channel
-            if thread.name.lower() not in ["test", "t"] and message.id == thread.id:
+            if thread.name.lower() not in {"test", "t"} and message.id == thread.id:
                 if thread.parent_id == STAFF_PROPOSALS_CHANNEL_ID:
                     committee_forum = self.bot.get_channel(STAFF_PROPOSALS_REVIEW_CHANNEL_ID)
                     if isinstance(committee_forum, discord.ForumChannel):
@@ -80,7 +76,7 @@ class MessageSendHandler(commands.Cog):
                     try:
                         _ = await thread.send(content = f"<@&{DIRECTORS_ROLE_ID}>")
                     except Exception:
-                       log.exception("Failed to send director role mention")
+                        log.exception("Failed to send director role mention")
 
         if (
             "https://tenor.com/view/dog-funny-video-funny-funny-dog-dog-peeing-gif-4718562751207105873"
@@ -91,8 +87,8 @@ class MessageSendHandler(commands.Cog):
             return
 
         if re.search(r"\b67\b", message.content) and message.guild and message.guild.id:
-                await message.add_reaction("<:67:1484198860263002133>")
+            await message.add_reaction("<:67:1484198860263002133>")
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = MessageSendHandler(bot)
     await bot.add_cog(cog)

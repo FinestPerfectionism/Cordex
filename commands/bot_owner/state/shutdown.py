@@ -1,18 +1,12 @@
-import contextlib
-
-import discord
-
-from bot import Cordex, Context
+from bot import Context, Cordex
 from core.responses import send_custom_message
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .shutdown Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_state_shutdown(bot : "Cordex", ctx : Context) -> None:
-    with contextlib.suppress(discord.HTTPException, discord.Forbidden):
-        await ctx.message.delete()
-
+async def run_bo_state_shutdown(bot : Cordex, ctx : Context) -> None:
+    await ctx.message.delete()
     _ = await send_custom_message(
         ctx,
         msg_type     = "information",

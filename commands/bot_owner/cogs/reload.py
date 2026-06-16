@@ -1,18 +1,13 @@
-from typing import TYPE_CHECKING
-
-from bot import Interaction, log
+from bot import Cordex, Interaction, log
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import send_custom_message
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner reload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_cogs_reload(
-    bot         : "Cordex",
+    bot         : Cordex,
     interaction : Interaction,
     cog         : str | None,
     cogs        : list[str],

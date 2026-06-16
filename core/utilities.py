@@ -1,9 +1,11 @@
-from collections.abc import Callable
-from discord import ButtonStyle, Role, SeparatorSpacing, Member
-from discord.ui import Separator, LayoutView
-from typing import TypeAlias, Literal
-
 import operator
+from typing import TYPE_CHECKING, Literal
+
+from discord import ButtonStyle, Member, Role, SeparatorSpacing
+from discord.ui import LayoutView, Separator
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
@@ -12,8 +14,6 @@ import operator
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Layout Helpers
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-LVSep : TypeAlias = Separator[LayoutView]
 
 large = SeparatorSpacing.large
 small = SeparatorSpacing.small
@@ -24,19 +24,19 @@ green   = ButtonStyle.green
 red     = ButtonStyle.red
 link    = ButtonStyle.link
 
-class VisibleLargeSeparator(LVSep):
+class VisibleLargeSeparator(Separator[LayoutView]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = large)
 
-class VisibleSmallSeparator(LVSep):
+class VisibleSmallSeparator(Separator[LayoutView]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = small)
 
-class HiddenLargeSeparator(LVSep):
+class HiddenLargeSeparator(Separator[LayoutView]):
     def __init__(self) -> None:
         super().__init__(visible = False, spacing = large)
 
-class HiddenSmallSeparator(LVSep):
+class HiddenSmallSeparator(Separator[LayoutView]):
     def __init__(self) -> None:
         super().__init__(visible = False, spacing = small)
 
@@ -61,34 +61,35 @@ def format_values(
     if not use_conj:
         return divider.join(items)
 
+    two = 2
     if len(items) == 1:
         return items[0]
-    if len(items) == 2:
+    if len(items) == two:
         return f"{items[0]} {conj} {items[1]}"
 
     return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
 
 def check_role_hierarchy(
-    actor      : Member, 
-    target     : Member, 
-    comparison : Literal[">", "<", "=", ">=", "<="]
+    actor      : Member,
+    target     : Member,
+    comparison : Literal[">", "<", "=", ">=", "<="],
 ) -> bool:
     actor_role  = actor.top_role
     target_role = target.top_role
-    
+
     ops : dict[str, Callable[[Role, Role], bool]] = {
         ">"  : operator.gt,
         "<"  : operator.lt,
         "="  : operator.eq,
         ">=" : operator.ge,
-        "<=" : operator.le
+        "<=" : operator.le,
     }
 
     return ops[comparison](actor_role, target_role)
 
-def codeblock(text : str, language : str = "py") -> str:
+def codeblock(text : str, language : str | None = "py") -> str:
     return (
-       f"```{language}\n"
+       f"```{language or ''}\n"
        f"{text}\n"
         "```"
     )

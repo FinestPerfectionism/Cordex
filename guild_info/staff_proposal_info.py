@@ -8,9 +8,10 @@ from discord.ui import (
     Container,
     LayoutView,
     TextDisplay,
+    button,
 )
-from typing_extensions import override
 
+from bot import Interaction
 from core.utilities import (
     VisibleLargeSeparator,
     VisibleSmallSeparator,
@@ -18,8 +19,6 @@ from core.utilities import (
     green,
     red,
 )
-
-from bot import Interaction
 
 
 class AdministratorsRolesComponents(LayoutView):
@@ -87,61 +86,46 @@ class CommitteeRolesComponents(LayoutView):
         accent_color = 0xf9a56b,
     )
 
-class AdministratorsRoles(Button[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(
-            style     = green,
-            label     = "Administrator's Roles",
-            custom_id = "persistent_administrator_button",
-        )
-
-    @override
-    async def callback(self, interaction : Interaction) -> None:
+class RolesActionRow(ActionRow[LayoutView]):
+    @button(
+        style     = green,
+        label     = "Administrator's Roles",
+        custom_id = "persistent_administrator_button",
+    )
+    async def administrators_roles(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         _ = await interaction.response.send_message(
             view      = AdministratorsRolesComponents(),
             ephemeral = True,
         )
 
-class ModeratorsRoles(Button[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(
-            style     = green,
-            label     = "Moderator's Roles",
-            custom_id = "persistent_moderator_button",
-        )
-
-    @override
-    async def callback(self, interaction : Interaction) -> None:
+    @button(
+        style     = green,
+        label     = "Moderator's Roles",
+        custom_id = "persistent_moderator_button",
+    )
+    async def moderators_roles(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         _ = await interaction.response.send_message(
             view      = ModeratorsRolesComponents(),
             ephemeral = True,
         )
 
-class TrusteeRoles(Button[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(
-            style     = blurple,
-            label     = "Trustee's Roles",
-            custom_id = "persistent_trustee_button",
-        )
-
-    @override
-    async def callback(self, interaction : Interaction) -> None:
+    @button(
+        style     = blurple,
+        label     = "Trustee's Roles",
+        custom_id = "persistent_trustee_button",
+    )
+    async def trustee_roles(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         _ = await interaction.response.send_message(
             view      = TrusteeRolesComponents(),
             ephemeral = True,
         )
 
-class CommitteeRoles(Button[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(
-            style     = red,
-            label     = "Committee's Roles",
-            custom_id = "persistent_committee_button",
-        )
-
-    @override
-    async def callback(self, interaction : Interaction) -> None:
+    @button(
+        style     = red,
+        label     = "Committee's Roles",
+        custom_id = "persistent_committee_button",
+    )
+    async def committee_roles(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         _ = await interaction.response.send_message(
             view      = CommitteeRolesComponents(),
             ephemeral = True,
@@ -227,12 +211,7 @@ class StaffProposalComponents2a(LayoutView):
                 ),
             ),
             VisibleLargeSeparator(),
-            ActionRow(
-                AdministratorsRoles(),
-                ModeratorsRoles(),
-                CommitteeRoles(),
-                TrusteeRoles(),
-            ),
+            RolesActionRow(),
         )
         _ = self.add_item(self.container)
 

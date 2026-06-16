@@ -3,24 +3,20 @@ import contextlib
 import logging
 import sys
 from os import execv
-from typing import TYPE_CHECKING
 
 import discord
 
-from bot import Context
-from constants import DENIED_EMOJI
+from bot import Context, Cordex
 from core.exceptions import send_bad_operation
-from core.responses import send_custom_message
-
-if TYPE_CHECKING:
-    from bot import Cordex
+from core.responses import edit_custom_message, send_custom_message
+from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .restart Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_state_restart(
-    bot            : "Cordex",
+    bot            : Cordex,
     ctx            : Context,
     restarting_ref : list[bool],
     log            : logging.Logger,
@@ -34,10 +30,10 @@ async def run_bo_state_restart(
         return
 
     restarting_ref[0] = True
-    
+
     with contextlib.suppress(discord.Forbidden):
         await ctx.message.delete()
-        
+
     confirm_msg = await send_custom_message(
         ctx,
         msg_type     = "information",
@@ -58,7 +54,7 @@ async def run_bo_state_restart(
     restart_task.add_done_callback(lambda t : t.exception() if not t.cancelled() else None)
 
 async def restart_bot(
-    bot            : "Cordex",
+    bot            : Cordex,
     log            : logging.Logger,
     restarting_ref : list[bool],
     confirm_msg    : discord.Message | None = None,
@@ -98,7 +94,7 @@ async def restart_bot(
         _ = sys.stdout.flush()
         _ = sys.stderr.flush()
 
-        execv( # noqa: S606
+        execv(  # noqa: S606
             sys.executable,
             [sys.executable, *sys.argv],
         )
@@ -108,14 +104,11 @@ async def restart_bot(
         restarting_ref[0] = False
 
         if confirm_msg:
-            _ = await confirm_msg.edit(
-                content = (
-                   f"{DENIED_EMOJI} **Failed to restart bot!**\n"
-                    "Restart failed:\n"
-                    "```py\n"
-                   f"{e}\n"
-                    "```"
-                ),
+            _ = await edit_custom_message(
+                confirm_msg,
+                msg_type = "error",
+                title    = "restart bot",
+                subtitle = codeblock(f"{e}"),
             )
 
         await bot.change_presence(status = discord.Status.online)

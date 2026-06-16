@@ -2,7 +2,7 @@
 name            = "cordex"
 version         = "0.1.0"
 description     = "Development for the discord bot Cordex"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies    = [
     "discord.py",
     "basedpyright",
@@ -16,7 +16,7 @@ stubPath         = "./typings"
 typeCheckingMode = "all"
 venvPath         = "."
 venv             = ".venv"
-pythonVersion    = "3.12"
+pythonVersion    = "3.14"
 include          = ["."]
 exclude          = ["build"]
 
@@ -104,9 +104,17 @@ ignore = [
     "BLE",
     "PD011",
     "CPY001",
-    "E501",
+    "PLR6301",
+    "E203",
+    "E221",
+    "E222",
+    "E241",
     "E251",
     "E252",
+    "E271",
+    "E272",
+    "E302",
+    "E501",
 ]
 
 [tool.ruff.lint.mccabe]

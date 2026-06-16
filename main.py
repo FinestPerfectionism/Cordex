@@ -32,6 +32,7 @@ async def main() -> None:
     except Exception:
         log.exception("Received error — Bot crashed during runtime")
 
+
 if __name__ == "__main__":
     try:
         asyncio.run(main())

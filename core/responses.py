@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from itertools import starmap
 from typing import (
     Literal,
     cast,
@@ -92,10 +93,7 @@ def build_header(msg_type : MessageType | SubMessageType, title : str, *, overri
         return f"{emoji(msg_type)} **{title}**"
 
     prefix      = type_prefix(msg_type)
-    punctuation = "!" if msg_type in (
-        "warning",
-        "error",
-    ) else "."
+    punctuation = "!" if msg_type in {"warning", "error"} else "."
     clean_title = title.rstrip(".!") + punctuation
 
     if prefix:
@@ -211,10 +209,7 @@ async def send_custom_message(
     delete_after      : float   | None = None,
     message           : Message | None = None,
 ) -> Message | None:
-    allow_contact = contact_bot_owner if msg_type in (
-        "warning",
-        "error",
-    ) else False
+    allow_contact = contact_bot_owner if msg_type in {"warning", "error"} else False
 
     lines : list[str] = [
         build_header(
@@ -281,10 +276,7 @@ async def edit_custom_message(
     contact_bot_owner : bool       = False,
     override          : bool       = False,
 ) -> Message:
-    allow_contact = contact_bot_owner if msg_type in (
-        "warning",
-        "error",
-    ) else False
+    allow_contact = contact_bot_owner if msg_type in {"warning", "error"} else False
 
     lines : list[str] = [
         build_header(
@@ -386,12 +378,7 @@ class _MultiCustomMessage:
 
             return "\n".join(lines)
 
-        return [
-            build_block(
-                i,
-                sf,
-            ) for i, sf in enumerate(field.subfields)
-        ]
+        return list(starmap(build_block, enumerate(field.subfields)))
 
     def build_components(self) -> TextDisplayOrSeparator:
         all_components : TextDisplayOrSeparator = []
@@ -465,10 +452,7 @@ def format_custom_message(
     contact_bot_owner : bool       = False,
     override          : bool       = False,
 ) -> str:
-    allow_contact = contact_bot_owner if msg_type in (
-        "warning",
-        "error",
-    ) else False
+    allow_contact = contact_bot_owner if msg_type in {"warning", "error"} else False
 
     lines : list[str] = [
         build_header(

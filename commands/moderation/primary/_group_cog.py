@@ -1,10 +1,8 @@
-from typing import TYPE_CHECKING
-
 from discord.app_commands import Group
 from discord.app_commands import command as app_command
 from discord.ext import commands
 
-from bot import Interaction
+from bot import Cordex, Interaction
 from core.permissions import (
     director_cmd,
     moderator_cmd,
@@ -26,9 +24,6 @@ from .timeout.add import run_mod_primary_timeout_add
 from .timeout.remove import run_mod_primary_timeout_remove
 from .timeout.view import run_mod_primary_timeout_view
 
-if TYPE_CHECKING:
-    from bot import Cordex
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Primary Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -38,9 +33,9 @@ class ModerationPrimaryCommands(
     name        = "moderation",
     description = "Moderators only — Primary moderation commands.",
 ):
-    def __init__(self, bot : "Cordex") -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : "Cordex" = bot
+        self.bot : Cordex = bot
 
     lockdown   : Group = Group(
         name        = "lockdown",
@@ -215,6 +210,6 @@ class ModerationPrimaryCommands(
     async def cmd_purge(self, interaction : Interaction) -> None:
         await run_mod_primary_purge(interaction)
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = ModerationPrimaryCommands(bot)
     await bot.add_cog(cog)

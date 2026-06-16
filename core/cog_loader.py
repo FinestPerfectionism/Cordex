@@ -1,17 +1,17 @@
 import importlib
-import logging
 import os
 import pathlib
 import pkgutil
+from logging import Logger, getLogger
+from typing import override
 
 from discord.ext import commands, tasks
-from typing_extensions import override
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cog Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-log : logging.Logger = logging.getLogger("Cordex")
+log : Logger = getLogger("Cordex")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cog Discovery
@@ -69,10 +69,11 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
 # Cog Auto-Reloading
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 IGNORE_EXTENSIONS = []
 
 def path_from_extension(extension : str) -> pathlib.Path:
-    return pathlib.Path(extension.replace(".", os.sep)+".py")
+    return pathlib.Path(extension.replace(".", os.sep) + ".py")
 
 class CogAutoReloading(commands.Cog):
     def __init__(self, bot : commands.Bot, *package_names : str) -> None:

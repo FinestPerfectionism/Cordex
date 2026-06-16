@@ -1,8 +1,9 @@
-import discord
+from discord import Embed, Role
 
 from bot import Interaction
+from constants import COLOR_BLURPLE
 
-from ._base import create_base_embed, format_permission
+from ._base import format_permission
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role permissions Logic
@@ -10,8 +11,8 @@ from ._base import create_base_embed, format_permission
 
 async def run_role_permissions(
     interaction : Interaction,
-    role        : discord.Role,
-    perm_filter : str = "all",
+    role        : Role,
+    perm_filter : str | None = None,
 ) -> None:
     _ = await interaction.response.defer(ephemeral = False)
 
@@ -23,9 +24,10 @@ async def run_role_permissions(
             continue
         lines.append(format_permission(perm_name, value = value))
 
-    embed : discord.Embed = create_base_embed(
+    embed = Embed(
         title       = f"Permissions for {role.name}",
         description = f"**{role.name}:**\n" + "\n".join(lines) if lines else "No permissions match this filter.",
+        color       = COLOR_BLURPLE,
     )
 
     await interaction.followup.send(embed = embed)

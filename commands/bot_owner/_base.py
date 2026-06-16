@@ -18,7 +18,7 @@ def get_cogs() -> list[str]:
 # cog_autocomplete
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Choice[str]]:
+async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Choice[str]]:  # noqa: RUF029
     return [
         Choice(name = cog, value = cog)
         for cog in get_cogs() if current.lower() in cog.lower()
