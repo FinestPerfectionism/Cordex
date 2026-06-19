@@ -238,21 +238,21 @@ class EditorView(LayoutView):
                         file       = entry.get("f") or "None"
 
                         summary_lines.append(
-                            (
+
                                 f"Success for {member.mention}.\n"
                                 f"- **Reason:** {reason}\n"
                                 f"- **Timer:** {timer}\n"
                                 f"- **Appealable:** {appealable} **|** **DM Sent:** {dm_user}\n"
-                                f"- **Attachment:** {file}"
-                            )
+                                f"- **Attachment:** {file}",
+
                         )
 
                     else:
                         summary_lines.append(
-                            (
+
                                f"Partial success for {member.mention}.\n"
-                                "-# Missing configuration data for this member."
-                            )
+                                "-# Missing configuration data for this member.",
+
                         )
 
                 class FinalizedView(LayoutView):

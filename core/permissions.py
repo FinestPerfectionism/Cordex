@@ -60,26 +60,26 @@ async def execute_access_check(ctx_or_interaction : CtxOrInteraction) -> bool:
 
     if data.command_node is None:
         return True
-    
+
     member      = resolve_member(ctx_or_interaction)
     eval_target = member if member is not None else getattr(ctx_or_interaction, "user", getattr(ctx_or_interaction, "author", None))
-    
+
     if eval_target is None:
         await e.send_bad_environment_dms(ctx_or_interaction)
         return False
-    
+
     if member is None and isinstance(data.command_node, RoleNode):
         await e.send_bad_environment_dms(ctx_or_interaction)
         return False
-    
+
     if not evaluate_access(data.command_node, eval_target):
         await e.send_bad_permissions_command(ctx_or_interaction)
         return False
-    
+
     if data.channel_rules:
         if not in_guild:
             return True
-    
+
         channel_id = (
             ctx_or_interaction.channel_id
             if isinstance(ctx_or_interaction, discord.Interaction)
@@ -87,15 +87,15 @@ async def execute_access_check(ctx_or_interaction : CtxOrInteraction) -> bool:
         )
         if channel_id is not None:
             allowed : list[int] = []
-    
+
             for rule in data.channel_rules:
                 if evaluate_access(rule.node, eval_target):
                     allowed.extend(rule.channels)
-    
+
             if allowed and channel_id not in allowed:
                 await e.send_bad_permissions_command(ctx_or_interaction)
                 return False
-    
+
     return True
 
 async def prefix_access_predicate(ctx : Context) -> bool:

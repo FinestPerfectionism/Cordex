@@ -2,8 +2,7 @@ from logging import Logger, getLogger
 from typing import TYPE_CHECKING, override
 
 import discord
-from discord import Client, CustomActivity, Intents, Status
-from discord.app_commands import CommandTree
+from discord import CustomActivity, Intents, Status
 from discord.ext import commands
 
 from core.cog_loader import discover_cogs
@@ -24,18 +23,9 @@ log : Logger = getLogger("Cordex")
 class ContextClass(commands.Context["Cordex"]):
     ...
 
-class InteractionClass(discord.Interaction):
-    ...
-
-class Tree(CommandTree):
-    @override
-    async def interaction_check(self, interaction : discord.Interaction) -> bool:
-        interaction.__class__ = InteractionClass
-        return await super().interaction_check(interaction)
-
 
 type Context          = ContextClass
-type Interaction      = InteractionClass | discord.Interaction
+type Interaction      = discord.Interaction["Cordex"] | discord.Interaction
 type CtxOrInteraction = Interaction | Context
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -52,7 +42,6 @@ class Cordex(commands.Bot):
             help_command     = None,
             status           = Status.online,
             activity         = CustomActivity(name = "Utility Bot 1.5."),
-            tree_cls         = Tree,
         )
         self.cases_db   : asq.Connection
         self.start_time : float
@@ -60,7 +49,7 @@ class Cordex(commands.Bot):
     @override
     async def get_context[ContextT : commands.Context[Cordex]](
         self,
-        origin : discord.Message | discord.Interaction[Client],
+        origin : discord.Message | discord.Interaction,
         *,
         cls    : type[ContextT]  | None = None,
     ) -> ContextT | Context:
@@ -69,7 +58,7 @@ class Cordex(commands.Bot):
     @override
     async def setup_hook(self) -> None:
 
-        # ⸻ Aiosqlite
+        # ⸻ AIOSQLite
 
         # ⸻ Cogs
 

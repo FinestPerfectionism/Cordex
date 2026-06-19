@@ -10,19 +10,24 @@ from core.permissions import (
     staff_cmd,
 )
 
-from .ban.add import run_mod_primary_ban_add
-from .ban.remove import run_mod_primary_ban_remove
-from .ban.view import run_mod_primary_ban_view
+from .ban import (
+    run_mod_primary_ban_add,
+    run_mod_primary_ban_remove,
+    run_mod_primary_ban_view,
+)
 from .kick import run_mod_primary_kick
-from .lockdown.add import run_mod_primary_lockdown_add
-from .lockdown.remove import run_mod_primary_lockdown_remove
+from .lockdown import run_mod_primary_lockdown_add, run_mod_primary_lockdown_remove
 from .purge import run_mod_primary_purge
-from .quarantine.add import run_mod_primary_quarantine_add
-from .quarantine.remove import run_mod_primary_quarantine_remove
-from .quarantine.view import run_mod_primary_quarantine_view
-from .timeout.add import run_mod_primary_timeout_add
-from .timeout.remove import run_mod_primary_timeout_remove
-from .timeout.view import run_mod_primary_timeout_view
+from .quarantine import (
+    run_mod_primary_quarantine_add,
+    run_mod_primary_quarantine_remove,
+    run_mod_primary_quarantine_view,
+)
+from .timeout import (
+    run_mod_primary_timeout_add,
+    run_mod_primary_timeout_remove,
+    run_mod_primary_timeout_view,
+)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Primary Group Commands

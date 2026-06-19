@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
-import discord
+from discord import TextChannel
+from discord.abc import Messageable
 from discord.app_commands import autocomplete, describe, rename
 from discord.app_commands import command as app_command
 from discord.ext import commands
@@ -9,13 +10,15 @@ from bot import Context, Cordex, Interaction, log
 from core.permissions import bot_owner_cmd
 
 from ._base import cog_autocomplete, get_cogs
-from .cogs.load import run_bo_cogs_load
-from .cogs.pullreload import run_bo_cogs_pullreload
-from .cogs.reload import run_bo_cogs_reload
-from .cogs.unload import run_bo_cogs_unload
-from .misc import run_bo_misc_eval, run_bo_misc_say, run_bo_misc_sync
-from .state.restart import run_bo_state_restart
-from .state.shutdown import run_bo_state_shutdown
+from .cogs import (
+    run_bo_cogs_load,
+    run_bo_cogs_pullreload,
+    run_bo_cogs_reload,
+    run_bo_cogs_unload,
+)
+from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
+from .misc import run_bo_misc_eval, run_bo_misc_sync
+from .state import run_bo_state_restart, run_bo_state_shutdown
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -130,12 +133,12 @@ class BotOwnerCommands(
         await run_bo_misc_eval(self.bot, ctx, body)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner say Command
+    # /bot-owner send Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @app_command(
-        name        = "say",
-        description = "Make the bot say something.",
+        name        = "send",
+        description = "Make the bot send something.",
     )
     @describe(
         message        = "The text to send.",
@@ -147,23 +150,94 @@ class BotOwnerCommands(
         reply_id       = "reply-id",
     )
     @bot_owner_cmd()
-    async def cmd_say(
+    async def cmd_messages_send(
         self,
         interaction    : Interaction,
         message        : str,
-        target_channel : discord.TextChannel | None = None,
-        reply_id       : str                 | None = None,
+        target_channel : TextChannel | None = None,
+        reply_id       : str         | None = None,
     ) -> None:
         target = target_channel or interaction.channel
 
-        if not isinstance(target, discord.abc.Messageable):
+        if not isinstance(target, Messageable):
             return
 
-        await run_bo_misc_say(
+        await run_bo_messages_send(
             interaction = interaction,
             channel     = target,
             text        = message,
             message_id  = reply_id,
+        )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /bot-owner edit Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @app_command(
+        name        = "edit",
+        description = "Make the bot edit one of its own messages.",
+    )
+    @describe(
+        message_id     = "The ID of the message to edit.",
+        message        = "The new text for the message.",
+        target_channel = "The channel where the message is located.",
+    )
+    @rename(
+        message_id     = "message-id",
+        target_channel = "target-channel",
+    )
+    @bot_owner_cmd()
+    async def cmd_messages_edit(
+        self,
+        interaction    : Interaction,
+        message_id     : str,
+        message        : str,
+        target_channel : TextChannel | None = None,
+    ) -> None:
+        target = target_channel or interaction.channel
+
+        if not isinstance(target, Messageable):
+            return
+
+        await run_bo_messages_edit(
+            interaction = interaction,
+            channel     = target,
+            text        = message,
+            message_id  = message_id,
+        )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /bot-owner delete Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @app_command(
+        name        = "delete",
+        description = "Make the bot delete one of its own messages.",
+    )
+    @describe(
+        message_id     = "The ID of the message to delete.",
+        target_channel = "The channel where the message is located.",
+    )
+    @rename(
+        message_id     = "message-id",
+        target_channel = "target-channel",
+    )
+    @bot_owner_cmd()
+    async def cmd_messages_delete(
+        self,
+        interaction    : Interaction,
+        message_id     : str,
+        target_channel : TextChannel | None = None,
+    ) -> None:
+        target = target_channel or interaction.channel
+
+        if not isinstance(target, Messageable):
+            return
+
+        await run_bo_messages_delete(
+            interaction = interaction,
+            channel     = target,
+            message_id  = message_id,
         )
 
 async def setup(bot : Cordex) -> None:
