@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from discord import TextChannel
-from discord.abc import Messageable
 from discord.app_commands import autocomplete, describe, rename
 from discord.app_commands import command as app_command
 from discord.ext import commands
@@ -141,30 +140,22 @@ class BotOwnerCommands(
         description = "Make the bot send something.",
     )
     @describe(
-        message        = "The text to send.",
-        target_channel = "The channel to send the message in.",
-        reply_id       = "The ID of the message to reply to.",
+        message  = "The text to send.",
+        channel  = "The channel to send the message in.",
+        reply_id = "The ID of the message to reply to.",
     )
-    @rename(
-        target_channel = "target-channel",
-        reply_id       = "reply-id",
-    )
+    @rename(reply_id = "reply-id")
     @bot_owner_cmd()
     async def cmd_messages_send(
         self,
-        interaction    : Interaction,
-        message        : str,
-        target_channel : TextChannel | None = None,
-        reply_id       : str         | None = None,
+        interaction : Interaction,
+        message     : str,
+        channel     : TextChannel | None = None,
+        reply_id    : str         | None = None,
     ) -> None:
-        target = target_channel or interaction.channel
-
-        if not isinstance(target, Messageable):
-            return
-
         await run_bo_messages_send(
             interaction = interaction,
-            channel     = target,
+            channel     = channel,
             text        = message,
             message_id  = reply_id,
         )
@@ -178,30 +169,25 @@ class BotOwnerCommands(
         description = "Make the bot edit one of its own messages.",
     )
     @describe(
-        message_id     = "The ID of the message to edit.",
-        message        = "The new text for the message.",
-        target_channel = "The channel where the message is located.",
+        message_id = "The ID of the message to edit.",
+        message    = "The new text for the message.",
+        channel    = "The channel where the message is located.",
     )
     @rename(
-        message_id     = "message-id",
-        target_channel = "target-channel",
+        message_id = "message-id",
+        channel    = "target-channel",
     )
     @bot_owner_cmd()
     async def cmd_messages_edit(
         self,
-        interaction    : Interaction,
-        message_id     : str,
-        message        : str,
-        target_channel : TextChannel | None = None,
+        interaction : Interaction,
+        message_id  : str,
+        message     : str,
+        channel     : TextChannel | None = None,
     ) -> None:
-        target = target_channel or interaction.channel
-
-        if not isinstance(target, Messageable):
-            return
-
         await run_bo_messages_edit(
             interaction = interaction,
-            channel     = target,
+            channel     = channel,
             text        = message,
             message_id  = message_id,
         )
@@ -215,28 +201,23 @@ class BotOwnerCommands(
         description = "Make the bot delete one of its own messages.",
     )
     @describe(
-        message_id     = "The ID of the message to delete.",
-        target_channel = "The channel where the message is located.",
+        message_id = "The ID of the message to delete.",
+        channel    = "The channel where the message is located.",
     )
     @rename(
-        message_id     = "message-id",
-        target_channel = "target-channel",
+        message_id = "message-id",
+        channel    = "target-channel",
     )
     @bot_owner_cmd()
     async def cmd_messages_delete(
         self,
-        interaction    : Interaction,
-        message_id     : str,
-        target_channel : TextChannel | None = None,
+        interaction : Interaction,
+        message_id  : str,
+        channel     : TextChannel | None = None,
     ) -> None:
-        target = target_channel or interaction.channel
-
-        if not isinstance(target, Messageable):
-            return
-
         await run_bo_messages_delete(
             interaction = interaction,
-            channel     = target,
+            channel     = channel,
             message_id  = message_id,
         )
 

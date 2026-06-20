@@ -256,7 +256,7 @@ class HelpCallback[**P, T_co](Protocol):
         ...
 
 class HelpedCallable:
-    __help_data__ : CommandHelpData = cast("CommandHelpData", cast(object, None))
+    __help_data__ : CommandHelpData = cast(CommandHelpData, cast(object, None))
 
 def merge_access_into_help(func : object, data : CommandHelpData) -> None:
     access : AccessData | None = getattr(func, "__access_data__", None)
@@ -315,7 +315,7 @@ def help_description[**P, T_co](
             guild_only    = guild_only,
         )
         merge_access_into_help(func, data)
-        cast("HelpedCallable", func).__help_data__ = data
+        cast(HelpedCallable, func).__help_data__ = data
         return func
 
     return decorator
@@ -764,7 +764,7 @@ async def run_help(
         lines          : list[str] = []
 
         for cmd in bot.commands:
-            cb = cast("HelpedCallable", cmd.callback)
+            cb = cast(HelpedCallable, cmd.callback)
             if hasattr(cb, "__help_data__"):
                 seen_callbacks.add(id(cb))
                 lines.append(f"`{cmd.name}` — {cb.__help_data__.desc}")
@@ -795,7 +795,7 @@ async def run_help(
         await e.send_bad_argument(ctx_or_interaction, subtitle = {"command-name" : f"Command `{command_name}` not found or has no help data."})
         return
 
-    data        = cast("HelpedCallable", callback).__help_data__
+    data        = cast(HelpedCallable, callback).__help_data__
     command_ref = await resolve_command_ref(bot, data)
 
     view = build_help_view(

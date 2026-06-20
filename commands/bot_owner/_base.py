@@ -1,19 +1,27 @@
 import re
-from collections.abc import Awaitable, Callable
-from typing import Self
+from collections.abc import Awaitable
+from typing import Callable, Self
 
 import discord
-from discord.app_commands import Choice
 from discord.ui import Button, View, button
 
 from bot import Interaction
 from constants import CONTESTED_EMOJI
-from core.cog_loader import discover_cogs
+
+from discord.app_commands import Choice
+
 from core.utilities import format_values, green, red
+from core.cog_loader import discover_cogs
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Commands Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# TextChannelTypes
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+TextChannelTypes = (discord.TextChannel, discord.Thread, discord.DMChannel, discord.VoiceChannel)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Emoji Stuff
@@ -23,12 +31,12 @@ EMOJI_PATTERN = re.compile(r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<
 
 def inaccessible_emoji_ids(client : discord.Client, text : str) -> list[str]:
     inaccessible_ids : list[str] = []
-
+    
     for match in EMOJI_PATTERN.finditer(text):
         emoji_id = int(match.group("id"))
         if client.get_emoji(emoji_id) is None:
             inaccessible_ids.append(match.group(0))
-
+            
     return inaccessible_ids
 
 class NoEmojiAccessView(View):
@@ -41,7 +49,7 @@ class NoEmojiAccessView(View):
         for child in self.children:
             if isinstance(child, Button):
                 child.disabled = True
-
+                
         _ = await interaction.response.edit_message(view = self)
         await self.on_continue(interaction)
 
@@ -50,7 +58,7 @@ class NoEmojiAccessView(View):
         for child in self.children:
             if isinstance(child, Button):
                 child.disabled = True
-
+                
         _ = await interaction.response.edit_message(view = self)
 
 async def emoji_inaccessible(
@@ -63,14 +71,19 @@ async def emoji_inaccessible(
     if not inaccessible_ids:
         return False
 
+    if len(inaccessible_ids) == 1:
+        plural = ""
+    else:
+        plural = "s"
+        
     await interaction.followup.send(
         (
-            f"{CONTESTED_EMOJI} **Failed to run command.** "
-            f"I don't have access to {format_values(inaccessible_ids)}."
+            f"{CONTESTED_EMOJI} **Failed to run command.**\n"
+            f"I don't have access to the emoji{plural} {format_values(inaccessible_ids, wrap = "`")}."
         ),
         view = NoEmojiAccessView(on_continue),
     )
-
+    
     return True
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

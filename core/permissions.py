@@ -124,7 +124,7 @@ def access_control[**P, T](
             guild_only     = guild_only,
             dm_only        = dm_only,
         )
-        cast("AccessControlled", func).__access_data__ = data
+        cast(AccessControlled, func).__access_data__ = data
 
         prefix_wrapped = commands.check(prefix_access_predicate)(func)
         return app_commands.check(app_access_predicate)(prefix_wrapped)

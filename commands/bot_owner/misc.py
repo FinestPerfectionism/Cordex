@@ -69,7 +69,6 @@ async def run_bo_misc_sync(ctx : Context) -> None:
 # .eval Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-
 eval_message_ids : dict[int, int] = {}
 
 async def run_bo_misc_eval(bot : Cordex, ctx : Context, body : str) -> None:
@@ -135,6 +134,11 @@ async def run_bo_misc_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "FileUpload"            : ui.FileUpload,
         "Label"                 : ui.Label,
 
+        "VisibleLargeSeparator" : VisibleLargeSeparator,
+        "VisibleSmallSeparator" : VisibleSmallSeparator,
+        "HiddenLargeSeparator"  : HiddenLargeSeparator,
+        "HiddenLargeSeparator"  : HiddenSmallSeparator,
+        
         "VLSep"                 : VisibleLargeSeparator,
         "VSSep"                 : VisibleSmallSeparator,
         "HLSep"                 : HiddenLargeSeparator,
@@ -162,22 +166,27 @@ async def run_bo_misc_eval(bot : Cordex, ctx : Context, body : str) -> None:
 
     body       = "\n".join(body.split("\n")[1:-1]) if body.startswith("```") else body.strip("` \n")
     stdout     = io.StringIO()
-    to_compile = f'async def func():\n{textwrap.indent(body, "  ")}'
+    to_compile = f"async def func():\n{textwrap.indent(body, "  ")}"
+    
     try:
         exec(to_compile, env)
+        
     except Exception as e:
-        _ = await ctx.message.add_reaction(f"{DENIED_EMOJI}")
+        _ = await ctx.message.add_reaction(DENIED_EMOJI)
         res = await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
         eval_message_ids[ctx.message.id] = res.id
         return
-    func = cast("Callable[[], Awaitable[object]]", env["func"])
+    func = cast(Callable[[], Awaitable[object]], env["func"])
+    
     try:
         with contextlib.redirect_stdout(stdout):
             ret = await func()
+            
     except Exception:
         value = stdout.getvalue()
         _ = await ctx.message.add_reaction(f"{CONTESTED_EMOJI}")
         res   = await ctx.send(codeblock(f"{value}{traceback.format_exc()}"))
+        
         eval_message_ids[ctx.message.id] = res.id
     else:
         value = stdout.getvalue()

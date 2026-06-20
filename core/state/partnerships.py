@@ -40,7 +40,7 @@ def load_partnership_data() -> PartnershipData:
         return default()
     try:
         with Path.open(_DATA_FILE) as f:
-            data = cast("dict[str, object]", json.load(f))
+            data = cast(dict[str, object], json.load(f))
 
         partnerships      = data.get("partnerships")
         message_ids       = data.get("message_ids")

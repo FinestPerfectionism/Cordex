@@ -43,14 +43,16 @@ class MessageEditHandler(commands.Cog):
                 return
 
         if before.id in eval_message_ids:
-            with contextlib.suppress(discord.HTTPException):
-                await before.clear_reactions()
-                old_res_id = eval_message_ids.pop(before.id, None)
-                if old_res_id is not None:
-                    old_msg = await before.channel.fetch_message(old_res_id)
-                    await old_msg.delete()
+            await before.clear_reactions()
+            
             ctx = await self.bot.get_context(after)
             await self.bot.invoke(ctx)
+            
+            old_res_id = eval_message_ids.pop(before.id, None)
+            if old_res_id is not None:
+                old_msg = await before.channel.fetch_message(old_res_id)
+                await old_msg.delete()
+                
             return
 
         if is_directorship_channel(before.channel):

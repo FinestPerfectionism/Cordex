@@ -151,12 +151,12 @@ async def send(
         return await message.edit(view = view)
 
     if delete_after is not None:
-        return await cast("Messageable", target).send(
+        return await cast(Messageable, target).send(
             view         = view,
             delete_after = delete_after,
         )
 
-    return await cast("Messageable", target).send(view = view)
+    return await cast(Messageable, target).send(view = view)
 
 async def edit(message : Message, view : LayoutView) -> Message:
     return await message.edit(view = view)
@@ -360,7 +360,7 @@ class _MultiCustomMessage:
             if index == 0:
                 lines.append(
                     build_header(
-                        cast("MessageType", field.msg_type),
+                        cast(MessageType, field.msg_type),
                         field.title,
                         override = field.override,
                     ),

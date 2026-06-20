@@ -1,9 +1,11 @@
 from logging import Logger, getLogger
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Self, TypedDict, Unpack, override
 
-import discord
-from discord import CustomActivity, Intents, Status
+from discord import CustomActivity, Intents, Message, Status, Interaction as BaseInteraction
 from discord.ext import commands
+from discord.ext.commands.view import StringView # type: ignore[reportMissingTypeStubs]
+from discord.ext.commands import Context as BaseContext # type: ignore[reportMissingTypeStubs]
+from discord.ui import LayoutView, View
 
 from core.cog_loader import discover_cogs
 
@@ -20,12 +22,20 @@ log : Logger = getLogger("Cordex")
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class ContextClass(commands.Context["Cordex"]):
-    ...
+class ContextKwargs(TypedDict, total = False):
+    message : Message
+    bot     : "Cordex"
+    view    : StringView
 
+class ContextClass(BaseContext["Cordex"]):
+    def __init__(self, **kwargs : Unpack[ContextKwargs]):
+        super().__init__(**kwargs)
+
+    async def send_view(self, ctx : Self, view : View | LayoutView):
+        _ = await ctx.send(view = view)
 
 type Context          = ContextClass
-type Interaction      = discord.Interaction["Cordex"] | discord.Interaction
+type Interaction      = BaseInteraction["Cordex"] | BaseInteraction
 type CtxOrInteraction = Interaction | Context
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -47,11 +57,11 @@ class Cordex(commands.Bot):
         self.start_time : float
 
     @override
-    async def get_context[ContextT : commands.Context[Cordex]](
+    async def get_context[ContextT : BaseContext[Cordex]](
         self,
-        origin : discord.Message | discord.Interaction,
+        origin : Message        | BaseInteraction,
         *,
-        cls    : type[ContextT]  | None = None,
+        cls    : type[ContextT] | None = None,
     ) -> ContextT | Context:
         return await super().get_context(origin, cls = cls or ContextClass)
 

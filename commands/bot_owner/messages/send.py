@@ -4,7 +4,7 @@ import discord
 from discord.abc import Messageable
 
 from bot import Interaction
-from commands.bot_owner._base import emoji_inaccessible
+from commands.bot_owner._base import TextChannelTypes, emoji_inaccessible
 from core.exceptions import send_bad_argument, send_unknown_error
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -13,11 +13,17 @@ from core.exceptions import send_bad_argument, send_unknown_error
 
 async def run_bo_messages_send(
     interaction : Interaction,
-    channel     : Messageable,
     text        : str,
     message_id  : str | None = None,
+    channel     : Messageable | None = None,
 ) -> None:
     _ = await interaction.response.defer(ephemeral = True)
+
+    target_channel = channel or interaction.channel
+
+    if not isinstance(target_channel, TextChannelTypes):
+        await send_bad_argument(interaction, subtitle = {"channel" : "The selected channel does not support text messages."})
+        return
 
     async def do_send(interaction : Interaction) -> None:
         typing_speed = len(text) * 0.05
@@ -27,20 +33,19 @@ async def run_bo_messages_send(
             reply_reference : discord.Message | None = None
             if message_id:
                 try:
-                    if channel:
-                        reply_reference = await channel.fetch_message(int(message_id))
+                    reply_reference = await target_channel.fetch_message(int(message_id))
 
                 except (discord.NotFound, ValueError, discord.HTTPException):
                     await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
                     return
 
-            if hasattr(channel, "typing"):
-                async with channel.typing():
+            if hasattr(target_channel, "typing"):
+                async with target_channel.typing():
                     await asyncio.sleep(typing_delay)
             if reply_reference:
                 _ = await reply_reference.reply(content = text)
             else:
-                _ = await channel.send(content = text)
+                _ = await target_channel.send(content = text)
             await interaction.followup.send("Sent!", ephemeral = True)
 
         except discord.Forbidden:
