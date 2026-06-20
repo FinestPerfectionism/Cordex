@@ -39,4 +39,3 @@ async def run_bo_messages_delete(
     except discord.Forbidden:
         _ = await send_unknown_error(interaction)
         return
-

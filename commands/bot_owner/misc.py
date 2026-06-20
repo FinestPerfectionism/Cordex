@@ -3,26 +3,14 @@ import io
 import textwrap
 import traceback
 from builtins import exec
-from typing import TYPE_CHECKING, cast
+from collections.abc import Awaitable, Callable
+from typing import cast
 
 import discord
 from discord import ui
 from discord.ext import commands
 
 from bot import Context, Cordex, Interaction, tree
-from core.exceptions import send_bad_operation
-from core.utilities import (
-    HiddenLargeSeparator,
-    HiddenSmallSeparator,
-    VisibleLargeSeparator,
-    VisibleSmallSeparator,
-    codeblock,
-    format_values,
-)
-
-if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
-
 from constants import (
     ACCEPTED_EMOJI,
     COLOR_BLACK,
@@ -36,11 +24,20 @@ from constants import (
     DENIED_EMOJI,
     STANDSTILL_EMOJI,
 )
+from core.exceptions import send_bad_operation
 from core.responses import (
     edit_custom_message,
     format_custom_message,
     multi_custom_message,
     send_custom_message,
+)
+from core.utilities import (
+    HiddenLargeSeparator,
+    HiddenSmallSeparator,
+    VisibleLargeSeparator,
+    VisibleSmallSeparator,
+    codeblock,
+    format_values,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -68,6 +65,7 @@ async def run_bo_misc_sync(ctx : Context) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 eval_message_ids : dict[int, int] = {}
 
@@ -137,8 +135,8 @@ async def run_bo_misc_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "VisibleLargeSeparator" : VisibleLargeSeparator,
         "VisibleSmallSeparator" : VisibleSmallSeparator,
         "HiddenLargeSeparator"  : HiddenLargeSeparator,
-        "HiddenLargeSeparator"  : HiddenSmallSeparator,
-        
+        "HiddenSmallSeparator"  : HiddenSmallSeparator,
+
         "VLSep"                 : VisibleLargeSeparator,
         "VSSep"                 : VisibleSmallSeparator,
         "HLSep"                 : HiddenLargeSeparator,
@@ -167,26 +165,26 @@ async def run_bo_misc_eval(bot : Cordex, ctx : Context, body : str) -> None:
     body       = "\n".join(body.split("\n")[1:-1]) if body.startswith("```") else body.strip("` \n")
     stdout     = io.StringIO()
     to_compile = f"async def func():\n{textwrap.indent(body, "  ")}"
-    
+
     try:
         exec(to_compile, env)
-        
+
     except Exception as e:
         _ = await ctx.message.add_reaction(DENIED_EMOJI)
         res = await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
         eval_message_ids[ctx.message.id] = res.id
         return
     func = cast(Callable[[], Awaitable[object]], env["func"])
-    
+
     try:
         with contextlib.redirect_stdout(stdout):
             ret = await func()
-            
+
     except Exception:
         value = stdout.getvalue()
         _ = await ctx.message.add_reaction(f"{CONTESTED_EMOJI}")
         res   = await ctx.send(codeblock(f"{value}{traceback.format_exc()}"))
-        
+
         eval_message_ids[ctx.message.id] = res.id
     else:
         value = stdout.getvalue()

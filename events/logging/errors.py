@@ -188,7 +188,7 @@ class ErrorLogger(commands.Cog):
             title           = "Prefix Command Error",
             user            = ctx.author,
             guild           = ctx.guild,
-            command_display = ctx.message.content,
+            command_display = ctx.command.name if ctx.command else "Unknown",
             error_text      = str(actual_error),
             traceback_text  = tb_text,
         )
@@ -217,14 +217,11 @@ class ErrorLogger(commands.Cog):
 
         tb_text = "".join(traceback.format_exception(type(error), error, error.__traceback__))
 
-        cmd      = interaction.command
-        cmd_name = f"/{cmd.qualified_name}" if cmd else "Unknown"
-
         await self.send_error(
-            title           = "Application Command Error",
+            title           =  "Application Command Error",
             user            = interaction.user,
             guild           = interaction.guild,
-            command_display = cmd_name,
+            command_display = f"/{interaction.command.qualified_name}" if interaction.command else "Unknown",
             error_text      = str(error),
             traceback_text  = tb_text,
         )

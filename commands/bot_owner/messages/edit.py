@@ -47,4 +47,3 @@ async def run_bo_messages_edit(
         return
 
     await do_edit(interaction)
-    

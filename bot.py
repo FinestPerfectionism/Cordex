@@ -1,10 +1,13 @@
 from logging import Logger, getLogger
 from typing import TYPE_CHECKING, Self, TypedDict, Unpack, override
 
-from discord import CustomActivity, Intents, Message, Status, Interaction as BaseInteraction
+from discord import CustomActivity, Intents, Message, Status
+from discord import Interaction as BaseInteraction
 from discord.ext import commands
-from discord.ext.commands.view import StringView # type: ignore[reportMissingTypeStubs]
-from discord.ext.commands import Context as BaseContext # type: ignore[reportMissingTypeStubs]
+from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
+    Context as BaseContext,
+)
+from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
 from discord.ui import LayoutView, View
 
 from core.cog_loader import discover_cogs
@@ -28,11 +31,12 @@ class ContextKwargs(TypedDict, total = False):
     view    : StringView
 
 class ContextClass(BaseContext["Cordex"]):
-    def __init__(self, **kwargs : Unpack[ContextKwargs]):
+    def __init__(self, **kwargs : Unpack[ContextKwargs]) -> None:
         super().__init__(**kwargs)
 
-    async def send_view(self, ctx : Self, view : View | LayoutView):
+    async def send_view(self, ctx : Self, view : View | LayoutView) -> None:
         _ = await ctx.send(view = view)
+
 
 type Context          = ContextClass
 type Interaction      = BaseInteraction["Cordex"] | BaseInteraction
