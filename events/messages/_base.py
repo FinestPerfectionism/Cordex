@@ -2,6 +2,7 @@ import re
 
 import discord
 from discord import ForumChannel, TextChannel, Thread
+from discord.abc import Messageable
 
 from constants import DIRECTORSHIP_CATEGORY_ID
 
@@ -40,12 +41,12 @@ def truncate_text(text : str, max_length : int = 1024) -> str:
 # is_directorship_channel
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def is_directorship_channel(channel : discord.abc.Messageable) -> bool:
+def is_directorship_channel(channel : Messageable) -> bool:
     return (
-        isinstance(channel, discord.TextChannel | discord.VoiceChannel | discord.StageChannel)
+        isinstance(channel, TextChannel | discord.VoiceChannel | discord.StageChannel)
         and channel.category_id == DIRECTORSHIP_CATEGORY_ID
     ) or (
-        isinstance(channel, discord.Thread)
+        isinstance(channel, Thread)
         and getattr(channel.parent, "category_id", None) == DIRECTORSHIP_CATEGORY_ID
     )
 
@@ -53,13 +54,15 @@ def is_directorship_channel(channel : discord.abc.Messageable) -> bool:
 # channel_display
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def channel_display(channel : discord.abc.Messageable | discord.abc.GuildChannel) -> str:
+def channel_display(channel : Messageable | discord.abc.GuildChannel) -> str:
     if isinstance(channel, Thread):
         parent = channel.parent
+        
         if isinstance(parent, ForumChannel):
             return f"{parent.mention} / {channel.mention}"
         if parent is not None:
             return f"{parent.mention} / {channel.mention}"
+            
         return channel.mention
 
     if isinstance(channel, TextChannel):

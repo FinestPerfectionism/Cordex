@@ -4,6 +4,7 @@ from discord.app_commands import command as app_command
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from commands.server.roles.info import run_role_info
 from core.permissions import administrator_cmd
 
 from .members import run_role_members
@@ -16,12 +17,29 @@ from .permissionscompare import run_role_permissionscompare
 
 class RoleCommands(
     commands.GroupCog,
-    name        = "roles",
+    name        = "role",
     description = "Administrators only — Role commands.",
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot : Cordex = bot
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /role info Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @app_command(
+        name        = "info",
+        description = "View information for a role.",
+    )
+    @describe(role = "The role to view information for.")
+    @administrator_cmd()
+    async def cmd_info(
+        self,
+        interaction   : Interaction,
+        role          : Role,
+    ) -> None:
+        await run_role_info(interaction, role)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role members Command
@@ -58,7 +76,7 @@ class RoleCommands(
         role_filter   : str,
         person_filter : str | None = None,
     ) -> None:
-        _ = await run_role_members(interaction, role, role_filter, person_filter)
+        await run_role_members(interaction, role, role_filter, person_filter)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role permissions-compare Command
@@ -83,7 +101,7 @@ class RoleCommands(
         role1       : Role,
         role2       : Role,
     ) -> None:
-        _ = await run_role_permissionscompare(interaction, role1, role2)
+        await run_role_permissionscompare(interaction, role1, role2)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role permissions Command
@@ -111,7 +129,7 @@ class RoleCommands(
         role        : Role,
         perm_filter : str | None = None,
     ) -> None:
-        _ = await run_role_permissions(interaction, role, perm_filter)
+        await run_role_permissions(interaction, role, perm_filter)
 
 async def setup(bot : Cordex) -> None:
     cog = RoleCommands(bot)

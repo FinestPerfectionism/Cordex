@@ -80,7 +80,7 @@ class CogAutoReloading(commands.Cog):
         self.bot                : commands.Bot     = bot
         self.package_names      : tuple[str, ...]  = package_names
         self.last_modified_time : dict[str, float] = {}
-        _ = self.hot_reload_loop.start()
+        self.hot_reload_loop.start()
 
     @override
     async def cog_unload(self) -> None:

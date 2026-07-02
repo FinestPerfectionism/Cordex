@@ -20,7 +20,7 @@ async def run_bo_cogs_load(
         return
     try:
         await bot.load_extension(cog)
-        _ = await send_custom_message(
+        await send_custom_message(
             interaction,
             msg_type =  "success",
             title    =  "loaded cog",

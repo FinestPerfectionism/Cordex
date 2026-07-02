@@ -4,26 +4,26 @@ import time
 from typing import Self
 
 import discord
-from discord.mentions import AllowedMentions
+from discord import AllowedMentions, File
 from discord.ui import (
     Container,
     LayoutView,
-    Section,
     TextDisplay,
     Thumbnail,
 )
 
+from bot.ui import (
+    HiddenSmallSeparator,
+    ThumbnailSection,
+    VisibleLargeSeparator,
+    VisibleSmallSeparator,
+)
 from constants import PARTNERSHIP_REQUIREMENTS_CHANNEL_ID, TICKET_CHANNEL_ID
 from core.state import (
     IMAGE_DIR,
     PartnershipData,
     PartnershipEntry,
     save_partnership_data,
-)
-from core.utilities import (
-    HiddenSmallSeparator,
-    VisibleLargeSeparator,
-    VisibleSmallSeparator,
 )
 
 CHARACTERS_PER_GROUP_LIMIT = 4000
@@ -38,13 +38,12 @@ type EntryNestedList = list[list[PartnershipEntry]]
 class PartnershipComponents1(LayoutView):
     def __init__(self) -> None:
         super().__init__(timeout = None)
-        _ = self.add_item(
+        self.add_item(
             Container(
                 TextDisplay(
                     content = (
                         "# Welcome to our Partnerships!\n"
-                        f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}>"
-                        f" then open a __director__ ticket in <#{TICKET_CHANNEL_ID}>.\n"
+                       f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}> then open a __director__ ticket in <#{TICKET_CHANNEL_ID}>.\n"
                         "-# **Note:** It is within Directors' discretion as to whether we choose to partner with your server. "
                         "Directors are not required to provide a reason when denying a partnership."
                     ),
@@ -56,11 +55,17 @@ class PartnershipComponents2(LayoutView):
     def __init__(self, partnerships : EntryList, timestamp : int) -> None:
         super().__init__(timeout = None)
 
-        children : list[TextDisplay[Self] | Section[Self] | VisibleLargeSeparator | VisibleSmallSeparator | HiddenSmallSeparator] = [
+        children : list[
+            TextDisplay[Self]
+            | ThumbnailSection
+            | VisibleLargeSeparator
+            | VisibleSmallSeparator
+            | HiddenSmallSeparator
+        ] = [
             TextDisplay(
                 content = (
                     "# Partnerships\n"
-                    f"Partnerships last updated <t:{timestamp}:D>.\n"
+                   f"Partnerships last updated <t:{timestamp}:D>.\n"
                     "-# All partnerships below are subject to removal or update at any time based on Directorate decision. Partnerships are not influenced by the public or other staff.\n"
                     "-# Partnerships assembled by the Directorate team."
                 ),
@@ -75,35 +80,33 @@ class PartnershipComponents2(LayoutView):
         else:
             for i, p in enumerate(partnerships):
                 children.append(
-                    Section[Self](
-                        TextDisplay(
-                            content = (
-                                f"# {p['server_name']}\n"
-                                "**Description:**\n"
-                                f"> {p['server_description']}\n"
-                                "**Server Owner**\n"
-                                f"> <@{p['server_owner_id']}>\n"
-                                f"[Join Here!]({p['server_link']})"
-                            ),
+                    ThumbnailSection(
+                        (
+                           f"# {p['server_name']}\n"
+                            "**Description:**\n"
+                           f"> {p['server_description']}\n"
+                            "**Server Owner**\n"
+                           f"> <@{p['server_owner_id']}>\n"
+                           f"[Join Here!]({p['server_link']})"
                         ),
-                        accessory = Thumbnail(media = f"attachment://{p['image_filename']}"),
+                        thumbnail = Thumbnail(media = f"attachment://{p['image_filename']}"),
                     ),
                 )
                 if i < len(partnerships) - 1:
                     children.append(VisibleLargeSeparator())
 
         self.container : Container[LayoutView] = Container(*children)
-        _ = self.add_item(self.container)
+        self.add_item(self.container)
 
-def estimate_chars(p : PartnershipEntry) -> int:
+def estimate_characters(p : PartnershipEntry) -> int:
     return len(
         (
-            f"# {p['server_name']}\n"
-            "**Description:**\n"
-            f"> {p['server_description']}\n"
+           f"# {p['server_name']}\n"
+            "**Description:**\n"   
+           f"> {p['server_description']}\n"
             "**Server Owner**\n"
-            f"> <@{p['server_owner_id']}>\n"
-            f"[Join Here!]({p['server_link']})"
+           f"> <@{p['server_owner_id']}>\n"
+           f"[Join Here!]({p['server_link']})"
         ),
     )
 
@@ -113,7 +116,7 @@ def split_partnerships(partnerships : EntryList) -> EntryNestedList:
     current_chars : int             = 0
 
     for p in partnerships:
-        p_chars = estimate_chars(p)
+        p_chars = estimate_characters(p)
         if current and current_chars + p_chars > CHARACTERS_PER_GROUP_LIMIT:
             groups.append(current)
             current       = [p]
@@ -132,7 +135,7 @@ async def rebuild_partnership_layout(channel : discord.TextChannel, data : Partn
         try:
             msg = await channel.fetch_message(msg_id)
             await msg.delete()
-        except (discord.NotFound, discord.HTTPException):
+        except discord.NotFound, discord.HTTPException:
             pass
 
     header_msg_id = data["header_message_id"]
@@ -140,7 +143,7 @@ async def rebuild_partnership_layout(channel : discord.TextChannel, data : Partn
         try:
             msg = await channel.fetch_message(header_msg_id)
             await msg.delete()
-        except (discord.NotFound, discord.HTTPException):
+        except discord.NotFound, discord.HTTPException:
             pass
 
     timestamp : int = int(time.time())
@@ -157,8 +160,8 @@ async def rebuild_partnership_layout(channel : discord.TextChannel, data : Partn
         new_message_ids.append(empty_msg.id)
     else:
         for group in split_partnerships(partnerships):
-            files : list[discord.File] = [
-                discord.File(
+            files : list[File] = [
+                File(
                     str(IMAGE_DIR / p["image_filename"]),
                     filename = p["image_filename"],
                 )

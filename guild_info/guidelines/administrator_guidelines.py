@@ -66,7 +66,7 @@ class AdministratorComponents2(LayoutView):
                 ),
             ),
         )
-        _ = self.add_item(self.container)
+        self.add_item(self.container)
 
 class AdministratorComponents3(LayoutView):
     container : Container[LayoutView] = Container(

@@ -26,7 +26,7 @@ async def run_bo_cogs_unload(
 
     try:
         await bot.unload_extension(cog)
-        _ = await send_custom_message(
+        await send_custom_message(
             interaction,
             msg_type =  "success",
             title    =  "unloaded cog",

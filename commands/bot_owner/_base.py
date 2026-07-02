@@ -7,9 +7,10 @@ from discord.app_commands import Choice
 from discord.ui import Button, View, button
 
 from bot import Interaction
+from bot.ui import green, red
 from constants import CONTESTED_EMOJI
 from core.cog_loader import discover_cogs
-from core.utilities import format_values, green, red
+from core.utilities import format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Commands Base
@@ -48,7 +49,7 @@ class NoEmojiAccessView(View):
             if isinstance(child, Button):
                 child.disabled = True
 
-        _ = await interaction.response.edit_message(view = self)
+        await interaction.response.edit_message(view = self)
         await self.on_continue(interaction)
 
     @button(label = "No", style = red)
@@ -57,7 +58,7 @@ class NoEmojiAccessView(View):
             if isinstance(child, Button):
                 child.disabled = True
 
-        _ = await interaction.response.edit_message(view = self)
+        await interaction.response.edit_message(view = self)
 
 async def emoji_inaccessible(
     interaction : Interaction,

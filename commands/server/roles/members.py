@@ -13,11 +13,14 @@ async def run_role_members(
     role_filter   : str,
     person_filter : str | None = None,
 ) -> None:
-    _ = await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer(ephemeral = True)
+
+    # ⸻ We know that the command will run in a guild but the type checker doesn't...
+
+    if interaction.guild is None:
+        return
 
     guild = interaction.guild
-    if guild is None:
-        return
 
     match (role_filter, person_filter):
         case ("whohas", "humans"):
@@ -44,16 +47,16 @@ async def run_role_members(
     role_filter_name   = "Not a Member of" if role_filter == "whodoesnthave" else "Member of"
     person_filter_name = "Both" if person_filter is None else person_filter.capitalize()
 
-    _ = embed.add_field(
+    embed.add_field(
         name   = "Role Filter",
         value  = role_filter_name,
         inline = True,
     )
-    _ = embed.add_field(
+    embed.add_field(
         name   = "Person Filter",
         value  = person_filter_name,
         inline = True,
     )
-    _ = embed.set_footer(text = f"{len(filtered)} member(s) found.")
+    embed.set_footer(text = f"{len(filtered)} member(s) found.")
 
     await interaction.followup.send(embed = embed)

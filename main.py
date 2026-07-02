@@ -11,7 +11,7 @@ from bot import bot, log
 # Main Script
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-_ = load_dotenv()
+load_dotenv()
 
 logging.basicConfig(
     level  = logging.INFO,

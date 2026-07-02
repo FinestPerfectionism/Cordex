@@ -11,7 +11,8 @@ from discord import Interaction, Message
 from discord.abc import Messageable
 from discord.ui import LayoutView, TextDisplay
 
-from bot import CtxOrInteraction
+from bot import ContextOrInteraction
+from bot.ui import VisibleSmallSeparator
 from constants import (
     ACCEPTED_EMOJI,
     BOT_OWNER_ID,
@@ -19,7 +20,6 @@ from constants import (
     DENIED_EMOJI,
     STANDSTILL_EMOJI,
 )
-from core.utilities import VisibleSmallSeparator
 
 type TextDisplayOrSeparator = list[TextDisplay[LayoutView] | VisibleSmallSeparator]
 
@@ -38,7 +38,7 @@ SubMessageType = Literal[
     "error",
 ]
 
-SendTarget = CtxOrInteraction | Messageable
+SendTarget = ContextOrInteraction | Messageable
 
 class _Subfield:
     def __init__(
@@ -69,13 +69,13 @@ class _Field:
 def emoji(msg_type : MessageType | SubMessageType) -> str:
     match msg_type:
         case "success":
-            return f"{ACCEPTED_EMOJI}"
+            return ACCEPTED_EMOJI
         case "information":
-            return f"{STANDSTILL_EMOJI}"
+            return STANDSTILL_EMOJI
         case "warning":
-            return f"{CONTESTED_EMOJI}"
+            return CONTESTED_EMOJI
         case "error":
-            return f"{DENIED_EMOJI}"
+            return DENIED_EMOJI
 
 def type_prefix(msg_type : MessageType | SubMessageType) -> str:
     match msg_type:
@@ -124,7 +124,7 @@ def build_multi_view(all_components : TextDisplayOrSeparator) -> LayoutView:
 
     view = _MultiView()
     for component in all_components:
-        _ = view.add_item(component)
+        view.add_item(component)
     return view
 
 async def send(
@@ -141,7 +141,7 @@ async def send(
                 view      = view,
                 ephemeral = ephemeral,
             )
-        _ = await target.response.send_message(
+        await target.response.send_message(
             view      = view,
             ephemeral = ephemeral,
         )

@@ -6,17 +6,20 @@ from collections.abc import Coroutine
 from typing import override
 
 import aiohttp
-import discord
-from discord import Guild, app_commands
+from discord import Embed, Forbidden, Guild, NotFound, TextChannel, HTTPException
 from discord.abc import User
+from discord.app_commands import AppCommandError, CommandInvokeError
 from discord.ext import commands
+from discord.utils import utcnow
 
-from bot import Context, Cordex, Interaction
+from bot import Cordex, Interaction, tree
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
     BOT_OWNER_ID,
     COLOR_RED,
 )
+from core.exceptions import send_bad_permissions_command
+from core.permissions import BadPermissions
 from core.utilities import codeblock
 
 MAX_ERRORS = 5
@@ -31,7 +34,7 @@ class ErrorLogger(commands.Cog):
         self.bot             : Cordex            = bot
         self.tasks           : set[Task[object]] = set()
         self.rate_limit_hits : int               = 0
-        _ = bot.tree.error(self.app_command_error_handler)
+        tree.error(self.app_command_error_handler)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Central Error Sender
@@ -48,49 +51,60 @@ class ErrorLogger(commands.Cog):
         traceback_text  : str   | None = None,
     ) -> None:
         channel = self.bot.get_channel(BOT_ERRORS_LOG_CHANNEL_ID)
-        if not isinstance(channel, discord.TextChannel):
+        if not isinstance(channel, TextChannel):
             return
 
-        embed = discord.Embed(
+        embed = Embed(
             title     = title,
             color     = COLOR_RED,
-            timestamp = discord.utils.utcnow(),
+            timestamp = utcnow(),
         )
 
         if user:
-            _ = embed.add_field(
+            embed.add_field(
                 name   =  "User",
-                value  = f"`{user}`\n`{user.id}`",
+                value  = (
+                    f"`{user}`\n"
+                    f"`{user.id}`"
+                ),
                 inline = True,
             )
 
         if guild:
-            _ = embed.add_field(
+            embed.add_field(
                 name   =  "Guild",
-                value  = f"`{guild}`\n`{guild.id}`",
+                value  = (
+                    f"`{guild}`\n"
+                    f"`{guild.id}`"
+                ),
                 inline = True,
             )
 
         if command_display:
-            _ = embed.add_field(
+            embed.add_field(
                 name   = "Command",
                 value  = codeblock(command_display, language = None),
                 inline = True,
             )
 
         if error_text:
-            _ = embed.add_field(
+            embed.add_field(
                 name   = "Error",
                 value  = codeblock(error_text),
                 inline = False,
             )
 
         if traceback_text:
-            embed.description = f"**Traceback:**\n```python\n{traceback_text[:3900]}\n```"
+            embed.description = (
+               f"**Traceback:**\n"
+                "```py\n"
+               f"{traceback_text[:3900]}\n"
+                "```"
+            )
         else:
             embed.description = None
 
-        _ = await channel.send(
+        await channel.send(
             content = f"<@{BOT_OWNER_ID}>",
             embed   = embed,
         )
@@ -113,10 +127,7 @@ class ErrorLogger(commands.Cog):
         if self.rate_limit_hits >= MAX_ERRORS:
             await self.send_error(
                 title      = "Auto-Shutdown: Too Many 429s",
-                error_text = (
-                    f"Received {MAX_ERRORS} rate limit responses this session. "
-                    "Shutting down to prevent an IP ban."
-                ),
+                error_text = f"Received {MAX_ERRORS} rate limit responses this session. Shutting down to prevent an IP ban."
             )
             await self.bot.close()
 
@@ -136,61 +147,26 @@ class ErrorLogger(commands.Cog):
 
         exc_type, exc, tb = sys.exc_info()
 
-        if isinstance(exc, app_commands.CommandNotFound):
+        if isinstance(exc, commands.CommandNotFound):
             return
 
         if exc is None:
             await self.send_error(
-                title      = "Bot Event Error",
+                title      =  "Bot Event Error",
                 error_text = f"{event}: Unknown exception",
             )
             return
 
-        if isinstance(exc, discord.HTTPException) and exc.status == n_429:
+        if isinstance(exc, HTTPException) and exc.status == n_429:
             await self.handle_rate_limit(f"event: {event}")
             return
 
         tb_text = "".join(traceback.format_exception(exc_type, exc, tb))
 
         await self.send_error(
-            title          = "Bot Event Error",
+            title          =  "Bot Event Error",
             error_text     = f"{event}: {exc}",
             traceback_text = tb_text,
-        )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Prefix Command Errors
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @commands.Cog.listener("on_command_error")
-    async def command_error_handler(
-        self,
-        ctx   : Context,
-        error : commands.CommandError,
-    ) -> None:
-        if hasattr(ctx.command, "on_error"):
-            return
-
-        actual_error : Exception = error
-        if isinstance(error, commands.CommandInvokeError):
-            actual_error = error.original
-
-        if isinstance(actual_error, discord.HTTPException) and actual_error.status == n_429:
-            await self.handle_rate_limit(ctx.message.content or "prefix command")
-            return
-
-        if isinstance(actual_error, commands.CheckFailure | commands.CommandNotFound):
-            return
-
-        tb_text : str = "".join(traceback.format_exception(type(actual_error), actual_error, actual_error.__traceback__))
-
-        await self.send_error(
-            title           = "Prefix Command Error",
-            user            = ctx.author,
-            guild           = ctx.guild,
-            command_display = ctx.command.name if ctx.command else "Unknown",
-            error_text      = str(actual_error),
-            traceback_text  = tb_text,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -200,16 +176,14 @@ class ErrorLogger(commands.Cog):
     async def app_command_error_handler(
         self,
         interaction : Interaction,
-        error       : app_commands.AppCommandError,
+        error       : AppCommandError,
     ) -> None:
-        actual_error = error.original if isinstance(error, app_commands.CommandInvokeError) else error
+        actual_error = error.original if isinstance(error, CommandInvokeError) else error
 
-        if isinstance(error, app_commands.CheckFailure):
-            if not interaction.response.is_done():
-                _ = await interaction.response.defer(thinking = False, ephemeral = True)
-            return
+        if isinstance(error, BadPermissions):
+            await send_bad_permissions_command(interaction)
 
-        if isinstance(actual_error, discord.HTTPException) and actual_error.status == n_429:
+        if isinstance(actual_error, HTTPException) and actual_error.status == n_429:
             cmd      = interaction.command
             cmd_name = f"/{cmd.qualified_name}" if cmd else "Unknown"
             await self.handle_rate_limit(cmd_name)
@@ -236,9 +210,7 @@ class ErrorLogger(commands.Cog):
         extension : str,
         error     : commands.ExtensionError,
     ) -> None:
-        tb_text = "".join(
-            traceback.format_exception(type(error), error, error.__traceback__),
-        )
+        tb_text = "".join(traceback.format_exception(type(error), error, error.__traceback__))
 
         await self.send_error(
             title          =  "Extension Error",
@@ -254,12 +226,12 @@ class ErrorLogger(commands.Cog):
         try:
             return await coro
         except (
-            discord.Forbidden,
-            discord.NotFound,
-            discord.HTTPException,
+            Forbidden,
+            NotFound,
+            HTTPException,
             aiohttp.ClientError,
         ) as exc:
-            if isinstance(exc, discord.HTTPException) and exc.status == n_429:
+            if isinstance(exc, HTTPException) and exc.status == n_429:
                 await self.handle_rate_limit("guard_http")
                 raise
 
@@ -291,7 +263,6 @@ class ErrorLogger(commands.Cog):
     def task_done(self, task : Task[object]) -> None:
         if task.cancelled():
             return
-
         try:
             exc = task.exception()
         except asyncio.InvalidStateError:
@@ -300,8 +271,8 @@ class ErrorLogger(commands.Cog):
         if exc is None:
             return
 
-        if isinstance(exc, discord.HTTPException) and exc.status == n_429:
-            _ = self.create_task(
+        if isinstance(exc, HTTPException) and exc.status == n_429:
+            self.create_task(
                 self.handle_rate_limit(f"task: {task.get_name()}"),
                 name = "task_ratelimit_reporter",
             )
@@ -311,7 +282,7 @@ class ErrorLogger(commands.Cog):
             traceback.format_exception(type(exc), exc, exc.__traceback__),
         )
 
-        _ = self.create_task(
+        self.create_task(
             self.send_error(
                 title          = "Background Task Error",
                 error_text     = str(exc),
@@ -341,7 +312,7 @@ class ErrorLogger(commands.Cog):
         else:
             tb_text = msg_str
 
-        _ = loop.create_task(
+        loop.create_task(
             self.send_error(
                 title          = "Asyncio Event Loop Error",
                 error_text     = msg_str,

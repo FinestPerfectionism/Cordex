@@ -1,45 +1,44 @@
 import asyncio
-import contextlib
-import logging
 import sys
+from logging import Logger
 from os import execv
 
 import discord
+from discord import CustomActivity, Status
 
-from bot import Context, Cordex
+from bot import Interaction, Cordex
 from core.exceptions import send_bad_operation
 from core.responses import edit_custom_message, send_custom_message
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# .restart Logic
+# /restart Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_state_restart(
-    bot            : Cordex,
-    ctx            : Context,
-    restarting_ref : list[bool],
-    log            : logging.Logger,
+    bot        : Cordex,
+    interaction: Interaction,
+    restarting : list[bool],
+    log        : Logger,
 ) -> None:
-    if restarting_ref[0]:
+    if restarting[0]:
         await send_bad_operation(
-            ctx,
+            interaction,
             title    = "restart bot",
             subtitle = "A restart is already in progress.",
         )
         return
 
-    restarting_ref[0] = True
+    restarting[0] = True
 
-    with contextlib.suppress(discord.Forbidden):
-        await ctx.message.delete()
+    if not interaction.response.is_done():
+        await interaction.response.defer(ephemeral = True)
 
     confirm_msg = await send_custom_message(
-        ctx,
+        interaction,
         msg_type     = "information",
         title        = "Restarting bot.",
         subtitle     = "Restarting bot...",
-        delete_after = 1,
     )
 
     loop         = asyncio.get_running_loop()
@@ -47,7 +46,7 @@ async def run_bo_state_restart(
         restart_bot(
             bot,
             log,
-            restarting_ref,
+            restarting,
             confirm_msg,
         ),
     )
@@ -55,14 +54,14 @@ async def run_bo_state_restart(
 
 async def restart_bot(
     bot            : Cordex,
-    log            : logging.Logger,
+    log            : Logger,
     restarting_ref : list[bool],
     confirm_msg    : discord.Message | None = None,
 ) -> None:
     try:
         await bot.change_presence(
-            status   = discord.Status.idle,
-            activity = discord.CustomActivity(name = "Restarting..."),
+            status   = Status.idle,
+            activity = CustomActivity(name = "Restarting..."),
         )
 
         await asyncio.sleep(1)
@@ -70,14 +69,15 @@ async def restart_bot(
 
         pending = [
             t for t in asyncio.all_tasks()
-            if not t.done() and t is not asyncio.current_task()
+            if not t.done() and
+            t is not asyncio.current_task()
         ]
 
         if pending:
             for task in pending:
-                _ = task.cancel()
+                task.cancel()
             try:
-                _ = await asyncio.wait_for(
+                await asyncio.wait_for(
                     asyncio.gather(
                         *pending,
                         return_exceptions = True,
@@ -91,8 +91,8 @@ async def restart_bot(
             if hasattr(handler, "flush"):
                 handler.flush()
 
-        _ = sys.stdout.flush()
-        _ = sys.stderr.flush()
+        sys.stdout.flush()
+        sys.stderr.flush()
 
         execv(  # noqa: S606
             sys.executable,
@@ -104,11 +104,11 @@ async def restart_bot(
         restarting_ref[0] = False
 
         if confirm_msg:
-            _ = await edit_custom_message(
+            await edit_custom_message(
                 confirm_msg,
                 msg_type = "error",
                 title    = "restart bot",
                 subtitle = codeblock(f"{e}"),
             )
 
-        await bot.change_presence(status = discord.Status.online)
+        await bot.change_presence(status = Status.online)

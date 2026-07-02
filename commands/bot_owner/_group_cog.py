@@ -16,8 +16,8 @@ from .cogs import (
     run_bo_cogs_unload,
 )
 from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
-from .misc import run_bo_misc_eval, run_bo_misc_sync
-from .state import run_bo_state_restart, run_bo_state_shutdown
+from .eval import run_bo_eval
+from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -33,9 +33,9 @@ class BotOwnerCommands(
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot            :  Cordex    = bot
-        self.logger         : Logger     = log
-        self.restarting_ref : list[bool] = [False]
+        self.bot        : Cordex     = bot
+        self.logger     : Logger     = log
+        self.restarting : list[bool] = [False]
 
     @property
     def cogs(self) -> list[str]:
@@ -96,40 +96,39 @@ class BotOwnerCommands(
         await run_bo_cogs_unload(self.bot, interaction, cog, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # .shutdown/.shut Command
+    # /shutdown Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.command(name = "shutdown", aliases = ["shut"])
+    @app_command(name = "shutdown")
     @bot_owner_cmd()
-    async def cmd_shutdown(self, ctx : Context) -> None:
-        await run_bo_state_shutdown(self.bot, ctx)
+    async def cmd_shutdown(self, interaction : Interaction) -> None:
+        await run_bo_state_shutdown(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # .restart/.r Command
+    # /restart Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.command(name = "restart", aliases = ["r"])
+    @app_command(name = "restart")
     @bot_owner_cmd()
-    async def cmd_restart(self, ctx : Context) -> None:
-        await run_bo_state_restart(self.bot, ctx, self.restarting_ref, self.logger)
+    async def cmd_restart(self, interaction : Interaction) -> None:
+        await run_bo_state_restart(self.bot, interaction, self.restarting, self.logger)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # .sync Command
+    # /sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.command(name = "sync")
+    @app_command(name = "sync")
     @bot_owner_cmd()
-    async def cmd_sync(self, ctx : Context) -> None:
-        await run_bo_misc_sync(ctx)
+    async def cmd_sync(self, interaction : Interaction) -> None:
+        await run_bo_state_sync(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.command(name = "eval")
-    @bot_owner_cmd()
     async def cmd_eval(self, ctx : Context, *, body : str) -> None:
-        await run_bo_misc_eval(self.bot, ctx, body)
+        await run_bo_eval(self.bot, ctx, body)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner send Command

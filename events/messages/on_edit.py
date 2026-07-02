@@ -1,9 +1,7 @@
-import contextlib
-
-import discord
-from discord import Message
+from discord import Embed, Message
 from discord.abc import Messageable
 from discord.ext import commands
+from discord.utils import utcnow
 
 from bot import Cordex
 from commands.bot_owner.misc import eval_message_ids
@@ -32,15 +30,30 @@ class MessageEditHandler(commands.Cog):
 
     @commands.Cog.listener("on_message_edit")
     async def message_edit_handler(self, before : Message, after : Message) -> None:
-        if before.author.bot or before.guild is None:
+        author = before.author
+
+        # ⸻ Block the bot itself
+
+        if author.bot or author == self.bot.user:
+            return
+        
+        # ⸻ Block bots
+        
+        if author.bot:
             return
 
-        if before.channel.id == WAPPLE_CHAIN_CHANNEL_ID:
-            content = (after.content or "").strip()
-            if not WAPPLE_PATTERN.fullmatch(content):
-                with contextlib.suppress(discord.HTTPException):
-                    await after.delete()
-                return
+        # ⸻ Block non-guild messages
+
+        if before.guild is None:
+            return
+
+        # ⸻ Block non-wapple text in wapple channel
+
+        if before.channel.id == WAPPLE_CHAIN_CHANNEL_ID and not WAPPLE_PATTERN.fullmatch((after.content or "").strip()):
+            await after.delete()
+            return
+
+        # ⸻ Eval command editing
 
         if before.id in eval_message_ids:
             await before.clear_reactions()
@@ -55,8 +68,12 @@ class MessageEditHandler(commands.Cog):
 
             return
 
+        # ⸻ Block nessage logging of directorship channels
+
         if is_directorship_channel(before.channel):
             return
+
+        # ⸻ Edit message logging
 
         before_files = [a.url for a in before.attachments]
         after_files  = [a.url for a in after.attachments]
@@ -68,39 +85,41 @@ class MessageEditHandler(commands.Cog):
         if not isinstance(log_channel, Messageable):
             return
 
-        embed = discord.Embed(
+        embed = Embed(
             title     = "Message Edited",
             color     = COLOR_GREY,
-            timestamp = after.edited_at or discord.utils.utcnow(),
+            timestamp = after.edited_at or utcnow(),
         )
-        _ = embed.add_field(
+        embed.add_field(
             name   =  "Edited By",
             value  = f"`{before.author}`\n`{before.author.id}`",
             inline = True,
         )
-        _ = embed.add_field(
+        embed.add_field(
             name   = "Channel",
             value  = channel_display(before.channel),
             inline = True,
         )
+        
         before_text = before.content or "[No content]"
         after_text  = after.content  or "[No content]"
-        _ = embed.add_field(
+        
+        embed.add_field(
             name   = "Before",
             value  = truncate_text(before_text),
             inline = True,
         )
-        _ = embed.add_field(
+        embed.add_field(
             name   = "After",
             value  = truncate_text(after_text),
             inline = True,
         )
-        _ = embed.add_field(
+        embed.add_field(
             name   = "Attachments (After)",
             value  = format_attachments(after.attachments),
             inline = True,
         )
-        _ = await log_channel.send(embed = embed)
+        await log_channel.send(embed = embed)
 
         await self.bot.process_commands(after)
 

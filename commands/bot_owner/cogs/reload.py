@@ -18,7 +18,7 @@ async def run_bo_cogs_reload(
             return
         try:
             await bot.reload_extension(cog)
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type =  "success",
                 title    =  "reloaded cog",
@@ -70,7 +70,7 @@ async def run_bo_cogs_reload(
         )
         return
 
-    _ = await send_custom_message(
+    await send_custom_message(
         interaction,
         msg_type = "success",
         title    = "reloaded cogs",

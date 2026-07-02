@@ -16,7 +16,7 @@ async def run_role_permissionscompare(
     role1       : Role,
     role2       : Role,
 ) -> None:
-    _ = await interaction.response.defer(ephemeral = False)
+    await interaction.response.defer(ephemeral = False)
 
     diffs_role1 : list[str] = []
     diffs_role2 : list[str] = []
@@ -35,12 +35,12 @@ async def run_role_permissionscompare(
     if not diffs_role1:
         embed.description = "Roles have identical permissions."
     else:
-        _ = embed.add_field(
+        embed.add_field(
             name   = role1.name,
             value  = "\n".join(diffs_role1),
             inline = True,
         )
-        _ = embed.add_field(
+        embed.add_field(
             name   = role2.name,
             value  = "\n".join(diffs_role2),
             inline = True,

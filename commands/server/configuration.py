@@ -1,14 +1,140 @@
+from typing import Self
+from discord import ChannelType
 from discord.app_commands import command as app_command
 from discord.ext import commands
-from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay, button
+from discord.ui import ActionRow, Button, ChannelSelect, Container, LayoutView, TextDisplay, button, select
 
+from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
 from bot import Cordex, Interaction
+from bot.ui import VisibleLargeSeparator, blurple, red
 from core.permissions import director_cmd
-from core.utilities import VisibleLargeSeparator, red
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Configuration Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @select(
+        cls           = ChannelSelect,
+        placeholder   = "Choose a channel for Moderation logs...",
+        channel_types = [
+            ChannelType.text,
+            ChannelType.private_thread,
+            ChannelType.public_thread,
+        ]
+    )
+    async def slct_logging_moderation(self, interaction : Interaction, select : ChannelSelect[LayoutView]) -> None:
+        if not select.values or not self.view:
+            return
+
+        channel = select.values[0]
+        bot = interaction.client if isinstance(interaction.client, Cordex) else self.view.bot
+
+        await bot.logging_db.execute(
+            """
+            INSERT INTO GuildConfig (config_key, config_value) 
+            VALUES ('logging_moderation_channel', ?)
+            ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+            """,
+            [str(channel.id)]
+        )
+        await bot.logging_db.commit()
+
+        await self.view.refresh_display()
+        await interaction.response.edit_message(view = self.view)
+
+class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
+    def __init__(self) -> None:
+        super().__init__()
+
+    @select(
+        cls           = ChannelSelect,
+        placeholder   = "Choose a channel for Antinuke logs...",
+        channel_types = [
+            ChannelType.text,
+            ChannelType.private_thread,
+            ChannelType.public_thread,
+        ]
+    )
+    async def slct_logging_antinuke(self, interaction : Interaction, select_item : ChannelSelect[LayoutView]) -> None:
+        if not select_item.values or not self.view:
+            return
+
+        channel = select_item.values[0]
+        bot = interaction.client if isinstance(interaction.client, Cordex) else self.view.bot
+
+        await bot.logging_db.execute(
+            """
+            INSERT INTO GuildConfig (config_key, config_value) 
+            VALUES ('logging_antinuke_channel', ?)
+            ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
+            """,
+            [str(channel.id)]
+        )
+        await bot.logging_db.commit()
+
+        await self.view.refresh_display()
+        await interaction.response.edit_message(view = self.view)
+
+class LoggingConfigurationView(LayoutView):
+    def __init__(self, bot : Cordex) -> None:
+        super().__init__()
+        self.bot : Cordex = bot
+
+        self.antinuke_display   : TextDisplay[Self]     = TextDisplay("")
+        self.moderation_display : TextDisplay[Self]     = TextDisplay("")
+        self.container          : Container[LayoutView] = Container(
+            self.antinuke_display,
+            LoggingAntinukeRow(),
+            self.moderation_display,
+            LoggingModerationRow(),
+            accent_color = COLOR_RED,
+        )
+        self.add_item(self.container)
+
+    async def refresh_display(self) -> None:
+        query = (
+            "SELECT config_key, config_value FROM GuildConfig "
+            "WHERE config_key IN ('logging_moderation_channel', 'logging_antinuke_channel')"
+        )
+
+        async with self.bot.logging_db.execute(query) as cursor:
+            rows = list(await cursor.fetchall())
+
+        config_dict = {row[0] : row[1] for row in rows}
+        configured_count = len(config_dict)
+
+        if configured_count == 2:
+            self.container.accent_color = COLOR_GREEN
+        elif configured_count == 1:
+            self.container.accent_color = COLOR_YELLOW
+        else:
+            self.container.accent_color = COLOR_RED
+
+        antinuke_id   = config_dict.get("logging_antinuke_channel")
+        moderation_id = config_dict.get("logging_moderation_channel")
+
+        antinuke_text = (
+            f"{ACCEPTED_EMOJI} **Antinuke Logs Channel:**\n"
+            f"Configured to <#{antinuke_id}>."
+        ) if antinuke_id else (
+            f"{DENIED_EMOJI} **Antinuke Logs Channel:**\n"
+            "Not configured!"
+        )
+
+        moderation_text = (
+            f"{ACCEPTED_EMOJI} **Moderation Logs Channel:**\n"
+            f"Configured to <#{moderation_id}>."
+        ) if moderation_id else (
+            f"{DENIED_EMOJI} **Moderation Logs Channel:**\n"
+            "Not configured!"
+        )
+
+        self.antinuke_display.content   = antinuke_text
+        self.moderation_display.content = moderation_text
 
 class PickerRow(ActionRow["ConfigurationView"]):
     def __init__(self) -> None:
@@ -16,24 +142,40 @@ class PickerRow(ActionRow["ConfigurationView"]):
 
     @button(label = "Antinuke", style = red)
     async def btn_antinuke(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        _ = await interaction.response.send_message(
+        await interaction.response.send_message(
             "This button does nothing right now. :[",
             ephemeral = True,
         )
 
     @button(label = "Moderation", style = red)
     async def btn_moderation(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        _ = await interaction.response.send_message(
+        await interaction.response.send_message(
             "This button does nothing right now. :[",
             ephemeral = True,
         )
 
+    @button(label = "Logging", style = blurple)
+    async def btn_logging(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+        if not self.view:
+            return
+
+        await interaction.response.defer(ephemeral = True)
+
+        logging_view = LoggingConfigurationView(self.view.bot)
+        await logging_view.refresh_display()
+
+        await interaction.followup.send(
+            view      = logging_view,
+            ephemeral = True,
+        )
+
 class ConfigurationView(LayoutView):
-    def __init__(self) -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        _ = self.add_item(
+        self.bot : Cordex = bot
+        self.add_item(
             Container(
-                TextDisplay("# Configuration"),
+                TextDisplay("# Guild Configuration"),
                 VisibleLargeSeparator(),
                 PickerRow(),
             ),
@@ -54,11 +196,7 @@ class ConfigurationCommands(
     )
     @director_cmd()
     async def cmd_configure(self, interaction : Interaction) -> None:
-        _ = await interaction.response.send_message(
-            view      = ConfigurationView(),
+        await interaction.response.send_message(
+            view      = ConfigurationView(bot = self.bot),
             ephemeral = True,
         )
-
-async def setup(bot : Cordex) -> None:
-    cog = ConfigurationCommands(bot)
-    await bot.add_cog(cog)

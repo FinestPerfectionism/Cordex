@@ -17,7 +17,9 @@ async def run_bo_messages_send(
     message_id  : str | None = None,
     channel     : Messageable | None = None,
 ) -> None:
-    _ = await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer(ephemeral = True)
+
+    interaction.extras
 
     target_channel = channel or interaction.channel
 
@@ -35,7 +37,7 @@ async def run_bo_messages_send(
                 try:
                     reply_reference = await target_channel.fetch_message(int(message_id))
 
-                except (discord.NotFound, ValueError, discord.HTTPException):
+                except discord.NotFound, ValueError, discord.HTTPException:
                     await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
                     return
 
@@ -43,13 +45,13 @@ async def run_bo_messages_send(
                 async with target_channel.typing():
                     await asyncio.sleep(typing_delay)
             if reply_reference:
-                _ = await reply_reference.reply(content = text)
+                await reply_reference.reply(content = text)
             else:
-                _ = await target_channel.send(content = text)
+                await target_channel.send(content = text)
             await interaction.followup.send("Sent!", ephemeral = True)
 
         except discord.Forbidden:
-            _ = await send_unknown_error(interaction)
+            await send_unknown_error(interaction)
             return
 
     if await emoji_inaccessible(interaction, text, do_send):

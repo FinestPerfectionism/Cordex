@@ -15,7 +15,7 @@ async def run_bo_messages_edit(
     message_id  : str,
     channel     : Messageable | None = None,
 ) -> None:
-    _ = await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer(ephemeral = True)
 
     target_channel = channel or interaction.channel
 
@@ -28,7 +28,7 @@ async def run_bo_messages_edit(
             try:
                 target_message = await target_channel.fetch_message(int(message_id))
 
-            except (discord.NotFound, ValueError, discord.HTTPException):
+            except discord.NotFound, ValueError, discord.HTTPException:
                 await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
                 return
 
@@ -36,11 +36,11 @@ async def run_bo_messages_edit(
                 await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I cant edit it."})
                 return
 
-            _ = await target_message.edit(content = text)
+            await target_message.edit(content = text)
             await interaction.followup.send("Edited!", ephemeral = True)
 
         except discord.Forbidden:
-            _ = await send_unknown_error(interaction)
+            await send_unknown_error(interaction)
             return
 
     if await emoji_inaccessible(interaction, text, do_edit):

@@ -1,8 +1,7 @@
 import operator
 from typing import TYPE_CHECKING, Literal
 
-from discord import ButtonStyle, Member, Role, SeparatorSpacing
-from discord.ui import LayoutView, Separator
+from discord import Member, Role
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -10,35 +9,6 @@ if TYPE_CHECKING:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Layout Helpers
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-large = SeparatorSpacing.large
-small = SeparatorSpacing.small
-
-blurple = ButtonStyle.blurple
-grey    = ButtonStyle.grey
-green   = ButtonStyle.green
-red     = ButtonStyle.red
-link    = ButtonStyle.link
-
-class VisibleLargeSeparator(Separator[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(visible = True, spacing = large)
-
-class VisibleSmallSeparator(Separator[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(visible = True, spacing = small)
-
-class HiddenLargeSeparator(Separator[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(visible = False, spacing = large)
-
-class HiddenSmallSeparator(Separator[LayoutView]):
-    def __init__(self) -> None:
-        super().__init__(visible = False, spacing = small)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # General Helpers
@@ -61,10 +31,9 @@ def format_values(
     if not use_conj:
         return divider.join(items)
 
-    two = 2
     if len(items) == 1:
         return items[0]
-    if len(items) == two:
+    if len(items) == 2:
         return f"{items[0]} {conj} {items[1]}"
 
     return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
@@ -74,6 +43,19 @@ def check_role_hierarchy(
     target     : Member,
     comparison : Literal[">", "<", "=", ">=", "<="],
 ) -> bool:
+
+    # ⸻ Owner vs Owner
+    
+    if actor.guild.owner_id == actor.id:
+        if target.guild.owner_id == target.id:
+            return comparison in ("=", ">=", "<=")
+        return comparison in (">", ">=")
+
+    # ⸻ Actor vs Owner
+
+    if target.guild.owner_id == target.id:
+        return comparison in ("<", "<=")
+
     actor_role  = actor.top_role
     target_role = target.top_role
 
@@ -86,6 +68,7 @@ def check_role_hierarchy(
     }
 
     return ops[comparison](actor_role, target_role)
+
 
 def codeblock(text : str, language : str | None = "py") -> str:
     return (

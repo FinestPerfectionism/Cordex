@@ -13,7 +13,7 @@ async def run_bo_cogs_pullreload(
     interaction : Interaction,
     cogs        : list[str],
 ) -> None:
-    _ = await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer(ephemeral = True)
     proc = await asyncio.create_subprocess_exec(
         "git", "pull", "origin", "main",
         stdout = asyncio.subprocess.PIPE,
@@ -53,9 +53,10 @@ async def run_bo_cogs_pullreload(
             status = "Multiple cogs failed to reload."
         else:
             status = "A cog failed to reload."
+        amount = "cogs" if len(cogs) > 1 else "cog"
         await send_bad_operation(
             interaction,
-            title    =  "reload cog",
+            title    = f"reload {amount}",
             subtitle = (
                f"Pull succeeded. {status}\n"
                 "```py\n"
@@ -65,7 +66,7 @@ async def run_bo_cogs_pullreload(
         )
         return
 
-    _ = await send_custom_message(
+    await send_custom_message(
         interaction,
         msg_type = "success",
         title    = "reloaded cogs",

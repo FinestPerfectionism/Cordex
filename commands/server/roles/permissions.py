@@ -14,7 +14,7 @@ async def run_role_permissions(
     role        : Role,
     perm_filter : str | None = None,
 ) -> None:
-    _ = await interaction.response.defer(ephemeral = False)
+    await interaction.response.defer(ephemeral = False)
 
     lines : list[str] = []
     for perm_name, value in role.permissions:

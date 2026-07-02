@@ -1,6 +1,6 @@
 import re
 from collections.abc import Sequence
-from typing import override
+from typing import Self, TypedDict, override
 
 from discord import (
     AllowedMentions,
@@ -18,39 +18,45 @@ from discord.ui import (
     Label,
     LayoutView,
     Modal,
-    Section,
     TextDisplay,
     TextInput,
     UserSelect,
     View,
     select,
 )
+from discord.utils import escape_markdown
 
 from bot import Interaction
+from bot.ui import ButtonSection, VisibleLargeSeparator, blurple, green, grey, red
 from constants import ACCEPTED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import send_custom_message
-from core.utilities import (
-    VisibleLargeSeparator,
-    blurple,
-    check_role_hierarchy,
-    format_values,
-    green,
-    grey,
-    red,
-)
+from core.utilities import check_role_hierarchy, format_values
 
-type StateEntry = dict[str, str | bool | None]
-type StateMap   = dict[int, StateEntry]
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Moderation Base 
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class StateEntry(TypedDict, total = False):
+    r : str
+    t : str
+    a : bool
+    d : bool
+    f : str | None
+
+type StateMap = dict[int, StateEntry]
 
 def build_member_label(member : Member, state : StateEntry | None) -> str:
     if not state:
         return member.mention
 
-    lines = [member.mention, f'**Reason:** "{state['r']}"']
+    reason_str = escape_markdown(str(state.get('r', '')))
+    timer_str  = state.get('t', 'N/A')
+
+    lines = [member.mention, f'**Reason:** "{reason_str}"']
     lines.extend(
         [
-            f"**Timer:** `{state['t']}`",
+            f"**Timer:** `{timer_str}`",
             f"**Appealable:** `{state.get('a', False)}`",
             f"**DM:** `{state.get('d', False)}`",
         ],
@@ -99,7 +105,7 @@ class ActionButton(Button[LayoutView]):
     @override
     async def callback(self, interaction : Interaction) -> None:
         try:
-            _ = await interaction.response.send_modal(ReasonModal(self.target, self.editor))
+            await interaction.response.send_modal(ReasonModal(self.target, self.editor))
         except Exception:
             await send_bad_operation(interaction, title = "open modal")
             raise
@@ -139,13 +145,13 @@ class ReasonModal(Modal):
             Label(text = "DM User",    component = self.dm_box),
             Label(text = "Upload",     component = self.file_upload),
         ]:
-            _ = self.add_item(item)
+            self.add_item(item)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
         timer_value = self.timer_input.value.strip().lower()
         if timer_value and not re.match(r"^(\d+[hmds])+$", timer_value):
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type =  "warning",
                 title    =  "compile window",
@@ -178,9 +184,9 @@ class EditorView(LayoutView):
         self.rebuild()
 
     def rebuild(self) -> None:
-        _ = self.clear_items()
-        container : Container[LayoutView] = Container()
-        global_state                      = self.state_map.get(0)
+        self.clear_items()
+        container : Container[Self] = Container()
+        global_state                = self.state_map.get(0)
 
         for member in self.members:
             resolved = resolve_state(member, self.state_map, global_state)
@@ -192,8 +198,8 @@ class EditorView(LayoutView):
                 style = grey
 
             button = ActionButton(member, self, style = style, label = "Action")
-            _ = container.add_item(Section(label, accessory = button))
-        _ = container.add_item(VisibleLargeSeparator())
+            container.add_item(ButtonSection(label, button = button))
+        container.add_item(VisibleLargeSeparator())
 
         async def handle_execute(interaction : Interaction) -> None:
             errors : list[str] = []
@@ -211,7 +217,7 @@ class EditorView(LayoutView):
 
             if errors:
                 try:
-                    _ = await send_custom_message(
+                    await send_custom_message(
                         interaction,
                         msg_type  = "warning",
                         title     = "moderate members",
@@ -226,38 +232,38 @@ class EditorView(LayoutView):
                 return
 
             try:
-                summary_lines = [f"{ACCEPTED_EMOJI} **Successfully mass moderated all members.**"]
+                summary_lines = [f"# {ACCEPTED_EMOJI} Successfully mass moderated all members."]
 
                 for member in self.members:
                     entry = resolve_state(member, self.state_map, global_entry)
                     if entry:
-                        reason     = entry.get("r", "N/A")
+                        reason     = escape_markdown(entry.get("r", "N/A"))
                         timer      = entry.get("t", "N/A")
                         appealable = "Yes" if entry.get("a") else "No"
                         dm_user    = "Yes" if entry.get("d") else "No"
-                        file       = entry.get("f") or "None"
+                        file       = escape_markdown(entry.get("f") or "None")
 
                         summary_lines.append(
-
-                                f"Success for {member.mention}.\n"
-                                f"- **Reason:** {reason}\n"
-                                f"- **Timer:** {timer}\n"
-                                f"- **Appealable:** {appealable} **|** **DM Sent:** {dm_user}\n"
-                                f"- **Attachment:** {file}",
-
+                            (
+                                f"### Success for {member.mention}.\n"
+                                f"- Reason: {reason}\n"
+                                f"- Timer: {timer}\n"
+                                f"- Appealable: {appealable} **|** DM Sent: {dm_user}\n"
+                                f"- Attachment: {file}"
+                            ),
                         )
 
                     else:
                         summary_lines.append(
-
-                               f"Partial success for {member.mention}.\n"
-                                "-# Missing configuration data for this member.",
-
+                            (
+                               f"### Partial success for {member.mention}.\n"
+                                "-# Missing configuration data for this member."
+                            ),
                         )
 
                 class FinalizedView(LayoutView):
-                    text : TextDisplay[LayoutView] = TextDisplay(content = "\n".join(summary_lines))
-                _ = await interaction.response.edit_message(view = FinalizedView())
+                    text : TextDisplay[Self] = TextDisplay(content = "\n".join(summary_lines))
+                await interaction.response.edit_message(view = FinalizedView())
 
             except Exception:
                 await send_bad_operation(interaction, title = "compile window")
@@ -266,18 +272,18 @@ class EditorView(LayoutView):
         execute_button : Button[LayoutView] = Button(style = red, label = "Execute")
         execute_button.callback             = handle_execute
 
-        _ = container.add_item(
+        container.add_item(
             ActionRow(
                 ActionButton(None, self, style = blurple, label = "Global"),
                 execute_button,
             ),
         )
-        _ = self.add_item(container)
+        self.add_item(container)
 
     async def refresh(self, interaction : Interaction) -> None:
         self.rebuild()
         try:
-            _ = await interaction.response.edit_message(
+            await interaction.response.edit_message(
                 view             = self,
                 allowed_mentions = AllowedMentions.none(),
             )
@@ -290,18 +296,72 @@ class MemberSelectView(View):
         super().__init__(timeout = None)
 
     @select(cls = UserSelect, placeholder = "Choose members...", max_values = 1)
-    async def member_select(
+    async def slct_moderation_members(
         self,
         interaction : Interaction,
-        select      : UserSelect[LayoutView],
+        select      : UserSelect[Self],
     ) -> None:
-        chosen = select.values
+        chosen_members = select.values
+        guild = interaction.guild
+
+        # ⸻ We know that the command will run in a guild but the type checker doesn't...
+
+        if not guild:
+            return
+
+        # ⸻ You cannot moderate me... maybe?
+
+        if guild.me in chosen_members:
+            if len(chosen_members) == 1:
+                if interaction.user == guild.owner:
+                    await send_bad_argument(
+                        interaction,
+                        subtitle = {None : "Please... spare me... 😭"},
+                        footer   = "Use the native discord /kick or /ban command to remove me from the guild..."
+                    )
+                    return
+                    
+                ineligible = check_role_hierarchy(interaction.user, guild.me, "<=")
+                msg    = f"The user {guild.me.mention} is higher in the hierarchy than you." if ineligible else "Please... spare me... 😭"
+                footer =  "Nice try" if ineligible else "Use the native discord /kick or /ban command to remove me from the guild..."
+
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {None : msg},
+                    footer   = footer
+                )
+                return
+
+            else:
+                other_members = [m for m in chosen_members if m != guild.me]
+                mentions = [m.mention for m in other_members]
+
+                word_user = "user" if len(mentions) == 1 else "users"
+                word_is   = "is"   if len(mentions) == 1 else "are"
+
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {None : f"The {word_user} {format_values(mentions)} {word_is} higher in the hierarchy than you; {guild.me.mention} is unmoderatable."},
+                    footer   = "Bad argument. Use the native discord /kick or /ban command to remove me from the guild..."
+                )
+                return
+
+        # ⸻ You cannot moderate yourself
+
+        if interaction.user in chosen_members:
+            await send_bad_argument(
+                interaction,
+                subtitle = {None : "You cannot moderate yourself."},
+            )
+            return
+
+        # ⸻ You cannot moderate those higher in the hierarchy than you
 
         ineligible = [
-            user.mention for user in chosen
-            if isinstance(user, Member)
+            member.mention for member in chosen_members
+            if isinstance(member, Member)
             and isinstance(interaction.user, Member)
-            and check_role_hierarchy(interaction.user, user, ">=")
+            and check_role_hierarchy(interaction.user, member, "<=")
         ]
 
         if ineligible:
@@ -314,9 +374,12 @@ class MemberSelectView(View):
             )
             return
 
+        # ⸻ Final try
+
         members = [user for user in select.values if isinstance(user, Member)]
+
         try:
-            _ = await interaction.response.edit_message(view = EditorView(members = members))
+            await interaction.response.edit_message(view = EditorView(members = members))
         except Exception:
             await send_bad_operation(interaction, title = "compile window")
             raise

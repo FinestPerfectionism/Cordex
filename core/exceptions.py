@@ -1,4 +1,4 @@
-from bot import CtxOrInteraction
+from bot import ContextOrInteraction
 from core.responses import send_custom_message
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -9,8 +9,8 @@ from core.responses import send_custom_message
 # Unknown Error Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_unknown_error(target : CtxOrInteraction) -> None:
-    _ = await send_custom_message(
+async def send_unknown_error(target : ContextOrInteraction) -> None:
+    await send_custom_message(
         target,
         msg_type          = "error",
         title             = "run command",
@@ -24,12 +24,12 @@ async def send_unknown_error(target : CtxOrInteraction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_operation(
-    target   : CtxOrInteraction,
+    target   : ContextOrInteraction,
     *,
     title    : str,
     subtitle : str | None = "An exception occured while running this command.",
 ) -> None:
-    _ = await send_custom_message(
+    await send_custom_message(
         target,
         msg_type = "error",
         title    = title,
@@ -42,14 +42,16 @@ async def send_bad_operation(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_argument(
-    target   : CtxOrInteraction,
+    target   : ContextOrInteraction,
     *,
     subtitle : dict[
         str | tuple[str, ...] | set[str] | None,
         str,
     ],
+    footer   : str | None = None
 ) -> None:
-    formatted_lines = []
+    formatted_lines : list[str] = []
+    
     for arg, notice in subtitle.items():
         if arg is None:
             formatted_lines.append(notice)
@@ -59,20 +61,20 @@ async def send_bad_argument(
         else:
             formatted_lines.append(f"`{arg}`: {notice}")
 
-    _ = await send_custom_message(
+    await send_custom_message(
         target,
         msg_type = "warning",
         title    = "run command",
         subtitle = "\n".join(formatted_lines),
-        footer   = "Bad argument",
+        footer   = footer or "Bad argument",
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Permissions Command Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_permissions_command(target : CtxOrInteraction) -> None:
-    _ = await send_custom_message(
+async def send_bad_permissions_command(target : ContextOrInteraction) -> None:
+    await send_custom_message(
         target,
         msg_type = "error",
         title    = "run command",
@@ -84,14 +86,14 @@ async def send_bad_permissions_command(target : CtxOrInteraction) -> None:
 # Bad Permissions Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_permissions_argument(target : CtxOrInteraction, *args : str) -> None:
+async def send_bad_permissions_argument(target : ContextOrInteraction, *args : str) -> None:
     arguments : tuple[str, ...] = args
     formatted_args = [f"`{arg}`" for arg in arguments]
     if len(formatted_args) == 1:
         subtitle = f"You are not authorized to use the {formatted_args[0]} argument."
     subtitle = f"You are not authorized to use these arguments: {', '.join(formatted_args)}"
 
-    _ = await send_custom_message(
+    await send_custom_message(
         target,
         msg_type = "error",
         title    = "run command",
@@ -103,8 +105,8 @@ async def send_bad_permissions_argument(target : CtxOrInteraction, *args : str) 
 # Bad Environment Guild Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_environment_guild(target : CtxOrInteraction) -> None:
-    _ = await send_custom_message(
+async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
+    await send_custom_message(
         target,
         msg_type = "warning",
         title    = "run command",
@@ -116,8 +118,8 @@ async def send_bad_environment_guild(target : CtxOrInteraction) -> None:
 # Bad Environment Channel Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_environment_channel(target : CtxOrInteraction) -> None:
-    _ = await send_custom_message(
+async def send_bad_environment_channel(target : ContextOrInteraction) -> None:
+    await send_custom_message(
         target,
         msg_type = "warning",
         title    = "run command",
@@ -129,8 +131,8 @@ async def send_bad_environment_channel(target : CtxOrInteraction) -> None:
 # Bad Environment DMs Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_environment_dms(target : CtxOrInteraction) -> None:
-    _ = await send_custom_message(
+async def send_bad_environment_dms(target : ContextOrInteraction) -> None:
+    await send_custom_message(
         target,
         msg_type = "warning",
         title    = "run command",

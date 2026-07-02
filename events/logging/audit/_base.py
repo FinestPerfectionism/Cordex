@@ -31,7 +31,7 @@ class AuditQueue(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         self.bot   : Cordex                           = bot
         self.queue : Queue[tuple[Messageable, Embed]] = Queue()
-        _ = self.queue_worker.start()
+        self.queue_worker.start()
 
     @override
     async def cog_unload(self) -> None:
@@ -44,7 +44,7 @@ class AuditQueue(commands.Cog):
 
         channel, embed = await self.queue.get()
         try:
-            _ = await channel.send(embed = embed)
+            await channel.send(embed = embed)
         except discord.RateLimited as e:
             await asyncio.sleep(e.retry_after)
             await self.queue.put((channel, embed))

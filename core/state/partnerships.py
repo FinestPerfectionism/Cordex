@@ -53,7 +53,7 @@ def load_partnership_data() -> PartnershipData:
             "header_message_id" : header_message_id if isinstance(header_message_id, int) else None,
             "timestamp"         : timestamp if isinstance(timestamp, int) else 0,
         }
-    except (json.JSONDecodeError, OSError):
+    except json.JSONDecodeError, OSError:
         log.exception("Failed to load partnership data")
         return default()
 

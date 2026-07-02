@@ -1,12 +1,12 @@
-# ruff: noqa: E501
-
+from typing import Self
 from discord.ui import Container, LayoutView, TextDisplay
 
-from core.utilities import HiddenSmallSeparator, VisibleSmallSeparator
-
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Hierarchy Information
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class HierarchyComponents1(LayoutView):
-    container : Container[LayoutView] = Container(
+    container : Container[Self] = Container(
         TextDisplay(
             content = (
                 "# Welcome to the Hierarchy!\n"
@@ -19,7 +19,7 @@ class HierarchyComponents1(LayoutView):
 class HierarchyComponents2(LayoutView):
     def __init__(self, timestamp : int) -> None:
         super().__init__(timeout = None)
-        _ = self.add_item(
+        self.add_item(
             Container(
                 TextDisplay(
                     content = (
@@ -62,7 +62,7 @@ class HierarchyComponents2(LayoutView):
         )
 
 class HierarchyComponents3(LayoutView):
-    container : Container[LayoutView] = Container(
+    container : Container[Self] = Container(
         TextDisplay(
             content = (
                 "## Staff Committee\n"
@@ -74,7 +74,7 @@ class HierarchyComponents3(LayoutView):
     )
 
 class HierarchyComponents4(LayoutView):
-    container : Container[LayoutView] = Container(
+    container : Container[Self] = Container(
         TextDisplay(
             content = (
                 "## Goobers Administration Team\n"
@@ -127,7 +127,7 @@ class HierarchyComponents4(LayoutView):
     )
 
 class HierarchyComponents5(LayoutView):
-    container : Container[LayoutView] = Container(
+    container : Container[Self] = Container(
         TextDisplay(
             content = (
                 "## Goobers Staff Team\n"
@@ -141,7 +141,7 @@ class HierarchyComponents5(LayoutView):
     )
 
 class HierarchyComponents6(LayoutView):
-    container : Container[LayoutView] = Container(
+    container : Container[Self] = Container(
         TextDisplay(
             content = (
                 "## Guild Trustees\n"
@@ -154,7 +154,7 @@ class HierarchyComponents6(LayoutView):
     )
 
 class HierarchyComponents7(LayoutView):
-    container : Container[LayoutView] = Container(
+    container : Container[Self] = Container(
         TextDisplay(
             content = (
                 "## Verified\n"

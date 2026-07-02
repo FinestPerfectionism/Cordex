@@ -35,7 +35,7 @@ class PartnershipCommands(commands.GroupCog):
     async def get_channel(self, interaction : Interaction) -> TextChannel | None:
         channel = self.bot.get_channel(PARTNERSHIPS_CHANNEL_ID)
         if not isinstance(channel, TextChannel):
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type          = "error",
                 title             = "update",
@@ -87,7 +87,7 @@ class PartnershipCommands(commands.GroupCog):
             await send_bad_argument(interaction, subtitle = {"server-link" : "The server link must be a valid Discord invite."})
             return
 
-        _ = await interaction.response.defer(ephemeral = True)
+        await interaction.response.defer(ephemeral = True)
 
         channel = await self.get_channel(interaction)
         if channel is None:
@@ -101,7 +101,7 @@ class PartnershipCommands(commands.GroupCog):
 
         try:
             image_bytes = await server_picture.read()
-            _ = image_path.write_bytes(image_bytes)
+            image_path.write_bytes(image_bytes)
 
         except discord.HTTPException:
             log.exception("Failed to download partnership attachment")
@@ -125,7 +125,7 @@ class PartnershipCommands(commands.GroupCog):
         }
         data["partnerships"].append(entry)
 
-        _ = await interaction.followup.send(
+        await interaction.followup.send(
             f"Partnership with **{server_name}** has been added successfully. Updating the channel...",
             ephemeral = True,
         )
@@ -135,7 +135,7 @@ class PartnershipCommands(commands.GroupCog):
 
         except discord.HTTPException:
             log.exception("Failed to rebuild partnership layout after add")
-            _ = data["partnerships"].pop()
+            data["partnerships"].pop()
             image_path.unlink(missing_ok = True)
             await send_bad_operation(
                 interaction,
@@ -152,7 +152,7 @@ class PartnershipCommands(commands.GroupCog):
     @describe(server_name = "The name of the server to remove.")
     @director_cmd()
     async def cmd_partnership_remove(self, interaction : Interaction, server_name : str) -> None:
-        _ = await interaction.response.defer(ephemeral = True)
+        await interaction.response.defer(ephemeral = True)
 
         channel = await self.get_channel(interaction)
         if channel is None:
@@ -162,7 +162,7 @@ class PartnershipCommands(commands.GroupCog):
         matches = [p for p in data["partnerships"] if p["server_name"] == server_name]
 
         if not matches:
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type =  "warning",
                 title    = f'find partnership "{server_name}"',
@@ -175,7 +175,7 @@ class PartnershipCommands(commands.GroupCog):
         original = list(data["partnerships"])
         data["partnerships"] = [p for p in data["partnerships"] if p["server_name"] != server_name]
 
-        _ = await interaction.followup.send(
+        await interaction.followup.send(
             f"Partnership with **{server_name}** has been removed. Updating the channel...",
             ephemeral = True,
         )
@@ -187,7 +187,7 @@ class PartnershipCommands(commands.GroupCog):
             log.exception("Failed to rebuild partnership layout after remove")
             data["partnerships"] = original
             save_partnership_data(data)
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type          =  "error",
                 title             =  "update the partnerships channel",
@@ -226,7 +226,7 @@ class PartnershipCommands(commands.GroupCog):
     ) -> None:
         if server_link is not None and not INVITE_RE.match(server_link):
 
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type = "warning",
                 title    = "update partnership",
@@ -235,7 +235,7 @@ class PartnershipCommands(commands.GroupCog):
             )
             return
 
-        _ = await interaction.response.defer(ephemeral = True)
+        await interaction.response.defer(ephemeral = True)
 
         channel = await self.get_channel(interaction)
         if channel is None:
@@ -245,7 +245,7 @@ class PartnershipCommands(commands.GroupCog):
         matches = [p for p in data["partnerships"] if p["server_name"] == server_name]
 
         if not matches:
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type =  "warning",
                 title    = f'find partnership "{server_name}"',
@@ -265,13 +265,13 @@ class PartnershipCommands(commands.GroupCog):
 
             try:
                 image_bytes = await server_picture.read()
-                _ = new_image_path.write_bytes(image_bytes)
+                new_image_path.write_bytes(image_bytes)
                 old_image_filename    = entry["image_filename"]
                 entry["image_filename"] = new_filename
 
             except discord.HTTPException:
                 log.exception("Failed to download updated partnership attachment")
-                _ = await send_custom_message(
+                await send_custom_message(
                     interaction,
                     msg_type = "error",
                     title    = "download the new server picture",
@@ -283,7 +283,7 @@ class PartnershipCommands(commands.GroupCog):
 
             except OSError:
                 log.exception("Failed to save updated partnership image to disk")
-                _ = await send_custom_message(
+                await send_custom_message(
                     interaction,
                     msg_type = "error",
                     title    = "save the new server picture",
@@ -304,7 +304,7 @@ class PartnershipCommands(commands.GroupCog):
 
         display_name = entry["server_name"]
 
-        _ = await interaction.followup.send(
+        await interaction.followup.send(
             f"Partnership with **{display_name}** has been updated. Updating the channel...",
             ephemeral = True,
         )
@@ -314,7 +314,7 @@ class PartnershipCommands(commands.GroupCog):
 
         except discord.HTTPException:
             log.exception("Failed to rebuild partnership layout after update")
-            _ = await send_custom_message(
+            await send_custom_message(
                 interaction,
                 msg_type          =  "error",
                 title             =  "update the partnerships channel",
