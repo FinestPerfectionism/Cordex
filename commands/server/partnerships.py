@@ -326,7 +326,3 @@ class PartnershipCommands(commands.GroupCog):
 
         if old_image_filename is not None:
             (IMAGE_DIR / old_image_filename).unlink(missing_ok = True)
-
-async def setup(bot : Cordex) -> None:
-    cog = PartnershipCommands(bot)
-    await bot.add_cog(cog)

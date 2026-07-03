@@ -13,7 +13,7 @@ from core.utilities import codeblock
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_role_info(interaction : Interaction, role : Role) -> None:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral = True)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 

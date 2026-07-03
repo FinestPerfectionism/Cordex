@@ -18,8 +18,20 @@ from constants import (
     BOT_OWNER_ID,
     COLOR_RED,
 )
-from core.exceptions import send_bad_permissions_command
-from core.permissions import BadPermissions
+from core.exceptions import (
+    send_bad_environment_dms,
+    send_bad_environment_guild,
+    send_bad_environment_mainguild,
+    send_bad_environment_mainguildordms,
+    send_bad_permissions_command,
+)
+from core.permissions import (
+    BadEnvironmentDMs,
+    BadEnvironmentGuild,
+    BadEnvironmentMainGuild,
+    BadEnvironmentMainGuildOrDMs,
+    BadPermissions,
+)
 from core.utilities import codeblock
 
 MAX_ERRORS = 5
@@ -182,6 +194,23 @@ class ErrorLogger(commands.Cog):
 
         if isinstance(error, BadPermissions):
             await send_bad_permissions_command(interaction)
+            return
+
+        if isinstance(error, BadEnvironmentGuild):
+            await send_bad_environment_guild(interaction)
+            return
+
+        if isinstance(error, BadEnvironmentDMs):
+            await send_bad_environment_dms(interaction)
+            return
+
+        if isinstance(error, BadEnvironmentMainGuild):
+            await send_bad_environment_mainguild(interaction)
+            return
+
+        if isinstance(error, BadEnvironmentMainGuildOrDMs):
+            await send_bad_environment_mainguildordms(interaction)
+            return
 
         if isinstance(actual_error, HTTPException) and actual_error.status == n_429:
             cmd      = interaction.command

@@ -210,3 +210,7 @@ class ConfigurationCommands(
             view      = ConfigurationView(bot = self.bot),
             ephemeral = True,
         )
+
+async def setup(bot : Cordex) -> None:
+    cog = ConfigurationCommands(bot)
+    await bot.add_cog(cog)

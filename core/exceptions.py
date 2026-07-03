@@ -110,7 +110,33 @@ async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
         target,
         msg_type = "warning",
         title    = "run command",
-        subtitle = "This command can only be run in DMs",
+        subtitle = "This command can only be run in a guild.",
+        footer   = "Bad environment",
+    )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Bad Environment Main Guild or DMs Exception
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+async def send_bad_environment_mainguildordms(target : ContextOrInteraction) -> None:
+    await send_custom_message(
+        target,
+        msg_type = "warning",
+        title    = "run command",
+        subtitle = "This command can only be run in the main guild (The Goobers) or DMs.",
+        footer   = "Bad environment",
+    )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Bad Environment Main Guild Exception
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+async def send_bad_environment_mainguild(target : ContextOrInteraction) -> None:
+    await send_custom_message(
+        target,
+        msg_type = "warning",
+        title    = "run command",
+        subtitle = "This command can only be run in the main guild (The Goobers).",
         footer   = "Bad environment",
     )
 
@@ -136,6 +162,6 @@ async def send_bad_environment_dms(target : ContextOrInteraction) -> None:
         target,
         msg_type = "warning",
         title    = "run command",
-        subtitle = "This command can only be run in a guild.",
+        subtitle = "This command can only be run in DMs.",
         footer   = "Bad environment",
     )

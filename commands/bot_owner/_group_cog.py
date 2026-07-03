@@ -99,7 +99,10 @@ class BotOwnerCommands(
     # /shutdown Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(name = "shutdown")
+    @app_command(
+        name        = "shutdown",
+        description = "Shutdown the bot.",
+    )
     @bot_owner_cmd()
     async def cmd_shutdown(self, interaction : Interaction) -> None:
         await run_bo_state_shutdown(self.bot, interaction)
@@ -108,7 +111,10 @@ class BotOwnerCommands(
     # /restart Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(name = "restart")
+    @app_command(
+        name        = "restart",
+        description = "Restart the bot.",
+    )
     @bot_owner_cmd()
     async def cmd_restart(self, interaction : Interaction) -> None:
         await run_bo_state_restart(self.bot, interaction, self.restarting, self.logger)
@@ -117,7 +123,10 @@ class BotOwnerCommands(
     # /sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(name = "sync")
+    @app_command(
+        name        = "sync",
+        description = "Sync the bot tree.",
+    )
     @bot_owner_cmd()
     async def cmd_sync(self, interaction : Interaction) -> None:
         await run_bo_state_sync(interaction)
