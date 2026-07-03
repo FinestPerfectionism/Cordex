@@ -5,13 +5,14 @@ from bot import Cordex
 from constants import (
     DIRECTOR_TASKS_CHANNEL_ID,
     DIRECTORS_ROLE_ID,
+    MAIN_GUILD_ID,
     WAPPLE_CHAIN_CHANNEL_ID,
 )
 
 from ._base import WAPPLE_PATTERN
 
 FACTOIDS = {
-    "bump"   : (
+    "bump" : (
         "# Please bump __both__ bots.\n"
         "We really appreciate everyone bumping! If you are going to bump, please bump **both** <@735147814878969968> and <@1159147139960676422>.\n"
         "### Why?\n"
@@ -56,7 +57,7 @@ class MessageSendHandler(commands.Cog):
 
         # ⸻ Factoids
 
-        if content.startswith("?") and " " not in content[1:] and message.guild:
+        if content.startswith("?") and " " not in content[1:] and message.guild and message.guild.id == MAIN_GUILD_ID:
             key = content[1:].lower()
 
             if key in FACTOIDS:

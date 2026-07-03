@@ -150,6 +150,20 @@ class ReasonModal(Modal):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
+        
+        # ⸻ You cannot make an action appealable without DMing the user
+        
+        if self.appealable_box.value and not self.dm_box.value:
+            await send_custom_message(
+                interaction,
+                msg_type = "warning",
+                title    = "compile window",
+                subtitle = "You cannot make an action appealable without DMing the user.",
+            )
+            return
+
+        # ⸻ Improper time signature
+
         timer_value = self.timer_input.value.strip().lower()
         if timer_value and not re.match(r"^(\d+[hmds])+$", timer_value):
             await send_custom_message(
@@ -160,8 +174,8 @@ class ReasonModal(Modal):
             )
             return
 
-        user_id = self.target.id if self.target else 0
-        if user_id == 0:
+        
+        if (user_id := self.target.id if self.target else 0) == 0:
             self.editor.state_map.clear()
 
         filename : str | None = next(
@@ -233,7 +247,7 @@ class EditorView(LayoutView):
                 return
 
             try:
-                summary_lines = [f"# {ACCEPTED_EMOJI} Successfully mass moderated all members."]
+                summary_lines = [f"**{ACCEPTED_EMOJI} Successfully mass moderated all members.**"]
 
                 for member in self.members:
                     entry = resolve_state(member, self.state_map, global_entry)
@@ -246,11 +260,11 @@ class EditorView(LayoutView):
 
                         summary_lines.append(
                             (
-                                f"### Success for {member.mention}.\n"
-                                f"- Reason: {reason}\n"
-                                f"- Timer: {timer}\n"
-                                f"- Appealable: {appealable} **|** DM Sent: {dm_user}\n"
-                                f"- Attachment: {file}"
+                                f"{member.mention}\n"
+                                f"`    Reason:` {reason}\n"
+                                f"`     Timer:` {timer}\n"
+                                f"`Appealable:` {appealable} | `DM Sent:` {dm_user}\n"
+                                f"`Attachment:` {file}"
                             ),
                         )
 
@@ -307,7 +321,7 @@ class MemberSelectView(View):
 
         # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-        if not guild:
+        if not guild or not isinstance(interaction.user, Member):
             return
 
         # ⸻ You cannot moderate me... maybe?
@@ -360,7 +374,6 @@ class MemberSelectView(View):
         ineligible = [
             member.mention for member in chosen_members
             if isinstance(member, Member)
-            and isinstance(interaction.user, Member)
             and check_role_hierarchy(interaction.user, member, "<=")
         ]
 

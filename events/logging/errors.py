@@ -8,7 +8,7 @@ from typing import override
 import aiohttp
 from discord import Embed, Forbidden, Guild, HTTPException, NotFound, TextChannel
 from discord.abc import User
-from discord.app_commands import AppCommandError, CommandInvokeError
+from discord.app_commands import AppCommandError
 from discord.ext import commands
 from discord.utils import utcnow
 
@@ -33,9 +33,6 @@ from core.permissions import (
     BadPermissionsCommand,
 )
 from core.utilities import codeblock
-
-MAX_ERRORS = 5
-n_429      = 429
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Errors Handling
@@ -74,7 +71,7 @@ class ErrorLogger(commands.Cog):
 
         if user:
             embed.add_field(
-                name   =  "User",
+                name   = "User",
                 value  = (
                     f"`{user}`\n"
                     f"`{user.id}`"
@@ -84,7 +81,7 @@ class ErrorLogger(commands.Cog):
 
         if guild:
             embed.add_field(
-                name   =  "Guild",
+                name   = "Guild",
                 value  = (
                     f"`{guild}`\n"
                     f"`{guild.id}`"
@@ -122,28 +119,6 @@ class ErrorLogger(commands.Cog):
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # 429 / Rate Limit Guard
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def handle_rate_limit(self, source : str) -> None:
-        self.rate_limit_hits += 1
-
-        await self.send_error(
-            title      = "Rate Limited (429)",
-            error_text = (
-                f"Source: {source}\n"
-                f"Hit {self.rate_limit_hits}/{MAX_ERRORS} this session."
-            ),
-        )
-
-        if self.rate_limit_hits >= MAX_ERRORS:
-            await self.send_error(
-                title      = "Auto-Shutdown: Too Many 429s",
-                error_text = f"Received {MAX_ERRORS} rate limit responses this session. Shutting down to prevent an IP ban.",
-            )
-            await self.bot.close()
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Discord Event Errors
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -169,10 +144,6 @@ class ErrorLogger(commands.Cog):
             )
             return
 
-        if isinstance(exc, HTTPException) and exc.status == n_429:
-            await self.handle_rate_limit(f"event: {event}")
-            return
-
         tb_text = "".join(traceback.format_exception(exc_type, exc, tb))
 
         await self.send_error(
@@ -190,8 +161,6 @@ class ErrorLogger(commands.Cog):
         interaction : Interaction,
         error       : AppCommandError,
     ) -> None:
-        actual_error = error.original if isinstance(error, CommandInvokeError) else error
-
         if isinstance(error, BadPermissionsCommand):
             await send_bad_permissions_command(interaction)
             return
@@ -210,12 +179,6 @@ class ErrorLogger(commands.Cog):
 
         if isinstance(error, BadEnvironmentMainGuildOrDMs):
             await send_bad_environment_mainguildordms(interaction)
-            return
-
-        if isinstance(actual_error, HTTPException) and actual_error.status == n_429:
-            cmd      = interaction.command
-            cmd_name = f"/{cmd.qualified_name}" if cmd else "Unknown"
-            await self.handle_rate_limit(cmd_name)
             return
 
         tb_text = "".join(traceback.format_exception(type(error), error, error.__traceback__))
@@ -260,10 +223,6 @@ class ErrorLogger(commands.Cog):
             HTTPException,
             aiohttp.ClientError,
         ) as exc:
-            if isinstance(exc, HTTPException) and exc.status == n_429:
-                await self.handle_rate_limit("guard_http")
-                raise
-
             tb_text = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
 
             await self.send_error(
@@ -298,13 +257,6 @@ class ErrorLogger(commands.Cog):
             return
 
         if exc is None:
-            return
-
-        if isinstance(exc, HTTPException) and exc.status == n_429:
-            self.create_task(
-                self.handle_rate_limit(f"task: {task.get_name()}"),
-                name = "task_ratelimit_reporter",
-            )
             return
 
         tb_text = "".join(
