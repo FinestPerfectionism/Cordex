@@ -30,7 +30,7 @@ from core.permissions import (
     BadEnvironmentGuild,
     BadEnvironmentMainGuild,
     BadEnvironmentMainGuildOrDMs,
-    BadPermissions,
+    BadPermissionsCommand,
 )
 from core.utilities import codeblock
 
@@ -192,7 +192,7 @@ class ErrorLogger(commands.Cog):
     ) -> None:
         actual_error = error.original if isinstance(error, CommandInvokeError) else error
 
-        if isinstance(error, BadPermissions):
+        if isinstance(error, BadPermissionsCommand):
             await send_bad_permissions_command(interaction)
             return
 
