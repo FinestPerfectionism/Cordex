@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord.utils import utcnow
 
 from bot import Cordex
-from commands.bot_owner.misc import eval_message_ids
+from commands.bot_owner.eval import eval_message_ids
 from constants import (
     COLOR_GREY,
     MESSAGE_EDIT_LOG_CHANNEL_ID,
@@ -36,9 +36,9 @@ class MessageEditHandler(commands.Cog):
 
         if author.bot or author == self.bot.user:
             return
-        
+
         # ⸻ Block bots
-        
+
         if author.bot:
             return
 
@@ -100,10 +100,10 @@ class MessageEditHandler(commands.Cog):
             value  = channel_display(before.channel),
             inline = True,
         )
-        
+
         before_text = before.content or "[No content]"
         after_text  = after.content  or "[No content]"
-        
+
         embed.add_field(
             name   = "Before",
             value  = truncate_text(before_text),

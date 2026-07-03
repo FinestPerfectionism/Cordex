@@ -57,12 +57,12 @@ def is_directorship_channel(channel : Messageable) -> bool:
 def channel_display(channel : Messageable | discord.abc.GuildChannel) -> str:
     if isinstance(channel, Thread):
         parent = channel.parent
-        
+
         if isinstance(parent, ForumChannel):
             return f"{parent.mention} / {channel.mention}"
         if parent is not None:
             return f"{parent.mention} / {channel.mention}"
-            
+
         return channel.mention
 
     if isinstance(channel, TextChannel):

@@ -1,7 +1,7 @@
 from collections import defaultdict
 from time import time
 
-from discord import Message, Member
+from discord import Member, Message
 from discord.ext import commands
 
 from bot import Cordex
@@ -56,16 +56,15 @@ class AutomoderationSystem(commands.Cog):
             # 1 ~~~ Switch from a raw STAFF_ROLES to check to a legitimate function.
             if any(role.id in STAFF_ROLES for role in author.roles):
                 return
-            else:
-                current_time = time()
-                user_heat = self.heat[author.id]
-    
-                user_heat[:] = [t for t in user_heat if current_time - t < TRIGGER_SECONDS]
-                user_heat.append(current_time)
-    
-                if len(user_heat) >= TRIGGER_PHOTOS:
-                    await author.ban(reason = "Auto-Moderation: Image Spam")
-                    del self.heat[author.id]
+            current_time = time()
+            user_heat = self.heat[author.id]
+
+            user_heat[:] = [t for t in user_heat if current_time - t < TRIGGER_SECONDS]
+            user_heat.append(current_time)
+
+            if len(user_heat) >= TRIGGER_PHOTOS:
+                await author.ban(reason = "Auto-Moderation: Image Spam")
+                del self.heat[author.id]
 
 async def setup(bot : Cordex) -> None:
     cog = AutomoderationSystem(bot)

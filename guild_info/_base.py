@@ -1,8 +1,15 @@
 from datetime import datetime
+
 from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
 from discord.utils import format_dt
 
-from bot.ui import ButtonSection, HiddenSmallSeparator, VisibleLargeSeparator, VisibleSmallSeparator, link
+from bot.ui import (
+    ButtonSection,
+    HiddenSmallSeparator,
+    VisibleLargeSeparator,
+    VisibleSmallSeparator,
+    link,
+)
 from constants import STANDSTILL_EMOJI
 from core.utilities import format_values
 
@@ -15,7 +22,7 @@ from core.utilities import format_values
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class TOSButton(Button[LayoutView]):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             url   = "https://discord.com/terms",
             style = link,
@@ -90,7 +97,7 @@ class InfoPrimarySection(LayoutView):
         self.container.add_item(HiddenSmallSeparator())
         self.container.add_item(VisibleSmallSeparator())
         self.container.add_item(HiddenSmallSeparator())
-        
+
         if text is not None:
             self.container.add_item(TextDisplay(text))
 
@@ -123,7 +130,7 @@ class InfoSecondarySection(LayoutView):
 
         if text is not None:
             self.container.add_item(TextDisplay(text))
-        
+
         self.add_item(self.container)
 
     def add_text(self, text : str) -> None:

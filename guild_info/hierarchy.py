@@ -1,4 +1,5 @@
 from typing import Self
+
 from discord.ui import Container, LayoutView, TextDisplay
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -29,9 +30,9 @@ class HierarchyComponents2(LayoutView):
                         "-# Assembled by the Directorate team. Primarily written by <@1311394031640776716>; assisted by <@1167207694424350740>, <@1135600413954019339>, and <@1333839098485542949>.\n"
                     ),
                 ),
-                HiddenSmallSeparator(),
-                VisibleSmallSeparator(),
-                HiddenSmallSeparator(),
+                # HiddenSmallSeparator(),
+                # VisibleSmallSeparator(),
+                # HiddenSmallSeparator(),
                 TextDisplay(
                     content = (
                         "## Goobers Directorate\n"

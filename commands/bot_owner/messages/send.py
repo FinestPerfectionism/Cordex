@@ -19,8 +19,6 @@ async def run_bo_messages_send(
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 
-    interaction.extras
-
     target_channel = channel or interaction.channel
 
     if not isinstance(target_channel, TextChannelTypes):
@@ -37,7 +35,7 @@ async def run_bo_messages_send(
                 try:
                     reply_reference = await target_channel.fetch_message(int(message_id))
 
-                except discord.NotFound, ValueError, discord.HTTPException:
+                except (discord.NotFound, ValueError, discord.HTTPException):
                     await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
                     return
 

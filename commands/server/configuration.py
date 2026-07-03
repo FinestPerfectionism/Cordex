@@ -1,12 +1,22 @@
 from typing import Self
+
 from discord import ChannelType
 from discord.app_commands import command as app_command
 from discord.ext import commands
-from discord.ui import ActionRow, Button, ChannelSelect, Container, LayoutView, TextDisplay, button, select
+from discord.ui import (
+    ActionRow,
+    Button,
+    ChannelSelect,
+    Container,
+    LayoutView,
+    TextDisplay,
+    button,
+    select,
+)
 
-from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
 from bot import Cordex, Interaction
 from bot.ui import VisibleLargeSeparator, blurple, red
+from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
 from core.permissions import director_cmd
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -24,7 +34,7 @@ class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
             ChannelType.text,
             ChannelType.private_thread,
             ChannelType.public_thread,
-        ]
+        ],
     )
     async def slct_logging_moderation(self, interaction : Interaction, select : ChannelSelect[LayoutView]) -> None:
         if not select.values or not self.view:
@@ -35,11 +45,11 @@ class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
 
         await bot.logging_db.execute(
             """
-            INSERT INTO GuildConfig (config_key, config_value) 
+            INSERT INTO GuildConfig (config_key, config_value)
             VALUES ('logging_moderation_channel', ?)
             ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
             """,
-            [str(channel.id)]
+            [str(channel.id)],
         )
         await bot.logging_db.commit()
 
@@ -57,7 +67,7 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
             ChannelType.text,
             ChannelType.private_thread,
             ChannelType.public_thread,
-        ]
+        ],
     )
     async def slct_logging_antinuke(self, interaction : Interaction, select_item : ChannelSelect[LayoutView]) -> None:
         if not select_item.values or not self.view:
@@ -68,11 +78,11 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
 
         await bot.logging_db.execute(
             """
-            INSERT INTO GuildConfig (config_key, config_value) 
+            INSERT INTO GuildConfig (config_key, config_value)
             VALUES ('logging_antinuke_channel', ?)
             ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
             """,
-            [str(channel.id)]
+            [str(channel.id)],
         )
         await bot.logging_db.commit()
 

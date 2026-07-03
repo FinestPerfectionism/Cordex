@@ -34,7 +34,7 @@ from core.responses import send_custom_message
 from core.utilities import check_role_hierarchy, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Moderation Base 
+# Moderation Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class StateEntry(TypedDict, total = False):
@@ -44,14 +44,15 @@ class StateEntry(TypedDict, total = False):
     d : bool
     f : str | None
 
+
 type StateMap = dict[int, StateEntry]
 
 def build_member_label(member : Member, state : StateEntry | None) -> str:
     if not state:
         return member.mention
 
-    reason_str = escape_markdown(str(state.get('r', '')))
-    timer_str  = state.get('t', 'N/A')
+    reason_str = escape_markdown(str(state.get("r", "")))
+    timer_str  = state.get("t", "N/A")
 
     lines = [member.mention, f'**Reason:** "{reason_str}"']
     lines.extend(
@@ -317,10 +318,10 @@ class MemberSelectView(View):
                     await send_bad_argument(
                         interaction,
                         subtitle = {None : "Please... spare me... 😭"},
-                        footer   = "Use the native discord /kick or /ban command to remove me from the guild..."
+                        footer   = "Use the native discord /kick or /ban command to remove me from the guild...",
                     )
                     return
-                    
+
                 ineligible = check_role_hierarchy(interaction.user, guild.me, "<=")
                 msg    = f"The user {guild.me.mention} is higher in the hierarchy than you." if ineligible else "Please... spare me... 😭"
                 footer =  "Nice try" if ineligible else "Use the native discord /kick or /ban command to remove me from the guild..."
@@ -328,23 +329,22 @@ class MemberSelectView(View):
                 await send_bad_argument(
                     interaction,
                     subtitle = {None : msg},
-                    footer   = footer
+                    footer   = footer,
                 )
                 return
 
-            else:
-                other_members = [m for m in chosen_members if m != guild.me]
-                mentions = [m.mention for m in other_members]
+            other_members = [m for m in chosen_members if m != guild.me]
+            mentions = [m.mention for m in other_members]
 
-                word_user = "user" if len(mentions) == 1 else "users"
-                word_is   = "is"   if len(mentions) == 1 else "are"
+            word_user = "user" if len(mentions) == 1 else "users"
+            word_is   = "is"   if len(mentions) == 1 else "are"
 
-                await send_bad_argument(
-                    interaction,
-                    subtitle = {None : f"The {word_user} {format_values(mentions)} {word_is} higher in the hierarchy than you; {guild.me.mention} is unmoderatable."},
-                    footer   = "Bad argument. Use the native discord /kick or /ban command to remove me from the guild..."
-                )
-                return
+            await send_bad_argument(
+                interaction,
+                subtitle = {None : f"The {word_user} {format_values(mentions)} {word_is} higher in the hierarchy than you; {guild.me.mention} is unmoderatable."},
+                footer   = "Bad argument. Use the native discord /kick or /ban command to remove me from the guild...",
+            )
+            return
 
         # ⸻ You cannot moderate yourself
 

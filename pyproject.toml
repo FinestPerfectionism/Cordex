@@ -115,6 +115,7 @@ ignore = [
     "E272",
     "E302",
     "E501",
+    "E999",
 ]
 
 [tool.ruff.lint.mccabe]

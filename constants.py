@@ -60,7 +60,7 @@ STAFF_ROLES = [
     MODERATORS_ROLE_ID,
     JUNIOR_MODERATORS_ROLE_ID,
     SENIOR_MODERATORS_ROLE_ID,
-] 
+]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Member IDs

@@ -6,7 +6,7 @@ from os import execv
 import discord
 from discord import CustomActivity, Status
 
-from bot import Interaction, Cordex
+from bot import Cordex, Interaction
 from core.exceptions import send_bad_operation
 from core.responses import edit_custom_message, send_custom_message
 from core.utilities import codeblock

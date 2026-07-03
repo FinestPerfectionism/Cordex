@@ -1,7 +1,9 @@
-import aiosqlite as asq
+from asyncio import to_thread
 from logging import Logger, getLogger
-from typing import TYPE_CHECKING, TypedDict, Unpack, override
+from pathlib import Path
+from typing import TypedDict, Unpack, override
 
+import aiosqlite as asq
 from discord import CustomActivity, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.ext import commands
@@ -11,9 +13,6 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
 
 from core.cog_loader import discover_cogs
-
-if TYPE_CHECKING:
-    import aiosqlite as asq
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management
@@ -33,6 +32,7 @@ class ContextKwargs(TypedDict, total = False):
 class ContextClass(BaseContext["Cordex"]):
     def __init__(self, **kwargs : Unpack[ContextKwargs]) -> None:
         super().__init__(**kwargs)
+
 
 type Context     = ContextClass
 type Interaction = BaseInteraction["Cordex"] | BaseInteraction
@@ -72,22 +72,26 @@ class Cordex(commands.Bot):
 
         self.logging_db = await asq.connect("database.db")
 
-        with open("schemas/schema.sql", "r") as f:
-            schema : str = f.read()
+        def read_schema() -> str:
+            with Path("schemas/logging.sql").open() as f:
+                return f.read()
+
+        schema : str = await to_thread(read_schema)
 
         await self.logging_db.executescript(schema)
 
         # ⸻ Cogs
 
         priority_load : list[str] = ["core.startup"]
-        cogs          : list[str] = discover_cogs(
+        cogs          : list[str] = await to_thread(
+            discover_cogs,
             "commands",
             "events",
             "core",
             priority = priority_load,
         )
 
-        for cog  in cogs:
+        for cog in cogs:
             try:
                 await self.load_extension(cog)
                 log.info("Loaded cog %s", cog)
@@ -102,4 +106,3 @@ class Cordex(commands.Bot):
 
 bot  = Cordex()
 tree = bot.tree
-

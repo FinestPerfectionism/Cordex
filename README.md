@@ -12,6 +12,6 @@ Sigh. Should you intend do use the bot regardless of this warning, please give t
 * basedpyright - All rules enabled*
   * *The `reportUnusedCallResult` rule has been turned off, as it is boilerplate for the discord.py library.
 * ruff - All rules enabled*
-  * The following rules have been disabled as they either do not conform to the code style in the repository or are deprecated: D, BLE, PD011, CPY001, PLR6301, E203, E221, E222, E241, E251, E252 E271, E272, E302, E501
+  * The following rules have been disabled as they either do not conform to the code style in the repository or are deprecated: D, BLE, PD011, CPY001, PLR6301, E203, E221, E222, E241, E251, E252 E271, E272, E302, E501, E999
 ## Contributing
 Contributions are welcome, but in a solid grey area. Please read CONTRIBUTION.md.

@@ -3,8 +3,8 @@ import io
 import traceback
 from builtins import exec
 from collections.abc import Awaitable, Callable
-from typing import cast
 from textwrap import indent
+from typing import cast
 
 import discord
 from discord import ui
@@ -12,7 +12,14 @@ from discord.ext import commands
 from discord.utils import format_dt, get, utcnow
 
 from bot import Context, Cordex, Interaction, tree
-from bot.ui import ButtonSection, HiddenLargeSeparator, HiddenSmallSeparator, ThumbnailSection, VisibleLargeSeparator, VisibleSmallSeparator
+from bot.ui import (
+    ButtonSection,
+    HiddenLargeSeparator,
+    HiddenSmallSeparator,
+    ThumbnailSection,
+    VisibleLargeSeparator,
+    VisibleSmallSeparator,
+)
 from constants import (
     ACCEPTED_EMOJI,
     BOT_OWNER_ID,
@@ -150,7 +157,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
     }
 
     # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to really warrant it.
-    
+
     if ctx.author.id != BOT_OWNER_ID:
         await send_bad_permissions_command(ctx)
 
@@ -170,12 +177,12 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         res = await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
         eval_message_ids[ctx.message.id] = res.id
         return
-        
+
     func = cast(Callable[[], Awaitable[object]], env["func"])
 
     try:
         with contextlib.redirect_stdout(stdout):
-            ret = await func()  
+            ret = await func()
     except Exception:
         value = stdout.getvalue()
         await message.add_reaction(CONTESTED_EMOJI)

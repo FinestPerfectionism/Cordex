@@ -15,8 +15,8 @@ from .cogs import (
     run_bo_cogs_reload,
     run_bo_cogs_unload,
 )
-from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
 from .eval import run_bo_eval
+from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 
 if TYPE_CHECKING:

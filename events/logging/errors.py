@@ -6,7 +6,7 @@ from collections.abc import Coroutine
 from typing import override
 
 import aiohttp
-from discord import Embed, Forbidden, Guild, NotFound, TextChannel, HTTPException
+from discord import Embed, Forbidden, Guild, HTTPException, NotFound, TextChannel
 from discord.abc import User
 from discord.app_commands import AppCommandError, CommandInvokeError
 from discord.ext import commands
@@ -127,7 +127,7 @@ class ErrorLogger(commands.Cog):
         if self.rate_limit_hits >= MAX_ERRORS:
             await self.send_error(
                 title      = "Auto-Shutdown: Too Many 429s",
-                error_text = f"Received {MAX_ERRORS} rate limit responses this session. Shutting down to prevent an IP ban."
+                error_text = f"Received {MAX_ERRORS} rate limit responses this session. Shutting down to prevent an IP ban.",
             )
             await self.bot.close()
 

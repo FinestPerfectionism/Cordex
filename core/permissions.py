@@ -4,8 +4,15 @@ from discord import Member
 from discord.app_commands import CheckFailure, check
 
 from bot import Interaction
-
-from constants import ADMINISTRATORS_ROLE_ID, BOT_OWNER_ID, DIRECTORS_ROLE_ID, MODERATORS_ROLE_ID, SENIOR_ADMINISTRATORS_ROLE_ID, SENIOR_MODERATORS_ROLE_ID, STAFF_ROLE_ID
+from constants import (
+    ADMINISTRATORS_ROLE_ID,
+    BOT_OWNER_ID,
+    DIRECTORS_ROLE_ID,
+    MODERATORS_ROLE_ID,
+    SENIOR_ADMINISTRATORS_ROLE_ID,
+    SENIOR_MODERATORS_ROLE_ID,
+    STAFF_ROLE_ID,
+)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permissions Management
@@ -14,11 +21,15 @@ from constants import ADMINISTRATORS_ROLE_ID, BOT_OWNER_ID, DIRECTORS_ROLE_ID, M
 class BadPermissions(CheckFailure):
     pass
 
-def access_control(*, allowed_users : list[int] | None = None, allowed_roles : list[int] | None = None):
+def access_control[F : Callable[..., object]](
+    *,
+    allowed_users : list[int] | None = None,
+    allowed_roles : list[int] | None = None,
+) -> Callable[[F], F]:
     users = allowed_users or []
     roles = allowed_roles or []
 
-    async def predicate(target : Interaction) -> bool:
+    def predicate(target : Interaction) -> bool:
         user = target.user
 
         if user.id in users:
@@ -31,7 +42,7 @@ def access_control(*, allowed_users : list[int] | None = None, allowed_roles : l
 
         raise BadPermissions
 
-    def decorator[F : Callable[..., object]](func : F) -> F:
+    def decorator(func : F) -> F:
         check(predicate)(func)
         return func
 

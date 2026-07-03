@@ -45,16 +45,16 @@ def check_role_hierarchy(
 ) -> bool:
 
     # ⸻ Owner vs Owner
-    
+
     if actor.guild.owner_id == actor.id:
         if target.guild.owner_id == target.id:
-            return comparison in ("=", ">=", "<=")
-        return comparison in (">", ">=")
+            return comparison in {"=", ">=", "<="}
+        return comparison in {">", ">="}
 
     # ⸻ Actor vs Owner
 
     if target.guild.owner_id == target.id:
-        return comparison in ("<", "<=")
+        return comparison in {"<", "<="}
 
     actor_role  = actor.top_role
     target_role = target.top_role

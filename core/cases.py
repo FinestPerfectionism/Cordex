@@ -1,9 +1,19 @@
 from enum import Enum
-from typing import TYPE_CHECKING, Self, Literal
+from typing import TYPE_CHECKING, Literal, Self
+
 from discord import Color, Embed, Member
 from discord.utils import utcnow
 
-from constants import COLOR_BLACK, COLOR_BLURPLE, COLOR_GREEN, COLOR_GREY, COLOR_ORANGE, COLOR_RED, COLOR_YELLOW
+from constants import (
+    COLOR_BLACK,
+    COLOR_BLURPLE,
+    COLOR_GREEN,
+    COLOR_GREY,
+    COLOR_ORANGE,
+    COLOR_RED,
+    COLOR_YELLOW,
+)
+
 
 class CaseType(str, Enum):
     if TYPE_CHECKING:
@@ -38,6 +48,7 @@ class CaseType(str, Enum):
         obj.case_title = title
         return obj
 
+
 CaseTypeString = Literal[
     "lockdown_add",
     "lockdown_remove",
@@ -51,7 +62,7 @@ CaseTypeString = Literal[
     "purge",
     "note_add",
     "note_edit",
-    "note_remove"
+    "note_remove",
 ]
 
 async def moderation_log(
@@ -66,9 +77,9 @@ async def moderation_log(
             f"{moderator.mention}\n"
             f"`{moderator.name}`\n"
             f"`{moderator.id}`"
-        ) if isinstance(moderator, Member) else moderator
+        ) if isinstance(moderator, Member) else moderator,
     )
-    
+
     if len(targets) == 1:
         target = targets[0]
         embed.add_field(
@@ -77,7 +88,7 @@ async def moderation_log(
                 f"{target.mention}\n"
                 f"`{target.name}`\n"
                 f"`{target.id}`"
-            )
+            ),
         )
     else:
         embed.add_field(

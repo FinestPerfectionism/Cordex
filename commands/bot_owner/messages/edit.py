@@ -28,7 +28,7 @@ async def run_bo_messages_edit(
             try:
                 target_message = await target_channel.fetch_message(int(message_id))
 
-            except discord.NotFound, ValueError, discord.HTTPException:
+            except (discord.NotFound, ValueError, discord.HTTPException):
                 await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
                 return
 

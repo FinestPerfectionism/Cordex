@@ -1,5 +1,5 @@
 class BaseActions:
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     async def lockdown_add(self) -> None:
@@ -34,7 +34,7 @@ class BaseActions:
 
     async def timeout_view(self) -> None:
         ...
-        
+
     async def timeout_remove(self) -> None:
         ...
 

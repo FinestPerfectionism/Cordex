@@ -1,9 +1,9 @@
 import discord
 
+from bot import Interaction, tree
 from core.exceptions import send_bad_operation
 from core.responses import send_custom_message
 from core.utilities import codeblock
-from bot import Interaction, tree
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /sync Logic

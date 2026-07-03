@@ -1,5 +1,5 @@
 from discord import ButtonStyle, SeparatorSpacing
-from discord.ui import Button, Section, Separator, LayoutView, Thumbnail, TextDisplay
+from discord.ui import Button, LayoutView, Section, Separator, TextDisplay, Thumbnail
 
 __all__ = ["TextDisplay"]
 
@@ -45,12 +45,11 @@ class HiddenSmallSeparator(Separator[LayoutView]):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class ButtonSection(Section[LayoutView]):
-    def __init__(self, *args : str, button : Button[LayoutView], id : int | None = None):
+    def __init__(self, *args : str, button : Button[LayoutView], id : int | None = None) -> None:
         super().__init__(*args, id = id, accessory = button)
         self.button : Button[LayoutView] = button
 
 class ThumbnailSection(Section[LayoutView]):
-    def __init__(self, *args : str, thumbnail : Thumbnail[LayoutView], id : int | None = None):
+    def __init__(self, *args : str, thumbnail : Thumbnail[LayoutView], id : int | None = None) -> None:
         super().__init__(*args, id = id, accessory = thumbnail)
         self.thumbnail : Thumbnail[LayoutView] = thumbnail
-

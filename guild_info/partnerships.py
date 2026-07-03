@@ -4,7 +4,7 @@ import time
 from typing import Self
 
 import discord
-from discord import AllowedMentions, File
+from discord import AllowedMentions, File, HTTPException, NotFound
 from discord.ui import (
     Container,
     LayoutView,
@@ -102,7 +102,7 @@ def estimate_characters(p : PartnershipEntry) -> int:
     return len(
         (
            f"# {p['server_name']}\n"
-            "**Description:**\n"   
+            "**Description:**\n"
            f"> {p['server_description']}\n"
             "**Server Owner**\n"
            f"> <@{p['server_owner_id']}>\n"
@@ -135,7 +135,7 @@ async def rebuild_partnership_layout(channel : discord.TextChannel, data : Partn
         try:
             msg = await channel.fetch_message(msg_id)
             await msg.delete()
-        except discord.NotFound, discord.HTTPException:
+        except (NotFound, HTTPException):
             pass
 
     header_msg_id = data["header_message_id"]
@@ -143,7 +143,7 @@ async def rebuild_partnership_layout(channel : discord.TextChannel, data : Partn
         try:
             msg = await channel.fetch_message(header_msg_id)
             await msg.delete()
-        except discord.NotFound, discord.HTTPException:
+        except (NotFound, HTTPException):
             pass
 
     timestamp : int = int(time.time())

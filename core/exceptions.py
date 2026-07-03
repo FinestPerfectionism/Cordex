@@ -48,10 +48,10 @@ async def send_bad_argument(
         str | tuple[str, ...] | set[str] | None,
         str,
     ],
-    footer   : str | None = None
+    footer   : str | None = None,
 ) -> None:
     formatted_lines : list[str] = []
-    
+
     for arg, notice in subtitle.items():
         if arg is None:
             formatted_lines.append(notice)
