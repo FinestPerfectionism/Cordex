@@ -160,6 +160,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
 
     if ctx.author.id != BOT_OWNER_ID:
         await send_bad_permissions_command(ctx)
+        return
 
     message = ctx.message
 
