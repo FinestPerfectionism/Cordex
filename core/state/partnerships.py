@@ -1,10 +1,11 @@
+from logging import getLogger as get_logger
 from pathlib import Path
 from typing import cast
 
 from aiosqlite import Connection, Error
 from typing_extensions import TypedDict
 
-from bot import log
+log = get_logger("Cordex")
 
 IMAGE_DIR : Path = Path("data/partnership_images")
 
