@@ -100,7 +100,7 @@ class Cordex(commands.Bot):
                 cases_sql = f2.read()
             with Path("schemas/partnerships.sql").open() as f3:
                 partnerships_sql = f3.read()
-            with Path("schema/guild_info.sql").open() as f4:
+            with Path("schemas/guild_info.sql").open() as f4:
                 guild_info_sql = f4.read()
             return log_sql, cases_sql, partnerships_sql, guild_info_sql
 
