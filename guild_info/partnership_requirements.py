@@ -2,7 +2,7 @@ from discord.utils import utcnow
 
 from constants import TICKET_CHANNEL_ID
 
-from . import InfoHeaderSection, InfoPrimarySection, TOSButton
+from ._base import InfoHeaderSection, InfoPrimarySection, TOSButton
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership Requirements Information
