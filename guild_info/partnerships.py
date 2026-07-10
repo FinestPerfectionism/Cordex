@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from discord import File
 from discord.channel import TextChannel
 from discord.errors import HTTPException
@@ -5,7 +6,6 @@ from discord.threads import Thread
 from discord.ui import LayoutView, Thumbnail
 from discord.utils import utcnow
 
-from bot import Cordex
 from bot.ui import ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
@@ -20,6 +20,9 @@ from ._base import (
     InfoSecondarySection,
     TOSButton,
 )
+
+if TYPE_CHECKING:
+    from bot import Cordex
 
 CHARACTERS_PER_GROUP_LIMIT = 4000
 
@@ -105,7 +108,7 @@ def build_partnership_views(entries : list[PartnershipEntry]) -> tuple[list[Layo
     return views, files
 
 async def rebuild_partnership_view(
-    bot     : Cordex,
+    bot     : "Cordex",
     entries : list[PartnershipEntry],
 ) -> None:
 
