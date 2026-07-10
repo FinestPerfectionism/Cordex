@@ -6,7 +6,6 @@ from discord import File, HTTPException, TextChannel, Thread
 from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
 from discord.utils import format_dt
 
-from bot import Cordex
 from bot.ui import (
     ButtonSection,
     HiddenSmallSeparator,
