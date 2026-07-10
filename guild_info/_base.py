@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def ensure_views(
-    bot        : Cordex,
+    bot        : "Cordex",
     channel_id : int,
     views      : list[LayoutView],
     files      : list[list[File]] | None = None,
