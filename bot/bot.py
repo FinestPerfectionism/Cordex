@@ -89,6 +89,29 @@ class Cordex(commands.Bot):
     @override
     async def setup_hook(self) -> None:
 
+        # ⸻ AIOSQLite
+
+        self.db = await connect("database.db")
+
+        def read_schemas() -> tuple[str, str, str, str]:
+            with Path("schemas/logging.sql").open() as f1:
+                log_sql = f1.read()
+            with Path("schemas/cases.sql").open() as f2:
+                cases_sql = f2.read()
+            with Path("schemas/partnerships.sql").open() as f3:
+                partnerships_sql = f3.read()
+            with Path("schema/guild_info.sql").open() as f4:
+                guild_info_sql = f4.read()
+            return log_sql, cases_sql, partnerships_sql, guild_info_sql
+
+        logging_schema, cases_schema, partnerships_schema, guild_info_schema = await to_thread(read_schemas)
+
+        await self.db.executescript(logging_schema)
+        await self.db.executescript(cases_schema)
+        await self.db.executescript(partnerships_schema)
+        await self.db.executescript(guild_info_schema)
+        await self.db.commit()
+
         # ⸻ Guild Information
 
         data = await load_partnership_data(self.db)
@@ -112,29 +135,6 @@ class Cordex(commands.Bot):
             channel_id = PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
             views      = [RequirementComponents1(), RequirementComponents2()],
         )
-
-        # ⸻ AIOSQLite
-
-        self.db = await connect("database.db")
-
-        def read_schemas() -> tuple[str, str, str, str]:
-            with Path("schemas/logging.sql").open() as f1:
-                log_sql = f1.read()
-            with Path("schemas/cases.sql").open() as f2:
-                cases_sql = f2.read()
-            with Path("schemas/partnerships.sql").open() as f3:
-                partnerships_sql = f3.read()
-            with Path("schema/guild_info.sql").open() as f4:
-                guild_info_sql = f4.read()
-            return log_sql, cases_sql, partnerships_sql, guild_info_sql
-
-        logging_schema, cases_schema, partnerships_schema, guild_info_schema = await to_thread(read_schemas)
-
-        await self.db.executescript(logging_schema)
-        await self.db.executescript(cases_schema)
-        await self.db.executescript(partnerships_schema)
-        await self.db.executescript(guild_info_schema)
-        await self.db.commit()
 
         # ⸻ Cogs
 
