@@ -2,7 +2,7 @@ import importlib
 import os
 import pathlib
 import pkgutil
-from logging import Logger, getLogger
+from logging import getLogger as get_logger
 from typing import override
 
 from discord.ext import commands, tasks
@@ -11,7 +11,7 @@ from discord.ext import commands, tasks
 # Cog Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-log : Logger = getLogger("Cordex")
+log = get_logger("Cordex")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cog Discovery

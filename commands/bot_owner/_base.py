@@ -43,8 +43,8 @@ class NoEmojiAccessView(View):
         super().__init__(timeout = None)
         self.on_continue : Callable[[Interaction], Awaitable[None]] = on_continue
 
-    @button(label = "Yes", style = green)
-    async def btn_yes(self, interaction : Interaction, _button : Button[Self]) -> None:
+    @button(label = "Send", style = green)
+    async def btn_send(self, interaction : Interaction, _button : Button[Self]) -> None:
         for child in self.children:
             if isinstance(child, Button):
                 child.disabled = True
@@ -52,8 +52,8 @@ class NoEmojiAccessView(View):
         await interaction.response.edit_message(view = self)
         await self.on_continue(interaction)
 
-    @button(label = "No", style = red)
-    async def btn_no(self, interaction : Interaction, _button : Button[Self]) -> None:
+    @button(label = "End", style = red)
+    async def btn_end(self, interaction : Interaction, _button : Button[Self]) -> None:
         for child in self.children:
             if isinstance(child, Button):
                 child.disabled = True
@@ -74,7 +74,7 @@ async def emoji_inaccessible(
 
     await interaction.followup.send(
         (
-            f"{CONTESTED_EMOJI} **Failed to run command.**\n"
+            f"{CONTESTED_EMOJI} **Failed to run command!**\n"
             f"I don't have access to the emoji{plural} {format_values(inaccessible_ids, wrap = "`")}."
         ),
         view = NoEmojiAccessView(on_continue),
@@ -93,7 +93,7 @@ def get_cogs() -> list[str]:
 # cog_autocomplete
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Choice[str]]:  # noqa: RUF029
+async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Choice[str]]:
     return [
         Choice(name = cog, value = cog)
         for cog in get_cogs() if current.lower() in cog.lower()

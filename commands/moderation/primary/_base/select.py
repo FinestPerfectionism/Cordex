@@ -30,11 +30,11 @@ from bot import Interaction
 from bot.ui import ButtonSection, VisibleLargeSeparator, blurple, green, grey, red
 from constants import ACCEPTED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
-from core.responses import send_custom_message
+from core.responses import format_send
 from core.utilities import check_role_hierarchy, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Moderation Base
+# Moderation Select Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class StateEntry(TypedDict, total = False):
@@ -150,11 +150,11 @@ class ReasonModal(Modal):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        
+
         # ⸻ You cannot make an action appealable without DMing the user
-        
+
         if self.appealable_box.value and not self.dm_box.value:
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type = "warning",
                 title    = "compile window",
@@ -166,7 +166,7 @@ class ReasonModal(Modal):
 
         timer_value = self.timer_input.value.strip().lower()
         if timer_value and not re.match(r"^(\d+[hmds])+$", timer_value):
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type =  "warning",
                 title    =  "compile window",
@@ -174,7 +174,6 @@ class ReasonModal(Modal):
             )
             return
 
-        
         if (user_id := self.target.id if self.target else 0) == 0:
             self.editor.state_map.clear()
 
@@ -232,7 +231,7 @@ class EditorView(LayoutView):
 
             if errors:
                 try:
-                    await send_custom_message(
+                    await format_send(
                         interaction,
                         msg_type  = "warning",
                         title     = "moderate members",

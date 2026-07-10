@@ -16,11 +16,11 @@ class HelpCommands(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     # @command(name = "help")
-    # async def cmd_help(self, interaction : Interaction, *, _name : str | None = None) -> None:
+    # async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
     @command(name = "help")
     async def cmd_help(self, interaction : Interaction) -> None:
         await interaction.response.send_message(
-            "This button does nothing right now. :[",
+            "This command does nothing right now. :[",
             ephemeral = True,
         )
 

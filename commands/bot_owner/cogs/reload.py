@@ -1,6 +1,6 @@
 from bot import Cordex, Interaction, log
 from core.exceptions import send_bad_argument, send_bad_operation
-from core.responses import send_custom_message
+from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner reload Logic
@@ -18,7 +18,7 @@ async def run_bo_cogs_reload(
             return
         try:
             await bot.reload_extension(cog)
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type =  "success",
                 title    =  "reloaded cog",
@@ -70,7 +70,7 @@ async def run_bo_cogs_reload(
         )
         return
 
-    await send_custom_message(
+    await format_send(
         interaction,
         msg_type = "success",
         title    = "reloaded cogs",

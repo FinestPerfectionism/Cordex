@@ -1,12 +1,11 @@
 from discord import Role
-from discord.app_commands import Choice, choices, describe, rename
-from discord.app_commands import command as app_command
+from discord.app_commands import Choice, choices, command, describe, guild_only, rename
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from commands.server.roles.info import run_role_info
 from core.permissions import administrator_cmd
 
+from .info import run_role_info
 from .members import run_role_members
 from .permissions import run_role_permissions
 from .permissionscompare import run_role_permissionscompare
@@ -15,6 +14,7 @@ from .permissionscompare import run_role_permissionscompare
 # Role Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@guild_only
 class RoleCommands(
     commands.GroupCog,
     name        = "role",
@@ -28,7 +28,7 @@ class RoleCommands(
     # /role info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "info",
         description = "View information for a role.",
     )
@@ -45,7 +45,7 @@ class RoleCommands(
     # /role members Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "members",
         description = "List members based on role possession and human/bot filtering.",
     )
@@ -73,7 +73,7 @@ class RoleCommands(
         self,
         interaction   : Interaction,
         role          : Role,
-        role_filter   : str,
+        role_filter   : str | None = None,
         person_filter : str | None = None,
     ) -> None:
         await run_role_members(interaction, role, role_filter, person_filter)
@@ -82,7 +82,7 @@ class RoleCommands(
     # /role permissions-compare Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "permissions-compare",
         description = "List all differing permissions for two selected roles.",
     )
@@ -107,7 +107,7 @@ class RoleCommands(
     # /role permissions Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "permissions",
         description = "List permissions for a selected role.",
     )

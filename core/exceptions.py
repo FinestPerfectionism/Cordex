@@ -1,5 +1,5 @@
 from bot import ContextOrInteraction
-from core.responses import send_custom_message
+from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management
@@ -10,13 +10,12 @@ from core.responses import send_custom_message
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_unknown_error(target : ContextOrInteraction) -> None:
-    await send_custom_message(
+    await format_send(
         target,
-        msg_type          = "error",
-        title             = "run command",
-        subtitle          = "An unknown exception occurred while running this command.",
-        footer            = "Unknown error",
-        contact_bot_owner = True,
+        msg_type = "error",
+        title    = "run command",
+        subtitle = "An unknown exception occurred during this interaction",
+        footer   = "Unknown error",
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -27,13 +26,13 @@ async def send_bad_operation(
     target   : ContextOrInteraction,
     *,
     title    : str,
-    subtitle : str | None = "An exception occured while running this command.",
+    subtitle : str | None = "An exception occurred during this interaction",
 ) -> None:
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "error",
         title    = title,
-        subtitle = subtitle or "An exception occurred while running this command.",
+        subtitle = subtitle,
         footer   = "Bad operation",
     )
 
@@ -61,7 +60,7 @@ async def send_bad_argument(
         else:
             formatted_lines.append(f"`{arg}`: {notice}")
 
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
@@ -74,7 +73,7 @@ async def send_bad_argument(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_permissions_command(target : ContextOrInteraction) -> None:
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "error",
         title    = "run command",
@@ -91,9 +90,9 @@ async def send_bad_permissions_argument(target : ContextOrInteraction, *args : s
     formatted_args = [f"`{arg}`" for arg in arguments]
     if len(formatted_args) == 1:
         subtitle = f"You are not authorized to use the {formatted_args[0]} argument."
-    subtitle = f"You are not authorized to use these arguments: {', '.join(formatted_args)}"
+    subtitle = f"You are not authorized to use these arguments: {", ".join(formatted_args)}"
 
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "error",
         title    = "run command",
@@ -106,7 +105,7 @@ async def send_bad_permissions_argument(target : ContextOrInteraction, *args : s
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
@@ -119,7 +118,7 @@ async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_environment_mainguildordms(target : ContextOrInteraction) -> None:
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
@@ -132,7 +131,7 @@ async def send_bad_environment_mainguildordms(target : ContextOrInteraction) -> 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_environment_mainguild(target : ContextOrInteraction) -> None:
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
@@ -145,7 +144,7 @@ async def send_bad_environment_mainguild(target : ContextOrInteraction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_environment_channel(target : ContextOrInteraction) -> None:
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
@@ -158,7 +157,7 @@ async def send_bad_environment_channel(target : ContextOrInteraction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_environment_dms(target : ContextOrInteraction) -> None:
-    await send_custom_message(
+    await format_send(
         target,
         msg_type = "warning",
         title    = "run command",

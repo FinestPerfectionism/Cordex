@@ -1,4 +1,4 @@
-from datetime import datetime
+from discord.utils import utcnow
 
 from ._base import InfoHeaderSection, InfoPrimarySection, TOSButton
 
@@ -15,7 +15,7 @@ class RuleComponents1(InfoHeaderSection):
         )
 
 class RuleComponents2(InfoPrimarySection):
-    def __init__(self, timestamp : datetime) -> None:
+    def __init__(self) -> None:
         text = (
             "## §1 Behavior\n"
             "### §1.1 Harassment\n"
@@ -58,7 +58,7 @@ class RuleComponents2(InfoPrimarySection):
         super().__init__(
             title     = "Rules",
             text      = text,
-            timestamp = timestamp,
+            timestamp = utcnow(),
             authors   = ["<@1311394031640776716>"],
             button    = TOSButton(),
         )

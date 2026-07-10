@@ -9,7 +9,7 @@ from constants import (
     WAPPLE_CHAIN_CHANNEL_ID,
 )
 
-from ._base import WAPPLE_PATTERN
+from . import WAPPLE_PATTERN
 
 FACTOIDS = {
     "bump" : (

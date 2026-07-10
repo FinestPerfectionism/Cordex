@@ -8,7 +8,7 @@ from discord import CustomActivity, Status
 
 from bot import Cordex, Interaction
 from core.exceptions import send_bad_operation
-from core.responses import edit_custom_message, send_custom_message
+from core.responses import format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -34,7 +34,7 @@ async def run_bo_state_restart(
     if not interaction.response.is_done():
         await interaction.response.defer(ephemeral = True)
 
-    confirm_msg = await send_custom_message(
+    confirm_msg = await format_send(
         interaction,
         msg_type     = "information",
         title        = "Restarting bot.",
@@ -44,6 +44,7 @@ async def run_bo_state_restart(
     loop         = asyncio.get_running_loop()
     restart_task = loop.create_task(
         restart_bot(
+            interaction,
             bot,
             log,
             restarting,
@@ -53,6 +54,7 @@ async def run_bo_state_restart(
     restart_task.add_done_callback(lambda t : t.exception() if not t.cancelled() else None)
 
 async def restart_bot(
+    interaction    : Interaction,
     bot            : Cordex,
     log            : Logger,
     restarting_ref : list[bool],
@@ -104,8 +106,9 @@ async def restart_bot(
         restarting_ref[0] = False
 
         if confirm_msg:
-            await edit_custom_message(
-                confirm_msg,
+            await format_send(
+                interaction,
+                message  = confirm_msg,
                 msg_type = "error",
                 title    = "restart bot",
                 subtitle = codeblock(f"{e}"),

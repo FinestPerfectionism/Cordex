@@ -1,8 +1,11 @@
 from datetime import datetime
+from logging import getLogger as get_logger
 
+from discord import File, HTTPException, TextChannel, Thread
 from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
 from discord.utils import format_dt
 
+from bot import Cordex
 from bot.ui import (
     ButtonSection,
     HiddenSmallSeparator,
@@ -13,9 +16,102 @@ from bot.ui import (
 from constants import STANDSTILL_EMOJI
 from core.utilities import format_values
 
+log = get_logger("Cordex")
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Guild Information Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ensure_views
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+async def ensure_views(
+    bot        : Cordex,
+    channel_id : int,
+    views      : list[LayoutView],
+    files      : list[list[File]] | None = None,
+) -> None:
+    channel = bot.get_channel(channel_id)
+
+    if channel is None:
+        channel = await bot.fetch_channel(channel_id)
+
+    if not isinstance(channel, TextChannel | Thread):
+        raise TypeError(f"{channel_id} is not a text channel or thread.")
+
+    cursor = await bot.db.execute(
+        """
+        SELECT message_id
+        FROM guild_info
+        WHERE channel_id = ?
+        ORDER BY position
+        """,
+        [str(channel_id)],
+    )
+
+    rows = await cursor.fetchall()
+    await cursor.close()
+
+    message_ids : list[int] = [int(row[0]) for row in rows]
+
+    if len(message_ids) == len(views):
+        for message_id in message_ids:
+            try:
+                await channel.fetch_message(message_id)
+            except HTTPException:
+                break
+        else:
+            message_count = 0
+
+            async for _ in channel.history(limit = None):
+                message_count += 1
+
+            if message_count == len(views):
+                return
+
+    async for message in channel.history(limit = None):
+        try:
+            await message.delete()
+        except HTTPException:
+            log.exception(
+                "Failed to delete message %s in #%s.",
+                message.id,
+                channel.id,
+            )
+
+    new_message_ids : list[int] = []
+
+    for index, view in enumerate(views):
+        view_files : list[File] = files[index] if files is not None else []
+        message                 = await channel.send(view = view, files = view_files)
+
+        new_message_ids.append(message.id)
+
+    await bot.db.execute(
+        """
+        DELETE FROM guild_info
+        WHERE channel_id = ?
+        """,
+        [str(channel_id)],
+    )
+
+    await bot.db.executemany(
+        """
+        INSERT INTO guild_info (
+            channel_id,
+            position,
+            message_id
+        )
+        VALUES (?, ?, ?)
+        """,
+        [
+            (channel_id, position, message_id)
+            for position, message_id in enumerate(new_message_ids)
+        ],
+    )
+
+    await bot.db.commit()
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # TOS Button
@@ -62,34 +158,39 @@ class InfoPrimarySection(LayoutView):
         *,
         title     : str,
         text      : str                | None = None,
+        note      : str                | None = None,
         timestamp : datetime,
-        authors   : list[str],
+        authors   : list[str]          | None = None,
         button    : Button[LayoutView] | None = None,
     ) -> None:
         super().__init__(timeout = None)
 
+        if note is None and authors is not None:
+            note = (
+                "-# All below is subject to change at any time based on Directorate decision or structural updates.\n"
+               f"-# Assembled by the Directorate team. Primarily written by {format_values(authors)}.\n"
+            )
+
         self.container      : Container[LayoutView]        = Container()
         self.last_added_row : ActionRow[LayoutView] | None = None
-
-        title_line = ""
 
         if button is not None:
             self.container.add_item(
                 ButtonSection(
-                    title,
+                    f"# {title}",
                     button = button,
                 ),
             )
+            header_text = ""
         else:
-            title_line = f"# {title}\n"
+            header_text = f"# {title}\n\n"
 
         self.container.add_item(
             TextDisplay(
                 (
-                   f"{title_line}"
-                   f"{title} last updated {format_dt(timestamp, style = "F")}.\n"
-                    "-# All below is subject to change at any time based on Directorate decision or structural updates.\n"
-                   f"-# Assembled by the Directorate team. Primarily written by {format_values(authors)}.\n"
+                    f"{header_text}"
+                    f"{title} last updated {format_dt(timestamp, style = "F")}.\n"
+                    f"{note}"
                 ),
             ),
         )

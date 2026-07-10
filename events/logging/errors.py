@@ -40,9 +40,8 @@ from core.utilities import codeblock
 
 class ErrorLogger(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
-        self.bot             : Cordex            = bot
-        self.tasks           : set[Task[object]] = set()
-        self.rate_limit_hits : int               = 0
+        self.bot   : Cordex            = bot
+        self.tasks : set[Task[object]] = set()
         tree.error(self.app_command_error_handler)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

@@ -8,7 +8,7 @@ from discord.ext import commands
 from bot import Context, Cordex, Interaction, log
 from core.permissions import bot_owner_cmd
 
-from ._base import cog_autocomplete, get_cogs
+from . import cog_autocomplete, get_cogs
 from .cogs import (
     run_bo_cogs_load,
     run_bo_cogs_pullreload,
@@ -151,6 +151,7 @@ class BotOwnerCommands(
         message  = "The text to send.",
         channel  = "The channel to send the message in.",
         reply_id = "The ID of the message to reply to.",
+        ping     = "Whether to mention the user upon replying. Does nothing if reply-id is None.",
     )
     @rename(reply_id = "reply-id")
     @bot_owner_cmd()
@@ -160,12 +161,14 @@ class BotOwnerCommands(
         message     : str,
         channel     : TextChannel | None = None,
         reply_id    : str         | None = None,
+        ping        : bool        | None = True,
     ) -> None:
         await run_bo_messages_send(
             interaction = interaction,
             channel     = channel,
             text        = message,
             message_id  = reply_id,
+            ping        = ping,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

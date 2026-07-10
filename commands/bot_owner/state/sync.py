@@ -2,7 +2,7 @@ import discord
 
 from bot import Interaction, tree
 from core.exceptions import send_bad_operation
-from core.responses import send_custom_message
+from core.responses import format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -12,7 +12,7 @@ from core.utilities import codeblock
 async def run_bo_state_sync(interaction : Interaction) -> None:
     try:
         await tree.sync()
-        await send_custom_message(
+        await format_send(
             interaction,
             msg_type = "success",
             title    = "synced app command tree",

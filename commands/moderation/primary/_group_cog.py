@@ -1,4 +1,4 @@
-from discord.app_commands import Group
+from discord.app_commands import Group, guild_only
 from discord.app_commands import command as app_command
 from discord.ext import commands
 
@@ -33,6 +33,7 @@ from .timeout import (
 # Moderation Primary Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@guild_only
 class ModerationPrimaryCommands(
     commands.GroupCog,
     name        = "moderation",

@@ -1,26 +1,31 @@
-from __future__ import annotations
-
 import re
 import uuid
 from pathlib import Path
 
 import discord
 from discord import Attachment, TextChannel, User
-from discord.app_commands import Choice, autocomplete, command, describe, rename
+from discord.app_commands import (
+    Choice,
+    autocomplete,
+    command,
+    describe,
+    guild_only,
+    rename,
+)
 from discord.ext import commands
 
 from bot import Cordex, Interaction, log
 from constants import PARTNERSHIPS_CHANNEL_ID
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.permissions import director_cmd
-from core.responses import send_custom_message
+from core.responses import format_send
 from core.state import (
     IMAGE_DIR,
     PartnershipEntry,
     load_partnership_data,
     save_partnership_data,
 )
-from guild_info.partnerships import rebuild_partnership_layout
+from guild_info.partnerships import rebuild_partnership_view
 
 INVITE_RE = re.compile(r"^(https?://)?(www\.)?(discord\.gg|discord\.com/invite)/[A-Za-z0-9-]+$")
 
@@ -28,6 +33,7 @@ INVITE_RE = re.compile(r"^(https?://)?(www\.)?(discord\.gg|discord\.com/invite)/
 # Partnership Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@guild_only
 class PartnershipCommands(commands.GroupCog):
     def __init__(self, bot : Cordex) -> None:
         self.bot : Cordex = bot
@@ -35,23 +41,21 @@ class PartnershipCommands(commands.GroupCog):
     async def get_channel(self, interaction : Interaction) -> TextChannel | None:
         channel = self.bot.get_channel(PARTNERSHIPS_CHANNEL_ID)
         if not isinstance(channel, TextChannel):
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type          = "error",
                 title             = "update",
                 subtitle          = "The partnerships channel ID is missing or points to the wrong channel type.",
-                footer            = "Invalid IDs",
-                contact_bot_owner = True,
+                footer            = "Bad configuration",
             )
             return None
         return channel
 
     async def server_name_autocomplete(self, _interaction : Interaction, current : str) -> list[Choice[str]]:
-        data = load_partnership_data()
+        data = await load_partnership_data(self.bot.db)
         return [
             Choice(name = p["server_name"], value = p["server_name"])
-            for p in data["partnerships"]
-            if current.lower() in p["server_name"].lower()
+            for p in data["partnerships"] if current.lower() in p["server_name"].lower()
         ][:25]
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -113,7 +117,7 @@ class PartnershipCommands(commands.GroupCog):
             await send_bad_operation(interaction, title = "save the server picture")
             raise
 
-        data        = load_partnership_data()
+        data        = await load_partnership_data(self.bot.db)
         description = server_description.replace("\\n", "\n")
 
         entry : PartnershipEntry = {
@@ -125,21 +129,22 @@ class PartnershipCommands(commands.GroupCog):
         }
         data["partnerships"].append(entry)
 
-        await interaction.followup.send(
-            f"Partnership with **{server_name}** has been added successfully. Updating the channel...",
-            ephemeral = True,
+        await format_send(
+            interaction,
+            msg_type =  "success",
+            title    = f"added partnership with {server_name}",
+            subtitle =  "Updating the channel...",
         )
 
         try:
-            await rebuild_partnership_layout(channel, data)
-
+            await rebuild_partnership_view(self.bot, data["partnerships"])
         except discord.HTTPException:
             log.exception("Failed to rebuild partnership layout after add")
             data["partnerships"].pop()
             image_path.unlink(missing_ok = True)
             await send_bad_operation(
                 interaction,
-                title    = "update the partnerships channel",
+                title    =  "update the partnerships channel",
                 subtitle = f"**{server_name}** was added to the data but the channel failed to rebuild. The entry has been rolled back.",
             )
             raise
@@ -158,11 +163,11 @@ class PartnershipCommands(commands.GroupCog):
         if channel is None:
             return
 
-        data    = load_partnership_data()
+        data    = await load_partnership_data(self.bot.db)
         matches = [p for p in data["partnerships"] if p["server_name"] == server_name]
 
         if not matches:
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type =  "warning",
                 title    = f'find partnership "{server_name}"',
@@ -175,25 +180,26 @@ class PartnershipCommands(commands.GroupCog):
         original = list(data["partnerships"])
         data["partnerships"] = [p for p in data["partnerships"] if p["server_name"] != server_name]
 
-        await interaction.followup.send(
-            f"Partnership with **{server_name}** has been removed. Updating the channel...",
-            ephemeral = True,
+        await format_send(
+            interaction,
+            msg_type =  "success",
+            title    = f"removed partnership with {server_name}",
+            subtitle =  "Updating the channel...",
         )
 
         try:
-            await rebuild_partnership_layout(channel, data)
+            await rebuild_partnership_view(self.bot, data["partnerships"])
 
         except discord.HTTPException:
             log.exception("Failed to rebuild partnership layout after remove")
             data["partnerships"] = original
-            save_partnership_data(data)
-            await send_custom_message(
+            await save_partnership_data(self.bot.db, data)
+            await format_send(
                 interaction,
-                msg_type          =  "error",
-                title             =  "update the partnerships channel",
-                subtitle          = f"**{server_name}** was removed from the data but the channel failed to rebuild. The entry has been restored.",
-                footer            =  "Bad operation",
-                contact_bot_owner = True,
+                msg_type =  "error",
+                title    =  "update the partnerships channel",
+                subtitle = f"**{server_name}** was removed from the data but the channel failed to rebuild. The entry has been restored.",
+                footer   =  "Bad operation",
             )
             return
 
@@ -225,8 +231,7 @@ class PartnershipCommands(commands.GroupCog):
         server_link        : str        | None = None,
     ) -> None:
         if server_link is not None and not INVITE_RE.match(server_link):
-
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type = "warning",
                 title    = "update partnership",
@@ -237,15 +242,14 @@ class PartnershipCommands(commands.GroupCog):
 
         await interaction.response.defer(ephemeral = True)
 
-        channel = await self.get_channel(interaction)
-        if channel is None:
+        if (await self.get_channel(interaction)) is None:
             return
 
-        data    = load_partnership_data()
+        data    = await load_partnership_data(self.bot.db)
         matches = [p for p in data["partnerships"] if p["server_name"] == server_name]
 
         if not matches:
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type =  "warning",
                 title    = f'find partnership "{server_name}"',
@@ -266,30 +270,28 @@ class PartnershipCommands(commands.GroupCog):
             try:
                 image_bytes = await server_picture.read()
                 new_image_path.write_bytes(image_bytes)
-                old_image_filename    = entry["image_filename"]
+                old_image_filename      = entry["image_filename"]
                 entry["image_filename"] = new_filename
 
             except discord.HTTPException:
                 log.exception("Failed to download updated partnership attachment")
-                await send_custom_message(
+                await format_send(
                     interaction,
                     msg_type = "error",
                     title    = "download the new server picture",
                     subtitle = "Discord returned an error while fetching the attachment. No changes were saved.",
                     footer   = "Bad operation",
-                    contact_bot_owner = True,
                 )
                 return
 
             except OSError:
                 log.exception("Failed to save updated partnership image to disk")
-                await send_custom_message(
+                await format_send(
                     interaction,
                     msg_type = "error",
                     title    = "save the new server picture",
                     subtitle = "The image was downloaded but could not be written to disk. No changes were saved.",
                     footer   = "Bad operation",
-                    contact_bot_owner = True,
                 )
                 return
 
@@ -304,25 +306,30 @@ class PartnershipCommands(commands.GroupCog):
 
         display_name = entry["server_name"]
 
-        await interaction.followup.send(
-            f"Partnership with **{display_name}** has been updated. Updating the channel...",
-            ephemeral = True,
+        await format_send(
+            interaction,
+            msg_type =  "success",
+            title    = f"updated partnership with {server_name}",
+            subtitle =  "Updating the channel...",
         )
 
         try:
-            await rebuild_partnership_layout(channel, data)
+            await rebuild_partnership_view(self.bot, data["partnerships"])
 
         except discord.HTTPException:
             log.exception("Failed to rebuild partnership layout after update")
-            await send_custom_message(
+            await format_send(
                 interaction,
                 msg_type          =  "error",
                 title             =  "update the partnerships channel",
                 subtitle          = f"**{display_name}** was edited in the data but the channel failed to rebuild.",
                 footer            =  "Bad operation",
-                contact_bot_owner = True,
             )
             return
 
         if old_image_filename is not None:
             (IMAGE_DIR / old_image_filename).unlink(missing_ok = True)
+
+async def setup(bot : Cordex):
+    cog = PartnershipCommands(bot)
+    await bot.add_cog(cog)

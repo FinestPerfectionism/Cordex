@@ -24,6 +24,7 @@ from constants import (
     ACCEPTED_EMOJI,
     BOT_OWNER_ID,
     COLOR_BLACK,
+    COLOR_BLUE,
     COLOR_BLURPLE,
     COLOR_GREEN,
     COLOR_GREY,
@@ -36,12 +37,7 @@ from constants import (
     STANDSTILL_EMOJI,
 )
 from core.exceptions import send_bad_permissions_command
-from core.responses import (
-    edit_custom_message,
-    format_custom_message,
-    multi_custom_message,
-    send_custom_message,
-)
+from core.responses import format_build, format_send
 from core.utilities import codeblock, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -70,6 +66,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "STANDSTILL_EMOJI"      : STANDSTILL_EMOJI,
 
         "COLOR_BLURPLE"         : COLOR_BLURPLE,
+        "COLOR_BLUE"            : COLOR_BLUE,
         "COLOR_GREEN"           : COLOR_GREEN,
         "COLOR_YELLOW"          : COLOR_YELLOW,
         "COLOR_ORANGE"          : COLOR_ORANGE,
@@ -86,10 +83,8 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "get"                   : get,
         "codeblock"             : codeblock,
         "format_values"         : format_values,
-        "format_custom_message" : format_custom_message,
-        "send_custom_message"   : send_custom_message,
-        "edit_custom_message"   : edit_custom_message,
-        "multi_custom_message"  : multi_custom_message,
+        "format_build"          : format_build,
+        "format_send"           : format_send,
 
         "select"                : ui.select,
         "button"                : ui.button,
@@ -174,7 +169,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
     try:
         exec(to_compile, env)
     except Exception as e:
-        await ctx.message.add_reaction(DENIED_EMOJI)
+        await message.add_reaction(DENIED_EMOJI)
         res = await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
         eval_message_ids[ctx.message.id] = res.id
         return

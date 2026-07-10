@@ -1,7 +1,7 @@
 from typing import Self
 
 from discord import ChannelType
-from discord.app_commands import command as app_command
+from discord.app_commands import command
 from discord.ext import commands
 from discord.ui import (
     ActionRow,
@@ -37,13 +37,13 @@ class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
         ],
     )
     async def slct_logging_moderation(self, interaction : Interaction, select : ChannelSelect[LayoutView]) -> None:
-        if not select.values or not self.view:
+        if not self.view:
             return
 
         channel = select.values[0]
         bot = interaction.client if isinstance(interaction.client, Cordex) else self.view.bot
 
-        await bot.logging_db.execute(
+        await bot.db.execute(
             """
             INSERT INTO GuildConfig (config_key, config_value)
             VALUES ('logging_moderation_channel', ?)
@@ -51,7 +51,7 @@ class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
             """,
             [str(channel.id)],
         )
-        await bot.logging_db.commit()
+        await bot.db.commit()
 
         await self.view.refresh_display()
         await interaction.response.edit_message(view = self.view)
@@ -70,13 +70,13 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
         ],
     )
     async def slct_logging_antinuke(self, interaction : Interaction, select_item : ChannelSelect[LayoutView]) -> None:
-        if not select_item.values or not self.view:
+        if not self.view:
             return
 
         channel = select_item.values[0]
         bot = interaction.client if isinstance(interaction.client, Cordex) else self.view.bot
 
-        await bot.logging_db.execute(
+        await bot.db.execute(
             """
             INSERT INTO GuildConfig (config_key, config_value)
             VALUES ('logging_antinuke_channel', ?)
@@ -84,7 +84,7 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
             """,
             [str(channel.id)],
         )
-        await bot.logging_db.commit()
+        await bot.db.commit()
 
         await self.view.refresh_display()
         await interaction.response.edit_message(view = self.view)
@@ -111,7 +111,7 @@ class LoggingConfigurationView(LayoutView):
             "WHERE config_key IN ('logging_moderation_channel', 'logging_antinuke_channel')"
         )
 
-        async with self.bot.logging_db.execute(query) as cursor:
+        async with self.bot.db.execute(query) as cursor:
             rows = list(await cursor.fetchall())
 
         config_dict = {row[0] : row[1] for row in rows}
@@ -191,16 +191,12 @@ class ConfigurationView(LayoutView):
             ),
         )
 
-class ConfigurationCommands(
-    commands.Cog,
-    name        = "configuration",
-    description = "Directors only — Configuration command.",
-):
+class ConfigurationCommands(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot : Cordex = bot
 
-    @app_command(
+    @command(
         name        = "configure",
         description = "Configure guild settings.",
     )

@@ -14,15 +14,22 @@ from core.exceptions import send_bad_argument, send_unknown_error
 async def run_bo_messages_send(
     interaction : Interaction,
     text        : str,
-    message_id  : str | None = None,
+    message_id  : str         | None = None,
     channel     : Messageable | None = None,
+    ping        : bool        | None = True,
 ) -> None:
     await interaction.response.defer(ephemeral = True)
+
+    if ping is None:
+        ping = True
 
     target_channel = channel or interaction.channel
 
     if not isinstance(target_channel, TextChannelTypes):
-        await send_bad_argument(interaction, subtitle = {"channel" : "The selected channel does not support text messages."})
+        await send_bad_argument(
+            interaction,
+            subtitle = {"channel" : "The selected channel does not support text messages."},
+        )
         return
 
     async def do_send(interaction : Interaction) -> None:
@@ -43,7 +50,7 @@ async def run_bo_messages_send(
                 async with target_channel.typing():
                     await asyncio.sleep(typing_delay)
             if reply_reference:
-                await reply_reference.reply(content = text)
+                await reply_reference.reply(content = text, mention_author = ping)
             else:
                 await target_channel.send(content = text)
             await interaction.followup.send("Sent!", ephemeral = True)

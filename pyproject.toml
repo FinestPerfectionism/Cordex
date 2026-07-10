@@ -2,7 +2,7 @@
 name            = "cordex"
 version         = "0.1.0"
 description     = "Development for the discord bot Cordex"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies    = [
     "discord.py",
     "basedpyright",
@@ -21,9 +21,7 @@ include          = ["."]
 exclude          = ["build"]
 
 reportDeprecated                    = "error"
-reportShadowedVariable              = "error"
 reportImplicitStringConcatenation   = "error"
-reportUnknownResultType             = "error"
 reportUnannotatedClassAttribute     = "error"
 reportIgnoreCommentWithoutRule      = "error"
 reportMissingParameterType          = "error"

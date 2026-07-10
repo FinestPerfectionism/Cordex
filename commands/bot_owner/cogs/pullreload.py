@@ -2,7 +2,7 @@ import asyncio
 
 from bot import Cordex, Interaction, log
 from core.exceptions import send_bad_operation
-from core.responses import send_custom_message
+from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner pull-reload Logic
@@ -66,7 +66,7 @@ async def run_bo_cogs_pullreload(
         )
         return
 
-    await send_custom_message(
+    await format_send(
         interaction,
         msg_type = "success",
         title    = "reloaded cogs",

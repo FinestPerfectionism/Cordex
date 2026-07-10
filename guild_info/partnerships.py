@@ -1,180 +1,200 @@
-# ruff: noqa: E501
+from discord import File
+from discord.channel import TextChannel
+from discord.errors import HTTPException
+from discord.threads import Thread
+from discord.ui import LayoutView, Thumbnail
+from discord.utils import utcnow
 
-import time
-from typing import Self
-
-import discord
-from discord import AllowedMentions, File, HTTPException, NotFound
-from discord.ui import (
-    Container,
-    LayoutView,
-    TextDisplay,
-    Thumbnail,
+from bot import Cordex, log
+from bot.ui import ThumbnailSection
+from constants import (
+    PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
+    PARTNERSHIPS_CHANNEL_ID,
+    TICKET_CHANNEL_ID,
 )
+from core.state import IMAGE_DIR, PartnershipEntry
 
-from bot.ui import (
-    HiddenSmallSeparator,
-    ThumbnailSection,
-    VisibleLargeSeparator,
-    VisibleSmallSeparator,
-)
-from constants import PARTNERSHIP_REQUIREMENTS_CHANNEL_ID, TICKET_CHANNEL_ID
-from core.state import (
-    IMAGE_DIR,
-    PartnershipData,
-    PartnershipEntry,
-    save_partnership_data,
+from ._base import (
+    InfoHeaderSection,
+    InfoPrimarySection,
+    InfoSecondarySection,
+    TOSButton,
 )
 
 CHARACTERS_PER_GROUP_LIMIT = 4000
-
-type EntryList       = list[PartnershipEntry]
-type EntryNestedList = list[list[PartnershipEntry]]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership Views
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class PartnershipComponents1(LayoutView):
+class PartnershipComponents1(InfoHeaderSection):
     def __init__(self) -> None:
-        super().__init__(timeout = None)
-        self.add_item(
-            Container(
-                TextDisplay(
-                    content = (
-                        "# Welcome to our Partnerships!\n"
-                       f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}> then open a __director__ ticket in <#{TICKET_CHANNEL_ID}>.\n"
-                        "-# **Note:** It is within Directors' discretion as to whether we choose to partner with your server. "
-                        "Directors are not required to provide a reason when denying a partnership."
-                    ),
-                ),
-            ),
+        super().__init__(
+            title       =  "our partnerships",
+            description = f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}> then open a __director__ ticket in <#{TICKET_CHANNEL_ID}>",
+            note        =  "It is within Directors' discretion as to whether we choose to partner with your server. Directors are not required to provide a reason when denying a partnership.",
         )
 
-class PartnershipComponents2(LayoutView):
-    def __init__(self, partnerships : EntryList, timestamp : int) -> None:
-        super().__init__(timeout = None)
-
-        children : list[
-            TextDisplay[Self]
-            | ThumbnailSection
-            | VisibleLargeSeparator
-            | VisibleSmallSeparator
-            | HiddenSmallSeparator
-        ] = [
-            TextDisplay(
-                content = (
-                    "# Partnerships\n"
-                   f"Partnerships last updated <t:{timestamp}:D>.\n"
-                    "-# All partnerships below are subject to removal or update at any time based on Directorate decision. Partnerships are not influenced by the public or other staff.\n"
-                    "-# Partnerships assembled by the Directorate team."
-                ),
+class PartnershipComponents2(InfoPrimarySection):
+    def __init__(self, text : str | None = None) -> None:
+        super().__init__(
+            title     = "Partnerships",
+            text      = text,
+            note      = (
+                "-# All partnerships below are subject to removal or update at any time based on Directorate decision. Partnerships are not influenced by the public or other staff.\n"
+                "-# Partnerships assembled by the Directorate team."
             ),
-            HiddenSmallSeparator(),
-            VisibleSmallSeparator(),
-            HiddenSmallSeparator(),
-        ]
+            timestamp = utcnow(),
+            button    = TOSButton(),
+        )
 
-        if not partnerships:
-            children.append(TextDisplay("Looks like this server has no partnerships! :["))
-        else:
-            for i, p in enumerate(partnerships):
-                children.append(
-                    ThumbnailSection(
-                        (
-                           f"# {p['server_name']}\n"
-                            "**Description:**\n"
-                           f"> {p['server_description']}\n"
-                            "**Server Owner**\n"
-                           f"> <@{p['server_owner_id']}>\n"
-                           f"[Join Here!]({p['server_link']})"
-                        ),
-                        thumbnail = Thumbnail(media = f"attachment://{p['image_filename']}"),
-                    ),
-                )
-                if i < len(partnerships) - 1:
-                    children.append(VisibleLargeSeparator())
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Functions
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-        self.container : Container[LayoutView] = Container(*children)
-        self.add_item(self.container)
-
-def estimate_characters(p : PartnershipEntry) -> int:
-    return len(
+def build_partnership_thumbnail_section(entry : PartnershipEntry) -> ThumbnailSection:
+    return ThumbnailSection(
         (
-           f"# {p['server_name']}\n"
+           f"# {entry['server_name']}\n"
             "**Description:**\n"
-           f"> {p['server_description']}\n"
+           f"> {entry['server_description']}\n"
             "**Server Owner**\n"
-           f"> <@{p['server_owner_id']}>\n"
-           f"[Join Here!]({p['server_link']})"
+           f"> <@{entry['server_owner_id']}>\n"
+           f"[Join Here!]({entry['server_link']})"
         ),
+        thumbnail = Thumbnail(media = f"attachment://{entry['image_filename']}"),
     )
 
-def split_partnerships(partnerships : EntryList) -> EntryNestedList:
-    groups        : EntryNestedList = []
-    current       : EntryList       = []
-    current_chars : int             = 0
+def build_partnership_views(entries : list[PartnershipEntry]) -> tuple[list[LayoutView], list[list[File]]]:
+    views : list[LayoutView] = [PartnershipComponents1()]
+    files : list[list[File]] = [[]]
 
-    for p in partnerships:
-        p_chars = estimate_characters(p)
-        if current and current_chars + p_chars > CHARACTERS_PER_GROUP_LIMIT:
-            groups.append(current)
-            current       = [p]
-            current_chars = p_chars
-        else:
-            current.append(p)
-            current_chars += p_chars
+    # ⸻ If there are no entires, frownies
 
-    if current:
-        groups.append(current)
+    if not entries:
+        views.append(PartnershipComponents2("Looks like this server has no partnerships! :["))
+        files.append([])
+        return views, files
 
-    return groups
+    current_view  : InfoPrimarySection | InfoSecondarySection = PartnershipComponents2()
+    current_files : list[File]                                = []
 
-async def rebuild_partnership_layout(channel : discord.TextChannel, data : PartnershipData) -> None:
-    for msg_id in data["message_ids"]:
+    for entry in entries:
+        section = build_partnership_thumbnail_section(entry)
+        file    = File(IMAGE_DIR / entry["image_filename"], filename = entry["image_filename"])
+
+        current_view.container.add_item(section)
+        current_files.append(file)
+
+        if current_view.content_length() > CHARACTERS_PER_GROUP_LIMIT:
+            current_view.container.remove_item(section)
+            current_files.pop()
+
+            views.append(current_view)
+            files.append(current_files)
+
+            current_view  = InfoSecondarySection()
+            current_files = []
+
+            current_view.container.add_item(section)
+            current_files.append(file)
+
+    views.append(current_view)
+    files.append(current_files)
+
+    return views, files
+
+async def rebuild_partnership_view(
+    bot     : Cordex,
+    entries : list[PartnershipEntry],
+) -> None:
+
+    # ⸻ First, fetch the channel
+
+    channel = bot.get_channel(PARTNERSHIPS_CHANNEL_ID) or await bot.fetch_channel(PARTNERSHIPS_CHANNEL_ID)
+
+    # ⸻ Make sure it's a valid channel to send views to
+
+    if not isinstance(channel, TextChannel | Thread):
+        raise TypeError(f"{PARTNERSHIPS_CHANNEL_ID} is not a text channel or thread.")
+
+    # ⸻ Clear every single message in the channel before we rebuild
+
+    async for message in channel.history(limit = None):
         try:
-            msg = await channel.fetch_message(msg_id)
-            await msg.delete()
-        except (NotFound, HTTPException):
-            pass
+            await message.delete()
+        except HTTPException:
+            log.exception(
+                "Failed to delete message %s in #%s.",
+                message.id,
+                channel.id,
+            )
 
-    header_msg_id = data["header_message_id"]
-    if header_msg_id is not None:
-        try:
-            msg = await channel.fetch_message(header_msg_id)
-            await msg.delete()
-        except (NotFound, HTTPException):
-            pass
+    payloads : list[tuple[InfoPrimarySection | InfoSecondarySection, list[File]]] = []
 
-    timestamp : int = int(time.time())
-    header_msg = await channel.send(view = PartnershipComponents1())
+    # ⸻ If there are no entires, frownies
 
-    partnerships = data["partnerships"]
+    if not entries:
+        payloads.append(
+            (
+                PartnershipComponents2("Looks like this server has no partnerships! :["),
+                [],
+            ),
+        )
+    else:
+        current_view  : InfoPrimarySection | InfoSecondarySection = PartnershipComponents2()
+        current_files : list[File]                                = []
+
+        for entry in entries:
+            section = build_partnership_thumbnail_section(entry)
+            file    = File(IMAGE_DIR / entry["image_filename"], filename = entry["image_filename"])
+
+            current_view.container.add_item(section)
+            current_files.append(file)
+
+            if current_view.content_length() > CHARACTERS_PER_GROUP_LIMIT:
+                current_view.container.remove_item(section)
+                current_files.pop()
+
+                payloads.append((current_view, current_files))
+
+                current_view  = InfoSecondarySection()
+                current_files = []
+
+                current_view.container.add_item(section)
+                current_files.append(file)
+
+        payloads.append((current_view, current_files))
+
     new_message_ids : list[int] = []
 
-    if not partnerships:
-        empty_msg = await channel.send(
-            view             = PartnershipComponents2([], timestamp),
-            allowed_mentions = AllowedMentions.none(),
-        )
-        new_message_ids.append(empty_msg.id)
-    else:
-        for group in split_partnerships(partnerships):
-            files : list[File] = [
-                File(
-                    str(IMAGE_DIR / p["image_filename"]),
-                    filename = p["image_filename"],
-                )
-                for p in group
-            ]
-            msg = await channel.send(
-                view             = PartnershipComponents2(group, timestamp),
-                files            = files,
-                allowed_mentions = AllowedMentions.none(),
-            )
-            new_message_ids.append(msg.id)
+    header_message = await channel.send(view = PartnershipComponents1())
+    new_message_ids.append(header_message.id)
 
-    data["header_message_id"] = header_msg.id
-    data["message_ids"]       = new_message_ids
-    data["timestamp"]         = timestamp
-    save_partnership_data(data)
+    for view, files in payloads:
+        message = await channel.send(view = view, files = files)
+        new_message_ids.append(message.id)
+
+    # ⸻ Clear old messages from the database since we deleted them earlier
+
+    await bot.db.execute(
+        "DELETE FROM guild_info WHERE channel_id = ?",
+        [str(PARTNERSHIPS_CHANNEL_ID)],
+    )
+
+    await bot.db.executemany(
+        """
+        INSERT INTO guild_info (
+            channel_id,
+            position,
+            message_id
+        )
+        VALUES (?, ?, ?)
+        """,
+        [
+            (PARTNERSHIPS_CHANNEL_ID, position, message_id)
+            for position, message_id in enumerate(new_message_ids)
+        ],
+    )
+
+    await bot.db.commit()

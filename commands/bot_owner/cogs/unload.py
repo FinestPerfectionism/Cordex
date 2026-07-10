@@ -1,6 +1,6 @@
 from bot import Cordex, Interaction, log
 from core.exceptions import send_bad_argument, send_bad_operation
-from core.responses import send_custom_message
+from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner unload Logic
@@ -26,7 +26,7 @@ async def run_bo_cogs_unload(
 
     try:
         await bot.unload_extension(cog)
-        await send_custom_message(
+        await format_send(
             interaction,
             msg_type =  "success",
             title    =  "unloaded cog",

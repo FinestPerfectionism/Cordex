@@ -6,7 +6,7 @@ from discord.utils import utcnow
 from bot import Cordex
 from constants import COLOR_RED, MESSAGE_DELETE_LOG_CHANNEL_ID
 
-from ._base import (
+from . import (
     channel_display,
     format_attachments,
     is_directorship_channel,

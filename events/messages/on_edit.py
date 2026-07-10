@@ -11,7 +11,7 @@ from constants import (
     WAPPLE_CHAIN_CHANNEL_ID,
 )
 
-from ._base import (
+from . import (
     WAPPLE_PATTERN,
     channel_display,
     format_attachments,
@@ -56,14 +56,23 @@ class MessageEditHandler(commands.Cog):
         # ⸻ Eval command editing
 
         if before.id in eval_message_ids:
-            await before.clear_reactions()
+
+            # ⸻ Remove our old reactions
+
+            if self.bot.user is not None:
+                for reaction in before.reactions:
+                    if reaction.me:
+                        await reaction.remove(self.bot.user)
+
+            # ⸻ Reinvoke the command
 
             ctx = await self.bot.get_context(after)
             await self.bot.invoke(ctx)
 
-            old_res_id = eval_message_ids.pop(before.id, None)
-            if old_res_id is not None:
-                old_msg = await before.channel.fetch_message(old_res_id)
+            # ⸻ Remove our old response (done after the reinvocation since faster reevaluation is better)
+
+            if old_response_id := eval_message_ids.pop(before.id, None) is not None:
+                old_msg = await before.channel.fetch_message(old_response_id)
                 await old_msg.delete()
 
             return

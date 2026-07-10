@@ -5,7 +5,7 @@ from discord import Embed, Role
 from bot import Interaction
 from constants import COLOR_BLURPLE
 
-from ._base import format_permission
+from . import format_permission
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role permissions-compare Logic

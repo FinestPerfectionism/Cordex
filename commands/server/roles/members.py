@@ -10,10 +10,12 @@ from constants import COLOR_BLURPLE
 async def run_role_members(
     interaction   : Interaction,
     role          : Role,
-    role_filter   : str,
+    role_filter   : str | None = None,
     person_filter : str | None = None,
 ) -> None:
     await interaction.response.defer(ephemeral = True)
+
+    actual_role_filter = role_filter or "whohas"
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -22,7 +24,7 @@ async def run_role_members(
 
     guild = interaction.guild
 
-    match (role_filter, person_filter):
+    match (actual_role_filter, person_filter):
         case ("whohas", "humans"):
             filtered = [m for m in guild.members if role in m.roles and not m.bot]
         case ("whohas", "bots"):
@@ -44,7 +46,7 @@ async def run_role_members(
         color       = COLOR_BLURPLE,
     )
 
-    role_filter_name   = "Not a Member of" if role_filter == "whodoesnthave" else "Member of"
+    role_filter_name   = "Not a Member of" if actual_role_filter == "whodoesnthave" else "Member of"
     person_filter_name = "Both" if person_filter is None else person_filter.capitalize()
 
     embed.add_field(
