@@ -1,5 +1,6 @@
 from datetime import datetime
 from logging import getLogger as get_logger
+from typing import TYPE_CHECKING
 
 from discord import File, HTTPException, TextChannel, Thread
 from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
@@ -17,6 +18,9 @@ from constants import STANDSTILL_EMOJI
 from core.utilities import format_values
 
 log = get_logger("Cordex")
+
+if TYPE_CHECKING:
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Guild Information Base
