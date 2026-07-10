@@ -5,7 +5,7 @@ from discord.threads import Thread
 from discord.ui import LayoutView, Thumbnail
 from discord.utils import utcnow
 
-from bot import Cordex, log
+from bot import Cordex
 from bot.ui import ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
@@ -124,6 +124,7 @@ async def rebuild_partnership_view(
         try:
             await message.delete()
         except HTTPException:
+            from bot import log
             log.exception(
                 "Failed to delete message %s in #%s.",
                 message.id,
