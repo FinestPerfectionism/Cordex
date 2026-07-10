@@ -1,5 +1,5 @@
 from collections.abc import Callable, Coroutine
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from discord import ButtonStyle, SeparatorSpacing
 from discord.ui import (
@@ -13,7 +13,8 @@ from discord.ui import (
     button,
 )
 
-from . import Interaction
+if TYPE_CHECKING:
+    from . import Interaction
 
 __all__ = ["TextDisplay"]
 
@@ -72,8 +73,7 @@ class ThumbnailSection(Section[LayoutView]):
 # Eval Tools
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-
-type Inter = Callable[[Interaction], Coroutine[None, None, None]]
+type Inter = Callable[["Interaction"], Coroutine[None, None, None]]
 
 class ViewButton(View):
     def __init__(self, callback : Inter, /) -> None:
@@ -81,5 +81,5 @@ class ViewButton(View):
         self.callback : Inter = callback
 
     @button(label = "Click me!")
-    async def btn_basic(self, interaction : Interaction, _button : Button[Self]) -> None:
+    async def btn_basic(self, interaction : "Interaction", _button : Button[Self]) -> None:
         await self.callback(interaction)
