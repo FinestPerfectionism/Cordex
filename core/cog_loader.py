@@ -1,11 +1,6 @@
-import importlib
-import os
-import pathlib
-import pkgutil
+from importlib import import_module
 from logging import getLogger as get_logger
-from typing import override
-
-from discord.ext import commands, tasks
+from pkgutil import walk_packages
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cog Management
@@ -23,7 +18,7 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
 
     for package_name in package_names:
         try:
-            package = importlib.import_module(package_name)
+            package = import_module(package_name)
         except Exception:
             log.exception("Failed to import package %s", package_name)
             continue
@@ -32,7 +27,7 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
             seen.add(package_name)
             cogs.append(package_name)
 
-        for module_info in pkgutil.walk_packages(
+        for module_info in walk_packages(
             package.__path__,
             prefix = f"{package.__name__}.",
         ):
@@ -46,7 +41,7 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
                 continue
 
             try:
-                module = importlib.import_module(name)
+                module = import_module(name)
             except Exception:
                 log.exception("Failed to import module %s", name)
                 continue
@@ -64,80 +59,3 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
         cogs = sorted(cogs)
 
     return cogs
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Cog Auto-Reloading
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-IGNORE_EXTENSIONS = []
-
-def path_from_extension(extension : str) -> pathlib.Path:
-    return pathlib.Path(extension.replace(".", os.sep) + ".py")
-
-class CogAutoReloading(commands.Cog):
-    def __init__(self, bot : commands.Bot, *package_names : str) -> None:
-        self.bot                : commands.Bot     = bot
-        self.package_names      : tuple[str, ...]  = package_names
-        self.last_modified_time : dict[str, float] = {}
-        self.hot_reload_loop.start()
-
-    @override
-    async def cog_unload(self) -> None:
-        self.hot_reload_loop.stop()
-
-    @tasks.loop(seconds = 3)
-    async def hot_reload_loop(self) -> None:
-        current_extensions    = list(self.bot.extensions.keys())
-        discovered_extensions = discover_cogs(*self.package_names)
-
-        all_extensions = list(set(current_extensions + discovered_extensions))
-
-        for extension in all_extensions:
-            if extension in IGNORE_EXTENSIONS:
-                continue
-
-            path = path_from_extension(extension)
-            try:
-                time = path.stat().st_mtime
-            except OSError:
-                continue
-
-            last_time = self.last_modified_time.get(extension)
-            if last_time == time:
-                continue
-
-            self.last_modified_time[extension] = time
-            if last_time is None and extension in self.bot.extensions:
-                continue
-
-            try:
-                if extension in self.bot.extensions:
-                    await self.bot.reload_extension(extension)
-                else:
-                    await self.bot.load_extension(extension)
-            except commands.ExtensionError:
-                log.exception("Failed to load cog %s", extension)
-            else:
-                log.info("Reloaded cog %s", extension)
-
-        for ext in list(self.last_modified_time.keys()):
-            if ext not in self.bot.extensions:
-                del self.last_modified_time[ext]
-
-    @hot_reload_loop.before_loop
-    async def cache_last_modified_time(self) -> None:
-        discovered_extensions = discover_cogs(*self.package_names)
-        for extension in discovered_extensions:
-            if extension in IGNORE_EXTENSIONS:
-                continue
-            path = path_from_extension(extension)
-            try:
-                time = path.stat().st_mtime
-                self.last_modified_time[extension] = time
-            except OSError:
-                pass
-
-async def setup(bot : commands.Bot) -> None:
-    cog = CogAutoReloading(bot, "events", "core", "commands")
-    await bot.add_cog(cog)

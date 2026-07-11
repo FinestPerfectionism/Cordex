@@ -1,10 +1,9 @@
-import asyncio
-import sys
+from asyncio import all_tasks, current_task, gather, get_running_loop, sleep, wait_for
 from logging import Logger
 from os import execv
+from sys import argv, executable, stderr, stdout
 
-import discord
-from discord import CustomActivity, Status
+from discord import CustomActivity, DiscordException, Message, Status
 
 from bot import Cordex, Interaction
 from core.exceptions import send_bad_operation
@@ -41,7 +40,7 @@ async def run_bo_state_restart(
         subtitle     = "Restarting bot...",
     )
 
-    loop         = asyncio.get_running_loop()
+    loop         = get_running_loop()
     restart_task = loop.create_task(
         restart_bot(
             interaction,
@@ -58,7 +57,7 @@ async def restart_bot(
     bot            : Cordex,
     log            : Logger,
     restarting_ref : list[bool],
-    confirm_msg    : discord.Message | None = None,
+    confirm_msg    : Message | None = None,
 ) -> None:
     try:
         await bot.change_presence(
@@ -66,21 +65,21 @@ async def restart_bot(
             activity = CustomActivity(name = "Restarting..."),
         )
 
-        await asyncio.sleep(1)
+        await sleep(1)
         await bot.close()
 
         pending = [
-            t for t in asyncio.all_tasks()
+            t for t in all_tasks()
             if not t.done() and
-            t is not asyncio.current_task()
+            t is not current_task()
         ]
 
         if pending:
             for task in pending:
                 task.cancel()
             try:
-                await asyncio.wait_for(
-                    asyncio.gather(
+                await wait_for(
+                    gather(
                         *pending,
                         return_exceptions = True,
                     ),
@@ -93,15 +92,15 @@ async def restart_bot(
             if hasattr(handler, "flush"):
                 handler.flush()
 
-        sys.stdout.flush()
-        sys.stderr.flush()
+        stdout.flush()
+        stderr.flush()
 
         execv(  # noqa: S606
-            sys.executable,
-            [sys.executable, *sys.argv],
+            executable,
+            [executable, *argv],
         )
 
-    except (OSError, discord.DiscordException) as e:
+    except (OSError, DiscordException) as e:
         log.exception("Received fatal error during restart")
         restarting_ref[0] = False
 

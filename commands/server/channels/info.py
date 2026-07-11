@@ -11,7 +11,7 @@ from constants import COLOR_GREY
 # /channel info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None):
+async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
     await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
@@ -30,11 +30,14 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
         container : Container[Self] = Container[Self](
             TextDisplay(f"{target.mention} | {target.id}"),
             TextDisplay(
-
-                    "",
-
+                (
+                    ""
+                ),
             ),
             accent_color = COLOR_GREY,
         )
 
-    await interaction.followup.send("This command does nothing right now. :[", ephemeral = True)
+    await interaction.followup.send(
+        "This command does nothing right now. :[",
+        ephemeral = True,
+    )

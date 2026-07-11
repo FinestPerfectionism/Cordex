@@ -1,4 +1,4 @@
-import asyncio
+from asyncio import create_subprocess_exec, subprocess
 
 from bot import Cordex, Interaction, log
 from core.exceptions import send_bad_operation
@@ -14,10 +14,10 @@ async def run_bo_cogs_pullreload(
     cogs        : list[str],
 ) -> None:
     await interaction.response.defer(ephemeral = True)
-    proc = await asyncio.create_subprocess_exec(
+    proc = await create_subprocess_exec(
         "git", "pull", "origin", "main",
-        stdout = asyncio.subprocess.PIPE,
-        stderr = asyncio.subprocess.PIPE,
+        stdout = subprocess.PIPE,
+        stderr = subprocess.PIPE,
     )
     stdout, stderr = await proc.communicate()
     pull_output    = stdout.decode().strip() or stderr.decode().strip()

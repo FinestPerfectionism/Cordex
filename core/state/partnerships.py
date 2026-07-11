@@ -1,9 +1,8 @@
 from logging import getLogger as get_logger
 from pathlib import Path
-from typing import cast
+from typing import TypedDict, cast
 
 from aiosqlite import Connection, Error
-from typing_extensions import TypedDict
 
 log = get_logger("Cordex")
 
@@ -32,9 +31,7 @@ def default() -> PartnershipData:
 
 async def load_partnership_data(db : Connection) -> PartnershipData:
     try:
-        async with db.execute(
-            "SELECT server_name, server_description, server_owner_id, server_link, image_filename FROM partnerships",
-        ) as cursor:
+        async with db.execute("SELECT server_name, server_description, server_owner_id, server_link, image_filename FROM partnerships") as cursor:
             partnership_rows = await cursor.fetchall()
 
         partnerships : list[PartnershipEntry] = [
@@ -48,18 +45,20 @@ async def load_partnership_data(db : Connection) -> PartnershipData:
             for row in partnership_rows
         ]
 
-        async with db.execute("SELECT timestamp FROM partnership_meta WHERE id = 0") as cursor:
+        async with db.execute("SELECT timestamp FROM partnerships WHERE id = 0") as cursor:
             meta_row = await cursor.fetchone()
 
         timestamp : int = cast(int, meta_row[0]) if meta_row is not None else 0
 
+    except Error:
+        log.exception("Failed to load partnership data")
+        return default()
+    else:
         return {
             "partnerships" : partnerships,
             "timestamp"    : timestamp,
         }
-    except Error:
-        log.exception("Failed to load partnership data")
-        return default()
+
 
 async def save_partnership_data(db : Connection, data : PartnershipData) -> None:
     try:
@@ -79,7 +78,7 @@ async def save_partnership_data(db : Connection, data : PartnershipData) -> None
         )
 
         await db.execute(
-            "UPDATE partnership_meta SET timestamp = ? WHERE id = 0",
+            "UPDATE partnerships SET timestamp = ? WHERE id = 0",
             [str(data["timestamp"])],
         )
 

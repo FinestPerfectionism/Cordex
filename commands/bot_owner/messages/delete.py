@@ -1,4 +1,4 @@
-import discord
+from discord import Forbidden, HTTPException, NotFound
 from discord.abc import Messageable
 
 from bot import Interaction
@@ -25,7 +25,7 @@ async def run_bo_messages_delete(
     try:
         try:
             target_message = await target_channel.fetch_message(int(message_id))
-        except (discord.NotFound, ValueError, discord.HTTPException):
+        except (NotFound, ValueError, HTTPException):
             await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
             return
 
@@ -36,6 +36,6 @@ async def run_bo_messages_delete(
         await target_message.delete()
         await interaction.followup.send("Deleted!", ephemeral = True)
 
-    except discord.Forbidden:
+    except Forbidden:
         await send_unknown_error(interaction)
         return

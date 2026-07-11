@@ -9,7 +9,7 @@ from ._base import InfoHeaderSection, InfoPrimarySection, TOSButton
 class RuleComponents1(InfoHeaderSection):
     def __init__(self) -> None:
         super().__init__(
-            title       = "The Goobers",
+            title       = "the goobers",
             description = "A server for dumbassery and gaming",
             note        = "It is within moderators' discretion as to whether you are breaking rules regardless of if the rules they find you to be breaking are listed here",
         )

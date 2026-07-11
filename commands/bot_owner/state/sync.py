@@ -1,4 +1,4 @@
-import discord
+from discord import DiscordException
 
 from bot import Interaction, tree
 from core.exceptions import send_bad_operation
@@ -19,7 +19,7 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
             subtitle = "Successfully globally synced the app command tree.",
         )
 
-    except discord.DiscordException as e:
+    except DiscordException as e:
         await send_bad_operation(
             interaction,
             title    = "sync app command tree",

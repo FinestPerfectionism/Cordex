@@ -31,7 +31,7 @@ class ChannelCommands(
     )
     @describe(channel = "The channel to view information for. Defaults to the current one.")
     @administrator_cmd()
-    async def cmd_info(self, interaction : Interaction, channel : GuildChannel | None = None):
+    async def cmd_info(self, interaction : Interaction, channel : GuildChannel | None = None) -> None:
         await run_channel_info(interaction, channel)
 
 async def setup(bot : Cordex) -> None:

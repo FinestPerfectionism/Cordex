@@ -1,6 +1,6 @@
-import asyncio
+from asyncio import sleep
 
-import discord
+from discord import Forbidden, HTTPException, Message, NotFound
 from discord.abc import Messageable
 
 from bot import Interaction
@@ -16,6 +16,7 @@ async def run_bo_messages_send(
     text        : str,
     message_id  : str         | None = None,
     channel     : Messageable | None = None,
+    *,
     ping        : bool        | None = True,
 ) -> None:
     await interaction.response.defer(ephemeral = True)
@@ -37,25 +38,25 @@ async def run_bo_messages_send(
         typing_delay = min(typing_speed, 10.0)
 
         try:
-            reply_reference : discord.Message | None = None
+            reply_reference : Message | None = None
             if message_id:
                 try:
                     reply_reference = await target_channel.fetch_message(int(message_id))
 
-                except (discord.NotFound, ValueError, discord.HTTPException):
+                except (NotFound, ValueError, HTTPException):
                     await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
                     return
 
             if hasattr(target_channel, "typing"):
                 async with target_channel.typing():
-                    await asyncio.sleep(typing_delay)
+                    await sleep(typing_delay)
             if reply_reference:
                 await reply_reference.reply(content = text, mention_author = ping)
             else:
                 await target_channel.send(content = text)
             await interaction.followup.send("Sent!", ephemeral = True)
 
-        except discord.Forbidden:
+        except Forbidden:
             await send_unknown_error(interaction)
             return
 

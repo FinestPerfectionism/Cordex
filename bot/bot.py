@@ -66,14 +66,18 @@ type ContextOrInteraction = Interaction | Context
 
 class Cordex(commands.Bot):
     def __init__(self) -> None:
-        intents = Intents.all()
+        prefix   = commands.when_mentioned_or(".")
+        intents  = Intents.all()
+        status   = Status.online
+        activity = CustomActivity(name = "Utility Bot 1.5.")
+
         super().__init__(
-            command_prefix   = commands.when_mentioned_or("c.", "C."),
+            command_prefix   = prefix,
             intents          = intents,
             case_insensitive = True,
             help_command     = None,
-            status           = Status.online,
-            activity         = CustomActivity(name = "Utility Bot 1.5."),
+            status           = status,
+            activity         = activity,
         )
         self.db : Connection
 
@@ -91,16 +95,19 @@ class Cordex(commands.Bot):
 
         # ⸻ AIOSQLite
 
-        self.db = await connect("database.db")
+        db_path = Path("data/database.db")
+        db_path.parent.mkdir(parents = True, exist_ok = True)
+
+        self.db = await connect(str(db_path))
 
         def read_schemas() -> tuple[str, str, str, str]:
-            with Path("schemas/logging.sql").open() as f1:
+            with Path("schemas/logging.sql").open(encoding = "utf-8") as f1:
                 log_sql = f1.read()
-            with Path("schemas/cases.sql").open() as f2:
+            with Path("schemas/cases.sql").open(encoding = "utf-8") as f2:
                 cases_sql = f2.read()
-            with Path("schemas/partnerships.sql").open() as f3:
+            with Path("schemas/partnerships.sql").open(encoding = "utf-8") as f3:
                 partnerships_sql = f3.read()
-            with Path("schemas/guild_info.sql").open() as f4:
+            with Path("schemas/guild_info.sql").open(encoding = "utf-8") as f4:
                 guild_info_sql = f4.read()
             return log_sql, cases_sql, partnerships_sql, guild_info_sql
 

@@ -1,8 +1,14 @@
-import re
+from re import Pattern, compile, escape
 
-import discord
-from discord import ForumChannel, TextChannel, Thread
-from discord.abc import Messageable
+from discord import (
+    Attachment,
+    ForumChannel,
+    StageChannel,
+    TextChannel,
+    Thread,
+    VoiceChannel,
+)
+from discord.abc import GuildChannel, Messageable
 
 from constants import DIRECTORSHIP_CATEGORY_ID
 
@@ -25,7 +31,7 @@ WAPPLE_EMOJIS : list[str] = [
     "<:susapple:1483533565005402144>",
 ]
 
-WAPPLE_PATTERN : re.Pattern[str] = re.compile(rf"^({'|'.join(map(re.escape, WAPPLE_EMOJIS))}| )+$")
+WAPPLE_PATTERN : Pattern[str] = compile(rf"^({'|'.join(map(escape, WAPPLE_EMOJIS))}| )+$")
 
 def is_valid_wapple_chain(content : str) -> bool:
     return bool(WAPPLE_PATTERN.fullmatch(content.strip()))
@@ -43,7 +49,7 @@ def truncate_text(text : str, max_length : int = 1024) -> str:
 
 def is_directorship_channel(channel : Messageable) -> bool:
     return (
-        isinstance(channel, TextChannel | discord.VoiceChannel | discord.StageChannel)
+        isinstance(channel, TextChannel | VoiceChannel | StageChannel)
         and channel.category_id == DIRECTORSHIP_CATEGORY_ID
     ) or (
         isinstance(channel, Thread)
@@ -54,7 +60,7 @@ def is_directorship_channel(channel : Messageable) -> bool:
 # channel_display
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def channel_display(channel : Messageable | discord.abc.GuildChannel) -> str:
+def channel_display(channel : Messageable | GuildChannel) -> str:
     if isinstance(channel, Thread):
         parent = channel.parent
 
@@ -74,7 +80,7 @@ def channel_display(channel : Messageable | discord.abc.GuildChannel) -> str:
 # format_attachments
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_attachments(attachments : list[discord.Attachment]) -> str:
+def format_attachments(attachments : list[Attachment]) -> str:
     if not attachments:
         return "None"
     return "\n".join(f"- {a.filename} ({a.url})" for a in attachments)

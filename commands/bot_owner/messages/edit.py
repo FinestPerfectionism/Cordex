@@ -1,4 +1,4 @@
-import discord
+from discord import Forbidden, HTTPException, NotFound
 from discord.abc import Messageable
 
 from bot import Interaction
@@ -23,12 +23,12 @@ async def run_bo_messages_edit(
         await send_bad_argument(interaction, subtitle = {"channel" : "The selected channel does not support text messages."})
         return
 
-    async def do_edit(interaction : discord.Interaction) -> None:
+    async def do_edit(interaction : Interaction) -> None:
         try:
             try:
                 target_message = await target_channel.fetch_message(int(message_id))
 
-            except (discord.NotFound, ValueError, discord.HTTPException):
+            except (NotFound, ValueError, HTTPException):
                 await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})
                 return
 
@@ -39,7 +39,7 @@ async def run_bo_messages_edit(
             await target_message.edit(content = text)
             await interaction.followup.send("Edited!", ephemeral = True)
 
-        except discord.Forbidden:
+        except Forbidden:
             await send_unknown_error(interaction)
             return
 

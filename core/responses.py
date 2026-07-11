@@ -1,4 +1,4 @@
-from typing import Literal, cast
+from typing import Literal, Self, cast
 
 from discord import Interaction, Message
 from discord.abc import Messageable
@@ -57,9 +57,9 @@ def build_footer_text(footer : str | None) -> str | None:
     return f"{footer.rstrip('. ')}."
 
 def build_view(content : str) -> LayoutView:
-    class _SingleView(LayoutView):
-        text : TextDisplay[_SingleView] = TextDisplay(content = content)
-    return _SingleView()
+    class SingleView(LayoutView):
+        text : TextDisplay[Self] = TextDisplay(content = content)
+    return SingleView()
 
 async def send(
     target       : SendTarget,

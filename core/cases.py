@@ -79,10 +79,10 @@ CASE_MAP : dict[case_types, CaseData] = {
     "note_remove"       : CaseType.NOTE_REMOVE,
 }
 
-async def create_case(bot : Cordex, case_type : case_types):
+async def create_case(bot : Cordex, case_type : case_types) -> None:
     cursor = await bot.db.execute(
         """
-        SELECT config_value FROM GuildConfig 
+        SELECT config_value FROM GuildConfig
         WHERE config_key = 'logging_moderation_channel'
         """,
     )

@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 from discord import File
 from discord.channel import TextChannel
 from discord.errors import HTTPException
@@ -6,6 +7,7 @@ from discord.threads import Thread
 from discord.ui import LayoutView, Thumbnail
 from discord.utils import utcnow
 
+from bot import log
 from bot.ui import ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
@@ -119,7 +121,8 @@ async def rebuild_partnership_view(
     # ⸻ Make sure it's a valid channel to send views to
 
     if not isinstance(channel, TextChannel | Thread):
-        raise TypeError(f"{PARTNERSHIPS_CHANNEL_ID} is not a text channel or thread.")
+        error = f"{PARTNERSHIPS_CHANNEL_ID} is not a text channel or thread."
+        raise TypeError(error)
 
     # ⸻ Clear every single message in the channel before we rebuild
 
@@ -127,7 +130,6 @@ async def rebuild_partnership_view(
         try:
             await message.delete()
         except HTTPException:
-            from bot import log
             log.exception(
                 "Failed to delete message %s in #%s.",
                 message.id,

@@ -11,8 +11,8 @@ from core.utilities import codeblock, format_values
 # /user info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_user_info(interaction : Interaction, user : Member | None = None):
-    await interaction.response.defer()
+async def run_user_info(interaction : Interaction, user : Member | None = None) -> None:
+    await interaction.response.defer(ephemeral = True)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -86,18 +86,18 @@ async def run_user_info(interaction : Interaction, user : Member | None = None):
 
         container.add_item(
             TextDisplay(
-
+                (
                     "**Roles**\n"
-                   f"{roles_list or "None"}",
-
+                   f"{roles_list or "None"}"
+                ),
             ),
         )
         container.add_item(
             TextDisplay(
-
+                (
                     "**Join Order**\n"
-                   f"{join_list}",
-
+                   f"{join_list}"
+                ),
             ),
         )
 

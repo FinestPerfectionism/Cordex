@@ -1,5 +1,5 @@
-import re
 from collections.abc import Sequence
+from re import match
 from typing import Self, TypedDict, override
 
 from discord import (
@@ -165,7 +165,7 @@ class ReasonModal(Modal):
         # ⸻ Improper time signature
 
         timer_value = self.timer_input.value.strip().lower()
-        if timer_value and not re.match(r"^(\d+[hmds])+$", timer_value):
+        if timer_value and not match(r"^(\d+[hmds])+$", timer_value):
             await format_send(
                 interaction,
                 msg_type =  "warning",

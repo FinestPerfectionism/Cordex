@@ -60,18 +60,19 @@ class HiddenSmallSeparator(Separator[LayoutView]):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class ButtonSection(Section[LayoutView]):
-    def __init__(self, *args : str, button : Button[LayoutView], id : int | None = None) -> None:
+    def __init__(self, *args : str, button : Button[LayoutView], id : int | None = None) -> None:  # noqa: A002
         super().__init__(*args, id = id, accessory = button)
         self.button : Button[LayoutView] = button
 
 class ThumbnailSection(Section[LayoutView]):
-    def __init__(self, *args : str, thumbnail : Thumbnail[LayoutView], id : int | None = None) -> None:
+    def __init__(self, *args : str, thumbnail : Thumbnail[LayoutView], id : int | None = None) -> None:  # noqa: A002
         super().__init__(*args, id = id, accessory = thumbnail)
         self.thumbnail : Thumbnail[LayoutView] = thumbnail
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Eval Tools
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 type Inter = Callable[["Interaction"], Coroutine[None, None, None]]
 

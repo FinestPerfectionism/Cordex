@@ -1,9 +1,8 @@
-import re
-import uuid
 from pathlib import Path
+from re import compile
+from uuid import uuid4
 
-import discord
-from discord import Attachment, TextChannel, User
+from discord import Attachment, HTTPException, TextChannel, User
 from discord.app_commands import (
     Choice,
     autocomplete,
@@ -27,7 +26,7 @@ from core.state import (
 )
 from guild_info.partnerships import rebuild_partnership_view
 
-INVITE_RE = re.compile(r"^(https?://)?(www\.)?(discord\.gg|discord\.com/invite)/[A-Za-z0-9-]+$")
+INVITE_RE = compile(r"^(https?://)?(www\.)?(discord\.gg|discord\.com/invite)/[A-Za-z0-9-]+$")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership Commands
@@ -100,14 +99,14 @@ class PartnershipCommands(commands.GroupCog):
         IMAGE_DIR.mkdir(parents = True, exist_ok = True)
 
         suffix     = Path(server_picture.filename).suffix or ".png"
-        filename   = f"{uuid.uuid4()}{suffix}"
+        filename   = f"{uuid4()}{suffix}"
         image_path = IMAGE_DIR / filename
 
         try:
             image_bytes = await server_picture.read()
             image_path.write_bytes(image_bytes)
 
-        except discord.HTTPException:
+        except HTTPException:
             log.exception("Failed to download partnership attachment")
             await send_bad_operation(interaction, title = "download the server picture")
             raise
@@ -138,7 +137,7 @@ class PartnershipCommands(commands.GroupCog):
 
         try:
             await rebuild_partnership_view(self.bot, data["partnerships"])
-        except discord.HTTPException:
+        except HTTPException:
             log.exception("Failed to rebuild partnership layout after add")
             data["partnerships"].pop()
             image_path.unlink(missing_ok = True)
@@ -190,7 +189,7 @@ class PartnershipCommands(commands.GroupCog):
         try:
             await rebuild_partnership_view(self.bot, data["partnerships"])
 
-        except discord.HTTPException:
+        except HTTPException:
             log.exception("Failed to rebuild partnership layout after remove")
             data["partnerships"] = original
             await save_partnership_data(self.bot.db, data)
@@ -264,7 +263,7 @@ class PartnershipCommands(commands.GroupCog):
         if server_picture is not None:
             IMAGE_DIR.mkdir(parents = True, exist_ok = True)
             suffix         = Path(server_picture.filename).suffix or ".png"
-            new_filename   = f"{uuid.uuid4()}{suffix}"
+            new_filename   = f"{uuid4()}{suffix}"
             new_image_path = IMAGE_DIR / new_filename
 
             try:
@@ -273,7 +272,7 @@ class PartnershipCommands(commands.GroupCog):
                 old_image_filename      = entry["image_filename"]
                 entry["image_filename"] = new_filename
 
-            except discord.HTTPException:
+            except HTTPException:
                 log.exception("Failed to download updated partnership attachment")
                 await format_send(
                     interaction,
@@ -316,7 +315,7 @@ class PartnershipCommands(commands.GroupCog):
         try:
             await rebuild_partnership_view(self.bot, data["partnerships"])
 
-        except discord.HTTPException:
+        except HTTPException:
             log.exception("Failed to rebuild partnership layout after update")
             await format_send(
                 interaction,
@@ -330,6 +329,6 @@ class PartnershipCommands(commands.GroupCog):
         if old_image_filename is not None:
             (IMAGE_DIR / old_image_filename).unlink(missing_ok = True)
 
-async def setup(bot : Cordex):
+async def setup(bot : Cordex) -> None:
     cog = PartnershipCommands(bot)
     await bot.add_cog(cog)

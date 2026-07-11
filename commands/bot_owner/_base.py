@@ -1,8 +1,8 @@
-import re
 from collections.abc import Awaitable, Callable
+from re import compile
 from typing import Self
 
-import discord
+from discord import Client, DMChannel, TextChannel, Thread, VoiceChannel
 from discord.app_commands import Choice
 from discord.ui import Button, View, button
 
@@ -20,15 +20,15 @@ from core.utilities import format_values
 # TextChannelTypes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-TextChannelTypes = (discord.TextChannel, discord.Thread, discord.DMChannel, discord.VoiceChannel)
+TextChannelTypes = (TextChannel, Thread, DMChannel, VoiceChannel)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Emoji Stuff
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-EMOJI_PATTERN = re.compile(r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>")
+EMOJI_PATTERN = compile(r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>")
 
-def inaccessible_emoji_ids(client : discord.Client, text : str) -> list[str]:
+def inaccessible_emoji_ids(client : Client, text : str) -> list[str]:
     inaccessible_ids : list[str] = []
 
     for match in EMOJI_PATTERN.finditer(text):
@@ -93,7 +93,7 @@ def get_cogs() -> list[str]:
 # cog_autocomplete
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Choice[str]]:
+async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Choice[str]]:  # noqa: RUF029
     return [
         Choice(name = cog, value = cog)
         for cog in get_cogs() if current.lower() in cog.lower()

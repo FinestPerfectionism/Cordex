@@ -1,4 +1,4 @@
-import operator
+from operator import eq, ge, gt, le, lt
 from typing import TYPE_CHECKING, Literal
 
 from discord import Member, Role
@@ -60,11 +60,11 @@ def check_role_hierarchy(
     target_role = target.top_role
 
     ops : dict[str, Callable[[Role, Role], bool]] = {
-        ">"  : operator.gt,
-        "<"  : operator.lt,
-        "="  : operator.eq,
-        ">=" : operator.ge,
-        "<=" : operator.le,
+        ">"  : gt,
+        "<"  : lt,
+        "="  : eq,
+        ">=" : ge,
+        "<=" : le,
     }
 
     return ops[comparison](actor_role, target_role)

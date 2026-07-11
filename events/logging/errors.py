@@ -1,11 +1,16 @@
-import asyncio
-import sys
-import traceback
-from asyncio import Task
+from asyncio import (
+    AbstractEventLoop,
+    InvalidStateError,
+    Task,
+    create_task,
+    get_running_loop,
+)
 from collections.abc import Coroutine
+from sys import exc_info
+from traceback import format_exception
 from typing import override
 
-import aiohttp
+from aiohttp import ClientError
 from discord import Embed, Forbidden, Guild, HTTPException, NotFound, TextChannel
 from discord.abc import User
 from discord.app_commands import AppCommandError
@@ -131,7 +136,7 @@ class ErrorLogger(commands.Cog):
         if event in {"on_command_error", "on_interaction"}:
             return
 
-        exc_type, exc, tb = sys.exc_info()
+        exc_type, exc, tb = exc_info()
 
         if isinstance(exc, commands.CommandNotFound):
             return
@@ -143,7 +148,7 @@ class ErrorLogger(commands.Cog):
             )
             return
 
-        tb_text = "".join(traceback.format_exception(exc_type, exc, tb))
+        tb_text = "".join(format_exception(exc_type, exc, tb))
 
         await self.send_error(
             title          =  "Bot Event Error",
@@ -180,7 +185,7 @@ class ErrorLogger(commands.Cog):
             await send_bad_environment_mainguildordms(interaction)
             return
 
-        tb_text = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+        tb_text = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self.send_error(
             title           =  "Application Command Error",
@@ -201,7 +206,7 @@ class ErrorLogger(commands.Cog):
         extension : str,
         error     : commands.ExtensionError,
     ) -> None:
-        tb_text = "".join(traceback.format_exception(type(error), error, error.__traceback__))
+        tb_text = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self.send_error(
             title          =  "Extension Error",
@@ -220,9 +225,9 @@ class ErrorLogger(commands.Cog):
             Forbidden,
             NotFound,
             HTTPException,
-            aiohttp.ClientError,
+            ClientError,
         ) as exc:
-            tb_text = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+            tb_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
             await self.send_error(
                 title          = "HTTP / REST Error",
@@ -241,7 +246,7 @@ class ErrorLogger(commands.Cog):
         *,
         name : str,
     ) -> Task[object]:
-        task = asyncio.create_task(coro, name = name)
+        task = create_task(coro, name = name)
         self.tasks.add(task)
         task.add_done_callback(self.tasks.discard)
         task.add_done_callback(self.task_done)
@@ -252,15 +257,13 @@ class ErrorLogger(commands.Cog):
             return
         try:
             exc = task.exception()
-        except asyncio.InvalidStateError:
+        except InvalidStateError:
             return
 
         if exc is None:
             return
 
-        tb_text = "".join(
-            traceback.format_exception(type(exc), exc, exc.__traceback__),
-        )
+        tb_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
         self.create_task(
             self.send_error(
@@ -277,7 +280,7 @@ class ErrorLogger(commands.Cog):
 
     def loop_exception_handler(
         self,
-        loop    : asyncio.AbstractEventLoop,
+        loop    : AbstractEventLoop,
         context : dict[str, object],
     ) -> None:
         if loop.is_closed():
@@ -288,7 +291,7 @@ class ErrorLogger(commands.Cog):
         msg_str = str(msg) if msg is not None else "No message"
 
         if isinstance(exc, BaseException):
-            tb_text = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__))
+            tb_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
         else:
             tb_text = msg_str
 
@@ -302,7 +305,7 @@ class ErrorLogger(commands.Cog):
 
     @override
     async def cog_load(self) -> None:
-        loop = asyncio.get_running_loop()
+        loop = get_running_loop()
         loop.set_exception_handler(self.loop_exception_handler)
 
 async def setup(bot : Cordex) -> None:

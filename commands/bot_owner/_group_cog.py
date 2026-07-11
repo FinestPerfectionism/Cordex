@@ -161,6 +161,7 @@ class BotOwnerCommands(
         message     : str,
         channel     : TextChannel | None = None,
         reply_id    : str         | None = None,
+        *,
         ping        : bool        | None = True,
     ) -> None:
         await run_bo_messages_send(

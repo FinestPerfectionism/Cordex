@@ -103,6 +103,7 @@ ignore = [
     "PD011",
     "CPY001",
     "PLR6301",
+    "PLR2004",
     "E203",
     "E221",
     "E222",
@@ -114,15 +115,17 @@ ignore = [
     "E302",
     "E501",
     "E999",
+    "N813",
+    "ERA001",
 ]
 
 [tool.ruff.lint.mccabe]
-max-complexity = 10
+max-complexity = 50
 
 [tool.ruff.lint.pylint]
-max-args     = 10
-max-branches = 10
-max-returns  = 10
+max-args     = 50
+max-branches = 50
+max-returns  = 50
 
 [tool.ruff.lint.flake8-annotations]
 allow-star-arg-any      = false

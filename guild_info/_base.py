@@ -1,8 +1,9 @@
 from datetime import datetime
 from logging import getLogger as get_logger
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from discord import File, HTTPException, TextChannel, Thread
+from discord.mentions import AllowedMentions
 from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
 from discord.utils import format_dt
 
@@ -41,7 +42,8 @@ async def ensure_views(
         channel = await bot.fetch_channel(channel_id)
 
     if not isinstance(channel, TextChannel | Thread):
-        raise TypeError(f"{channel_id} is not a text channel or thread.")
+        error = f"{channel_id} is not a text channel or thread."
+        raise TypeError(error)
 
     cursor = await bot.db.execute(
         """
@@ -56,7 +58,7 @@ async def ensure_views(
     rows = await cursor.fetchall()
     await cursor.close()
 
-    message_ids : list[int] = [int(row[0]) for row in rows]
+    message_ids : list[int] = [int(cast(int | str, row[0])) for row in rows]
 
     if len(message_ids) == len(views):
         for message_id in message_ids:
@@ -87,7 +89,11 @@ async def ensure_views(
 
     for index, view in enumerate(views):
         view_files : list[File] = files[index] if files is not None else []
-        message                 = await channel.send(view = view, files = view_files)
+        message                 = await channel.send(
+            view             = view,
+            files            = view_files,
+            allowed_mentions = AllowedMentions.none(),
+        )
 
         new_message_ids.append(message.id)
 
@@ -250,3 +256,43 @@ class InfoSecondarySection(LayoutView):
 
         self.container.add_item(row)
         self.last_added_row = row
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Info Support Section
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class InfoSupportSection(LayoutView):
+    def __init__(
+        self,
+        *,
+        title       : str,
+        description : str,
+        text        : str,
+        note        : str,
+        footer      : str,
+        button      : Button[LayoutView],
+    ) -> None:
+        super().__init__(timeout = None)
+
+        self.add_item(
+            Container(
+                ButtonSection(
+                    f"# {title}",
+                    button = TOSButton(),
+                ),
+                ButtonSection(
+                    f"{description}.",
+                    button = button,
+                ),
+                HiddenSmallSeparator(),
+                VisibleSmallSeparator(),
+                HiddenSmallSeparator(),
+                TextDisplay(
+
+                        f"{text}.\n\n"
+                        f"**Note:** {note}.\n\n"
+                        f"{footer}.",
+
+                ),
+            ),
+        )

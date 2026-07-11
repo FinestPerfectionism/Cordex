@@ -1,7 +1,8 @@
-import asyncio
-import logging
-import os
-import sys
+from asyncio import run
+from logging import INFO
+from logging import basicConfig as basic_config
+from os import getenv
+from sys import exit
 
 from dotenv import load_dotenv
 
@@ -13,12 +14,12 @@ from bot import bot, log
 
 load_dotenv()
 
-logging.basicConfig(
-    level  = logging.INFO,
+basic_config(
+    level  = INFO,
     format = "%(asctime)s | %(levelname)s | %(name)s | %(message)s",
 )
 
-TOKEN = os.getenv("TOKEN")
+TOKEN = getenv("TOKEN")
 
 async def main() -> None:
     if not TOKEN:
@@ -35,9 +36,9 @@ async def main() -> None:
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        run(main())
     except KeyboardInterrupt:
         log.info("Received error — KeyboardInterrupt")
     except Exception:
         log.exception("Received fatal error during startup")
-        sys.exit(1)
+        exit(1)

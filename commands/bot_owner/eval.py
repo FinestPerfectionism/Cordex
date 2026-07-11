@@ -1,9 +1,9 @@
-import contextlib
-import io
-import traceback
 from builtins import exec
 from collections.abc import Awaitable, Callable
+from contextlib import redirect_stdout
+from io import StringIO
 from textwrap import indent
+from traceback import format_exc
 from typing import cast
 
 import discord
@@ -160,7 +160,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
     message = ctx.message
 
     body       = "\n".join(body.split("\n")[1:-1]) if body.startswith("```") else body.strip("` \n")
-    stdout     = io.StringIO()
+    stdout     = StringIO()
     to_compile = (
         f"async def func():\n"
         f"{indent(body, "  ")}"
@@ -177,12 +177,12 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
     func = cast(Callable[[], Awaitable[object]], env["func"])
 
     try:
-        with contextlib.redirect_stdout(stdout):
+        with redirect_stdout(stdout):
             ret = await func()
     except Exception:
         value = stdout.getvalue()
         await message.add_reaction(CONTESTED_EMOJI)
-        res   = await ctx.send(codeblock(f"{value}{traceback.format_exc()}"))
+        res   = await ctx.send(codeblock(f"{value}{format_exc()}"))
 
         eval_message_ids[ctx.message.id] = res.id
     else:
