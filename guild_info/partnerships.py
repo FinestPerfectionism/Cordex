@@ -1,3 +1,4 @@
+from logging import getLogger as get_logger
 from typing import TYPE_CHECKING
 
 from discord import File
@@ -7,7 +8,6 @@ from discord.threads import Thread
 from discord.ui import LayoutView, Thumbnail
 from discord.utils import utcnow
 
-from bot import log
 from bot.ui import ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
@@ -27,6 +27,8 @@ if TYPE_CHECKING:
     from bot import Cordex
 
 CHARACTERS_PER_GROUP_LIMIT = 4000
+
+log = get_logger("Cordex")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership Views

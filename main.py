@@ -28,10 +28,11 @@ async def main() -> None:
 
     log.info("Starting Discord connection")
 
-    try:
-        await bot.start(TOKEN.strip())
-    except Exception:
-        log.exception("Received error — Bot crashed during runtime")
+    async with bot:
+        try:
+            await bot.start(TOKEN.strip())
+        except Exception:
+            log.exception("Received error — Bot crashed during runtime")
 
 
 if __name__ == "__main__":
