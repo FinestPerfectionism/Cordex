@@ -288,11 +288,11 @@ class InfoSupportSection(LayoutView):
                 VisibleSmallSeparator(),
                 HiddenSmallSeparator(),
                 TextDisplay(
-
+                    (
                         f"{text}.\n\n"
                         f"**Note:** {note}.\n\n"
-                        f"{footer}.",
-
+                        f"{footer}."
+                    ),
                 ),
             ),
         )
