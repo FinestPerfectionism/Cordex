@@ -86,9 +86,21 @@ def build_partnership_views(entries : list[PartnershipEntry]) -> tuple[list[Layo
     current_view  : InfoPrimarySection | InfoSecondarySection = PartnershipComponents2()
     current_files : list[File]                                = []
 
+    IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+
     for entry in entries:
+        filename = entry.get("image_filename")
+        if not filename:
+            log.warning("Skipping entry '%s': missing image filename.", entry.get("server_name", "Unknown"))
+            continue
+
+        target_path = IMAGE_DIR / filename
+        if target_path.is_dir() or not target_path.exists():
+            log.warning("Skipping entry '%s': image file not found at %s.", entry.get("server_name", "Unknown"), target_path)
+            continue
+
         section = build_partnership_thumbnail_section(entry)
-        file    = File(IMAGE_DIR / entry["image_filename"], filename = entry["image_filename"])
+        file    = File(target_path, filename = filename)
 
         current_view.container.add_item(section)
         current_files.append(file)
@@ -153,9 +165,21 @@ async def rebuild_partnership_view(
         current_view  : InfoPrimarySection | InfoSecondarySection = PartnershipComponents2()
         current_files : list[File]                                = []
 
+        IMAGE_DIR.mkdir(parents = True, exist_ok = True)
+
         for entry in entries:
+            filename = entry.get("image_filename")
+            if not filename:
+                log.warning("Skipping entry '%s': missing image filename.", entry.get("server_name", "Unknown"))
+                continue
+
+            target_path = IMAGE_DIR / filename
+            if target_path.is_dir() or not target_path.exists():
+                log.warning("Skipping entry '%s': image file not found at %s.", entry.get("server_name", "Unknown"), target_path)
+                continue
+
             section = build_partnership_thumbnail_section(entry)
-            file    = File(IMAGE_DIR / entry["image_filename"], filename = entry["image_filename"])
+            file    = File(target_path, filename = filename)
 
             current_view.container.add_item(section)
             current_files.append(file)
