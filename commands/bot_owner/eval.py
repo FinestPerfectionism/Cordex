@@ -37,7 +37,7 @@ from constants import (
     STANDSTILL_EMOJI,
 )
 from core.exceptions import send_bad_permissions_command
-from core.responses import format_build, format_send
+from core.responses import format_message, format_send
 from core.utilities import codeblock, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -83,7 +83,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "get"                   : get,
         "codeblock"             : codeblock,
         "format_values"         : format_values,
-        "format_build"          : format_build,
+        "format_message"        : format_message,
         "format_send"           : format_send,
 
         "select"                : ui.select,
