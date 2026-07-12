@@ -12,7 +12,7 @@ from bot.ui import ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
     PARTNERSHIPS_CHANNEL_ID,
-    TICKET_CHANNEL_ID,
+    TICKETS_CHANNEL_ID,
 )
 from core.state import IMAGE_DIR, PartnershipEntry
 
@@ -38,7 +38,7 @@ class PartnershipComponents1(InfoHeaderSection):
     def __init__(self) -> None:
         super().__init__(
             title       =  "our partnerships",
-            description = f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}> then open a __director__ ticket in <#{TICKET_CHANNEL_ID}>",
+            description = f"Our server partnerships. Looking to partner? View <#{PARTNERSHIP_REQUIREMENTS_CHANNEL_ID}> then open a __director__ ticket in <#{TICKETS_CHANNEL_ID}>",
             note        =  "It is within Directors' discretion as to whether we choose to partner with your server. Directors are not required to provide a reason when denying a partnership.",
         )
 
