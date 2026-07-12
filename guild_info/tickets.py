@@ -1,21 +1,52 @@
-from typing import TYPE_CHECKING, override
+from typing import override
 
-from discord.ui import Button
+from discord import SelectOption
+from discord.ui import Button, Label, Modal, Select
 
+from bot import Interaction
 from bot.ui import blurple
+from constants import DIRECTOR_EMOJI, MODERATOR_EMOJI
 
 from ._base import InfoSupportSection
-
-if TYPE_CHECKING:
-    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Ticket Support Information
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+class TicketModal(Modal, title = "Open Ticket"):
+    def __init__(self) -> None:
+        super().__init__(timeout = None)
+        self.add_item(
+            Label(
+                text        = "Team",
+                description = "Select which staff team to contact.",
+                component   = Select(
+                    placeholder = "Which team would you like to contact?",
+                    options     = [
+                        SelectOption(
+                            label       = "Contact Directors",
+                            value       = "director",
+                            emoji       = DIRECTOR_EMOJI,
+                            description = "Contact directors for partnerships or moderation concerns about staff legitimacy.",
+                        ),
+                        SelectOption(
+                            label       = "Contact Moderators",
+                            value       = "moderator",
+                            emoji       = MODERATOR_EMOJI,
+                            description = "Contact moderators for questions or moderation concerns about everyday users.",
+                        ),
+                    ],
+                ),
+            ),
+        )
+
+    @override
+    async def on_submit(self, interaction : Interaction) -> None:
+        ...
+
 class TicketButton(Button["TicketComponents"]):
     def __init__(self) -> None:
-        super().__init__(label = "Open Ticket", style = blurple)
+        super().__init__(label = "Open Ticket", style = blurple, custom_id = "persistent:ticket_button")
 
     @override
     async def callback(self, interaction : "Interaction") -> None:

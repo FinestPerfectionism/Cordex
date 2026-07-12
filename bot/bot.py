@@ -17,6 +17,7 @@ from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
     PARTNERSHIPS_CHANNEL_ID,
     RULES_CHANNEL_ID,
+    TICKETS_CHANNEL_ID,
 )
 from core.cog_loader import discover_cogs
 from core.state.partnerships import load_partnership_data
@@ -26,6 +27,7 @@ from guild_info.partnership_requirements import (
     RequirementComponents2,
 )
 from guild_info.partnerships import build_partnership_views
+from guild_info.tickets import TicketComponents
 
 from .ui import Inter, ViewButton
 
@@ -123,6 +125,13 @@ class Cordex(commands.Bot):
 
         data = await load_partnership_data(self.db)
         views, files = build_partnership_views(data["partnerships"])
+
+        await ensure_views(
+            bot        = self,
+            channel_id = TICKETS_CHANNEL_ID,
+            views      = [TicketComponents()],
+        )
+        self.add_view(TicketComponents())
 
         await ensure_views(
             bot        = self,

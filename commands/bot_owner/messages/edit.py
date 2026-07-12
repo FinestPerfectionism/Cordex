@@ -33,7 +33,7 @@ async def run_bo_messages_edit(
                 return
 
             if target_message.author != interaction.client.user:
-                await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I cant edit it."})
+                await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I can't (and shouldn't) edit it."})
                 return
 
             await target_message.edit(content = text)

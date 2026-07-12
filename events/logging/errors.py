@@ -24,18 +24,16 @@ from constants import (
     COLOR_RED,
 )
 from core.exceptions import (
-    send_bad_environment_dms,
-    send_bad_environment_guild,
-    send_bad_environment_mainguild,
-    send_bad_environment_mainguildordms,
-    send_bad_permissions_command,
-)
-from core.permissions import (
     BadEnvironmentDMs,
     BadEnvironmentGuild,
     BadEnvironmentMainGuild,
     BadEnvironmentMainGuildOrDMs,
     BadPermissionsCommand,
+    send_bad_environment_dms,
+    send_bad_environment_guild,
+    send_bad_environment_mainguild,
+    send_bad_environment_mainguildordms,
+    send_bad_permissions_command,
 )
 from core.utilities import codeblock
 
@@ -64,6 +62,7 @@ class ErrorLogger(commands.Cog):
         traceback_text  : str   | None = None,
     ) -> None:
         channel = self.bot.get_channel(BOT_ERRORS_LOG_CHANNEL_ID)
+
         if not isinstance(channel, TextChannel):
             return
 

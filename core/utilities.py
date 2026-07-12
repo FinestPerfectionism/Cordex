@@ -14,6 +14,16 @@ if TYPE_CHECKING:
 # General Helpers
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+def format_table(table : dict[str, str]) -> str:
+    max_len = max(len(k) for k in table)
+
+    rows = [
+        f"`{str(key).rjust(max_len + 1)}:` {value}"
+        for key, value in table.items()
+    ]
+
+    return "\n".join(rows)
+
 def format_values(
     items    : list[str],
     *,
@@ -70,9 +80,9 @@ def check_role_hierarchy(
     return ops[comparison](actor_role, target_role)
 
 
-def codeblock(text : str, language : str | None = "py") -> str:
+def codeblock(code : str, language : str | None = "py") -> str:
     return (
-       f"```{language or ''}\n"
-       f"{text}\n"
+       f"```{language or ""}\n"
+       f"{code}\n"
         "```"
     )

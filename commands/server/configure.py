@@ -1,8 +1,6 @@
 from typing import Self
 
 from discord import ChannelType
-from discord.app_commands import command
-from discord.ext import commands
 from discord.ui import (
     ActionRow,
     Button,
@@ -17,7 +15,6 @@ from discord.ui import (
 from bot import Cordex, Interaction
 from bot.ui import VisibleLargeSeparator, blurple, red
 from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
-from core.permissions import director_cmd
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Configuration Commands
@@ -191,22 +188,8 @@ class ConfigurationView(LayoutView):
             ),
         )
 
-class ConfigurationCommands(commands.Cog):
-    def __init__(self, bot : Cordex) -> None:
-        super().__init__()
-        self.bot : Cordex = bot
-
-    @command(
-        name        = "configure",
-        description = "Configure guild settings.",
+async def run_server_configure(interaction : Interaction, bot : Cordex) -> None:
+    await interaction.response.send_message(
+        view      = ConfigurationView(bot = bot),
+        ephemeral = True,
     )
-    @director_cmd()
-    async def cmd_configure(self, interaction : Interaction) -> None:
-        await interaction.response.send_message(
-            view      = ConfigurationView(bot = self.bot),
-            ephemeral = True,
-        )
-
-async def setup(bot : Cordex) -> None:
-    cog = ConfigurationCommands(bot)
-    await bot.add_cog(cog)

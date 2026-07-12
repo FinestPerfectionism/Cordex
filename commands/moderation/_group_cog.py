@@ -1,5 +1,4 @@
-from discord.app_commands import Group, guild_only
-from discord.app_commands import command as app_command
+from discord.app_commands import Group, command, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -10,34 +9,38 @@ from core.permissions import (
     staff_cmd,
 )
 
-from .ban import (
+from .primary.ban import (
     run_mod_primary_ban_add,
     run_mod_primary_ban_remove,
     run_mod_primary_ban_view,
 )
-from .kick import run_mod_primary_kick
-from .lockdown import run_mod_primary_lockdown_add, run_mod_primary_lockdown_remove
-from .purge import run_mod_primary_purge
-from .quarantine import (
+from .primary.kick import run_mod_primary_kick
+from .primary.lockdown import (
+    run_mod_primary_lockdown_add,
+    run_mod_primary_lockdown_remove,
+)
+from .primary.purge import run_mod_primary_purge
+from .primary.quarantine import (
     run_mod_primary_quarantine_add,
     run_mod_primary_quarantine_remove,
     run_mod_primary_quarantine_view,
 )
-from .timeout import (
+from .primary.timeout import (
     run_mod_primary_timeout_add,
     run_mod_primary_timeout_remove,
     run_mod_primary_timeout_view,
 )
+from .tickets import run_mod_tickets_close, run_mod_tickets_open
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Moderation Primary Group Commands
+# Moderation Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @guild_only
-class ModerationPrimaryCommands(
+class ModerationCommands(
     commands.GroupCog,
     name        = "moderation",
-    description = "Moderators only — Primary moderation commands.",
+    description = "Moderators only — Moderation commands.",
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
@@ -58,6 +61,10 @@ class ModerationPrimaryCommands(
     timeout    : Group = Group(
         name        = "timeout",
         description = "Moderation timeout commands",
+    )
+    tickets    : Group = Group(
+        name        = "tickets",
+        description = "Moderation ticket commands",
     )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -124,7 +131,7 @@ class ModerationPrimaryCommands(
     # /moderation kick Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "kick",
         description = "Kick member(s) from the server.",
     )
@@ -208,7 +215,7 @@ class ModerationPrimaryCommands(
     # /moderation purge Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "purge",
         description = "Purge messages from member(s) or channel(s).",
     )
@@ -216,6 +223,24 @@ class ModerationPrimaryCommands(
     async def cmd_purge(self, interaction : Interaction) -> None:
         await run_mod_primary_purge(interaction)
 
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation tickets open Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @tickets.command(name = "open")
+    @moderator_cmd()
+    async def cmd_open(self, interaction : Interaction) -> None:
+        await run_mod_tickets_open(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation tickets close Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @tickets.command(name = "close")
+    @moderator_cmd()
+    async def cmd_close(self, interaction : Interaction) -> None:
+        await run_mod_tickets_close(interaction)
+
 async def setup(bot : Cordex) -> None:
-    cog = ModerationPrimaryCommands(bot)
+    cog = ModerationCommands(bot)
     await bot.add_cog(cog)

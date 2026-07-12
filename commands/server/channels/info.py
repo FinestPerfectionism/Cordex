@@ -7,11 +7,11 @@ from discord.ui import Container, LayoutView, TextDisplay
 from bot import Interaction
 from constants import COLOR_GREY
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /channel info Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# /server channel info Logic
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
+async def run_server_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
     await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...

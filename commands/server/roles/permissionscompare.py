@@ -1,22 +1,27 @@
 from typing import cast
 
-from discord import Embed, Role
+from discord import AllowedMentions, Embed, Role
 
 from bot import Interaction
 from constants import COLOR_BLURPLE
+from core.exceptions import send_bad_argument
 
-from . import format_permission
+from ._base import format_permission
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /role permissions-compare Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# /server role permissions-compare Logic
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_role_permissionscompare(
+async def run_server_role_permissionscompare(
     interaction : Interaction,
     role1       : Role,
     role2       : Role,
 ) -> None:
-    await interaction.response.defer(ephemeral = False)
+    await interaction.response.defer(ephemeral = True)
+
+    if role1.id == role2.id:
+        await send_bad_argument(interaction, subtitle = {("role-1", "role-2") : "You cannot compare a role with itself."})
+        return
 
     diffs_role1 : list[str] = []
     diffs_role2 : list[str] = []
@@ -28,7 +33,7 @@ async def run_role_permissionscompare(
             diffs_role2.append(format_permission(perm_name, value = value2))
 
     embed = Embed(
-        title = f"Permission Differences for {role1.name} and {role2.name}",
+        title = f"Permission Differences for {role1.mention} and {role2.mention}",
         color = COLOR_BLURPLE,
     )
 
@@ -36,14 +41,14 @@ async def run_role_permissionscompare(
         embed.description = "Roles have identical permissions."
     else:
         embed.add_field(
-            name   = role1.name,
+            name   = role1.mention,
             value  = "\n".join(diffs_role1),
             inline = True,
         )
         embed.add_field(
-            name   = role2.name,
+            name   = role2.mention,
             value  = "\n".join(diffs_role2),
             inline = True,
         )
 
-    await interaction.followup.send(embed = embed)
+    await interaction.followup.send(embed = embed, allowed_mentions = AllowedMentions.none())

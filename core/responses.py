@@ -9,14 +9,16 @@ from constants import (
     ACCEPTED_EMOJI,
     CONTESTED_EMOJI,
     DENIED_EMOJI,
+    LOCKED_FORUM_EMOJI,
     STANDSTILL_EMOJI,
+    UNLOCKED_FORUM_EMOJI,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Response Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-MessageType = Literal["success", "warning", "error", "information"]
+MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
 SendTarget = ContextOrInteraction | Messageable
 
 def emoji(msg_type : MessageType) -> str:
@@ -29,12 +31,16 @@ def emoji(msg_type : MessageType) -> str:
             return CONTESTED_EMOJI
         case "error":
             return DENIED_EMOJI
+        case "lock":
+            return LOCKED_FORUM_EMOJI
+        case "unlock":
+            return UNLOCKED_FORUM_EMOJI
 
 def type_prefix(msg_type : MessageType) -> str:
     match msg_type:
         case "success":
             return "Successfully"
-        case "information":
+        case "information" | "lock" | "unlock":
             return ""
         case "warning" | "error":
             return "Failed to"
@@ -87,7 +93,7 @@ async def send(
 # Custom Message Builders
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_build(
+def format_message(
     *,
     msg_type : MessageType,
     title    : str,
@@ -118,7 +124,7 @@ async def format_send(
     delete_after : float   | None = None,
     message      : Message | None = None,
 ) -> Message | None:
-    content = format_build(
+    content = format_message(
         msg_type = msg_type,
         title    = title,
         subtitle = subtitle,

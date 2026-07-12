@@ -33,7 +33,10 @@ INVITE_RE = compile(r"^(https?://)?(www\.)?(discord\.gg|discord\.com/invite)/[A-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @guild_only
-class PartnershipCommands(commands.GroupCog):
+class PartnershipCommands(
+    commands.GroupCog,
+    name = "partnerships",
+):
     def __init__(self, bot : Cordex) -> None:
         self.bot : Cordex = bot
 
@@ -154,6 +157,7 @@ class PartnershipCommands(commands.GroupCog):
 
     @command(name = "remove", description = "Remove a server partnership.")
     @describe(server_name = "The name of the server to remove.")
+    @rename(server_name = "server-name")
     @director_cmd()
     async def cmd_partnership_remove(self, interaction : Interaction, server_name : str) -> None:
         await interaction.response.defer(ephemeral = True)
@@ -216,6 +220,14 @@ class PartnershipCommands(commands.GroupCog):
         server_description = "The server's new description.",
         server_owner       = "The server's new owner.",
         server_link        = "The server's new invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+    )
+    @rename(
+        server_name        = "server-name",
+        server_picture     = "server-picture",
+        new_server_name    = "new-server-name",
+        server_description = "server-description",
+        server_owner       = "server-owner",
+        server_link        = "server-link",
     )
     @autocomplete(server_name = server_name_autocomplete)
     @director_cmd()

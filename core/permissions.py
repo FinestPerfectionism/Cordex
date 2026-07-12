@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Literal
 
 from discord import Member
-from discord.app_commands import CheckFailure, check
+from discord.app_commands import check
 
 from bot import Interaction
 from constants import (
@@ -16,29 +16,21 @@ from constants import (
     STAFF_ROLE_ID,
 )
 
+from .exceptions import (
+    BadEnvironmentDMs,
+    BadEnvironmentGuild,
+    BadEnvironmentMainGuild,
+    BadEnvironmentMainGuildOrDMs,
+    BadPermissionsCommand,
+)
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permissions Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class BadPermissionsCommand(CheckFailure):
-    pass
-
-class BadEnvironmentGuild(CheckFailure):
-    pass
-
-class BadEnvironmentMainGuild(CheckFailure):
-    pass
-
-class BadEnvironmentMainGuildOrDMs(CheckFailure):
-    pass
-
-class BadEnvironmentDMs(CheckFailure):
-    pass
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # @access_control
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
 
 ContextType = Literal[
     "DMs",

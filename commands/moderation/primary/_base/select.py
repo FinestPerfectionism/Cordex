@@ -135,16 +135,28 @@ class ReasonModal(Modal):
             default     = str(existing.get("t", "")),
             required    = True,
         )
-        self.appealable_box : Checkbox[Modal]   = Checkbox(default = bool(existing.get("a", False)))
-        self.dm_box         : Checkbox[Modal]   = Checkbox(default = bool(existing.get("d", False)))
-        self.file_upload    : FileUpload[Modal] = FileUpload(required = False, max_values = 1)
+        self.appealable_checkbox : Checkbox[Modal]   = Checkbox(default = bool(existing.get("a", False)))
+        self.dm_checkbox         : Checkbox[Modal]   = Checkbox(default = bool(existing.get("d", False)))
+        self.proof_fileupload    : FileUpload[Modal] = FileUpload(required = False, max_values = 1)
 
         for item in [
             self.reason_input,
             self.timer_input,
-            Label(text = "Appealable", component = self.appealable_box),
-            Label(text = "DM User",    component = self.dm_box),
-            Label(text = "Upload",     component = self.file_upload),
+            Label(
+                text        = "Appealable",
+                description = "Whether the moderation action is appealable. *DM must be set to true for the action to be appealable!",
+                component   = self.appealable_checkbox,
+            ),
+            Label(
+                text        = "DM",
+                description = "Whether to DM the user.",
+                component   = self.dm_checkbox,
+            ),
+            Label(
+                text        = "Proof",
+                description = "Upload a file as proof.",
+                component   = self.proof_fileupload,
+            ),
         ]:
             self.add_item(item)
 
@@ -153,7 +165,7 @@ class ReasonModal(Modal):
 
         # ⸻ You cannot make an action appealable without DMing the user
 
-        if self.appealable_box.value and not self.dm_box.value:
+        if self.appealable_checkbox.value and not self.dm_checkbox.value:
             await format_send(
                 interaction,
                 msg_type = "warning",
@@ -178,14 +190,14 @@ class ReasonModal(Modal):
             self.editor.state_map.clear()
 
         filename : str | None = next(
-            (f.filename for f in self.file_upload.values),
+            (f.filename for f in self.proof_fileupload.values),
             None,
         )
         self.editor.state_map[user_id] = {
             "r" : self.reason_input.value,
             "t" : self.timer_input.value,
-            "a" : self.appealable_box.value,
-            "d" : self.dm_box.value,
+            "a" : self.appealable_checkbox.value,
+            "d" : self.dm_checkbox.value,
             "f" : filename,
         }
         await self.editor.refresh(interaction)
@@ -331,7 +343,7 @@ class MemberSelectView(View):
                     await send_bad_argument(
                         interaction,
                         subtitle = {None : "Please... spare me... 😭"},
-                        footer   = "Use the native discord /kick or /ban command to remove me from the guild...",
+                        footer   = "Use the native discord `/kick` or `/ban` command to remove me from the guild...",
                     )
                     return
 

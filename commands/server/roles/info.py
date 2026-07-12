@@ -6,13 +6,13 @@ from discord.utils import format_dt
 
 from bot import Interaction
 from constants import COLOR_GREY
-from core.utilities import codeblock
+from core.utilities import codeblock, format_table
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /role info Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# /server role info Logic
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_role_info(interaction : Interaction, role : Role) -> None:
+async def run_server_role_info(interaction : Interaction, role : Role) -> None:
     await interaction.response.defer(ephemeral = True)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
@@ -49,22 +49,34 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
 
     # ⸻ Build the view
 
+    format_table(
+        {
+            "Appearance"        : color,
+            "Hoisted"           : "Yes" if role.hoist else "No",
+            "Mentionable"       : "Yes" if role.mentionable else "No",
+            "Number of Members" : f"{len(role.members)}",
+            "Created at"        : created_ago,
+        },
+    )
+
     class InfoView(LayoutView):
         container : Container[Self] = Container[Self](
             TextDisplay(f"### {role.mention} | {role.id}"),
             TextDisplay(
-                (
-                    f"`       Appearance:` {color}\n"
-                    f"`          Hoisted:` {"Yes" if role.hoist else "No"}\n"
-                    f"`      Mentionable:` {"Yes" if role.mentionable else "No"}\n"
-                    f"`Number of members:` {len(role.members)}\n"
-                    f"`       Created at:` {created_ago}\n"
+                format_table(
+                    {
+                        "Appearance"        : color,
+                        "Hoisted"           : "Yes" if role.hoist else "No",
+                        "Mentionable"       : "Yes" if role.mentionable else "No",
+                        "Number of Members" : f"{len(role.members)}",
+                        "Created at"        : created_ago,
+                    },
                 ),
             ),
             TextDisplay(
                 (
                     f"**Relative Hierarchy**\n"
-                    f"{codeblock(hierarchy_lines, language = "")}"
+                    f"{codeblock(hierarchy_lines, language = None)}"
                     f"{diff_string}"
                 ),
             ),

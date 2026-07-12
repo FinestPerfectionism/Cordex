@@ -4,8 +4,8 @@ from discord.utils import format_dt
 
 from bot import Interaction
 from bot.ui import ThumbnailSection
-from constants import BOT_STRING, COLOR_GREY
-from core.utilities import codeblock, format_values
+from constants import BOT_EMOJI, COLOR_GREY
+from core.utilities import codeblock, format_table, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /user info Logic
@@ -64,14 +64,16 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
 
     class InfoView(LayoutView):
         container : Container[LayoutView] = Container(accent_color = target.color if target.color.value else COLOR_GREY)
-        container.add_item(TextDisplay(f"### {target.mention} | {target.id}{f" | {BOT_STRING}" if target.bot else ""}"))
+        container.add_item(TextDisplay(f"### {target.mention} | {target.id}{f" | {BOT_EMOJI}" if target.bot else ""}"))
 
-        user_info : str = (
-            f"`       Name:` {target.global_name}\n"
-            f"`   Nickname:` {target.nick or 'None'}\n"
-            f"`   Username:` {target.name}\n"
-            f"`  Joined at:` {format_dt(target.joined_at, style = 'F') if target.joined_at else 'Unknown'}\n"
-            f"` Created at:` {format_dt(target.created_at, style = 'F')}\n"
+        user_info : str = format_table(
+            {
+                "Name"       : target.global_name or target.name,
+                "Nickname"   : target.nick or "None",
+                "Username"   : target.name,
+                "Joined at"  : format_dt(target.joined_at, style = "F") if target.joined_at else "Unknown",
+                "Created at" : format_dt(target.created_at, style = "F"),
+            },
         )
 
         if target.avatar:

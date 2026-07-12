@@ -69,7 +69,7 @@ class MessageSendHandler(commands.Cog):
 
         if isinstance(message.channel, Thread):
             thread = message.channel
-            if thread.parent_id == DIRECTOR_TASKS_CHANNEL_ID:
+            if message.id == thread.id and thread.parent_id == DIRECTOR_TASKS_CHANNEL_ID:
                 await thread.send(content = f"<@&{DIRECTORS_ROLE_ID}>")
 
 async def setup(bot : Cordex) -> None:
