@@ -15,8 +15,8 @@ from bot import Cordex, Interaction
 from core.permissions import administrator_cmd, director_cmd
 
 from .channels import (
-    run_server_channel_info,
     run_server_channel_duplicate,
+    run_server_channel_info,
     run_server_channel_sync,
 )
 from .configure import run_server_configure
@@ -203,7 +203,7 @@ class ServerCommands(
         channel     : GuildChannel | None = None,
     ) -> None:
         await run_server_channel_sync(interaction, channel)
-    
+
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /server channel duplicate Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

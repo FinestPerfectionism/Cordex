@@ -1,13 +1,15 @@
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from discord import SelectOption
 from discord.ui import Button, Label, Modal, Select
 
-from bot.bot import Interaction
 from bot.ui import blurple
 from constants import DIRECTOR_EMOJI, MODERATOR_EMOJI
 
 from ._base import InfoSupportSection
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Ticket Support Information
@@ -41,7 +43,7 @@ class TicketModal(Modal, title = "Open Ticket"):
         )
 
     @override
-    async def on_submit(self, interaction : Interaction) -> None:
+    async def on_submit(self, interaction : "Interaction") -> None:
         ...
 
 class TicketButton(Button["TicketComponents"]):
