@@ -1,6 +1,6 @@
 from discord.utils import utcnow
 
-from constants import TICKET_CHANNEL_ID
+from constants import TICKETS_CHANNEL_ID
 
 from ._base import InfoHeaderSection, InfoPrimarySection, TOSButton
 
@@ -32,7 +32,7 @@ class RequirementComponents2(InfoPrimarySection):
             "## §2 Request Procedure\n"
             "### §2.1 Ticket Requirement\n"
             "All partnership requests must be initiated through the official tickets system.\n\n"
-           f"- Go to <#{TICKET_CHANNEL_ID}>.\n"
+           f"- Go to <#{TICKETS_CHANNEL_ID}>.\n"
             "- Open a ticket directed to the **Directors**. Moderators recieving partnership requests should escalate the ticket to directors using `.escalate`.\n"
             "- Please provide your:\n"
             "  - Server name\n"
