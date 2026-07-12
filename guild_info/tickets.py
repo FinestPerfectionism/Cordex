@@ -3,7 +3,7 @@ from typing import override
 from discord import SelectOption
 from discord.ui import Button, Label, Modal, Select
 
-from bot import Interaction
+from bot.bot import Interaction
 from bot.ui import blurple
 from constants import DIRECTOR_EMOJI, MODERATOR_EMOJI
 
