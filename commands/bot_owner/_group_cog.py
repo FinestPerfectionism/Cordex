@@ -1,9 +1,11 @@
 from typing import TYPE_CHECKING
 
 from discord import TextChannel
-from discord.app_commands import autocomplete, describe, rename
-from discord.app_commands import command as app_command
+from discord.app_commands import autocomplete, command, describe, rename
 from discord.ext import commands
+from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
+    command as prefix_command,
+)
 
 from bot import Context, Cordex, Interaction, log
 from core.permissions import bot_owner_cmd
@@ -45,7 +47,7 @@ class BotOwnerCommands(
     # /bot-owner pull-reload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "pull-reload",
         description = "Pull from main, then reload all cogs.",
     )
@@ -57,7 +59,7 @@ class BotOwnerCommands(
     # /bot-owner reload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "reload",
         description = "Reload a cog or all cogs.",
     )
@@ -71,7 +73,7 @@ class BotOwnerCommands(
     # /bot-owner load Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "load",
         description = "Load a cog.",
     )
@@ -85,7 +87,7 @@ class BotOwnerCommands(
     # /bot-owner unload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "unload",
         description = "Unload a cog.",
     )
@@ -99,7 +101,7 @@ class BotOwnerCommands(
     # /bot-owner shutdown Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "shutdown",
         description = "Shutdown the bot.",
     )
@@ -111,7 +113,7 @@ class BotOwnerCommands(
     # /bot-owner restart Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "restart",
         description = "Restart the bot.",
     )
@@ -123,7 +125,7 @@ class BotOwnerCommands(
     # /bot-owner sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "sync",
         description = "Sync the bot tree.",
     )
@@ -135,7 +137,7 @@ class BotOwnerCommands(
     # .eval Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.command(name = "eval")
+    @prefix_command(name = "eval")
     async def cmd_botowner_eval(self, ctx : Context, *, body : str) -> None:
         await run_bo_eval(self.bot, ctx, body)
 
@@ -143,7 +145,7 @@ class BotOwnerCommands(
     # /bot-owner send Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "send",
         description = "Make the bot send something.",
     )
@@ -176,7 +178,7 @@ class BotOwnerCommands(
     # /bot-owner edit Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "edit",
         description = "Make the bot edit one of its own messages.",
     )
@@ -208,7 +210,7 @@ class BotOwnerCommands(
     # /bot-owner delete Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @app_command(
+    @command(
         name        = "delete",
         description = "Make the bot delete one of its own messages.",
     )

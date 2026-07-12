@@ -1,5 +1,7 @@
 from re import compile
+
 from discord import TextChannel
+
 from bot import Interaction, bot
 from constants import PARTNERSHIPS_CHANNEL_ID
 from core.responses import format_send

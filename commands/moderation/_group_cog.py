@@ -227,7 +227,10 @@ class ModerationCommands(
     # /moderation tickets open Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @tickets.command(name = "open")
+    @tickets.command(
+        name        = "open",
+        description = "Open a ticket thread.",
+    )
     @moderator_cmd()
     async def cmd_moderation_tickets_open(self, interaction : Interaction) -> None:
         await run_mod_tickets_open(interaction)
@@ -236,7 +239,10 @@ class ModerationCommands(
     # /moderation tickets close Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @tickets.command(name = "close")
+    @tickets.command(
+        name        = "close",
+        description = "Close a ticket thread.",
+    )
     @moderator_cmd()
     async def cmd_moderation_tickets_close(self, interaction : Interaction) -> None:
         await run_mod_tickets_close(interaction)

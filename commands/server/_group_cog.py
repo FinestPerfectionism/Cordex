@@ -1,4 +1,4 @@
-from discord import Role, Attachment, User
+from discord import Attachment, Role, User
 from discord.abc import GuildChannel
 from discord.app_commands import (
     Choice,
@@ -21,12 +21,12 @@ from .channels import (
     run_server_channel_info,
     run_server_channel_sync,
 )
+from .configure import run_server_configure
 from .partnerships import (
     run_server_partnership_add,
-    run_server_partnership_update,
     run_server_partnership_remove,
+    run_server_partnership_update,
 )
-from .configure import run_server_configure
 from .roles import (
     run_server_role_info,
     run_server_role_members,
@@ -246,7 +246,7 @@ class ServerCommands(
     # /server partnership add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(name = "add", description = "Add a server partnership.")
+    @partnership.command(name = "add", description = "Add a server partnership.")
     @describe(
         server_picture     = "The server's picture.",
         server_name        = "The server's name.",
@@ -338,13 +338,13 @@ class ServerCommands(
         self,
         interaction : Interaction,
         server_name : str,
-    ):
+    ) -> None:
         await run_server_partnership_remove(
             self.bot,
             interaction,
             server_name,
         )
-        
+
 
 async def setup(bot : Cordex) -> None:
     cog = ServerCommands(bot)
