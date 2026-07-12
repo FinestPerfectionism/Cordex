@@ -50,7 +50,7 @@ class BotOwnerCommands(
         description = "Pull from main, then reload all cogs.",
     )
     @bot_owner_cmd()
-    async def cmd_pullreload(self, interaction : Interaction) -> None:
+    async def cmd_botowner_pullreload(self, interaction : Interaction) -> None:
         await run_bo_cogs_pullreload(self.bot, interaction, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -64,7 +64,7 @@ class BotOwnerCommands(
     @describe(cog = "The cog to reload. Leave empty to reload all cogs.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_reload(self, interaction : Interaction, cog : str | None) -> None:
+    async def cmd_botowner_reload(self, interaction : Interaction, cog : str | None) -> None:
         await run_bo_cogs_reload(self.bot, interaction, cog, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -78,7 +78,7 @@ class BotOwnerCommands(
     @describe(cog = "The cog to load.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_load(self, interaction : Interaction, cog : str) -> None:
+    async def cmd_botowner_load(self, interaction : Interaction, cog : str) -> None:
         await run_bo_cogs_load(self.bot, interaction, cog, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -92,11 +92,11 @@ class BotOwnerCommands(
     @describe(cog = "The cog to unload.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_unload(self, interaction : Interaction, cog : str) -> None:
+    async def cmd_botowner_unload(self, interaction : Interaction, cog : str) -> None:
         await run_bo_cogs_unload(self.bot, interaction, cog, get_cogs())
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /shutdown Command
+    # /bot-owner shutdown Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @app_command(
@@ -104,11 +104,11 @@ class BotOwnerCommands(
         description = "Shutdown the bot.",
     )
     @bot_owner_cmd()
-    async def cmd_shutdown(self, interaction : Interaction) -> None:
+    async def cmd_botowner_shutdown(self, interaction : Interaction) -> None:
         await run_bo_state_shutdown(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /restart Command
+    # /bot-owner restart Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @app_command(
@@ -116,11 +116,11 @@ class BotOwnerCommands(
         description = "Restart the bot.",
     )
     @bot_owner_cmd()
-    async def cmd_restart(self, interaction : Interaction) -> None:
+    async def cmd_botowner_restart(self, interaction : Interaction) -> None:
         await run_bo_state_restart(self.bot, interaction, self.restarting, self.logger)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /sync Command
+    # /bot-owner sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @app_command(
@@ -128,7 +128,7 @@ class BotOwnerCommands(
         description = "Sync the bot tree.",
     )
     @bot_owner_cmd()
-    async def cmd_sync(self, interaction : Interaction) -> None:
+    async def cmd_botowner_sync(self, interaction : Interaction) -> None:
         await run_bo_state_sync(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -136,7 +136,7 @@ class BotOwnerCommands(
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.command(name = "eval")
-    async def cmd_eval(self, ctx : Context, *, body : str) -> None:
+    async def cmd_botowner_eval(self, ctx : Context, *, body : str) -> None:
         await run_bo_eval(self.bot, ctx, body)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -155,7 +155,7 @@ class BotOwnerCommands(
     )
     @rename(reply_id = "reply-id")
     @bot_owner_cmd()
-    async def cmd_messages_send(
+    async def cmd_botowner_send(
         self,
         interaction : Interaction,
         message     : str,
@@ -190,7 +190,7 @@ class BotOwnerCommands(
         channel    = "target-channel",
     )
     @bot_owner_cmd()
-    async def cmd_messages_edit(
+    async def cmd_botowner_edit(
         self,
         interaction : Interaction,
         message_id  : str,
@@ -221,7 +221,7 @@ class BotOwnerCommands(
         channel    = "target-channel",
     )
     @bot_owner_cmd()
-    async def cmd_messages_delete(
+    async def cmd_botowner_delete(
         self,
         interaction : Interaction,
         message_id  : str,

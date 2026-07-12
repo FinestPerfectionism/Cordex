@@ -1,5 +1,5 @@
 from .partnerships import (
-    IMAGE_DIR,
+    IMAGE_DIRECTORY,
     PartnershipData,
     PartnershipEntry,
     load_partnership_data,
@@ -7,7 +7,7 @@ from .partnerships import (
 )
 
 __all__ = [
-    "IMAGE_DIR",
+    "IMAGE_DIRECTORY",
     "PartnershipData",
     "PartnershipEntry",
     "load_partnership_data",

@@ -1,8 +1,9 @@
-from discord import Role
+from discord import Role, Attachment, User
 from discord.abc import GuildChannel
 from discord.app_commands import (
     Choice,
     Group,
+    autocomplete,
     choices,
     command,
     describe,
@@ -13,11 +14,17 @@ from discord.ext import commands
 
 from bot import Cordex, Interaction
 from core.permissions import administrator_cmd, director_cmd
+from core.state import load_partnership_data
 
 from .channels import (
     run_server_channel_duplicate,
     run_server_channel_info,
     run_server_channel_sync,
+)
+from .partnerships import (
+    run_server_partnership_add,
+    run_server_partnership_update,
+    run_server_partnership_remove,
 )
 from .configure import run_server_configure
 from .roles import (
@@ -41,14 +48,28 @@ class ServerCommands(
         super().__init__()
         self.bot : Cordex = bot
 
-    role    : Group = Group(
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Server Name Autocomplete
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def server_name_autocomplete(self, _interaction : Interaction, current : str) -> list[Choice[str]]:
+        data = await load_partnership_data(self.bot.db)
+        return [
+            Choice(name = p["server_name"], value = p["server_name"])
+            for p in data["partnerships"] if current.lower() in p["server_name"].lower()
+        ][:25]
+
+    role        : Group = Group(
         name        = "role",
         description = "Server role commands",
     )
-
-    channel : Group = Group(
+    channel     : Group = Group(
         name        = "channel",
         description = "Server channel commands",
+    )
+    partnership : Group = Group(
+        name        = "partnership",
+        description = "Server partnership commands",
     )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -61,7 +82,7 @@ class ServerCommands(
     )
     @describe(role = "The role to view information for.")
     @administrator_cmd()
-    async def cmd_role_info(
+    async def cmd_server_role_info(
         self,
         interaction   : Interaction,
         role          : Role,
@@ -96,7 +117,7 @@ class ServerCommands(
         ],
     )
     @administrator_cmd()
-    async def cmd_role_members(
+    async def cmd_server_role_members(
         self,
         interaction   : Interaction,
         role          : Role,
@@ -125,7 +146,7 @@ class ServerCommands(
         ],
     )
     @administrator_cmd()
-    async def cmd_role_permissions(
+    async def cmd_server_role_permissions(
         self,
         interaction : Interaction,
         role        : Role,
@@ -150,7 +171,7 @@ class ServerCommands(
         role2 = "The second role to compare.",
     )
     @administrator_cmd()
-    async def cmd_role_permissionscompare(
+    async def cmd_server_role_permissionscompare(
         self,
         interaction : Interaction,
         role1       : Role,
@@ -167,7 +188,7 @@ class ServerCommands(
         description = "Configure guild settings.",
     )
     @director_cmd()
-    async def cmd_configure(self, interaction : Interaction) -> None:
+    async def cmd_server_configure(self, interaction : Interaction) -> None:
         await run_server_configure(interaction, self.bot)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -180,7 +201,7 @@ class ServerCommands(
     )
     @describe(channel = "The channel to view information for. Defaults to the current one.")
     @administrator_cmd()
-    async def cmd_channel_info(
+    async def cmd_server_channel_info(
         self,
         interaction : Interaction,
         channel     : GuildChannel | None = None,
@@ -197,7 +218,7 @@ class ServerCommands(
     )
     @describe(channel = "The channel to sync permissions for. Defaults to the current one.")
     @administrator_cmd()
-    async def cmd_channel_sync(
+    async def cmd_server_channel_sync(
         self,
         interaction : Interaction,
         channel     : GuildChannel | None = None,
@@ -214,12 +235,116 @@ class ServerCommands(
     )
     @describe(channel = "The channel to duplicate. Defaults to the current one.")
     @administrator_cmd()
-    async def cmd_channel_duplicate(
+    async def cmd_server_channel_duplicate(
         self,
         interaction : Interaction,
         channel     : GuildChannel | None = None,
     ) -> None:
         await run_server_channel_duplicate(interaction, channel)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /server partnership add
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @command(name = "add", description = "Add a server partnership.")
+    @describe(
+        server_picture     = "The server's picture.",
+        server_name        = "The server's name.",
+        server_description = "The server's description.",
+        server_owner       = "The server's owner.",
+        server_link        = "The server's invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+    )
+    @director_cmd()
+    @rename(
+        server_picture     = "server-picture",
+        server_name        = "server-name",
+        server_description = "server-description",
+        server_owner       = "server-owner",
+        server_link        = "server-link",
+    )
+    async def cmd_server_partnerships_add(
+        self,
+        interaction        : Interaction,
+        server_picture     : Attachment,
+        server_name        : str,
+        server_description : str,
+        server_owner       : User,
+        server_link        : str,
+    ) -> None:
+        await run_server_partnership_add(
+            self.bot,
+            interaction,
+            server_name,
+            server_picture,
+            server_description,
+            server_owner,
+            server_link,
+        )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /server partnership update
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @partnership.command(name = "update", description = "Update an existing server partnership.")
+    @describe(
+        server_name        = "The name of the server to update.",
+        server_picture     = "The server's new picture.",
+        new_server_name    = "The server's new name.",
+        server_description = "The server's new description.",
+        server_owner       = "The server's new owner.",
+        server_link        = "The server's new invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+    )
+    @rename(
+        server_name        = "server-name",
+        server_picture     = "server-picture",
+        new_server_name    = "new-server-name",
+        server_description = "server-description",
+        server_owner       = "server-owner",
+        server_link        = "server-link",
+    )
+    @autocomplete(server_name = server_name_autocomplete)
+    @director_cmd()
+    async def cmd_server_partnerships_update(
+        self,
+        interaction        : Interaction,
+        server_name        : str,
+        server_picture     : Attachment | None = None,
+        new_server_name    : str        | None = None,
+        server_description : str        | None = None,
+        server_owner       : User       | None = None,
+        server_link        : str        | None = None,
+    ) -> None:
+        await run_server_partnership_update(
+            self.bot,
+            interaction,
+            server_name,
+            server_picture,
+            new_server_name,
+            server_description,
+            server_owner,
+            server_link,
+        )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /server partnership remove
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @partnership.command(name = "remove", description = "Remove a server partnership.")
+    @describe(server_name = "The name of the server to remove.")
+    @rename(server_name = "server-name")
+    @autocomplete(server_name = server_name_autocomplete)
+    @director_cmd()
+    async def cmd_server_partnerships_remove(
+        self,
+        interaction : Interaction,
+        server_name : str,
+    ):
+        await run_server_partnership_remove(
+            self.bot,
+            interaction,
+            server_name,
+        )
+        
 
 async def setup(bot : Cordex) -> None:
     cog = ServerCommands(bot)

@@ -6,7 +6,7 @@ from aiosqlite import Connection, Error
 
 log = get_logger("Cordex")
 
-IMAGE_DIR : Path = Path("data/partnership_images")
+IMAGE_DIRECTORY : Path = Path("data/partnership_images")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership State Management
@@ -31,7 +31,7 @@ def default() -> PartnershipData:
 
 async def load_partnership_data(db : Connection) -> PartnershipData:
     try:
-        async with db.execute("SELECT server_name, server_description, server_owner_id, server_link, image_filename FROM partnerships") as cursor:
+        async with db.execute("SELECT server_name, server_description, server_owner_id, server_link, image_filename FROM partnerships WHERE id != 0") as cursor:
             partnership_rows = await cursor.fetchall()
 
         partnerships : list[PartnershipEntry] = [
@@ -62,7 +62,7 @@ async def load_partnership_data(db : Connection) -> PartnershipData:
 
 async def save_partnership_data(db : Connection, data : PartnershipData) -> None:
     try:
-        await db.execute("DELETE FROM partnerships")
+        await db.execute("DELETE FROM partnerships WHERE id != 0")
         await db.executemany(
             "INSERT INTO partnerships (server_name, server_description, server_owner_id, server_link, image_filename) VALUES (?, ?, ?, ?, ?)",
             [
