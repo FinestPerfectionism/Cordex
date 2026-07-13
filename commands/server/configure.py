@@ -17,7 +17,7 @@ from bot.ui import VisibleLargeSeparator, blurple, red
 from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Configuration Commands
+# /server configure Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):

@@ -1,10 +1,10 @@
-from discord import MediaGalleryItem, Member, utils
+from discord import MediaGalleryItem, Member
 from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
-from discord.utils import format_dt
+from discord.utils import format_dt, utcnow
 
 from bot import Interaction
 from bot.ui import ThumbnailSection
-from constants import BOT_EMOJI, COLOR_GREY
+from constants import BOOSTER_EMOJI, BOT_EMOJI, COLOR_GREY, EMPLOYEE_EMOJI, OWNER_EMOJI, PARTNER_EMOJI
 from core.utilities import codeblock, format_table, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -31,15 +31,29 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
 
     all_members : list[Member] = sorted(
         guild.members,
-        key = lambda m : m.joined_at or utils.utcnow(),
+        key = lambda m : m.joined_at or utcnow(),
     )
 
-    join_list  : str = ""
-    roles_list : str = format_values(
+    join_list       : str = ""
+    roles_list      : str = format_values(
         [role.name for role in target.roles if not role.is_default()],
         wrap     = "`",
         use_conj = False,
     )
+    characteristics : list[str] = []
+
+    # ⸻ Is the user special in anyway?
+
+    if target.public_flags.staff:
+        characteristics.append(f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**.")
+    if target.public_flags.partner:
+        characteristics.append(f"- {PARTNER_EMOJI} This user is a **Discord Partner**.")
+    if guild.owner_id == target.id:
+        characteristics.append(f"- {OWNER_EMOJI} This user is the **Server Owner**.")
+    if target.premium_since is not None:
+        characteristics.append(f"- {BOOSTER_EMOJI} This user is a **Server Booster**.")
+
+    characteristics_list : str = "\n".join(characteristics)
 
     if target in all_members:
         target_index : int = all_members.index(target)
@@ -64,7 +78,7 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
 
     class InfoView(LayoutView):
         container : Container[LayoutView] = Container(accent_color = target.color if target.color.value else COLOR_GREY)
-        container.add_item(TextDisplay(f"### {target.mention} | {target.id}{f" | {BOT_EMOJI}" if target.bot else ""}"))
+        container.add_item(TextDisplay(f"### {target.mention} {f"| {BOT_EMOJI} " if target.bot else ""}| {target.id}"))
 
         user_info : str = format_table(
             {
@@ -77,12 +91,7 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
         )
 
         if target.avatar:
-            container.add_item(
-                ThumbnailSection(
-                    user_info,
-                    thumbnail = Thumbnail(target.avatar.url),
-                ),
-            )
+            container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
         else:
             container.add_item(TextDisplay(user_info))
 
@@ -91,6 +100,14 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
                 (
                     "**Roles**\n"
                    f"{roles_list or "None"}"
+                ),
+            ),
+        )
+        container.add_item(
+            TextDisplay(
+                (
+                    "**Characteristics**\n"
+                   f"{characteristics_list or "None"}"
                 ),
             ),
         )

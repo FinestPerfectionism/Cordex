@@ -33,6 +33,7 @@ from .roles import (
     run_server_role_permissions,
     run_server_role_permissionscompare,
 )
+from .info import run_server_info
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Server Group Commands
@@ -71,6 +72,29 @@ class ServerCommands(
         name        = "partnership",
         description = "Server partnership commands",
     )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /server configure Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @command(
+        name        = "configure",
+        description = "Configure guild settings.",
+    )
+    @director_cmd()
+    async def cmd_server_configure(self, interaction : Interaction) -> None:
+        await run_server_configure(interaction, self.bot)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /server info Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @command(
+        name        = "info",
+        description = "View information for this guild.",
+    )
+    async def cmd_server_info(self, interaction : Interaction) -> None:
+        await run_server_info(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /server role info Command
@@ -178,18 +202,6 @@ class ServerCommands(
         role2       : Role,
     ) -> None:
         await run_server_role_permissionscompare(interaction, role1, role2)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /server configure Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @command(
-        name        = "configure",
-        description = "Configure guild settings.",
-    )
-    @director_cmd()
-    async def cmd_server_configure(self, interaction : Interaction) -> None:
-        await run_server_configure(interaction, self.bot)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /server channel info Command
@@ -344,7 +356,6 @@ class ServerCommands(
             interaction,
             server_name,
         )
-
 
 async def setup(bot : Cordex) -> None:
     cog = ServerCommands(bot)

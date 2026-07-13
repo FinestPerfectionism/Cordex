@@ -27,7 +27,7 @@ async def send_unknown_error(target : ContextOrInteraction) -> None:
 async def send_bad_operation(
     target   : ContextOrInteraction,
     *,
-    title    : str,
+    title    : str = "run command",
     subtitle : str = "An exception occurred during this interaction",
 ) -> None:
     await format_send(
