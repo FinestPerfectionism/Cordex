@@ -106,17 +106,15 @@ async def run_server_channel_info(
     # ⸻ Build the view
 
     if thread_target:
-        emoji_display   = f"| {channel_type_emoji} ➔ {THREAD_EMOJI} " if channel_type_emoji else f"| {THREAD_EMOJI} "
-        mention_display = f"{target.mention} ➔ {thread_target.mention}"
-        id_display      = thread_target.id
+        emoji_display = f"| {channel_type_emoji} ➔ {THREAD_EMOJI} " if channel_type_emoji else f"| {THREAD_EMOJI} "
+        header_text   = f"### {thread_target.mention} {emoji_display}| {thread_target.id}"
     else:
-        emoji_display   = f"| {channel_type_emoji} " if channel_type_emoji else ""
-        mention_display = target.mention
-        id_display      = target.id
+        emoji_display = f"| {channel_type_emoji} " if channel_type_emoji else ""
+        header_text   = f"### {target.mention} {emoji_display}| {target.id}"
 
     class InfoView(LayoutView):
         container : Container[Self] = Container[Self](
-            TextDisplay(f"### {mention_display} {emoji_display}| {id_display}"),
+            TextDisplay(header_text),
             TextDisplay(
                 format_table(
                     {

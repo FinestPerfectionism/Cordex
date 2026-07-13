@@ -1,6 +1,6 @@
 from typing import Self
 
-from discord import MediaGalleryItem, Member
+from discord import AllowedMentions, MediaGalleryItem, Member
 from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
 from discord.utils import escape_markdown, format_dt, utcnow
 
@@ -92,60 +92,60 @@ async def run_user_info(
     # ⸻ Build the view
 
     class InfoView(LayoutView):
-        def __init__(self) -> None:
-            super().__init__(timeout = None)
-            container : Container[Self] = Container(
-                TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
-                accent_color = target.color if target.color.value else COLOR_GREY,
-            )
+        container : Container[Self] = Container(
+            TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
+            accent_color = target.color if target.color.value else COLOR_GREY,
+        )
 
-            user_info : str = format_table(
-                {
-                    "Name"       : escape_markdown(target.global_name or target.name),
-                    "Nickname"   : escape_markdown(target.nick or "None"),
-                    "Username"   : escape_markdown(target.name),
-                    "Joined at"  : format_dt(target.joined_at, style = "F") if target.joined_at else "Unknown",
-                    "Created at" : format_dt(target.created_at, style = "F"),
-                },
-            )
+        user_info : str = format_table(
+            {
+                "Name"       : escape_markdown(target.global_name or target.name),
+                "Nickname"   : escape_markdown(target.nick or "None"),
+                "Username"   : escape_markdown(target.name),
+                "Joined at"  : format_dt(target.joined_at, style = "F") if target.joined_at else "Unknown",
+                "Created at" : format_dt(target.created_at, style = "F"),
+            },
+        )
 
-            if target.avatar:
-                container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
-            else:
-                container.add_item(TextDisplay(user_info))
+        if target.avatar:
+            container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
+        else:
+            container.add_item(TextDisplay(user_info))
 
-            if roles_list:
-                container.add_item(
-                    TextDisplay(
-                        (
-                            "**Roles**\n"
-                           f"{roles_list}"
-                        ),
-                    ),
-                )
-
-            if characteristics_list:
-                container.add_item(
-                    TextDisplay(
-                        (
-                            "**Characteristics**\n"
-                           f"{characteristics_list}"
-                        ),
-                    ),
-                )
-
+        if roles_list:
             container.add_item(
                 TextDisplay(
                     (
-                        "**Join Order**\n"
-                       f"{join_list}"
+                        "**Roles**\n"
+                       f"{roles_list}"
                     ),
                 ),
             )
 
-            if member.banner:
-                container.add_item(MediaGallery(MediaGalleryItem(member.banner.url)))
+        if characteristics_list:
+            container.add_item(
+                TextDisplay(
+                    (
+                        "**Characteristics**\n"
+                       f"{characteristics_list}"
+                    ),
+                ),
+            )
 
-            self.add_item(container)
+        container.add_item(
+            TextDisplay(
+                (
+                    "**Join Order**\n"
+                   f"{join_list}"
+                ),
+            ),
+        )
 
-    await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)
+        if member.banner:
+            container.add_item(MediaGallery(MediaGalleryItem(member.banner.url)))
+
+    await interaction.followup.send(
+        view             = InfoView(),
+        ephemeral        = ephemeral,
+        allowed_mentions = AllowedMentions.none(),
+    )

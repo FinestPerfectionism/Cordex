@@ -42,12 +42,12 @@ async def run_server_role_permissionscompare(
     else:
         embed.add_field(
             name   = role1.mention,
-            value  = "\n".join(diffs_role1),
+            value  = "No permissions." if role1.permissions.value == 0 else "\n".join(diffs_role1),
             inline = True,
         )
         embed.add_field(
             name   = role2.mention,
-            value  = "\n".join(diffs_role2),
+            value  = "No permissions." if role2.permissions.value == 0 else "\n".join(diffs_role2),
             inline = True,
         )
 

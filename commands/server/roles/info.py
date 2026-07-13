@@ -1,6 +1,6 @@
 from typing import Self
 
-from discord import Member, Role
+from discord import AllowedMentions, Member, Role
 from discord.ui import Container, LayoutView, TextDisplay
 from discord.utils import format_dt
 
@@ -78,4 +78,8 @@ async def run_server_role_info(
             accent_color = role.color if role.color.value else COLOR_GREY,
         )
 
-    await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)
+    await interaction.followup.send(
+        view             = InfoView(),
+        ephemeral        = ephemeral,
+        allowed_mentions = AllowedMentions.none(),
+    )

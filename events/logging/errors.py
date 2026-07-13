@@ -11,8 +11,16 @@ from traceback import format_exception
 from typing import override
 
 from aiohttp import ClientError
-from discord import Embed, Forbidden, Guild, HTTPException, NotFound, TextChannel
-from discord.abc import User
+from discord import (
+    Embed,
+    Forbidden,
+    Guild,
+    HTTPException,
+    Member,
+    NotFound,
+    TextChannel,
+    User,
+)
 from discord.app_commands import AppCommandError
 from discord.ext import commands
 from discord.utils import utcnow
@@ -33,6 +41,7 @@ from core.exceptions import (
     send_bad_environment_guild,
     send_bad_environment_mainguild,
     send_bad_environment_mainguildordms,
+    send_bad_operation,
     send_bad_permissions_command,
 )
 from core.utilities import codeblock
@@ -45,7 +54,7 @@ class ErrorLogger(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         self.bot   : Cordex            = bot
         self.tasks : set[Task[object]] = set()
-        tree.error(self.app_command_error_handler)
+        tree.error(self.command_error_handler)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Central Error Sender
@@ -55,11 +64,11 @@ class ErrorLogger(commands.Cog):
         self,
         *,
         title           : str,
-        user            : User  | None = None,
-        guild           : Guild | None = None,
-        command_display : str   | None = None,
-        error_text      : str   | None = None,
-        traceback_text  : str   | None = None,
+        user            : User | Member | None = None,
+        guild           : Guild         | None = None,
+        command_display : str           | None = None,
+        error_text      : str           | None = None,
+        traceback_text  : str           | None = None,
     ) -> None:
         channel = self.bot.get_channel(BOT_ERRORS_LOG_CHANNEL_ID)
 
@@ -132,12 +141,15 @@ class ErrorLogger(commands.Cog):
         *_args    : str,
         **_kwargs : int,
     ) -> None:
-        if event in {"on_command_error", "on_interaction"}:
+        if event == "on_interaction":
             return
 
         exc_type, exc, tb = exc_info()
 
         if isinstance(exc, commands.CommandNotFound):
+            return
+
+        if isinstance(exc, commands.MissingRequiredArgument):
             return
 
         if exc is None:
@@ -147,19 +159,19 @@ class ErrorLogger(commands.Cog):
             )
             return
 
-        tb_text = "".join(format_exception(exc_type, exc, tb))
+        traceback_text = "".join(format_exception(exc_type, exc, tb))
 
         await self.send_error(
             title          =  "Bot Event Error",
             error_text     = f"{event}: {exc}",
-            traceback_text = tb_text,
+            traceback_text = traceback_text,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Application Command Errors
+    # Command Errors
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def app_command_error_handler(
+    async def command_error_handler(
         self,
         interaction : Interaction,
         error       : AppCommandError,
@@ -184,15 +196,17 @@ class ErrorLogger(commands.Cog):
             await send_bad_environment_mainguildordms(interaction)
             return
 
-        tb_text = "".join(format_exception(type(error), error, error.__traceback__))
+        await send_bad_operation(interaction)
+
+        traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self.send_error(
-            title           =  "Application Command Error",
+            title           =  "Command Error",
             user            = interaction.user,
             guild           = interaction.guild,
             command_display = f"/{interaction.command.qualified_name}" if interaction.command else "Unknown",
             error_text      = str(error),
-            traceback_text  = tb_text,
+            traceback_text  = traceback_text,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -205,12 +219,12 @@ class ErrorLogger(commands.Cog):
         extension : str,
         error     : commands.ExtensionError,
     ) -> None:
-        tb_text = "".join(format_exception(type(error), error, error.__traceback__))
+        traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self.send_error(
             title          =  "Extension Error",
             error_text     = f"{extension}: {error}",
-            traceback_text = tb_text,
+            traceback_text = traceback_text,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -226,12 +240,12 @@ class ErrorLogger(commands.Cog):
             HTTPException,
             ClientError,
         ) as exc:
-            tb_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
+            traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
             await self.send_error(
                 title          = "HTTP / REST Error",
                 error_text     = str(exc),
-                traceback_text = tb_text,
+                traceback_text = traceback_text,
             )
             raise
 
@@ -262,13 +276,13 @@ class ErrorLogger(commands.Cog):
         if exc is None:
             return
 
-        tb_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
+        traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
         self.create_task(
             self.send_error(
                 title          = "Background Task Error",
                 error_text     = str(exc),
-                traceback_text = tb_text,
+                traceback_text = traceback_text,
             ),
             name = "task_error_reporter",
         )
@@ -290,15 +304,15 @@ class ErrorLogger(commands.Cog):
         msg_str = str(msg) if msg is not None else "No message"
 
         if isinstance(exc, BaseException):
-            tb_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
+            traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
         else:
-            tb_text = msg_str
+            traceback_text = msg_str
 
         loop.create_task(
             self.send_error(
                 title          = "Asyncio Event Loop Error",
                 error_text     = msg_str,
-                traceback_text = tb_text,
+                traceback_text = traceback_text,
             ),
         )
 

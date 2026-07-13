@@ -1,6 +1,6 @@
 from typing import Self
 
-from discord import MediaGalleryItem, VerificationLevel
+from discord import AllowedMentions, MediaGalleryItem, VerificationLevel
 from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
 from discord.utils import format_dt
 
@@ -113,4 +113,8 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
         if guild.banner:
             container.add_item(MediaGallery(MediaGalleryItem(guild.banner.url)))
 
-    await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)
+    await interaction.followup.send(
+        view             = InfoView(),
+        ephemeral        = ephemeral,
+        allowed_mentions = AllowedMentions.none(),
+    )

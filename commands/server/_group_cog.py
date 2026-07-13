@@ -105,7 +105,6 @@ class ServerCommands(
         description = "View information for a role.",
     )
     @describe(role = "The role to view information for.")
-    @administrator_cmd()
     async def cmd_server_role_info(
         self,
         interaction   : Interaction,
@@ -212,7 +211,6 @@ class ServerCommands(
         description = "View information for a channel.",
     )
     @describe(channel = "The channel to view information for. Defaults to the current one.")
-    @administrator_cmd()
     async def cmd_server_channel_info(
         self,
         interaction : Interaction,
