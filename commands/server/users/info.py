@@ -1,3 +1,4 @@
+from typing import Self
 from discord import MediaGalleryItem, Member
 from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
 from discord.utils import format_dt, utcnow
@@ -85,54 +86,60 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
     # ⸻ Build the view
 
     class InfoView(LayoutView):
-        container : Container[LayoutView] = Container(accent_color = target.color if target.color.value else COLOR_GREY)
-        container.add_item(TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"))
+        def __init__(self) -> None:
+            super().__init__(timeout = None)
+            container : Container[Self] = Container(
+                TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
+                accent_color = target.color if target.color.value else COLOR_GREY,
+            )
 
-        user_info : str = format_table(
-            {
-                "Name"       : target.global_name or target.name,
-                "Nickname"   : target.nick or "None",
-                "Username"   : target.name,
-                "Joined at"  : format_dt(target.joined_at, style = "F") if target.joined_at else "Unknown",
-                "Created at" : format_dt(target.created_at, style = "F"),
-            },
-        )
-
-        if target.avatar:
-            container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
-        else:
-            container.add_item(TextDisplay(user_info))
-
-        if roles_list:
+            user_info : str = format_table(
+                {
+                    "Name"       : target.global_name or target.name,
+                    "Nickname"   : target.nick or "None",
+                    "Username"   : target.name,
+                    "Joined at"  : format_dt(target.joined_at, style = "F") if target.joined_at else "Unknown",
+                    "Created at" : format_dt(target.created_at, style = "F"),
+                },
+            )
+    
+            if target.avatar:
+                container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
+            else:
+                container.add_item(TextDisplay(user_info))
+    
+            if roles_list:
+                container.add_item(
+                    TextDisplay(
+                        (
+                            "**Roles**\n"
+                           f"{roles_list}"
+                        ),
+                    ),
+                )
+    
+            if characteristics_list:
+                container.add_item(
+                    TextDisplay(
+                        (
+                            "**Characteristics**\n"
+                           f"{characteristics_list}"
+                        ),
+                    ),
+                )
+    
             container.add_item(
                 TextDisplay(
                     (
-                        "**Roles**\n"
-                       f"{roles_list}"
+                        "**Join Order**\n"
+                       f"{join_list}"
                     ),
                 ),
             )
+    
+            if member.banner:
+                container.add_item(MediaGallery(MediaGalleryItem(member.banner.url)))
 
-        if characteristics_list:
-            container.add_item(
-                TextDisplay(
-                    (
-                        "**Characteristics**\n"
-                       f"{characteristics_list}"
-                    ),
-                ),
-            )
-
-        container.add_item(
-            TextDisplay(
-                (
-                    "**Join Order**\n"
-                   f"{join_list}"
-                ),
-            ),
-        )
-
-        if member.banner:
-            container.add_item(MediaGallery(MediaGalleryItem(member.banner.url)))
+            self.add_item(container)
 
     await interaction.followup.send(view = InfoView(), ephemeral = True)
