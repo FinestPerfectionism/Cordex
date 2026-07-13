@@ -23,12 +23,6 @@ from bot.ui import (
 )
 from constants import (
     ACCEPTED_EMOJI,
-    ADMINISTRATOR_EMOJI,
-    BIG_BOT_EMOJI,
-    BOOSTED_GLOBAL_SERVER_EMOJI,
-    BOOSTED_SERVER_EMOJI,
-    BOOSTER_EMOJI,
-    BOT_EMOJI,
     BOT_OWNER_ID,
     COLOR_BLACK,
     COLOR_BLUE,
@@ -41,19 +35,7 @@ from constants import (
     COLOR_YELLOW,
     CONTESTED_EMOJI,
     DENIED_EMOJI,
-    DIRECTOR_EMOJI,
-    EMPLOYEE_EMOJI,
-    GLOBAL_SERVER_EMOJI,
-    LOCKED_FORUM_EMOJI,
-    MODERATOR_AND_ADMINISTRATOR_EMOJI,
-    MODERATOR_EMOJI,
-    OWNER_EMOJI,
-    PARTNER_EMOJI,
-    PARTNERED_SERVER_EMOJI,
-    SERVER_EMOJI,
     STANDSTILL_EMOJI,
-    UNLOCKED_FORUM_EMOJI,
-    VERIFIED_SERVER_EMOJI,
 )
 from core.exceptions import send_bad_permissions_command
 from core.responses import format_message, format_send
@@ -79,28 +61,10 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "Context"     : Context,
         "Interaction" : Interaction,
 
-        "EMPLOYEE_EMOJI"                    : EMPLOYEE_EMOJI,
-        "BIG_BOT_EMOJI"                     : BIG_BOT_EMOJI,
-        "BOT_EMOJI"                         : BOT_EMOJI,
-        "PARTNER_EMOJI"                     : PARTNER_EMOJI,
-        "OWNER_EMOJI"                       : OWNER_EMOJI,
-        "MODERATOR_EMOJI"                   : MODERATOR_EMOJI,
-        "ADMINISTRATOR_EMOJI"               : ADMINISTRATOR_EMOJI,
-        "MODERATOR_AND_ADMINISTRATOR_EMOJI" : MODERATOR_AND_ADMINISTRATOR_EMOJI,
-        "DIRECTOR_EMOJI"                    : DIRECTOR_EMOJI,
-        "BOOSTER_EMOJI"                     : BOOSTER_EMOJI,
-        "PARTNERED_SERVER_EMOJI"            : PARTNERED_SERVER_EMOJI,
-        "VERIFIED_SERVER_EMOJI"             : VERIFIED_SERVER_EMOJI,
-        "BOOSTED_GLOBAL_SERVER_EMOJI"       : BOOSTED_GLOBAL_SERVER_EMOJI,
-        "BOOSTED_SERVER_EMOJI"              : BOOSTED_SERVER_EMOJI,
-        "GLOBAL_SERVER_EMOJI"               : GLOBAL_SERVER_EMOJI,
-        "SERVER_EMOJI"                      : SERVER_EMOJI,
-        "UNLOCKED_FORUM_EMOJI"              : UNLOCKED_FORUM_EMOJI,
-        "LOCKED_FORUM_EMOJI"                : LOCKED_FORUM_EMOJI,
-        "ACCEPTED_EMOJI"                    : ACCEPTED_EMOJI,
-        "CONTESTED_EMOJI"                   : CONTESTED_EMOJI,
-        "DENIED_EMOJI"                      : DENIED_EMOJI,
-        "STANDSTILL_EMOJI"                  : STANDSTILL_EMOJI,
+        "ACCEPTED_EMOJI"   : ACCEPTED_EMOJI,
+        "CONTESTED_EMOJI"  : CONTESTED_EMOJI,
+        "DENIED_EMOJI"     : DENIED_EMOJI,
+        "STANDSTILL_EMOJI" : STANDSTILL_EMOJI,
 
         "COLOR_BLURPLE" : COLOR_BLURPLE,
         "COLOR_BLUE"    : COLOR_BLUE,
@@ -204,7 +168,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
     except Exception as e:
         await message.add_reaction(DENIED_EMOJI)
         res = await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
-        eval_message_ids[ctx.message.id] = res.id
+        eval_message_ids[message.id] = res.id
         return
 
     func = cast(Callable[[], Awaitable[object]], env["func"])
@@ -217,7 +181,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         await message.add_reaction(CONTESTED_EMOJI)
         res   = await ctx.send(codeblock(f"{value}{format_exc()}"))
 
-        eval_message_ids[ctx.message.id] = res.id
+        eval_message_ids[message.id] = res.id
     else:
         value = stdout.getvalue()
         await message.add_reaction(ACCEPTED_EMOJI)
@@ -225,7 +189,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         if ret is None:
             if value:
                 res = await ctx.send(codeblock(value))
-                eval_message_ids[ctx.message.id] = res.id
+                eval_message_ids[message.id] = res.id
         else:
             res = await ctx.send(codeblock(f"{value}{ret}"))
-            eval_message_ids[ctx.message.id] = res.id
+            eval_message_ids[message.id] = res.id

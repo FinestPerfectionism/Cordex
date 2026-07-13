@@ -1,7 +1,7 @@
 from typing import Self
 
-from discord import VerificationLevel
-from discord.ui import Container, LayoutView, TextDisplay, Thumbnail
+from discord import MediaGalleryItem, VerificationLevel
+from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
 from discord.utils import format_dt
 
 from bot import Interaction
@@ -22,8 +22,8 @@ from core.utilities import format_table
 # /server info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_info(interaction : Interaction) -> None:
-    await interaction.response.defer(ephemeral = True)
+async def run_server_info(interaction : Interaction, *, ephemeral : bool = True) -> None:
+    await interaction.response.defer(ephemeral = ephemeral)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -110,5 +110,7 @@ async def run_server_info(interaction : Interaction) -> None:
             container.add_item(ThumbnailSection(guild_info, thumbnail = Thumbnail(guild.icon.url)))
         else:
             container.add_item(TextDisplay(guild_info))
+        if guild.banner:
+            container.add_item(MediaGallery(MediaGalleryItem(guild.banner.url)))
 
-    await interaction.followup.send(view = InfoView(), ephemeral = True)
+    await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)

@@ -1,7 +1,8 @@
 from typing import Self
+
 from discord import MediaGalleryItem, Member
 from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
-from discord.utils import format_dt, utcnow
+from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Interaction
 from bot.ui import ThumbnailSection
@@ -19,8 +20,13 @@ from core.utilities import codeblock, format_table, format_values
 # /user info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_user_info(interaction : Interaction, user : Member | None = None) -> None:
-    await interaction.response.defer(ephemeral = True)
+async def run_user_info(
+    interaction : Interaction,
+    user        : Member | None = None,
+    *,
+    ephemeral   : bool          = True,
+) -> None:
+    await interaction.response.defer(ephemeral = ephemeral)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -95,19 +101,19 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
 
             user_info : str = format_table(
                 {
-                    "Name"       : target.global_name or target.name,
-                    "Nickname"   : target.nick or "None",
-                    "Username"   : target.name,
+                    "Name"       : escape_markdown(target.global_name or target.name),
+                    "Nickname"   : escape_markdown(target.nick or "None"),
+                    "Username"   : escape_markdown(target.name),
                     "Joined at"  : format_dt(target.joined_at, style = "F") if target.joined_at else "Unknown",
                     "Created at" : format_dt(target.created_at, style = "F"),
                 },
             )
-    
+
             if target.avatar:
                 container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
             else:
                 container.add_item(TextDisplay(user_info))
-    
+
             if roles_list:
                 container.add_item(
                     TextDisplay(
@@ -117,7 +123,7 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
                         ),
                     ),
                 )
-    
+
             if characteristics_list:
                 container.add_item(
                     TextDisplay(
@@ -127,7 +133,7 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
                         ),
                     ),
                 )
-    
+
             container.add_item(
                 TextDisplay(
                     (
@@ -136,10 +142,10 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
                     ),
                 ),
             )
-    
+
             if member.banner:
                 container.add_item(MediaGallery(MediaGalleryItem(member.banner.url)))
 
             self.add_item(container)
 
-    await interaction.followup.send(view = InfoView(), ephemeral = True)
+    await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)

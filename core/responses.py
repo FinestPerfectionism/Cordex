@@ -9,17 +9,17 @@ from constants import (
     ACCEPTED_EMOJI,
     CONTESTED_EMOJI,
     DENIED_EMOJI,
+    FORUM_EMOJI,
     LOCKED_FORUM_EMOJI,
     STANDSTILL_EMOJI,
-    UNLOCKED_FORUM_EMOJI,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Response Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
-SendTarget = ContextOrInteraction | Messageable
+type MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
+type SendTarget = ContextOrInteraction | Messageable
 
 def emoji(msg_type : MessageType) -> str:
     match msg_type:
@@ -34,7 +34,7 @@ def emoji(msg_type : MessageType) -> str:
         case "lock":
             return LOCKED_FORUM_EMOJI
         case "unlock":
-            return UNLOCKED_FORUM_EMOJI
+            return FORUM_EMOJI
 
 def type_prefix(msg_type : MessageType) -> str:
     match msg_type:
@@ -57,7 +57,7 @@ def build_header(msg_type : MessageType, title : str, *, override : bool = False
         return f"{emoji(msg_type)} **{prefix} {clean_title}**"
     return f"{emoji(msg_type)} **{clean_title}**"
 
-def build_footer_text(footer : str | None) -> str | None:
+def build_footer(footer : str | None) -> str | None:
     if footer is None:
         return None
     return f"{footer.rstrip('. ')}."
@@ -105,7 +105,7 @@ def format_message(
     if subtitle:
         lines.append(subtitle)
 
-    footer_text = build_footer_text(footer)
+    footer_text = build_footer(footer)
     if footer_text:
         lines.append(f"-# {footer_text}")
 

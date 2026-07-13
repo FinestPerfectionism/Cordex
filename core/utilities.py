@@ -14,11 +14,11 @@ if TYPE_CHECKING:
 # General Helpers
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_table(table : dict[str, str]) -> str:
-    max_len = max(len(k) for k in table)
+def format_table(table : dict[str, str], *, padding : int = 1) -> str:
+    biggest_key = max(len(key) for key in table)
 
     rows = [
-        f"`{str(key).rjust(max_len + 1)}:` {value}"
+        f"`{str(key).rjust(biggest_key + padding)}:` {value}"
         for key, value in table.items()
     ]
 
@@ -32,11 +32,7 @@ def format_values(
     conj     : str  = "and",
     wrap     : str  = "",
 ) -> str:
-    if wrap:
-        items = [f"{wrap}{item}{wrap}" for item in items]
-
-    if not items:
-        return ""
+    items = [f"{wrap}{item}{wrap}" for item in items]
 
     if not use_conj:
         return divider.join(items)

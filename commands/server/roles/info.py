@@ -12,8 +12,13 @@ from core.utilities import codeblock, format_table
 # /server role info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_role_info(interaction : Interaction, role : Role) -> None:
-    await interaction.response.defer(ephemeral = True)
+async def run_server_role_info(
+    interaction : Interaction,
+    role        : Role,
+    *,
+    ephemeral   : bool = True,
+) -> None:
+    await interaction.response.defer(ephemeral = ephemeral)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -49,16 +54,6 @@ async def run_server_role_info(interaction : Interaction, role : Role) -> None:
 
     # ⸻ Build the view
 
-    format_table(
-        {
-            "Appearance"        : color,
-            "Hoisted"           : "Yes" if role.hoist else "No",
-            "Mentionable"       : "Yes" if role.mentionable else "No",
-            "Number of Members" : f"{len(role.members)}",
-            "Created at"        : created_ago,
-        },
-    )
-
     class InfoView(LayoutView):
         container : Container[Self] = Container[Self](
             TextDisplay(f"### {role.mention} | {role.id}"),
@@ -83,4 +78,4 @@ async def run_server_role_info(interaction : Interaction, role : Role) -> None:
             accent_color = role.color if role.color.value else COLOR_GREY,
         )
 
-    await interaction.followup.send(view = InfoView(), ephemeral = True)
+    await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)
