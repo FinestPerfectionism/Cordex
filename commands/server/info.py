@@ -1,7 +1,9 @@
 from typing import Self
+
 from discord import VerificationLevel
-from discord.ui import LayoutView, Thumbnail, Container, TextDisplay
+from discord.ui import Container, LayoutView, TextDisplay, Thumbnail
 from discord.utils import format_dt
+
 from bot import Interaction
 from bot.ui import ThumbnailSection
 from constants import (
@@ -9,7 +11,7 @@ from constants import (
     BOOSTED_SERVER_EMOJI,
     COLOR_GREY,
     GLOBAL_SERVER_EMOJI,
-    PARTNERED_SERVER_EMOJI, 
+    PARTNERED_SERVER_EMOJI,
     SERVER_EMOJI,
     VERIFIED_SERVER_EMOJI,
 )
@@ -27,7 +29,7 @@ async def run_server_info(interaction : Interaction) -> None:
 
     if interaction.guild is None:
         return
-    
+
     guild = interaction.guild
     if not (owner := guild.owner):
         if guild.owner_id is not None:
@@ -100,8 +102,8 @@ async def run_server_info(interaction : Interaction) -> None:
                 "Members"       : f"{humans} humans, {bots} bots | {member_total} total",
                 "Channels"      : f"{text} text, {voice} voice, {categories} categories, {stage} stage, {forum} forum | {channel_total} total",
                 "Server Boosts" : f"Level {boost_level} | {boost_count} boosts total",
-                "Created at"    : format_dt(guild.created_at, style = "F")
-            }
+                "Created at"    : format_dt(guild.created_at, style = "F"),
+            },
         )
 
         if guild.icon:

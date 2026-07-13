@@ -24,6 +24,7 @@ from bot.ui import (
 from constants import (
     ACCEPTED_EMOJI,
     ADMINISTRATOR_EMOJI,
+    BIG_BOT_EMOJI,
     BOOSTED_GLOBAL_SERVER_EMOJI,
     BOOSTED_SERVER_EMOJI,
     BOOSTER_EMOJI,
@@ -79,6 +80,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "Interaction" : Interaction,
 
         "EMPLOYEE_EMOJI"                    : EMPLOYEE_EMOJI,
+        "BIG_BOT_EMOJI"                     : BIG_BOT_EMOJI,
         "BOT_EMOJI"                         : BOT_EMOJI,
         "PARTNER_EMOJI"                     : PARTNER_EMOJI,
         "OWNER_EMOJI"                       : OWNER_EMOJI,

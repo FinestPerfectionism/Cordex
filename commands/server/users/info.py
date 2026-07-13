@@ -4,7 +4,14 @@ from discord.utils import format_dt, utcnow
 
 from bot import Interaction
 from bot.ui import ThumbnailSection
-from constants import BOOSTER_EMOJI, BOT_EMOJI, COLOR_GREY, EMPLOYEE_EMOJI, OWNER_EMOJI, PARTNER_EMOJI
+from constants import (
+    BIG_BOT_EMOJI,
+    BOOSTER_EMOJI,
+    COLOR_GREY,
+    EMPLOYEE_EMOJI,
+    OWNER_EMOJI,
+    PARTNER_EMOJI,
+)
 from core.utilities import codeblock, format_table, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -44,6 +51,8 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
 
     # ⸻ Is the user special in anyway?
 
+    if interaction.client.user and target.id == interaction.client.user.id:
+        characteristics.append("- <a:pet_cordex:1526024713078571141> This user is a **good boy**.")
     if target.public_flags.staff:
         characteristics.append(f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**.")
     if target.public_flags.partner:
@@ -57,9 +66,8 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
 
     if target in all_members:
         target_index : int = all_members.index(target)
-
-        start_index : int = max(0, target_index - 3)
-        end_index   : int = min(len(all_members), target_index + 4)
+        start_index  : int = max(0, target_index - 3)
+        end_index    : int = min(len(all_members), target_index + 4)
 
         joined_lines : list[str] = []
 
@@ -78,7 +86,7 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
 
     class InfoView(LayoutView):
         container : Container[LayoutView] = Container(accent_color = target.color if target.color.value else COLOR_GREY)
-        container.add_item(TextDisplay(f"### {target.mention} {f"| {BOT_EMOJI} " if target.bot else ""}| {target.id}"))
+        container.add_item(TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"))
 
         user_info : str = format_table(
             {
@@ -95,22 +103,26 @@ async def run_user_info(interaction : Interaction, user : Member | None = None) 
         else:
             container.add_item(TextDisplay(user_info))
 
-        container.add_item(
-            TextDisplay(
-                (
-                    "**Roles**\n"
-                   f"{roles_list or "None"}"
+        if roles_list:
+            container.add_item(
+                TextDisplay(
+                    (
+                        "**Roles**\n"
+                       f"{roles_list}"
+                    ),
                 ),
-            ),
-        )
-        container.add_item(
-            TextDisplay(
-                (
-                    "**Characteristics**\n"
-                   f"{characteristics_list or "None"}"
+            )
+
+        if characteristics_list:
+            container.add_item(
+                TextDisplay(
+                    (
+                        "**Characteristics**\n"
+                       f"{characteristics_list}"
+                    ),
                 ),
-            ),
-        )
+            )
+
         container.add_item(
             TextDisplay(
                 (

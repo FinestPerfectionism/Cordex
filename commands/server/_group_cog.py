@@ -22,6 +22,7 @@ from .channels import (
     run_server_channel_sync,
 )
 from .configure import run_server_configure
+from .info import run_server_info
 from .partnerships import (
     run_server_partnership_add,
     run_server_partnership_remove,
@@ -33,7 +34,6 @@ from .roles import (
     run_server_role_permissions,
     run_server_role_permissionscompare,
 )
-from .info import run_server_info
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Server Group Commands
