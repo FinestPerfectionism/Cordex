@@ -1,10 +1,7 @@
 from logging import getLogger as get_logger
 from typing import TYPE_CHECKING
 
-from discord import File
-from discord.channel import TextChannel
-from discord.errors import HTTPException
-from discord.threads import Thread
+from discord import File, HTTPException, TextChannel, Thread
 from discord.ui import LayoutView, Thumbnail
 from discord.utils import utcnow
 

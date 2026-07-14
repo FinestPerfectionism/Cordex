@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord.utils import utcnow
 
 from bot import Cordex
-from constants import COLOR_RED, MESSAGE_DELETE_LOG_CHANNEL_ID
+from constants import COLOR_RED, MAIN_GUILD_ID, MESSAGE_DELETE_LOG_CHANNEL_ID
 
 from . import (
     channel_display,
@@ -37,9 +37,9 @@ class MessageDeleteHandler(commands.Cog):
         if author.bot:
             return
 
-        # ⸻ Block non-guild messages
+        # ⸻ Block non-guild messages or messages not in the main guild
 
-        if message.guild is None:
+        if message.guild is None or message.guild.id != MAIN_GUILD_ID:
             return
 
         if is_directorship_channel(message.channel):

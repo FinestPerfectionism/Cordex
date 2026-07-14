@@ -63,7 +63,7 @@ class AutomoderationSystem(commands.Cog):
             user_heat.append(current_time)
 
             if len(user_heat) >= TRIGGER_PHOTOS:
-                await author.ban(reason = "Auto-Moderation: Image Spam")
+                await author.ban(reason = "Cordex Auto-Moderation: image spam")
                 del self.heat[author.id]
 
 async def setup(bot : Cordex) -> None:

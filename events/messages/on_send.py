@@ -44,9 +44,9 @@ class MessageSendHandler(commands.Cog):
         if author.bot:
             return
 
-        # ⸻ Block non-guild messages
+        # ⸻ Block non-guild messages or messages not in the main guild
 
-        if message.guild is None:
+        if message.guild is None or message.guild.id != MAIN_GUILD_ID:
             return
 
         # ⸻ Block non-wapple text in wapple channel

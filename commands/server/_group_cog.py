@@ -1,4 +1,4 @@
-from discord import Attachment, Role, User
+from discord import Attachment, Member, Role, User
 from discord.abc import GuildChannel
 from discord.app_commands import (
     Choice,
@@ -23,6 +23,7 @@ from .channels import (
 )
 from .configure import run_server_configure
 from .info import run_server_info
+from .members import run_server_member_info
 from .partnerships import (
     run_server_partnership_add,
     run_server_partnership_remove,
@@ -60,18 +61,34 @@ class ServerCommands(
             for p in data["partnerships"] if current.lower() in p["server_name"].lower()
         ][:25]
 
-    role        : Group = Group(
-        name        = "role",
-        description = "Server role commands",
-    )
     channel     : Group = Group(
         name        = "channel",
         description = "Server channel commands",
+    )
+    member      : Group =  Group(
+        name        = "member",
+        description = "Server member commands",
     )
     partnership : Group = Group(
         name        = "partnership",
         description = "Server partnership commands",
     )
+    role        : Group = Group(
+        name        = "role",
+        description = "Server role commands",
+    )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /server member info Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @member.command(
+        name        = "info",
+        description = "View information for a user.",
+    )
+    @describe(user = "The user to view information for. Defaults to yourself.")
+    async def cmd_user_info(self, interaction : Interaction, user : Member | None = None) -> None:
+        await run_server_member_info(interaction, user)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /server configure Command
@@ -139,7 +156,6 @@ class ServerCommands(
             Choice(name = "Bots",   value = "bots"),
         ],
     )
-    @administrator_cmd()
     async def cmd_server_role_members(
         self,
         interaction   : Interaction,

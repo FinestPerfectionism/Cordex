@@ -17,10 +17,10 @@ from constants import (
 from core.utilities import codeblock, format_table, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /user info Logic
+# /server member info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_user_info(
+async def run_server_member_info(
     interaction : Interaction,
     user        : Member | None = None,
     *,
@@ -48,8 +48,8 @@ async def run_user_info(
         key = lambda m : m.joined_at or utcnow(),
     )
 
-    join_list       : str = ""
-    roles_list      : str = format_values(
+    join_list  = ""
+    roles_list = format_values(
         [role.name for role in target.roles if not role.is_default()],
         wrap     = "`",
         use_conj = False,
@@ -69,7 +69,7 @@ async def run_user_info(
     if target.premium_since is not None:
         characteristics.append(f"- {BOOSTER_EMOJI} This user is a **Server Booster**.")
 
-    characteristics_list : str = "\n".join(characteristics)
+    characteristics_list = "\n".join(characteristics)
 
     if target in all_members:
         target_index : int = all_members.index(target)
@@ -102,8 +102,8 @@ async def run_user_info(
                 "Name"       : escape_markdown(target.global_name or target.name),
                 "Nickname"   : escape_markdown(target.nick or "None"),
                 "Username"   : escape_markdown(target.name),
-                "Joined at"  : format_dt(target.joined_at, style = "F") if target.joined_at else "Unknown",
-                "Created at" : format_dt(target.created_at, style = "F"),
+                "Joined at"  : f"{format_dt(target.joined_at, style = "F")} | {format_dt(target.joined_at, style = "R")}" if target.joined_at else "Unknown",
+                "Created at" : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
             },
         )
 

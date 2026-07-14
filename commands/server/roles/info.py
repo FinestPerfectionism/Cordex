@@ -28,7 +28,6 @@ async def run_server_role_info(
     guild = interaction.guild
 
     roles       = sorted(guild.roles, key = lambda r : r.position)
-    created_ago = format_dt(role.created_at, style = "F") if role.created_at else "Unknown"
 
     hierarchy_lines = ""
     for p in range(role.position + 3, role.position - 4, -1):
@@ -64,7 +63,7 @@ async def run_server_role_info(
                         "Hoisted"           : "Yes" if role.hoist else "No",
                         "Mentionable"       : "Yes" if role.mentionable else "No",
                         "Number of Members" : f"{len(role.members)}",
-                        "Created at"        : created_ago,
+                        "Created at"        : f"{format_dt(role.created_at, style = "F")} | {format_dt(role.created_at, style = "R")}",
                     },
                 ),
             ),

@@ -7,6 +7,7 @@ from bot import Cordex
 from commands.bot_owner.eval import eval_message_ids
 from constants import (
     COLOR_GREY,
+    MAIN_GUILD_ID,
     MESSAGE_EDIT_LOG_CHANNEL_ID,
     WAPPLE_CHAIN_CHANNEL_ID,
 )
@@ -42,9 +43,9 @@ class MessageEditHandler(commands.Cog):
         if author.bot:
             return
 
-        # ⸻ Block non-guild messages
+        # ⸻ Block non-guild messages or messages not in the main guild
 
-        if before.guild is None:
+        if before.guild is None or before.guild.id != MAIN_GUILD_ID:
             return
 
         # ⸻ Block non-wapple text in wapple channel

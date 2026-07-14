@@ -2,8 +2,7 @@ from datetime import datetime
 from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, cast
 
-from discord import File, HTTPException, TextChannel, Thread
-from discord.mentions import AllowedMentions
+from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
 from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
 from discord.utils import format_dt
 

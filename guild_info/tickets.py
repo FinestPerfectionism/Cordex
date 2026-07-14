@@ -1,10 +1,17 @@
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, Self, override
 
-from discord import SelectOption
+from discord import ChannelType, SelectOption, TextChannel
 from discord.ui import Button, Label, Modal, Select
 
 from bot.ui import blurple
-from constants import DIRECTOR_EMOJI, MODERATOR_EMOJI
+from constants import (
+    DIRECTOR_EMOJI,
+    DIRECTORS_ROLE_ID,
+    MODERATOR_EMOJI,
+    MODERATORS_ROLE_ID,
+)
+from core.responses import format_send
+from core.state import save_ticket
 
 from ._base import InfoSupportSection
 
@@ -18,33 +25,70 @@ if TYPE_CHECKING:
 class TicketModal(Modal, title = "Open Ticket"):
     def __init__(self) -> None:
         super().__init__(timeout = None)
+
+        self.select : Select[Self] = Select(
+            placeholder = "Which team would you like to contact?",
+            options     = [
+                SelectOption(
+                    label       = "Contact Directors",
+                    value       = "director",
+                    emoji       = DIRECTOR_EMOJI,
+                    description = "Contact directors for partnerships or moderation concerns about staff legitimacy.",
+                ),
+                SelectOption(
+                    label       = "Contact Moderators",
+                    value       = "moderator",
+                    emoji       = MODERATOR_EMOJI,
+                    description = "Contact moderators for questions or moderation concerns about everyday users.",
+                    default     = True,
+                ),
+            ],
+        )
+
         self.add_item(
             Label(
                 text        = "Team",
                 description = "Select which staff team to contact.",
-                component   = Select(
-                    placeholder = "Which team would you like to contact?",
-                    options     = [
-                        SelectOption(
-                            label       = "Contact Directors",
-                            value       = "director",
-                            emoji       = DIRECTOR_EMOJI,
-                            description = "Contact directors for partnerships or moderation concerns about staff legitimacy.",
-                        ),
-                        SelectOption(
-                            label       = "Contact Moderators",
-                            value       = "moderator",
-                            emoji       = MODERATOR_EMOJI,
-                            description = "Contact moderators for questions or moderation concerns about everyday users.",
-                        ),
-                    ],
-                ),
+                component   = self.select,
             ),
         )
 
     @override
     async def on_submit(self, interaction : "Interaction") -> None:
-        ...
+        await interaction.response.defer(ephemeral = True)
+
+        channel = interaction.channel
+        choice  = self.select.values[0]
+
+        mapping : dict[str, tuple[str, str, str]] = {
+            "director"  : ("Director Ticket",  f"<@&{DIRECTORS_ROLE_ID}>",  "Director"),
+            "moderator" : ("Moderator Ticket", f"<@&{MODERATORS_ROLE_ID}>", "Moderator"),
+        }
+        ticket_type, team_mention, team_name = mapping[choice]
+
+        if isinstance(channel, TextChannel) and isinstance(interaction.client, "Cordex"):
+
+            # ⸻ Create thread and add the ticket opener
+
+            ticket = await channel.create_thread(
+                name      = f"{ticket_type} — {interaction.user.name}",
+                type      = ChannelType.private_thread,
+                invitable = False,
+            )
+
+            await ticket.add_user(interaction.user)
+
+            # ⸻ Persist ticket state
+
+            await save_ticket(interaction.client.db, thread_id = ticket.id, team = choice)
+            await format_send(
+                interaction,
+                msg_type  = "success",
+                title     = "created ticket",
+                subtitle  = f"{team_name} ticket created: {ticket.mention}",
+                ephemeral = True,
+            )
+            await ticket.send(team_mention)
 
 class TicketButton(Button["TicketComponents"]):
     def __init__(self) -> None:
@@ -52,10 +96,7 @@ class TicketButton(Button["TicketComponents"]):
 
     @override
     async def callback(self, interaction : "Interaction") -> None:
-        await interaction.response.send_message(
-            "This button does nothing right now. :[",
-            ephemeral = True,
-        )
+        await interaction.response.send_modal(TicketModal())
 
 class TicketComponents(InfoSupportSection):
     def __init__(self) -> None:
