@@ -1,10 +1,9 @@
-from typing import Literal, Self, cast
+from typing import TYPE_CHECKING, Literal, Self, cast
 
 from discord import Interaction, Message
 from discord.abc import Messageable
 from discord.ui import LayoutView, TextDisplay
 
-from bot import ContextOrInteraction
 from constants import (
     ACCEPTED_EMOJI,
     CONTESTED_EMOJI,
@@ -14,12 +13,15 @@ from constants import (
     STANDSTILL_EMOJI,
 )
 
+if TYPE_CHECKING:
+    from bot import ContextOrInteraction
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Response Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 type MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
-type SendTarget = ContextOrInteraction | Messageable
+type SendTarget = "ContextOrInteraction | Messageable"
 
 def emoji(msg_type : MessageType) -> str:
     match msg_type:
