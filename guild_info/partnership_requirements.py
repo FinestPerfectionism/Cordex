@@ -1,5 +1,3 @@
-from discord.utils import utcnow
-
 from constants import TICKETS_CHANNEL_ID
 
 from ._base import InfoHeaderSection, InfoPrimarySection, TOSButton
@@ -60,7 +58,6 @@ class RequirementComponents2(InfoPrimarySection):
         super().__init__(
             title     = "Partnership Requirements",
             text      = text,
-            timestamp = utcnow(),
             authors   = ["<@1311394031640776716>"],
             button    = TOSButton(),
         )

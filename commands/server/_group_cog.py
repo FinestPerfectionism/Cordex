@@ -139,8 +139,8 @@ class ServerCommands(
     )
     @describe(
         role          = "The role to view members or the lack thereof for.",
-        role_filter   = "Whether to check who has or who doesn't have the role selectec.",
-        person_filter = "The type of users to show. Leave empty for both.",
+        role_filter   = "Whether to check who has or who doesn't have the role selected. Defaults to \"member of\".",
+        person_filter = "Whether to show humans or bots. Defaults to both.",
     )
     @rename(
         role_filter   = "role-filter",
@@ -176,7 +176,7 @@ class ServerCommands(
     @rename(perm_filter = "filter")
     @describe(
         role        = "The role to list permissions for.",
-        perm_filter = "The permissions to show, or all permissions. Leave empty for both.",
+        perm_filter = "Whether to show enabled or disabled permissions. Defaults to both.",
     )
     @choices(
         perm_filter = [
@@ -240,7 +240,7 @@ class ServerCommands(
 
     @channel.command(
         name        = "sync",
-        description = "Sync a channel's permissions to it's category.",
+        description = "Sync a channel's permissions to it's category. Defaults to the current one.",
     )
     @describe(channel = "The channel to sync permissions for. Defaults to the current one.")
     @administrator_cmd()
@@ -272,7 +272,10 @@ class ServerCommands(
     # /server partnership add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @partnership.command(name = "add", description = "Add a server partnership.")
+    @partnership.command(
+        name        = "add",
+        description = "Add a server partnership.",
+    )
     @describe(
         server_picture     = "The server's picture.",
         server_name        = "The server's name.",
@@ -311,7 +314,10 @@ class ServerCommands(
     # /server partnership update
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @partnership.command(name = "update", description = "Update an existing server partnership.")
+    @partnership.command(
+        name        = "update",
+        description = "Update an existing server partnership.",
+    )
     @describe(
         server_name        = "The name of the server to update.",
         server_picture     = "The server's new picture.",
@@ -355,7 +361,10 @@ class ServerCommands(
     # /server partnership remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @partnership.command(name = "remove", description = "Remove a server partnership.")
+    @partnership.command(
+        name        = "remove",
+        description = "Remove a server partnership.",
+    )
     @describe(server_name = "The name of the server to remove.")
     @rename(server_name = "server-name")
     @autocomplete(server_name = server_name_autocomplete)

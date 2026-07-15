@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal, cast, final
 
-from discord import Color, Embed, TextChannel, Thread
+from discord import Color, Embed, Member, TextChannel, Thread
 
 from bot import Cordex
 from constants import (
@@ -17,6 +17,34 @@ from constants import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cases Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+@dataclass
+class BasePayload:
+    target     : Member
+    reason     : str
+    dm_user    : bool
+    appealable : bool
+
+@dataclass
+class BanPayload(BasePayload):
+    length : int
+
+@dataclass
+class KickPayload:
+    reason  : str
+    dm_user : bool
+
+@dataclass
+class TimeoutPayload(BasePayload):
+    length : int
+
+@dataclass
+class QuarantinePayload(BasePayload):
+    length : int
+
+@dataclass
+class PurgePayload:
+    reason : str
 
 @dataclass(frozen = True)
 class CaseData:

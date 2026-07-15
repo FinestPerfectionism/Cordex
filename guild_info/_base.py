@@ -1,10 +1,9 @@
-from datetime import datetime
 from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, cast
 
 from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
 from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
-from discord.utils import format_dt
+from discord.utils import format_dt, utcnow
 
 from bot.ui import (
     ButtonSection,
@@ -35,6 +34,7 @@ async def ensure_views(
     views      : list[LayoutView],
     files      : list[list[File]] | None = None,
 ) -> None:
+    log.info("Starting view ensurement for channel: %s", channel_id)
     channel = bot.get_channel(channel_id)
 
     if channel is None:
@@ -72,6 +72,7 @@ async def ensure_views(
                 message_count += 1
 
             if message_count == len(views):
+                log.info("View ensurement finished. No changes needed for channel: %s", channel_id)
                 return
 
     async for message in channel.history(limit = None):
@@ -120,6 +121,7 @@ async def ensure_views(
     )
 
     await bot.db.commit()
+    log.info("View alignment finished. Rebuilt views for channel: %s", channel_id)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # TOS Button
@@ -167,7 +169,6 @@ class InfoPrimarySection(LayoutView):
         title     : str,
         text      : str                | None = None,
         note      : str                | None = None,
-        timestamp : datetime,
         authors   : list[str]          | None = None,
         button    : Button[LayoutView] | None = None,
     ) -> None:
@@ -197,7 +198,7 @@ class InfoPrimarySection(LayoutView):
             TextDisplay(
                 (
                     f"{header_text}"
-                    f"{title} last updated {format_dt(timestamp, style = "F")}.\n"
+                    f"{title} last updated {format_dt(utcnow(), style = "F")}.\n"
                     f"{note}"
                 ),
             ),

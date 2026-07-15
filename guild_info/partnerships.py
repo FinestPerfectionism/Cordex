@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from discord import File, HTTPException, TextChannel, Thread
 from discord.ui import LayoutView, Thumbnail
-from discord.utils import utcnow
 
 from bot.ui import ThumbnailSection
 from constants import (
@@ -48,7 +47,6 @@ class PartnershipComponents2(InfoPrimarySection):
                 "-# All partnerships below are subject to removal or update at any time based on Directorate decision. Partnerships are not influenced by the public or other staff.\n"
                 "-# Partnerships assembled by the Directorate team."
             ),
-            timestamp = utcnow(),
             button    = TOSButton(),
         )
 

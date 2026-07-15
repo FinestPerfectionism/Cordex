@@ -14,6 +14,7 @@ from discord.ext.commands.view import StringView  # type: ignore[reportMissingTy
 from discord.ui import LayoutView, View
 
 from constants import (
+    HIERARCHY_CHANNEL_ID,
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
     PARTNERSHIPS_CHANNEL_ID,
     RULES_CHANNEL_ID,
@@ -21,10 +22,11 @@ from constants import (
 )
 from core.cog_loader import discover_cogs
 from core.state.partnerships import load_partnership_data
-from guild_info import RuleComponents1, RuleComponents2, ensure_views
-from guild_info.partnership_requirements import (
-    RequirementComponents1,
-    RequirementComponents2,
+from guild_info import (
+    HierarchyViewsList,
+    PartnershipViewsList,
+    RuleViewsList,
+    ensure_views,
 )
 from guild_info.partnerships import build_partnership_views
 from guild_info.tickets import TicketComponents
@@ -131,6 +133,12 @@ class Cordex(commands.Bot):
 
         await ensure_views(
             bot        = self,
+            channel_id = HIERARCHY_CHANNEL_ID,
+            views      = HierarchyViewsList,
+        )
+
+        await ensure_views(
+            bot        = self,
             channel_id = TICKETS_CHANNEL_ID,
             views      = [TicketComponents()],
         )
@@ -146,13 +154,13 @@ class Cordex(commands.Bot):
         await ensure_views(
             bot        = self,
             channel_id = RULES_CHANNEL_ID,
-            views      = [RuleComponents1(), RuleComponents2()],
+            views      = RuleViewsList,
         )
 
         await ensure_views(
             bot        = self,
             channel_id = PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
-            views      = [RequirementComponents1(), RequirementComponents2()],
+            views      = PartnershipViewsList,
         )
 
         # ⸻ Cogs

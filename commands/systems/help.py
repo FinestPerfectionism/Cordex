@@ -7,7 +7,7 @@ from bot import Cordex, Interaction
 # Help Command
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class HelpCommands(commands.Cog):
+class HelpCommand(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         self.bot : Cordex = bot
 
@@ -15,9 +15,15 @@ class HelpCommands(commands.Cog):
     # /help Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    # @command(name = "help")
+    # @command(
+    #     name        = "help",
+    #     description = "Provides assistance into a command. Defaults to information about the bot.",
+    # )
     # async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
-    @command(name = "help")
+    @command(
+        name        = "help",
+        description = "Provides assistance into a command. Defaults to information about the bot.",
+    )
     async def cmd_help(self, interaction : Interaction) -> None:
         await interaction.response.send_message(
             "This command does nothing right now. :[",
@@ -25,5 +31,5 @@ class HelpCommands(commands.Cog):
         )
 
 async def setup(bot : Cordex) -> None:
-    cog = HelpCommands(bot)
+    cog = HelpCommand(bot)
     await bot.add_cog(cog)

@@ -1,7 +1,8 @@
 from discord.app_commands import CheckFailure
 
 from bot import ContextOrInteraction
-from core.responses import format_send
+
+from .responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management
@@ -63,11 +64,12 @@ async def send_bad_request(
 async def send_bad_argument(
     target   : ContextOrInteraction,
     *,
+    title    : str = "run command",
     subtitle : dict[
         str | tuple[str, ...] | set[str] | None,
         str,
     ],
-    footer   : str | None = None,
+    footer   : str = "Bad argument",
 ) -> None:
     formatted_lines : list[str] = []
 
@@ -83,7 +85,7 @@ async def send_bad_argument(
     await format_send(
         target,
         msg_type = "warning",
-        title    = "run command",
+        title    = title,
         subtitle = "\n".join(formatted_lines),
         footer   = footer or "Bad argument",
     )

@@ -39,7 +39,7 @@ from core.utilities import check_role_hierarchy, format_values
 
 class StateEntry(TypedDict, total = False):
     r : str
-    t : str
+    l : str
     a : bool
     d : bool
     f : str | None
@@ -52,19 +52,19 @@ def build_member_label(member : Member, state : StateEntry | None) -> str:
         return member.mention
 
     reason_str = escape_markdown(str(state.get("r", "")))
-    timer_str  = state.get("t", "N/A")
+    length_str = state.get("l", "N/A")
 
     lines = [member.mention, f'**Reason:** "{reason_str}"']
     lines.extend(
         [
-            f"**Timer:** `{timer_str}`",
-            f"**Appealable:** `{state.get('a', False)}`",
-            f"**DM:** `{state.get('d', False)}`",
+            f"**Length:** `{length_str}`",
+            f"**Appealable:** `{state.get("a", False)}`",
+            f"**DM:** `{state.get("d", False)}`",
         ],
     )
 
     if "f" in state:
-        lines.append(f"**File:** `{state['f']}`")
+        lines.append(f"**File:** `{state["f"]}`")
 
     return "\n".join(lines)
 
@@ -129,10 +129,10 @@ class ReasonModal(Modal):
             default     = str(existing.get("r", "")),
             required    = True,
         )
-        self.timer_input  : TextInput[Modal] = TextInput[Modal](
-            label       = "Timer",
+        self.length_input : TextInput[Modal] = TextInput[Modal](
+            label       = "Length",
             placeholder = 'ex: "30m, 2d"',
-            default     = str(existing.get("t", "")),
+            default     = str(existing.get("l", "")),
             required    = True,
         )
         self.appealable_checkbox : Checkbox[Modal]   = Checkbox(default = bool(existing.get("a", False)))
@@ -141,7 +141,7 @@ class ReasonModal(Modal):
 
         for item in [
             self.reason_input,
-            self.timer_input,
+            self.length_input,
             Label(
                 text        = "Appealable",
                 description = "Whether the moderation action is appealable. *DM must be set to true for the action to be appealable!",
@@ -176,13 +176,13 @@ class ReasonModal(Modal):
 
         # ⸻ Improper time signature
 
-        timer_value = self.timer_input.value.strip().lower()
-        if timer_value and not match(r"^(\d+[hmds])+$", timer_value):
+        length_value = self.length_input.value.strip().lower()
+        if length_value and not match(r"^(\d+[hmds])+$", length_value):
             await format_send(
                 interaction,
                 msg_type =  "warning",
                 title    =  "compile window",
-                subtitle = f"The time signature `{self.timer_input.value}` is not valid. Use formats like 10m, 2h, 1d.",
+                subtitle = f"The time signature `{self.length_input.value}` is not valid. Use formats like 10m, 2h, 1d.",
             )
             return
 
@@ -195,7 +195,7 @@ class ReasonModal(Modal):
         )
         self.editor.state_map[user_id] = {
             "r" : self.reason_input.value,
-            "t" : self.timer_input.value,
+            "l" : self.length_input.value,
             "a" : self.appealable_checkbox.value,
             "d" : self.dm_checkbox.value,
             "f" : filename,
@@ -236,7 +236,7 @@ class EditorView(LayoutView):
                 missing : list[str] = []
                 if not entry or not entry.get("r"):
                     missing.append("reason")
-                if not entry or not entry.get("t"):
+                if not entry or not entry.get("l"):
                     missing.append("timer")
                 if missing:
                     errors.append(f"- {member.mention}: Missing {format_values(missing)}")
@@ -264,7 +264,7 @@ class EditorView(LayoutView):
                     entry = resolve_state(member, self.state_map, global_entry)
                     if entry:
                         reason     = escape_markdown(entry.get("r", "N/A"))
-                        timer      = entry.get("t", "N/A")
+                        length     = entry.get("l", "N/A")
                         appealable = "Yes" if entry.get("a") else "No"
                         dm_user    = "Yes" if entry.get("d") else "No"
                         file       = escape_markdown(entry.get("f") or "None")
@@ -273,7 +273,7 @@ class EditorView(LayoutView):
                             (
                                 f"{member.mention}\n"
                                 f"`    Reason:` {reason}\n"
-                                f"`     Timer:` {timer}\n"
+                                f"`    Length:` {length}\n"
                                 f"`Appealable:` {appealable} | `DM Sent:` {dm_user}\n"
                                 f"`Attachment:` {file}"
                             ),

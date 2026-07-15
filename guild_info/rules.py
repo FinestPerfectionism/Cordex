@@ -1,4 +1,3 @@
-from discord.utils import utcnow
 
 from ._base import InfoHeaderSection, InfoPrimarySection, TOSButton
 
@@ -58,7 +57,6 @@ class RuleComponents2(InfoPrimarySection):
         super().__init__(
             title     = "Rules",
             text      = text,
-            timestamp = utcnow(),
             authors   = ["<@1311394031640776716>"],
             button    = TOSButton(),
         )

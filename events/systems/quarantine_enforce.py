@@ -37,7 +37,7 @@ class QuarantineEnforcerSystem(commands.Cog):
                     create_private_threads   = False,
                 )
                 await channel.set_permissions(role, overwrite = overwrite, reason = "Cordex Quarantine-Enforcement: fixing channel")
-                log.info("Fixed permissions for role in channel/category: %s", channel.name)
+                log.info("Fixed quarantine permissions for role in channel/category: %s", channel.name)
                 await sleep(0.25)
             except Forbidden:
                 log.exception("Missing permissions to edit %s", channel.name)
@@ -52,7 +52,7 @@ class QuarantineEnforcerSystem(commands.Cog):
 
     @tasks.loop(minutes = 10.0)
     async def loop_quarantine_enforce(self) -> None:
-        log.info("Starting quarantine enforcement.")
+        log.info("Starting quarantine permissions enforcement.")
         guild = self.bot.get_guild(MAIN_GUILD_ID)
         if guild is None:
             return
@@ -87,7 +87,7 @@ class QuarantineEnforcerSystem(commands.Cog):
         channels_updated = sum(1 for r in results if r)
 
         if channels_updated > 0:
-            log.info("Quarantine enforcement complete. Fixed %s channels.", channels_updated)
+            log.info("Quarantine permissions enforcement finished. %s channels needed changes.", channels_updated)
 
     @loop_quarantine_enforce.before_loop
     async def waitloop_quarantine_enforce(self) -> None:
