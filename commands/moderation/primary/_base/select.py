@@ -295,7 +295,7 @@ class EditorView(LayoutView):
                         )
 
                 class FinalizedView(LayoutView):
-                    text : TextDisplay[Self] = TextDisplay(content = "\n".join(summary_lines))
+                    text : TextDisplay[Self] = TextDisplay("\n".join(summary_lines))
                 await interaction.response.edit_message(view = FinalizedView())
 
             except Exception:

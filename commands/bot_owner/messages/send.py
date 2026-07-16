@@ -51,9 +51,9 @@ async def run_bo_messages_send(
                 async with target_channel.typing():
                     await sleep(typing_delay)
             if reply_reference:
-                await reply_reference.reply(content = text, mention_author = ping)
+                await reply_reference.reply(text, mention_author = ping)
             else:
-                await target_channel.send(content = text)
+                await target_channel.send(text)
             await interaction.followup.send("Sent!", ephemeral = True)
 
         except Forbidden:

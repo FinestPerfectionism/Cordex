@@ -9,6 +9,7 @@ from discord import (
     VoiceChannel,
 )
 from discord.abc import GuildChannel, Messageable
+from discord.utils import escape_markdown
 
 from constants import DIRECTORSHIP_CATEGORY_ID
 
@@ -41,7 +42,7 @@ def is_valid_wapple_chain(content : str) -> bool:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def truncate_text(text : str, max_length : int = 1024) -> str:
-    return (text[:max_length - 3] + "...") if len(text) > max_length else text
+    return (escape_markdown(text)[:max_length - 3] + "...") if len(text) > max_length else text
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # is_directorship_channel

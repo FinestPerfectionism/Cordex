@@ -125,10 +125,7 @@ class ErrorLogger(commands.Cog):
         else:
             embed.description = None
 
-        await channel.send(
-            content = f"<@{BOT_OWNER_ID}>",
-            embed   = embed,
-        )
+        await channel.send(f"<@{BOT_OWNER_ID}>", embed = embed)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Discord Event Errors

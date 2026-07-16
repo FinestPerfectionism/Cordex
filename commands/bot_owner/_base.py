@@ -8,8 +8,8 @@ from discord.ui import Button, View, button
 
 from bot import Interaction
 from bot.ui import green, red
-from constants import CONTESTED_EMOJI
 from core.cog_loader import discover_cogs
+from core.responses import format_message
 from core.utilities import format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -73,9 +73,10 @@ async def emoji_inaccessible(
     plural = "" if len(inaccessible_ids) == 1 else "s"
 
     await interaction.followup.send(
-        (
-            f"{CONTESTED_EMOJI} **Failed to run command!**\n"
-            f"I don't have access to the emoji{plural} {format_values(inaccessible_ids, wrap = "`")}."
+        format_message(
+            msg_type =  "warning",
+            title    =  "run command",
+            subtitle = f"I don't have access to the emoji{plural} {format_values(inaccessible_ids, wrap = "`")}.",
         ),
         view = NoEmojiAccessView(on_continue),
     )
