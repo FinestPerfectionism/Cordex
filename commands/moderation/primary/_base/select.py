@@ -13,7 +13,6 @@ from discord.ui import (
     ActionRow,
     Button,
     Checkbox,
-    Container,
     FileUpload,
     Label,
     LayoutView,
@@ -27,7 +26,15 @@ from discord.ui import (
 from discord.utils import escape_markdown
 
 from bot import Interaction
-from bot.ui import ButtonSection, VisibleLargeSeparator, blurple, green, grey, red
+from bot.ui import (
+    ButtonSection,
+    Container,
+    VisibleLargeSeparator,
+    blurple,
+    green,
+    grey,
+    red,
+)
 from constants import ACCEPTED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
@@ -211,8 +218,8 @@ class EditorView(LayoutView):
 
     def rebuild(self) -> None:
         self.clear_items()
-        container : Container[Self] = Container()
-        global_state                = self.state_map.get(0)
+        container : Container = Container()
+        global_state          = self.state_map.get(0)
 
         for member in self.members:
             resolved = resolve_state(member, self.state_map, global_state)

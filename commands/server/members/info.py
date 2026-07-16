@@ -1,11 +1,11 @@
-from typing import Self
+from typing import final
 
 from discord import AllowedMentions, MediaGalleryItem, Member
-from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
+from discord.ui import LayoutView, MediaGallery, TextDisplay, Thumbnail
 from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Interaction
-from bot.ui import ThumbnailSection
+from bot.ui import Container, ThumbnailSection
 from constants import (
     BIG_BOT_EMOJI,
     BOOSTER_EMOJI,
@@ -91,13 +91,14 @@ async def run_server_member_info(
 
     # ⸻ Build the view
 
+    @final
     class InfoView(LayoutView):
-        container : Container[Self] = Container(
+        container = Container(
             TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
-            accent_color = target.color if target.color.value else COLOR_GREY,
+            color = target.color if target.color.value else COLOR_GREY,
         )
 
-        user_info : str = format_table(
+        user_info = format_table(
             {
                 "Name"       : escape_markdown(target.global_name or target.name),
                 "Nickname"   : escape_markdown(target.nick or "None"),
@@ -110,7 +111,7 @@ async def run_server_member_info(
         if target.avatar:
             container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
         else:
-            container.add_item(TextDisplay(user_info))
+            container.add_text(user_info)
 
         if roles_list:
             container.add_item(

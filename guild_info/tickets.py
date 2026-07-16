@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING, Self, cast, override
+from typing import TYPE_CHECKING, cast, override
 
 from discord import ChannelType, Member, SelectOption, TextChannel
-from discord.ui import Button, Label, Modal, Select
+from discord.ui import Button, Modal
 
-from bot.ui import blurple
+from bot.ui import ModalSelect, blurple
 from constants import (
     DIRECTOR_EMOJI,
     DIRECTORS_ROLE_ID,
@@ -11,6 +11,7 @@ from constants import (
     MODERATORS_ROLE_ID,
     STAFF_ROLE_ID,
 )
+from core.exceptions import send_bad_request
 from core.responses import format_send
 from core.state import save_ticket
 
@@ -27,7 +28,9 @@ class TicketModal(Modal, title = "Open Ticket"):
     def __init__(self) -> None:
         super().__init__(timeout = None)
 
-        self.select : Select[Self] = Select(
+        self.select : ModalSelect = ModalSelect(
+            text        = "Team",
+            description = "Select which staff team to contact.",
             placeholder = "Which team would you like to contact?",
             options     = [
                 SelectOption(
@@ -44,14 +47,6 @@ class TicketModal(Modal, title = "Open Ticket"):
                     default     = True,
                 ),
             ],
-        )
-
-        self.add_item(
-            Label(
-                text        = "Team",
-                description = "Select which staff team to contact.",
-                component   = self.select,
-            ),
         )
 
     @override
@@ -109,12 +104,10 @@ class TicketButton(Button["TicketComponents"]):
         # ⸻ Directors may not open tickets.
 
         if DIRECTORS_ROLE_ID in user_roles:
-            await format_send(
+            await send_bad_request(
                 interaction,
-                msg_type  = "error",
-                title     = "open ticket",
-                subtitle  = "Directors cannot open support tickets. Contact other directors for issues.",
-                ephemeral = True,
+                title    = "open ticket",
+                subtitle = "Directors cannot open support tickets. Contact other directors for issues.",
             )
             return
 

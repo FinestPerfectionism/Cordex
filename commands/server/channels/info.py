@@ -1,10 +1,11 @@
-from typing import Self
+from typing import final
 
 from discord import ForumChannel, StageChannel, TextChannel, Thread, VoiceChannel
 from discord.abc import GuildChannel
-from discord.ui import Container, LayoutView, TextDisplay
+from discord.ui import LayoutView, TextDisplay
 
 from bot import Interaction
+from bot.ui import Container
 from constants import (
     ACTIVE_LOCKED_STAGE_EMOJI,
     ACTIVE_LOCKED_VOICE_EMOJI,
@@ -112,8 +113,9 @@ async def run_server_channel_info(
         emoji_display = f"| {channel_type_emoji} " if channel_type_emoji else ""
         header_text   = f"### {target.mention} {emoji_display}| {target.id}"
 
+    @final
     class InfoView(LayoutView):
-        container : Container[Self] = Container[Self](
+        container = Container(
             TextDisplay(header_text),
             TextDisplay(
                 format_table(
@@ -123,7 +125,7 @@ async def run_server_channel_info(
                     padding = 0,
                 ),
             ),
-            accent_color = COLOR_GREY,
+            color = COLOR_GREY,
         )
 
     await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)

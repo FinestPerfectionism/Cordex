@@ -1,8 +1,7 @@
-from typing import TYPE_CHECKING, Literal, Self, cast
+from typing import TYPE_CHECKING, Literal, cast
 
 from discord import Interaction, Message
 from discord.abc import Messageable
-from discord.ui import LayoutView, TextDisplay
 
 from constants import (
     ACCEPTED_EMOJI,
@@ -64,32 +63,28 @@ def build_footer(footer : str | None) -> str | None:
         return None
     return f"{footer.rstrip('. ')}."
 
-def build_view(content : str) -> LayoutView:
-    class SingleView(LayoutView):
-        text : TextDisplay[Self] = TextDisplay(content = content)
-    return SingleView()
-
 async def send(
     target       : SendTarget,
-    view         : LayoutView,
+    /,
     *,
+    content      : str,
     ephemeral    : bool           = True,
     delete_after : float   | None = None,
     message      : Message | None = None,
 ) -> Message | None:
     if isinstance(target, Interaction):
         if target.response.is_done():
-            return await target.followup.send(view = view, ephemeral = ephemeral)
-        await target.response.send_message(view = view, ephemeral = ephemeral)
-        return None
+            return await target.followup.send(content, ephemeral = ephemeral)
+        await target.response.send_message(content, ephemeral = ephemeral)
+        return await target.original_response()
 
     if message is not None:
-        return await message.edit(view = view)
+        return await message.edit(content = content, delete_after = delete_after)
 
     if delete_after is not None:
-        return await cast(Messageable, target).send(view = view, delete_after = delete_after)
+        return await cast(Messageable, target).send(content, delete_after = delete_after)
 
-    return await cast(Messageable, target).send(view = view)
+    return await cast(Messageable, target).send(content)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Custom Message Builders
@@ -135,7 +130,7 @@ async def format_send(
     )
     return await send(
         target,
-        build_view(content),
+        content      = content,
         ephemeral    = ephemeral,
         delete_after = delete_after,
         message      = message,

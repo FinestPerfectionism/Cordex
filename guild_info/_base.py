@@ -1,12 +1,13 @@
 from logging import getLogger as get_logger
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Self, cast
 
 from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
-from discord.ui import ActionRow, Button, Container, LayoutView, TextDisplay
+from discord.ui import ActionRow, Button, LayoutView, TextDisplay
 from discord.utils import format_dt, utcnow
 
 from bot.ui import (
     ButtonSection,
+    Container,
     HiddenSmallSeparator,
     VisibleLargeSeparator,
     VisibleSmallSeparator,
@@ -180,7 +181,7 @@ class InfoPrimarySection(LayoutView):
                f"-# Assembled by the Directorate team. Primarily written by {format_values(authors)}.\n"
             )
 
-        self.container      : Container[LayoutView]        = Container()
+        self.container      : Container                    = Container()
         self.last_added_row : ActionRow[LayoutView] | None = None
 
         if button is not None:
@@ -194,13 +195,11 @@ class InfoPrimarySection(LayoutView):
         else:
             header_text = f"# {title}\n\n"
 
-        self.container.add_item(
-            TextDisplay(
-                (
-                    f"{header_text}"
-                    f"{title} last updated {format_dt(utcnow(), style = "F")}.\n"
-                    f"{note}"
-                ),
+        self.container.add_text(
+            (
+                f"{header_text}"
+                f"{title} last updated {format_dt(utcnow(), style = "F")}.\n"
+                f"{note}"
             ),
         )
 
@@ -209,7 +208,7 @@ class InfoPrimarySection(LayoutView):
         self.container.add_item(HiddenSmallSeparator())
 
         if text is not None:
-            self.container.add_item(TextDisplay(text))
+            self.container.add_text(text)
 
         self.add_item(self.container)
 
@@ -218,7 +217,7 @@ class InfoPrimarySection(LayoutView):
             self.container.add_item(VisibleLargeSeparator())
             self.last_added_row = None
 
-        self.container.add_item(TextDisplay(text))
+        self.container.add_text(text)
 
     def add_row(self, row : ActionRow[LayoutView]) -> None:
         if len(self.container.children) > 0 and self.last_added_row is None:
@@ -235,11 +234,11 @@ class InfoSecondarySection(LayoutView):
     def __init__(self, *, text : str | None = None) -> None:
         super().__init__(timeout = None)
 
-        self.container      : Container[LayoutView]        = Container()
+        self.container      : Container                    = Container()
         self.last_added_row : ActionRow[LayoutView] | None = None
 
         if text is not None:
-            self.container.add_item(TextDisplay(text))
+            self.container.add_text(text)
 
         self.add_item(self.container)
 
@@ -248,7 +247,7 @@ class InfoSecondarySection(LayoutView):
             self.container.add_item(VisibleLargeSeparator())
             self.last_added_row = None
 
-        self.container.add_item(TextDisplay(text))
+        self.container.add_text(text)
 
     def add_row(self, row : ActionRow[LayoutView]) -> None:
         if len(self.container.children) > 0 and self.last_added_row is None:
@@ -270,9 +269,19 @@ class InfoSupportSection(LayoutView):
         text        : str,
         note        : str,
         footer      : str,
-        button      : Button[LayoutView],
+        button      : Button[LayoutView] | None,
     ) -> None:
         super().__init__(timeout = None)
+
+        description_text : ButtonSection | TextDisplay[Self]
+
+        if button:
+            description_text = ButtonSection(
+                f"{description}.",
+                button = button,
+            )
+        else:
+            description_text = TextDisplay(description)
 
         self.add_item(
             Container(
@@ -280,10 +289,7 @@ class InfoSupportSection(LayoutView):
                     f"# {title}",
                     button = TOSButton(),
                 ),
-                ButtonSection(
-                    f"{description}.",
-                    button = button,
-                ),
+                description_text,
                 HiddenSmallSeparator(),
                 VisibleSmallSeparator(),
                 HiddenSmallSeparator(),

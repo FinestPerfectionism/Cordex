@@ -5,7 +5,6 @@ from discord.ui import (
     ActionRow,
     Button,
     ChannelSelect,
-    Container,
     LayoutView,
     TextDisplay,
     button,
@@ -13,7 +12,7 @@ from discord.ui import (
 )
 
 from bot import Cordex, Interaction
-from bot.ui import VisibleLargeSeparator, blurple, red
+from bot.ui import Container, VisibleLargeSeparator, blurple, red
 from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -91,14 +90,14 @@ class LoggingConfigurationView(LayoutView):
         super().__init__()
         self.bot : Cordex = bot
 
-        self.antinuke_display   : TextDisplay[Self]     = TextDisplay("")
-        self.moderation_display : TextDisplay[Self]     = TextDisplay("")
-        self.container          : Container[LayoutView] = Container(
+        self.antinuke_display   : TextDisplay[Self] = TextDisplay("")
+        self.moderation_display : TextDisplay[Self] = TextDisplay("")
+        self.container          : Container         = Container(
             self.antinuke_display,
             LoggingAntinukeRow(),
             self.moderation_display,
             LoggingModerationRow(),
-            accent_color = COLOR_RED,
+            color = COLOR_RED,
         )
         self.add_item(self.container)
 
@@ -115,11 +114,11 @@ class LoggingConfigurationView(LayoutView):
         configured_count = len(config_dict)
 
         if configured_count == 2:
-            self.container.accent_color = COLOR_GREEN
+            self.container.color = COLOR_GREEN
         elif configured_count == 1:
-            self.container.accent_color = COLOR_YELLOW
+            self.container.color = COLOR_YELLOW
         else:
-            self.container.accent_color = COLOR_RED
+            self.container.color = COLOR_RED
 
         antinuke_id   = config_dict.get("logging_antinuke_channel")
         moderation_id = config_dict.get("logging_moderation_channel")

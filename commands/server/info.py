@@ -1,11 +1,11 @@
-from typing import Self
+from typing import final
 
 from discord import AllowedMentions, MediaGalleryItem, VerificationLevel
-from discord.ui import Container, LayoutView, MediaGallery, TextDisplay, Thumbnail
+from discord.ui import LayoutView, MediaGallery, TextDisplay, Thumbnail
 from discord.utils import format_dt
 
 from bot import Interaction
-from bot.ui import ThumbnailSection
+from bot.ui import Container, ThumbnailSection
 from constants import (
     BOOSTED_GLOBAL_SERVER_EMOJI,
     BOOSTED_SERVER_EMOJI,
@@ -86,13 +86,14 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
         case _:
             server_type_emoji = None
 
+    @final
     class InfoView(LayoutView):
-        container : Container[Self] = Container(
+        container = Container(
             TextDisplay(f"### {guild.name} {f"| {server_type_emoji} " if server_type_emoji else ""}| {guild.id}"),
-            accent_colour = owner.color if owner.color.value else COLOR_GREY,
+            color = owner.color if owner.color.value else COLOR_GREY,
         )
 
-        guild_info : str = format_table(
+        guild_info = format_table(
             {
                 "Owner"         : f"{owner.mention} | {owner.id}",
                 "Icon"          : f"[Icon Link]({guild.icon.url})" if guild.icon else "None",
@@ -109,7 +110,7 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
         if guild.icon:
             container.add_item(ThumbnailSection(guild_info, thumbnail = Thumbnail(guild.icon.url)))
         else:
-            container.add_item(TextDisplay(guild_info))
+            container.add_text(guild_info)
         if guild.banner:
             container.add_item(MediaGallery(MediaGalleryItem(guild.banner.url)))
 

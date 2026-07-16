@@ -1,10 +1,11 @@
-from typing import Self
+from typing import final
 
 from discord import AllowedMentions, Member, Role
-from discord.ui import Container, LayoutView, TextDisplay
+from discord.ui import LayoutView, TextDisplay
 from discord.utils import format_dt
 
 from bot import Interaction
+from bot.ui import Container
 from constants import COLOR_GREY
 from core.utilities import codeblock, format_table
 
@@ -53,8 +54,9 @@ async def run_server_role_info(
 
     # ⸻ Build the view
 
+    @final
     class InfoView(LayoutView):
-        container : Container[Self] = Container[Self](
+        container = Container(
             TextDisplay(f"### {role.mention} | {role.id}"),
             TextDisplay(
                 format_table(
@@ -74,7 +76,7 @@ async def run_server_role_info(
                     f"{diff_string}"
                 ),
             ),
-            accent_color = role.color if role.color.value else COLOR_GREY,
+            color = role.color if role.color.value else COLOR_GREY,
         )
 
     await interaction.followup.send(
