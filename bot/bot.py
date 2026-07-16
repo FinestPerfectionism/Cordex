@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TypedDict, Unpack, override
 
 from aiosqlite import Connection, connect
-from discord import CustomActivity, Intents, Message, Status
+from discord import CustomActivity, Embed, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.ext import commands
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
@@ -56,6 +56,9 @@ class ContextClass(BaseContext["Cordex"]):
 
     async def send_button(self, callback : Inter, /) -> None:
         await self.send(view = ViewButton(callback))
+
+    async def send_embed(self, embed : Embed, /) -> None:
+        await self.send(embed = embed)
 
     async def send_view(self, view : View | LayoutView, /) -> None:
         await self.send(view = view)
