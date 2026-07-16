@@ -1,8 +1,11 @@
+from typing import TYPE_CHECKING
+
 from discord.app_commands import CheckFailure
 
-from bot import ContextOrInteraction
-
 from .responses import format_send
+
+if TYPE_CHECKING:
+    from bot import ContextOrInteraction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management
@@ -12,7 +15,7 @@ from .responses import format_send
 # Unknown Error Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_unknown_error(target : ContextOrInteraction) -> None:
+async def send_unknown_error(target : "ContextOrInteraction") -> None:
     await format_send(
         target,
         msg_type = "error",
@@ -26,7 +29,7 @@ async def send_unknown_error(target : ContextOrInteraction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_operation(
-    target   : ContextOrInteraction,
+    target   : "ContextOrInteraction",
     *,
     title    : str = "run command",
     subtitle : str = "An exception occurred during this interaction.",
@@ -44,7 +47,7 @@ async def send_bad_operation(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_request(
-    target   : ContextOrInteraction,
+    target   : "ContextOrInteraction",
     *,
     title    : str = "run command",
     subtitle : str = "The requested operation is invalid.",
@@ -62,7 +65,7 @@ async def send_bad_request(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_argument(
-    target   : ContextOrInteraction,
+    target   : "ContextOrInteraction",
     *,
     title    : str = "run command",
     subtitle : dict[
@@ -97,7 +100,7 @@ async def send_bad_argument(
 class BadPermissionsCommand(CheckFailure):
     pass
 
-async def send_bad_permissions_command(target : ContextOrInteraction) -> None:
+async def send_bad_permissions_command(target : "ContextOrInteraction") -> None:
     await format_send(
         target,
         msg_type = "error",
@@ -110,7 +113,7 @@ async def send_bad_permissions_command(target : ContextOrInteraction) -> None:
 # Bad Permissions Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_permissions_argument(target : ContextOrInteraction, *args : str) -> None:
+async def send_bad_permissions_argument(target : "ContextOrInteraction", *args : str) -> None:
     arguments : tuple[str, ...] = args
     formatted_args = [f"`{arg}`" for arg in arguments]
     if len(formatted_args) == 1:
@@ -132,7 +135,7 @@ async def send_bad_permissions_argument(target : ContextOrInteraction, *args : s
 class BadEnvironmentGuild(CheckFailure):
     pass
 
-async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
+async def send_bad_environment_guild(target : "ContextOrInteraction") -> None:
     await format_send(
         target,
         msg_type = "warning",
@@ -148,7 +151,7 @@ async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
 class BadEnvironmentMainGuildOrDMs(CheckFailure):
     pass
 
-async def send_bad_environment_mainguildordms(target : ContextOrInteraction) -> None:
+async def send_bad_environment_mainguildordms(target : "ContextOrInteraction") -> None:
     await format_send(
         target,
         msg_type = "warning",
@@ -164,7 +167,7 @@ async def send_bad_environment_mainguildordms(target : ContextOrInteraction) -> 
 class BadEnvironmentMainGuild(CheckFailure):
     pass
 
-async def send_bad_environment_mainguild(target : ContextOrInteraction) -> None:
+async def send_bad_environment_mainguild(target : "ContextOrInteraction") -> None:
     await format_send(
         target,
         msg_type = "warning",
@@ -177,7 +180,7 @@ async def send_bad_environment_mainguild(target : ContextOrInteraction) -> None:
 # Bad Environment Channel Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_environment_channel(target : ContextOrInteraction) -> None:
+async def send_bad_environment_channel(target : "ContextOrInteraction") -> None:
     await format_send(
         target,
         msg_type = "warning",
@@ -193,7 +196,7 @@ async def send_bad_environment_channel(target : ContextOrInteraction) -> None:
 class BadEnvironmentDMs(CheckFailure):
     pass
 
-async def send_bad_environment_dms(target : ContextOrInteraction) -> None:
+async def send_bad_environment_dms(target : "ContextOrInteraction") -> None:
     await format_send(
         target,
         msg_type = "warning",
