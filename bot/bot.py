@@ -11,7 +11,7 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     Context as BaseContext,
 )
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
-from discord.ui import LayoutView, View
+from discord.ui import LayoutView, Modal, View
 
 from constants import (
     HIERARCHY_CHANNEL_ID,
@@ -21,7 +21,9 @@ from constants import (
     TICKETS_CHANNEL_ID,
 )
 from core.cog_loader import discover_cogs
-from core.state.partnerships import load_partnership_data
+from core.responses import format_send
+from core.state import load_partnership_data
+from core.utilities import codeblock
 from guild_info import (
     HierarchyViewsList,
     PartnershipViewsList,
@@ -52,11 +54,30 @@ class ContextClass(BaseContext["Cordex"]):
     def __init__(self, **kwargs : Unpack[ContextKwargs]) -> None:
         super().__init__(**kwargs)
 
-    async def send_button(self, callback : Inter) -> None:
+    async def send_button(self, callback : Inter, /) -> None:
         await self.send(view = ViewButton(callback))
 
-    async def send_view(self, view : View | LayoutView) -> None:
+    async def send_view(self, view : View | LayoutView, /) -> None:
         await self.send(view = view)
+
+    async def send_modal(self, modal : Modal, /) -> None:
+        async def func(interaction : "Interaction") -> None:
+            try:
+                await interaction.response.send_modal(modal)
+            except Exception as e:
+                await format_send(
+                    interaction,
+                    msg_type = "error",
+                    title    = "Error",
+                    subtitle = codeblock(f"{e}"),
+                    override = True,
+                )
+
+        await self.send_button(func)
+
+    async def fetch_and_reply(self, content : str, msg_id : int, /, *, ping : bool) -> None:
+        msg = await self.channel.fetch_message(msg_id)
+        await msg.reply(content, mention_author = ping)
 
 
 type Context     = ContextClass

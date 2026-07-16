@@ -1,4 +1,8 @@
-from core.cases import BanPayload
+from typing import Literal
+
+from constants import CONTESTED_EMOJI
+from core.cases import BanPayload, KickPayload, QuarantinePayload, TimeoutPayload
+from core.utilities import format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
@@ -7,6 +11,43 @@ from core.cases import BanPayload
 class BaseActions:
     def __init__(self) -> None:
         super().__init__()
+
+    async def dm_upon_action(
+        self,
+        action_type : Literal[
+            "Ban Add",
+            "Ban Remove",
+            "Kick",
+            "Quarantine Add",
+            "Quarantine Remove",
+            "Timeout Add",
+            "Timeout Remove",
+        ],
+        action      : BanPayload | KickPayload | QuarantinePayload | TimeoutPayload,
+    ) -> None:
+        target = action.target
+        type_map : dict[str, str] = {
+            "Ban Add"           : f'# {CONTESTED_EMOJI} You have been banned in the "goobers" server.',
+            "Ban Remove"        : f'# {CONTESTED_EMOJI} You have been un-banned the "goobers" server.',
+            "Kick"              : f'# {CONTESTED_EMOJI} You have been kicked from the "goobers" server.',
+            "Quarantine Add"    : f'# {CONTESTED_EMOJI} You have been placed in quarantine in the "goobers" server.',
+            "Quarantine Remove" : f'# {CONTESTED_EMOJI} You have been removed from quarantine in the "goobers" server.',
+            "Timeout Add"       : f'# {CONTESTED_EMOJI} You have been placed in timeout in the "goobers" server.',
+            "Timeout Remove"    : f'# {CONTESTED_EMOJI} You have been removed from timeout in the "goobers" server.',
+        }
+
+        title = type_map[action_type]
+
+        explain_table : dict[str, str] = {}
+
+        format_table(explain_table)
+
+        await target.send(
+
+               f"{title}\n"
+                "",
+
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_add
@@ -29,8 +70,17 @@ class BaseActions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def ban_add(cls, _targets : list[BanPayload]) -> None:
-        ...
+    async def ban_add(cls, targets : list[BanPayload]) -> None:
+        for action in targets:
+            target = action.target
+
+            await target.ban(
+                reason                 = action.reason,
+                delete_message_seconds = action.length,
+            )
+
+            if action.dm_user:
+                ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_view

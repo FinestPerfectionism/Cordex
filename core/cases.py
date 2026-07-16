@@ -31,6 +31,7 @@ class BanPayload(BasePayload):
 
 @dataclass
 class KickPayload:
+    target  : Member
     reason  : str
     dm_user : bool
 
@@ -44,6 +45,7 @@ class QuarantinePayload(BasePayload):
 
 @dataclass
 class PurgePayload:
+    target : Member
     reason : str
 
 @dataclass(frozen = True)

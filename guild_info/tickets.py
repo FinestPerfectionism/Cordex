@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Self, override
+from typing import TYPE_CHECKING, Self, cast, override
 
-from discord import ChannelType, SelectOption, TextChannel
+from discord import ChannelType, Member, SelectOption, TextChannel
 from discord.ui import Button, Label, Modal, Select
 
 from bot.ui import blurple
@@ -9,6 +9,7 @@ from constants import (
     DIRECTORS_ROLE_ID,
     MODERATOR_EMOJI,
     MODERATORS_ROLE_ID,
+    STAFF_ROLE_ID,
 )
 from core.responses import format_send
 from core.state import save_ticket
@@ -16,7 +17,7 @@ from core.state import save_ticket
 from ._base import InfoSupportSection
 
 if TYPE_CHECKING:
-    from bot import Interaction
+    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Ticket Support Information
@@ -66,7 +67,8 @@ class TicketModal(Modal, title = "Open Ticket"):
         }
         ticket_type, team_mention, team_name = mapping[choice]
 
-        if isinstance(channel, TextChannel) and isinstance(interaction.client, "Cordex"):
+        if isinstance(channel, TextChannel):
+            client = cast("Cordex", interaction.client)
 
             # ⸻ Create thread and add the ticket opener
 
@@ -80,7 +82,7 @@ class TicketModal(Modal, title = "Open Ticket"):
 
             # ⸻ Persist ticket state
 
-            await save_ticket(interaction.client.db, thread_id = ticket.id, team = choice)
+            await save_ticket(client.db, thread_id = ticket.id, team = choice)
             await format_send(
                 interaction,
                 msg_type  = "success",
@@ -96,6 +98,60 @@ class TicketButton(Button["TicketComponents"]):
 
     @override
     async def callback(self, interaction : "Interaction") -> None:
+
+        # ⸻ We know that the button will run in a guild but the type checker doesn't...
+
+        if not isinstance(interaction.user, Member):
+            return
+
+        user_roles = {role.id for role in interaction.user.roles}
+
+        # ⸻ Directors may not open tickets.
+
+        if DIRECTORS_ROLE_ID in user_roles:
+            await format_send(
+                interaction,
+                msg_type  = "error",
+                title     = "open ticket",
+                subtitle  = "Directors cannot open support tickets. Contact other directors for issues.",
+                ephemeral = True,
+            )
+            return
+
+        # ⸻ Staff may only open Director tickets.
+
+        if STAFF_ROLE_ID in user_roles:
+            await interaction.response.defer(ephemeral = True)
+
+            channel = interaction.channel
+            if isinstance(channel, TextChannel):
+                client = cast("Cordex", interaction.client)
+
+                # ⸻ Create thread and add the staff member
+
+                ticket = await channel.create_thread(
+                    name      = f"Director Ticket — {interaction.user.name}",
+                    type      = ChannelType.private_thread,
+                    invitable = False,
+                )
+
+                await ticket.add_user(interaction.user)
+
+                # ⸻ Persist ticket state
+
+                await save_ticket(client.db, thread_id = ticket.id, team = "director")
+                await format_send(
+                    interaction,
+                    msg_type  =  "success",
+                    title     =  "created ticket",
+                    subtitle  = f"Director ticket created: {ticket.mention}",
+                    ephemeral = True,
+                )
+                await ticket.send(f"<@&{DIRECTORS_ROLE_ID}>")
+            return
+
+        # ⸻ Members users may open any ticket.
+
         await interaction.response.send_modal(TicketModal())
 
 class TicketComponents(InfoSupportSection):
