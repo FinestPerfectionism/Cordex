@@ -2,13 +2,14 @@ from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, Self, cast
 
 from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
-from discord.ui import ActionRow, Button, LayoutView, TextDisplay
+from discord.ui import ActionRow, Button, TextDisplay
 from discord.utils import format_dt, utcnow
 
 from bot.ui import (
     ButtonSection,
     Container,
     HiddenSmallSeparator,
+    LayoutView,
     VisibleLargeSeparator,
     VisibleSmallSeparator,
     link,

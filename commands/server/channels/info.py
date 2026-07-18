@@ -2,10 +2,10 @@ from typing import final
 
 from discord import ForumChannel, StageChannel, TextChannel, Thread, VoiceChannel
 from discord.abc import GuildChannel
-from discord.ui import LayoutView, TextDisplay
+from discord.ui import TextDisplay
 
 from bot import Interaction
-from bot.ui import Container
+from bot.ui import Container, LayoutView
 from constants import (
     ACTIVE_LOCKED_STAGE_EMOJI,
     ACTIVE_LOCKED_VOICE_EMOJI,

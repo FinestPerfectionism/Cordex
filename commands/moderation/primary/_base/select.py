@@ -15,7 +15,6 @@ from discord.ui import (
     Checkbox,
     FileUpload,
     Label,
-    LayoutView,
     Modal,
     TextDisplay,
     TextInput,
@@ -29,6 +28,7 @@ from bot import Interaction
 from bot.ui import (
     ButtonSection,
     Container,
+    LayoutView,
     VisibleLargeSeparator,
     blurple,
     green,

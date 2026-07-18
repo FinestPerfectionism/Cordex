@@ -2,9 +2,9 @@ from logging import getLogger as get_logger
 from typing import TYPE_CHECKING
 
 from discord import File, HTTPException, TextChannel, Thread
-from discord.ui import LayoutView, Thumbnail
+from discord.ui import Thumbnail
 
-from bot.ui import ThumbnailSection
+from bot.ui import LayoutView, ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
     PARTNERSHIPS_CHANNEL_ID,

@@ -19,6 +19,7 @@ from bot.ui import (
     Container,
     HiddenLargeSeparator,
     HiddenSmallSeparator,
+    LayoutView,
     MentionableModalSelect,
     ModalSelect,
     RoleModalSelect,
@@ -110,9 +111,10 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "ChannelSelect"     : ui.ChannelSelect,
         "TextInput"         : ui.TextInput,
 
-        "View"       : ui.View,
-        "LayoutView" : ui.LayoutView,
-        "Modal"      : ui.Modal,
+        "View"           : ui.View,
+        "LayoutView"     : LayoutView,
+        "BaseLayoutView" : ui.LayoutView,
+        "Modal"          : ui.Modal,
 
         "Container"     : Container,
         "BaseContainer" : ui.Container,

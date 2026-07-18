@@ -12,7 +12,7 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     Context as BaseContext,
 )
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
-from discord.ui import Button, LayoutView, Modal, View, button
+from discord.ui import Button, Modal, View, button
 
 from constants import (
     HIERARCHY_CHANNEL_ID,
@@ -33,6 +33,8 @@ from guild_info import (
 )
 from guild_info.partnerships import build_partnership_views
 from guild_info.tickets import TicketComponents
+
+from .ui import LayoutView
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management

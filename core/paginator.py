@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING, Self, final, override
 
-from discord.ui import ActionRow, Button, LayoutView, Modal, TextInput, button
+from discord.ui import ActionRow, Button, Modal, TextInput, button
 
 from bot import Interaction
-from bot.ui import TextDisplay, VisibleLargeSeparator, green, grey
+from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator, green, grey
 
 from .exceptions import send_bad_operation, send_bad_request
 
@@ -97,6 +97,7 @@ class PageRow(ActionRow["Paginator"]):
             self.btn_first.disabled = is_first
             self.btn_last.disabled  = is_last
             self.btn_page.label     = f"{current + 1} / {total}"
+
         self.btn_backward.disabled = is_first
         self.btn_forward.disabled  = is_last
 
@@ -126,20 +127,24 @@ class Paginator(LayoutView):
         self,
         data                   : list[str],
         *,
+        data_name              : str,
+        show_page              : bool       = True,
         per_page               : int        = 10,
         timeout                : int | None = None,
         reset_upon_interaction : bool       = True,
     ) -> None:
         super().__init__(timeout = timeout)
+        self.data                         = data
+        self.data_name                    = data_name
         self.response : Message | None    = None
-        self.reset_upon_interaction       = reset_upon_interaction
-        self.original_timeout             = timeout
         self.pages                        = [
             "\n".join(data[i:i + per_page])
             for i in range(0, len(data), per_page)
         ] or ["No content available."]
         self.current_page                 = 0
         self.display  : TextDisplay[Self] = TextDisplay(self.pages[0])
+        self.original_timeout             = timeout
+        self.reset_upon_interaction       = reset_upon_interaction
         self.page_row                     = PageRow(self) if len(self.pages) >= 2 else None
 
         self.add_item(self.display)
@@ -148,6 +153,8 @@ class Paginator(LayoutView):
 
         if self.page_row:
             self.add_item(VisibleLargeSeparator())
+            if show_page:
+                self.add_text(self.get_page_footer())
             self.add_item(self.page_row)
 
     @override
@@ -158,12 +165,18 @@ class Paginator(LayoutView):
 
     @override
     async def on_timeout(self) -> None:
+
+        # ⸻ Recursively disable every button.
+
         for child in self.walk_children():
             if isinstance(child, Button):
                 child.disabled = True
 
         if self.response:
             await self.response.edit(view = self)
+
+    def get_page_footer(self) -> str:
+        return f"-# Page {self.current_page + 1} of {len(self.pages)} | {len(self.data)} {self.data_name}"
 
     async def turn(self, interaction : Interaction, target : int) -> None:
         if 0 <= target < len(self.pages):
@@ -172,6 +185,7 @@ class Paginator(LayoutView):
             self.display = TextDisplay(self.pages[target])
             self.add_item(self.display)
             self.add_item(VisibleLargeSeparator())
+            self.add_text(self.get_page_footer())
 
             if self.page_row:
                 self.page_row.update_button_states()

@@ -17,7 +17,6 @@ from discord.ui import (
     ChannelSelect,
     Item,
     Label,
-    LayoutView,
     MentionableSelect,
     Modal,
     RoleSelect,
@@ -29,12 +28,29 @@ from discord.ui import (
     UserSelect,
 )
 from discord.ui import Container as BaseContainer
+from discord.ui import LayoutView as BaseLayoutView
 
 __all__ = ["TextDisplay"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot UI
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# LayoutView
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class LayoutView(BaseLayoutView):
+    def __init__(self, *, timeout : float | None = None) -> None:
+        super().__init__(timeout = timeout)
+
+    def add_text(self, text : str, /) -> None:
+        self.add_item(TextDisplay(text))
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Separator Sizes
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 large = SeparatorSpacing.large
 small = SeparatorSpacing.small
@@ -231,7 +247,7 @@ class ChannelModalSelect(Label[Modal]):
         return self._underlying_component.values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Container Variant
+# Container
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class Container(BaseContainer[LayoutView]):
