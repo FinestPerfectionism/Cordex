@@ -143,9 +143,9 @@ class BotOwnerCommands(
         description = "Make the bot send something.",
     )
     @describe(
-        message  = "The text to send.",
-        channel  = "The channel to send the message in.",
+        text     = "The text to send.",
         reply_id = "The ID of the message to reply to.",
+        channel  = "The channel to send the message in.",
         ping     = "Whether to mention the user upon replying. Does nothing if reply-id is None.",
     )
     @rename(reply_id = "reply-id")
@@ -176,8 +176,8 @@ class BotOwnerCommands(
         description = "Make the bot edit one of its own messages.",
     )
     @describe(
+        text       = "The new text for the message.",
         message_id = "The ID of the message to edit.",
-        message    = "The new text for the message.",
         channel    = "The channel where the message is located.",
     )
     @rename(message_id = "message-id")
