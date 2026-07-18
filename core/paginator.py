@@ -1,4 +1,4 @@
-from typing import Self, final, override
+from typing import TYPE_CHECKING, Self, final, override
 
 from discord.ui import ActionRow, Button, LayoutView, Modal, TextInput, button
 
@@ -6,6 +6,9 @@ from bot import Interaction
 from bot.ui import TextDisplay, VisibleLargeSeparator, green, grey
 
 from .exceptions import send_bad_operation, send_bad_request
+
+if TYPE_CHECKING:
+    from discord import Message
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Paginator
@@ -27,29 +30,45 @@ class PageJumpModal(Modal, title = "Jump to Page"):
     @override
     async def on_submit(self, interaction : Interaction) -> None:
         try:
-            p = int(self.page_input.value) - 1
-            if p == self.paginator.current_page:
+            page = int(self.page_input.value) - 1
+
+            # ⸻ You're already on this page!
+
+            if page == self.paginator.current_page:
                 return await send_bad_request(
                     interaction,
                     title    = "jump to page",
                     subtitle = "You are already viewing this page.",
                 )
-            if 0 <= p < len(self.paginator.pages):
-                await self.paginator.turn(interaction, p)
+
+            # ⸻ Success..?
+
+            if 0 <= page < len(self.paginator.pages):
+                await self.paginator.turn(interaction, page)
+
+            # ⸻ Must be within the bounds of 1 and the highest page!
+
             else:
                 await send_bad_request(
                     interaction,
                     title    =  "jump to page",
                     subtitle = f"Please enter a page between 1 and {len(self.paginator.pages)}.",
                 )
+
+        # ⸻ Must be a positive integer greater than or equal to 1!
+
         except ValueError:
             await send_bad_request(
                 interaction,
                 title    = "jump to page",
-                subtitle = "Please enter an integer.",
+                subtitle = "Please enter a positive integer greater than or equal to one.",
             )
+
+        # ⸻ Unhandled error.
+
         except Exception:
             await send_bad_operation(interaction, title = "jump to page")
+            raise
 
 @final
 class PageRow(ActionRow["Paginator"]):
@@ -57,9 +76,13 @@ class PageRow(ActionRow["Paginator"]):
         super().__init__()
         self.paginator = paginator
 
+        # ⸻ Only the forward and backward buttons matter.
+
         if len(paginator.pages) == 2:
-            for b in [self.btn_first, self.btn_page, self.btn_last]:
-                self.remove_item(b)
+            for button in [self.btn_first, self.btn_page, self.btn_last]:
+                self.remove_item(button)
+
+        # ⸻ Update.
 
         self.update_button_states()
 
@@ -74,15 +97,15 @@ class PageRow(ActionRow["Paginator"]):
             self.btn_first.disabled = is_first
             self.btn_last.disabled  = is_last
             self.btn_page.label     = f"{current + 1} / {total}"
-        self.btn_previous.disabled = is_first
-        self.btn_next.disabled     = is_last
+        self.btn_backward.disabled = is_first
+        self.btn_forward.disabled  = is_last
 
     @button(label = "<<", style = grey)
     async def btn_first(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, 0)
 
     @button(label = "<", style = grey)
-    async def btn_previous(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+    async def btn_backward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, self.paginator.current_page - 1)
 
     @button(label = "1 / 1", style = green)
@@ -90,7 +113,7 @@ class PageRow(ActionRow["Paginator"]):
         await interaction.response.send_modal(PageJumpModal(self.paginator))
 
     @button(label = ">", style = grey)
-    async def btn_next(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+    async def btn_forward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, self.paginator.current_page + 1)
 
     @button(label = ">>", style = grey)
@@ -99,18 +122,48 @@ class PageRow(ActionRow["Paginator"]):
 
 @final
 class Paginator(LayoutView):
-    def __init__(self, data : list[str], *, per_page : int) -> None:
-        super().__init__(timeout = None)
-        self.pages                       = ["\n".join(data[i:i + per_page]) for i in range(0, len(data), per_page)] or ["No content available."]
-        self.current_page                = 0
-        self.display : TextDisplay[Self] = TextDisplay(self.pages[0])
+    def __init__(
+        self,
+        data                   : list[str],
+        *,
+        per_page               : int        = 10,
+        timeout                : int | None = None,
+        reset_upon_interaction : bool       = True,
+    ) -> None:
+        super().__init__(timeout = timeout)
+        self.response : Message | None    = None
+        self.reset_upon_interaction       = reset_upon_interaction
+        self.original_timeout             = timeout
+        self.pages                        = [
+            "\n".join(data[i:i + per_page])
+            for i in range(0, len(data), per_page)
+        ] or ["No content available."]
+        self.current_page                 = 0
+        self.display  : TextDisplay[Self] = TextDisplay(self.pages[0])
+        self.page_row                     = PageRow(self) if len(self.pages) >= 2 else None
 
         self.add_item(self.display)
-        self.page_row = PageRow(self) if len(self.pages) >= 2 else None
+
+        # ⸻ Only add a separator if there are buttons below it.
 
         if self.page_row:
             self.add_item(VisibleLargeSeparator())
             self.add_item(self.page_row)
+
+    @override
+    async def interaction_check(self, interaction : Interaction) -> bool:
+        if self.reset_upon_interaction and self.timeout:
+            self.timeout = self.original_timeout
+        return True
+
+    @override
+    async def on_timeout(self) -> None:
+        for child in self.walk_children():
+            if isinstance(child, Button):
+                child.disabled = True
+
+        if self.response:
+            await self.response.edit(view = self)
 
     async def turn(self, interaction : Interaction, target : int) -> None:
         if 0 <= target < len(self.pages):
