@@ -1,5 +1,3 @@
-from typing import TYPE_CHECKING
-
 from discord import TextChannel
 from discord.app_commands import autocomplete, command, describe, rename
 from discord.ext import commands
@@ -7,7 +5,7 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     command as prefix_command,
 )
 
-from bot import Context, Cordex, Interaction, log
+from bot import Context, Cordex, Interaction
 from core.permissions import bot_owner_cmd
 
 from . import cog_autocomplete, get_cogs
@@ -21,9 +19,6 @@ from .eval import run_bo_eval
 from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 
-if TYPE_CHECKING:
-    from logging import Logger
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -35,9 +30,7 @@ class BotOwnerCommands(
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot        : Cordex     = bot
-        self.logger     : Logger     = log
-        self.restarting : list[bool] = [False]
+        self.bot : Cordex = bot
 
     @property
     def cogs(self) -> list[str]:
@@ -119,7 +112,7 @@ class BotOwnerCommands(
     )
     @bot_owner_cmd()
     async def cmd_bo_restart(self, interaction : Interaction) -> None:
-        await run_bo_state_restart(self.bot, interaction, self.restarting, self.logger)
+        await run_bo_state_restart(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner sync Command
@@ -160,18 +153,18 @@ class BotOwnerCommands(
     async def cmd_bo_send(
         self,
         interaction : Interaction,
-        message     : str,
-        channel     : TextChannel | None = None,
+        text        : str,
         reply_id    : str         | None = None,
+        channel     : TextChannel | None = None,
         *,
         ping        : bool        | None = True,
     ) -> None:
         await run_bo_messages_send(
-            interaction = interaction,
-            channel     = channel,
-            text        = message,
-            message_id  = reply_id,
-            ping        = ping,
+            interaction,
+            text,
+            reply_id,
+            channel,
+            ping = ping,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -187,23 +180,20 @@ class BotOwnerCommands(
         message    = "The new text for the message.",
         channel    = "The channel where the message is located.",
     )
-    @rename(
-        message_id = "message-id",
-        channel    = "target-channel",
-    )
+    @rename(message_id = "message-id")
     @bot_owner_cmd()
     async def cmd_bo_edit(
         self,
         interaction : Interaction,
+        text        : str,
         message_id  : str,
-        message     : str,
         channel     : TextChannel | None = None,
     ) -> None:
         await run_bo_messages_edit(
-            interaction = interaction,
-            channel     = channel,
-            text        = message,
-            message_id  = message_id,
+            interaction,
+            text,
+            message_id,
+            channel,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -218,10 +208,7 @@ class BotOwnerCommands(
         message_id = "The ID of the message to delete.",
         channel    = "The channel where the message is located.",
     )
-    @rename(
-        message_id = "message-id",
-        channel    = "target-channel",
-    )
+    @rename(message_id = "message-id")
     @bot_owner_cmd()
     async def cmd_bo_delete(
         self,
@@ -230,9 +217,9 @@ class BotOwnerCommands(
         channel     : TextChannel | None = None,
     ) -> None:
         await run_bo_messages_delete(
-            interaction = interaction,
-            channel     = channel,
-            message_id  = message_id,
+            interaction,
+            message_id,
+            channel,
         )
 
 async def setup(bot : Cordex) -> None:

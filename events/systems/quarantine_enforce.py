@@ -17,18 +17,34 @@ if TYPE_CHECKING:
 
 class QuarantineEnforcerSystem(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
-        self.bot       : Cordex    = bot
-        self.semaphore : Semaphore = Semaphore(3)
+        self.bot        : Cordex    = bot
+        self.semaphore  : Semaphore = Semaphore(3)
+        self.processing : set[int]  = set()
         self.loop_quarantine_enforce.start()
 
     @override
     async def cog_unload(self) -> None:
         self.loop_quarantine_enforce.cancel()
 
-    async def update_channel(self, channel : GuildChannel, role : Role, overwrite : PermissionOverwrite) -> bool:
+    def needs_update(self, channel : GuildChannel, role : Role) -> bool:
+        overwrite = channel.overwrites_for(role)
+        return (
+            overwrite.view_channel             is not False or
+            overwrite.create_instant_invite    is not False or
+            overwrite.send_messages            is not False or
+            overwrite.send_messages_in_threads is not False or
+            overwrite.create_public_threads    is not False or
+            overwrite.create_private_threads   is not False
+        )
+
+    async def update_channel(self, channel : GuildChannel, role : Role) -> bool:
+        if channel.id in self.processing:
+            return False
+
+        self.processing.add(channel.id)
         async with self.semaphore:
             try:
-                overwrite.update(
+                overwrite = PermissionOverwrite(
                     view_channel             = False,
                     create_instant_invite    = False,
                     send_messages            = False,
@@ -46,9 +62,28 @@ class QuarantineEnforcerSystem(commands.Cog):
                     log.warning("Hit a 429 rate limit while editing %s. Backing off.", channel.name)
                 else:
                     log.exception("Failed to edit %s", channel.name)
-            else:
-                return True
-            return False
+            finally:
+                self.processing.remove(channel.id)
+
+        return True
+
+    @commands.Cog.listener("on_guild_channel_update")
+    async def on_channel_update(self, _before : GuildChannel, after : GuildChannel) -> None:
+        if after.guild.id != MAIN_GUILD_ID:
+            return
+
+        role = after.guild.get_role(QUARANTINE_ROLE_ID)
+        if role and self.needs_update(after, role):
+            await self.update_channel(after, role)
+
+    @commands.Cog.listener("on_guild_channel_create")
+    async def on_channel_create(self, channel : GuildChannel) -> None:
+        if channel.guild.id != MAIN_GUILD_ID:
+            return
+
+        role = channel.guild.get_role(QUARANTINE_ROLE_ID)
+        if role and self.needs_update(channel, role):
+            await self.update_channel(channel, role)
 
     @tasks.loop(minutes = 10.0)
     async def loop_quarantine_enforce(self) -> None:
@@ -64,20 +99,11 @@ class QuarantineEnforcerSystem(commands.Cog):
         all_channels : list[GuildChannel] = [*guild.categories, *guild.channels]
         tasks_to_run : list[Coroutine[None, None, bool]] = []
 
-        for channel in all_channels:
-            current_overwrite = channel.overwrites_for(role)
-
-            needs_update = (
-                current_overwrite.view_channel             is not False or
-                current_overwrite.create_instant_invite    is not False or
-                current_overwrite.send_messages            is not False or
-                current_overwrite.send_messages_in_threads is not False or
-                current_overwrite.create_public_threads    is not False or
-                current_overwrite.create_private_threads   is not False
-            )
-
-            if needs_update:
-                tasks_to_run.append(self.update_channel(channel, role, current_overwrite))
+        tasks_to_run = [
+            self.update_channel(channel, role)
+            for channel in all_channels
+            if self.needs_update(channel, role)
+        ]
 
         if not tasks_to_run:
             log.info("Quarantine permissions enforcement finished. No channels needed changes.")

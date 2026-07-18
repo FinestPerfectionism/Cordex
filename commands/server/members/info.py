@@ -9,7 +9,9 @@ from bot.ui import Container, ThumbnailSection
 from constants import (
     BIG_BOT_EMOJI,
     BOOSTER_EMOJI,
+    BOT_OWNER_ID,
     COLOR_GREY,
+    DEVELOPER_EMOJI,
     EMPLOYEE_EMOJI,
     OWNER_EMOJI,
     PARTNER_EMOJI,
@@ -58,6 +60,8 @@ async def run_server_member_info(
 
     # ⸻ Is the user special in anyway?
 
+    if interaction.user.id == BOT_OWNER_ID:
+        characteristics.append(f"- {DEVELOPER_EMOJI} This user is **my owner**.")
     if interaction.client.user and target.id == interaction.client.user.id:
         characteristics.append("- <a:pet_cordex:1526024713078571141> This user is a **good boy**.")
     if target.public_flags.staff:

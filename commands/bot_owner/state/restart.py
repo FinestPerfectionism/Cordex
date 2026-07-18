@@ -5,7 +5,7 @@ from sys import argv, executable, stderr, stdout
 
 from discord import CustomActivity, DiscordException, Message, Status
 
-from bot import Cordex, Interaction
+from bot import Cordex, Interaction, log
 from core.exceptions import send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock
@@ -14,12 +14,9 @@ from core.utilities import codeblock
 # /restart Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_state_restart(
-    bot        : Cordex,
-    interaction: Interaction,
-    restarting : list[bool],
-    log        : Logger,
-) -> None:
+async def run_bo_state_restart(bot : Cordex, interaction : Interaction) -> None:
+    restarting : list[bool] = [False]
+
     if restarting[0]:
         await send_bad_operation(
             interaction,

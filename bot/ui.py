@@ -1,5 +1,4 @@
-from collections.abc import Callable, Coroutine
-from typing import TYPE_CHECKING, Self, final
+from typing import final
 
 from discord import (
     ButtonStyle,
@@ -28,15 +27,8 @@ from discord.ui import (
     TextDisplay,
     Thumbnail,
     UserSelect,
-    View,
-    button,
 )
-from discord.ui import (
-    Container as BaseContainer,
-)
-
-if TYPE_CHECKING:
-    from . import Interaction
+from discord.ui import Container as BaseContainer
 
 __all__ = ["TextDisplay"]
 
@@ -267,27 +259,11 @@ class Container(BaseContainer[LayoutView]):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class ButtonSection(Section[LayoutView]):
-    def __init__(self, *args : str, button : Button[LayoutView]) -> None:
+    def __init__(self, *args : str | TextDisplay[LayoutView], button : Button[LayoutView]) -> None:
         super().__init__(*args, accessory = button)
         self.button : Button[LayoutView] = button
 
 class ThumbnailSection(Section[LayoutView]):
-    def __init__(self, *args : str, thumbnail : Thumbnail[LayoutView]) -> None:
+    def __init__(self, *args : str | TextDisplay[LayoutView], thumbnail : Thumbnail[LayoutView]) -> None:
         super().__init__(*args, accessory = thumbnail)
         self.thumbnail : Thumbnail[LayoutView] = thumbnail
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Eval Tools
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-type Inter = Callable[["Interaction"], Coroutine[None, None, None]]
-
-class ViewButton(View):
-    def __init__(self, callback : Inter, /) -> None:
-        super().__init__(timeout = None)
-        self.callback : Inter = callback
-
-    @button(label = "Click me!")
-    async def btn_basic(self, interaction : "Interaction", _button : Button[Self]) -> None:
-        await self.callback(interaction)

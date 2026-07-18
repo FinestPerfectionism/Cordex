@@ -8,11 +8,11 @@ from traceback import format_exc
 from typing import cast
 
 import discord
-from discord import ui
+from discord import app_commands, ui
 from discord.ext import commands
 from discord.utils import format_dt, get, utcnow
 
-from bot import Context, Cordex, Interaction, tree
+from bot import Context, ContextOrInteraction, Cordex, Interaction, tree
 from bot.ui import (
     ButtonSection,
     ChannelModalSelect,
@@ -44,6 +44,7 @@ from constants import (
     STANDSTILL_EMOJI,
 )
 from core.exceptions import send_bad_permissions_command
+from core.paginator import Paginator
 from core.responses import format_message, format_send
 from core.utilities import codeblock, format_table, format_values
 
@@ -58,14 +59,15 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "bot"     : bot,
         "ctx"     : ctx,
         "tree"    : tree,
+
         "channel" : ctx.channel,
         "author"  : ctx.author,
         "guild"   : ctx.guild,
         "message" : ctx.message,
 
-        "commands"    : commands,
-        "Context"     : Context,
-        "Interaction" : Interaction,
+        "Context"              : Context,
+        "Interaction"          : Interaction,
+        "ContextOrInteraction" : ContextOrInteraction,
 
         "ACCEPTED_EMOJI"   : ACCEPTED_EMOJI,
         "CONTESTED_EMOJI"  : CONTESTED_EMOJI,
@@ -82,9 +84,11 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "COLOR_BLACK"   : COLOR_BLACK,
         "COLOR_WHITE"   : COLOR_WHITE,
 
-        "asyncio" : asyncio,
-        "discord" : discord,
-        "ui"      : ui,
+        "asyncio"      : asyncio,
+        "commands"     : commands,
+        "app_commands" : app_commands,
+        "discord"      : discord,
+        "ui"           : ui,
 
         "utcnow"         : utcnow,
         "get"            : get,
@@ -164,6 +168,8 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "Poll"  : discord.Poll,
 
         "AllowedMentions" : discord.AllowedMentions,
+
+        "Paginator" : Paginator,
     }
 
     # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to really warrant it.

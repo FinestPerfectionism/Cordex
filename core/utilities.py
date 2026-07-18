@@ -11,18 +11,22 @@ if TYPE_CHECKING:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# General Helpers
+# format_table
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def format_table(table : dict[str, str], *, padding : int = 1) -> str:
     biggest_key = max(len(key) for key in table)
 
     rows = [
-        f"`{str(key).rjust(biggest_key + padding)}:` {value}"
+        f"`{key.rjust(biggest_key + padding)}:` {value}"
         for key, value in table.items()
     ]
 
     return "\n".join(rows)
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# format_values
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def format_values(
     items    : list[str],

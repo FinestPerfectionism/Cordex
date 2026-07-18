@@ -14,7 +14,7 @@ from core.exceptions import send_bad_argument, send_unknown_error
 async def run_bo_messages_send(
     interaction : Interaction,
     text        : str,
-    message_id  : str         | None = None,
+    reply_id    : str         | None = None,
     channel     : Messageable | None = None,
     *,
     ping        : bool        | None = True,
@@ -39,9 +39,9 @@ async def run_bo_messages_send(
 
         try:
             reply_reference : Message | None = None
-            if message_id:
+            if reply_id:
                 try:
-                    reply_reference = await target_channel.fetch_message(int(message_id))
+                    reply_reference = await target_channel.fetch_message(int(reply_id))
 
                 except (NotFound, ValueError, HTTPException):
                     await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist, I lack permissions to access it, or it is not a valid ID."})

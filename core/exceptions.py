@@ -90,7 +90,7 @@ async def send_bad_argument(
         msg_type = "warning",
         title    = title,
         subtitle = "\n".join(formatted_lines),
-        footer   = footer or "Bad argument",
+        footer   = footer,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

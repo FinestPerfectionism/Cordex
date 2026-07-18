@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 type MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
 type SendTarget = "ContextOrInteraction | Messageable"
 
-def emoji(msg_type : MessageType) -> str:
+def emoji_match(msg_type : MessageType) -> str:
     match msg_type:
         case "success":
             return ACCEPTED_EMOJI
@@ -37,7 +37,7 @@ def emoji(msg_type : MessageType) -> str:
         case "unlock":
             return FORUM_EMOJI
 
-def type_prefix(msg_type : MessageType) -> str:
+def title_match(msg_type : MessageType) -> str:
     match msg_type:
         case "success":
             return "Successfully"
@@ -46,22 +46,30 @@ def type_prefix(msg_type : MessageType) -> str:
         case "warning" | "error":
             return "Failed to"
 
-def build_header(msg_type : MessageType, title : str, *, override : bool = False) -> str:
-    if override:
-        return f"{emoji(msg_type)} **{title}**"
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Internal Builders
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    prefix      = type_prefix(msg_type)
+def build_title(msg_type : MessageType, title : str, *, override : bool = False) -> str:
+    if override:
+        return f"{emoji_match(msg_type)} **{title}**"
+
+    prefix      = title_match(msg_type)
     punctuation = "!" if msg_type in {"warning", "error"} else "."
     clean_title = title.rstrip(".!") + punctuation
 
     if prefix:
-        return f"{emoji(msg_type)} **{prefix} {clean_title}**"
-    return f"{emoji(msg_type)} **{clean_title}**"
+        return f"{emoji_match(msg_type)} **{prefix} {clean_title}**"
+    return f"{emoji_match(msg_type)} **{clean_title}**"
 
 def build_footer(footer : str | None) -> str | None:
     if footer is None:
         return None
     return f"{footer.rstrip('. ')}."
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Internal Send
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send(
     target       : SendTarget,
@@ -98,7 +106,7 @@ def format_message(
     footer   : str | None = None,
     override : bool       = False,
 ) -> str:
-    lines : list[str] = [build_header(msg_type, title, override = override)]
+    lines : list[str] = [build_title(msg_type, title, override = override)]
     if subtitle:
         lines.append(subtitle)
 

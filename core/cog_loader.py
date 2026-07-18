@@ -31,7 +31,7 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
             package.__path__,
             prefix = f"{package.__name__}.",
         ):
-            name = module_info.name
+            name       = module_info.name
             short_name = name.split(".")[-1]
 
             if name in seen:
@@ -51,7 +51,8 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
                 cogs.append(name)
 
     if priority:
-        priority_set   = set(priority)
+        priority_set = set(priority)
+
         ordered_cogs   = [m for m in priority if m in seen]
         remaining_cogs = [m for m in cogs if m not in priority_set]
         cogs           = ordered_cogs + sorted(remaining_cogs)

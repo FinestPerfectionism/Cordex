@@ -1,7 +1,8 @@
 from asyncio import to_thread
+from collections.abc import Callable, Coroutine
 from logging import getLogger as get_logger
 from pathlib import Path
-from typing import TypedDict, Unpack, override
+from typing import Self, TypedDict, Unpack, override
 
 from aiosqlite import Connection, connect
 from discord import CustomActivity, Embed, Intents, Message, Status
@@ -11,7 +12,7 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     Context as BaseContext,
 )
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
-from discord.ui import LayoutView, Modal, View
+from discord.ui import Button, LayoutView, Modal, View, button
 
 from constants import (
     HIERARCHY_CHANNEL_ID,
@@ -33,8 +34,6 @@ from guild_info import (
 from guild_info.partnerships import build_partnership_views
 from guild_info.tickets import TicketComponents
 
-from .ui import Inter, ViewButton
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -44,6 +43,8 @@ log = get_logger("Cordex")
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+type Inter = Callable[["Interaction"], Coroutine[None, None, None]]
 
 class ContextKwargs(TypedDict, total = False):
     message : Message
@@ -55,6 +56,24 @@ class ContextClass(BaseContext["Cordex"]):
         super().__init__(**kwargs)
 
     async def send_button(self, callback : Inter, /) -> None:
+        class ViewButton(View):
+            def __init__(self, view_callback : Inter, /) -> None:
+                super().__init__(timeout = None)
+                self.callback : Inter = view_callback
+
+            @button(label = "Click me!")
+            async def btn_basic(self, interaction : "Interaction", _button : Button[Self]) -> None:
+                try:
+                    await self.callback(interaction)
+                except Exception as e:
+                    await format_send(
+                        interaction,
+                        msg_type = "error",
+                        title    = "Error.",
+                        subtitle = codeblock(f"{e}"),
+                        override = True,
+                    )
+
         await self.send(view = ViewButton(callback))
 
     async def send_embed(self, embed : Embed, /) -> None:
@@ -65,16 +84,7 @@ class ContextClass(BaseContext["Cordex"]):
 
     async def send_modal(self, modal : Modal, /) -> None:
         async def func(interaction : "Interaction") -> None:
-            try:
-                await interaction.response.send_modal(modal)
-            except Exception as e:
-                await format_send(
-                    interaction,
-                    msg_type = "error",
-                    title    = "Error",
-                    subtitle = codeblock(f"{e}"),
-                    override = True,
-                )
+            await interaction.response.send_modal(modal)
 
         await self.send_button(func)
 
@@ -83,9 +93,8 @@ class ContextClass(BaseContext["Cordex"]):
         await msg.reply(content, mention_author = ping)
 
 
-type Context     = ContextClass
-type Interaction = BaseInteraction["Cordex"] | BaseInteraction
-
+type Context              = ContextClass
+type Interaction          = BaseInteraction["Cordex"] | BaseInteraction
 type ContextOrInteraction = Interaction | Context
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
