@@ -60,7 +60,7 @@ async def run_server_member_info(
 
     # ⸻ Is the user special in anyway?
 
-    if interaction.user.id == BOT_OWNER_ID:
+    if target.id == BOT_OWNER_ID:
         characteristics.append(f"- {DEVELOPER_EMOJI} This user is **my owner**.")
     if interaction.client.user and target.id == interaction.client.user.id:
         characteristics.append("- <a:pet_cordex:1526024713078571141> This user is a **good boy**.")
