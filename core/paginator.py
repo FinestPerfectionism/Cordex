@@ -145,7 +145,7 @@ class Paginator(LayoutView):
         data_name : str | None = None,
         show_page : bool       = True,
         per_page  : int        = 10,
-        container : bool       = True,
+        container : bool       = False,
     ) -> None:
         super().__init__(timeout = None)
         self.title     = title
@@ -170,13 +170,13 @@ class Paginator(LayoutView):
 
         # ⸻ Only add a separator if there are buttons below it.
 
-        self.render()
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_page_footer
+    # _get_page_footer
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def get_page_footer(self) -> str:
+    def _get_page_footer(self) -> str:
         return f"-# Page {self.current_page + 1} of {len(self.pages)} | {len(self.data)} {self.data_name}"
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -185,7 +185,7 @@ class Paginator(LayoutView):
 
     def add_above(self, *items : Item[Self]) -> None:
         self.above_items.extend(items)
-        self.render()
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_below
@@ -193,35 +193,35 @@ class Paginator(LayoutView):
 
     def add_below(self, *items : Item[Self]) -> None:
         self.below_items.extend(items)
-        self.render()
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # render
+    # _render
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def render(self) -> None:
+    def _render(self) -> None:
         self.clear_items()
 
         for item in self.above_items:
             self.add_item(item)
 
-        items : list[TextDisplay[Self] | VisibleLargeSeparator] = [
+        items : list[TextDisplay[Self] | VisibleLargeSeparator | PageRow] = [
             TextDisplay(self.title),
             VisibleLargeSeparator(),
             TextDisplay(self.pages[self.current_page]),
             VisibleLargeSeparator(),
-            TextDisplay(self.get_page_footer()),
+            TextDisplay(self._get_page_footer()),
         ]
+
+        if self.page_row:
+            self.page_row.update_button_states()
+            items.append(self.page_row)
 
         if self.container:
             self.add_item(Container(*items))
         else:
             for item in items:
                 self.add_item(item)
-
-        if self.page_row:
-            self.page_row.update_button_states()
-            self.add_item(self.page_row)
 
         for item in self.below_items:
             self.add_item(item)
@@ -233,6 +233,6 @@ class Paginator(LayoutView):
     async def turn(self, interaction : Interaction, target : int) -> None:
         if 0 <= target < len(self.pages):
             self.current_page = target
-            self.render()
+            self._render()
 
             await interaction.response.edit_message(view = self)
