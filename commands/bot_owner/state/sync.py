@@ -6,7 +6,7 @@ from core.responses import format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /sync Logic
+# /bot-owner state sync Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_state_sync(interaction : Interaction) -> None:

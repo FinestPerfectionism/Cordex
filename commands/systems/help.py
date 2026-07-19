@@ -15,16 +15,11 @@ class HelpCommand(commands.Cog):
     # /help Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    # @command(
-    #     name        = "help",
-    #     description = "Provides assistance into a command. Defaults to information about the bot.",
-    # )
-    # async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
     @command(
         name        = "help",
-        description = "Provides assistance into a command. Defaults to information about the bot.",
+        description = "Provides assistance into a command. Defaults to information about the bot and a list of commands.",
     )
-    async def cmd_help(self, interaction : Interaction) -> None:
+    async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
         await interaction.response.send_message(
             "This command does nothing right now. :[",
             ephemeral = True,

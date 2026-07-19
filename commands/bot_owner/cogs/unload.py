@@ -1,17 +1,19 @@
 from bot import Cordex, Interaction, log
+from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner unload Logic
+# /bot-owner cog unload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_cogs_unload(
     bot         : Cordex,
     interaction : Interaction,
     cog         : str,
-    cogs        : list[str],
 ) -> None:
+    cogs : list[str] = get_cogs()
+
     if cog == "commands.bot_owner._group_cog":
         await send_bad_argument(interaction, subtitle = {"cog": "You may not explicitly unload the bot-owner cog."})
         return

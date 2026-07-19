@@ -6,7 +6,7 @@ from commands.bot_owner._base import TextChannelTypes, emoji_inaccessible
 from core.exceptions import send_bad_argument, send_unknown_error
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner edit Logic
+# /bot-owner message edit Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_messages_edit(

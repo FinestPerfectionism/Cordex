@@ -1,5 +1,5 @@
 from discord import TextChannel
-from discord.app_commands import autocomplete, command, describe, rename
+from discord.app_commands import Group, autocomplete, describe, rename
 from discord.ext import commands
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     command as prefix_command,
@@ -8,7 +8,7 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
 from bot import Context, Cordex, Interaction
 from core.permissions import bot_owner_cmd
 
-from . import cog_autocomplete, get_cogs
+from . import cog_autocomplete
 from .cogs import (
     run_bo_cogs_load,
     run_bo_cogs_pullreload,
@@ -32,98 +32,107 @@ class BotOwnerCommands(
         super().__init__()
         self.bot : Cordex = bot
 
-    @property
-    def cogs(self) -> list[str]:
-        return get_cogs()
+    cog     : Group = Group(
+        name        = "cogs",
+        description = "Bot owner cog commands",
+    )
+    message : Group = Group(
+        name        = "message",
+        description = "Bot owner message commands",
+    )
+    state   : Group = Group(
+        name        = "state",
+        description = "Bot owner state commands",
+    )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner pull-reload Command
+    # /bot-owner cog pull-reload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @cog.command(
         name        = "pull-reload",
         description = "Pull from main, then reload all cogs.",
     )
     @bot_owner_cmd()
-    async def cmd_bo_pullreload(self, interaction : Interaction) -> None:
-        await run_bo_cogs_pullreload(self.bot, interaction, get_cogs())
+    async def cmd_bo_cogs_pullreload(self, interaction : Interaction) -> None:
+        await run_bo_cogs_pullreload(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner reload Command
+    # /bot-owner cog reload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @cog.command(
         name        = "reload",
         description = "Reload a cog or all cogs.",
     )
     @describe(cog = "The cog to reload. Leave empty to reload all cogs.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_bo_reload(self, interaction : Interaction, cog : str | None) -> None:
-        await run_bo_cogs_reload(self.bot, interaction, cog, get_cogs())
+    async def cmd_bo_cogs_reload(self, interaction : Interaction, cog : str | None) -> None:
+        await run_bo_cogs_reload(self.bot, interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner load Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @cog.command(
         name        = "load",
         description = "Load a cog.",
     )
     @describe(cog = "The cog to load.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_bo_load(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cogs_load(self.bot, interaction, cog, get_cogs())
+    async def cmd_bo_cogs_load(self, interaction : Interaction, cog : str) -> None:
+        await run_bo_cogs_load(self.bot, interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner unload Command
+    # /bot-owner cog unload Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @cog.command(
         name        = "unload",
         description = "Unload a cog.",
     )
     @describe(cog = "The cog to unload.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_bo_unload(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cogs_unload(self.bot, interaction, cog, get_cogs())
+    async def cmd_bo_cogs_unload(self, interaction : Interaction, cog : str) -> None:
+        await run_bo_cogs_unload(self.bot, interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner shutdown Command
+    # /bot-owner state shutdown Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @state.command(
         name        = "shutdown",
         description = "Shutdown the bot.",
     )
     @bot_owner_cmd()
-    async def cmd_bo_shutdown(self, interaction : Interaction) -> None:
+    async def cmd_bo_state_shutdown(self, interaction : Interaction) -> None:
         await run_bo_state_shutdown(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner restart Command
+    # /bot-owner state restart Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @state.command(
         name        = "restart",
         description = "Restart the bot.",
     )
     @bot_owner_cmd()
-    async def cmd_bo_restart(self, interaction : Interaction) -> None:
+    async def cmd_bo_state_restart(self, interaction : Interaction) -> None:
         await run_bo_state_restart(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner sync Command
+    # /bot-owner state sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @state.command(
         name        = "sync",
         description = "Sync the bot tree.",
     )
     @bot_owner_cmd()
-    async def cmd_bo_sync(self, interaction : Interaction) -> None:
+    async def cmd_bo_state_sync(self, interaction : Interaction) -> None:
         await run_bo_state_sync(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -135,10 +144,10 @@ class BotOwnerCommands(
         await run_bo_eval(self.bot, ctx, body)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner send Command
+    # /bot-owner message send Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @message.command(
         name        = "send",
         description = "Make the bot send something.",
     )
@@ -150,7 +159,7 @@ class BotOwnerCommands(
     )
     @rename(reply_id = "reply-id")
     @bot_owner_cmd()
-    async def cmd_bo_send(
+    async def cmd_bo_messages_send(
         self,
         interaction : Interaction,
         text        : str,
@@ -168,10 +177,10 @@ class BotOwnerCommands(
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner edit Command
+    # /bot-owner message edit Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @message.command(
         name        = "edit",
         description = "Make the bot edit one of its own messages.",
     )
@@ -182,7 +191,7 @@ class BotOwnerCommands(
     )
     @rename(message_id = "message-id")
     @bot_owner_cmd()
-    async def cmd_bo_edit(
+    async def cmd_bo_messages_edit(
         self,
         interaction : Interaction,
         text        : str,
@@ -197,10 +206,10 @@ class BotOwnerCommands(
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner delete Command
+    # /bot-owner message delete Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
+    @message.command(
         name        = "delete",
         description = "Make the bot delete one of its own messages.",
     )
@@ -210,7 +219,7 @@ class BotOwnerCommands(
     )
     @rename(message_id = "message-id")
     @bot_owner_cmd()
-    async def cmd_bo_delete(
+    async def cmd_bo_messages_delete(
         self,
         interaction : Interaction,
         message_id  : str,

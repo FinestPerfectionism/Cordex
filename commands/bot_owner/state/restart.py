@@ -11,7 +11,7 @@ from core.responses import format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /restart Logic
+# /bot-owner state restart Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_state_restart(bot : Cordex, interaction : Interaction) -> None:

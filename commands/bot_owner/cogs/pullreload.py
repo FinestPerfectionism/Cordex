@@ -1,19 +1,18 @@
 from asyncio import create_subprocess_exec, subprocess
 
 from bot import Cordex, Interaction, log
+from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_operation
 from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner pull-reload Logic
+# /bot-owner cog pull-reload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_cogs_pullreload(
-    bot         : Cordex,
-    interaction : Interaction,
-    cogs        : list[str],
-) -> None:
+async def run_bo_cogs_pullreload(bot : Cordex, interaction : Interaction) -> None:
     await interaction.response.defer(ephemeral = True)
+    cogs : list[str] = get_cogs()
+
     proc = await create_subprocess_exec(
         "git", "pull", "origin", "main",
         stdout = subprocess.PIPE,

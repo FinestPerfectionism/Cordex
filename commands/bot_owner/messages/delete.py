@@ -6,7 +6,7 @@ from commands.bot_owner._base import TextChannelTypes
 from core.exceptions import send_bad_argument, send_unknown_error
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner delete Logic
+# /bot-owner message delete Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_messages_delete(
