@@ -1,6 +1,6 @@
 from typing import Self, final, override
 
-from discord.ui import ActionRow, Button, Item, Modal, TextInput, button
+from discord.ui import ActionRow, Button, Item, Modal, Select, TextInput, button
 
 from bot import Interaction
 from bot.ui import (
@@ -138,14 +138,15 @@ class PageRow(ActionRow["Paginator"]):
 class Paginator(LayoutView):
     def __init__(
         self,
-        title     : str,
-        data      : list[str],
+        interaction : Interaction,
+        title       : str,
+        data        : list[str],
         /,
         *,
-        data_name : str | None = None,
-        show_page : bool       = True,
-        per_page  : int        = 10,
-        container : bool       = False,
+        data_name   : str | None = None,
+        show_page   : bool       = True,
+        container   : bool       = False,
+        per_page    : int        = 10,
     ) -> None:
         super().__init__(timeout = None)
         self.title     = title
@@ -160,6 +161,7 @@ class Paginator(LayoutView):
         self.current_page                = 0
         self.display : TextDisplay[Self] = TextDisplay(self.pages[0])
         self.page_row                    = PageRow(self) if len(self.pages) >= 2 else None
+        self.initial_interaction         = interaction
 
         self.above_items : list[Item[Self]] = []
         self.below_items : list[Item[Self]] = []
@@ -171,6 +173,14 @@ class Paginator(LayoutView):
         # ⸻ Only add a separator if there are buttons below it.
 
         self._render()
+
+    @override
+    async def on_timeout(self) -> None:
+        for item in self.walk_children():
+            if isinstance(item, Button | Select):
+                item.disabled = True
+
+        await self.initial_interaction.edit_original_response(view = self)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _get_page_footer
