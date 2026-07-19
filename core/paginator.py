@@ -3,7 +3,14 @@ from typing import Self, final, override
 from discord.ui import ActionRow, Button, Item, Modal, TextInput, button
 
 from bot import Interaction
-from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator, green, grey
+from bot.ui import (
+    Container,
+    LayoutView,
+    TextDisplay,
+    VisibleLargeSeparator,
+    green,
+    grey,
+)
 
 from .exceptions import send_bad_operation, send_bad_request
 
@@ -138,11 +145,13 @@ class Paginator(LayoutView):
         data_name : str | None = None,
         show_page : bool       = True,
         per_page  : int        = 10,
+        container : bool       = True,
     ) -> None:
         super().__init__(timeout = None)
         self.title     = title
         self.data      = data
         self.data_name = data_name
+        self.container = container
 
         self.pages                       = [
             "\n".join(data[i:i + per_page])
@@ -176,6 +185,7 @@ class Paginator(LayoutView):
 
     def add_above(self, *items : Item[Self]) -> None:
         self.above_items.extend(items)
+        self.render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_below
@@ -183,6 +193,7 @@ class Paginator(LayoutView):
 
     def add_below(self, *items : Item[Self]) -> None:
         self.below_items.extend(items)
+        self.render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # render
@@ -194,12 +205,19 @@ class Paginator(LayoutView):
         for item in self.above_items:
             self.add_item(item)
 
-        self.add_text(self.title)
-        self.add_item(VisibleLargeSeparator())
-        self.display = TextDisplay(self.pages[self.current_page])
-        self.add_item(self.display)
-        self.add_item(VisibleLargeSeparator())
-        self.add_text(self.get_page_footer())
+        items : list[TextDisplay[Self] | VisibleLargeSeparator] = [
+            TextDisplay(self.title),
+            VisibleLargeSeparator(),
+            TextDisplay(self.pages[self.current_page]),
+            VisibleLargeSeparator(),
+            TextDisplay(self.get_page_footer()),
+        ]
+
+        if self.container:
+            self.add_item(Container(*items))
+        else:
+            for item in items:
+                self.add_item(item)
 
         if self.page_row:
             self.page_row.update_button_states()
