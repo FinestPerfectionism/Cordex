@@ -1,5 +1,5 @@
 from logging import getLogger as get_logger
-from typing import TYPE_CHECKING, Self, cast
+from typing import TYPE_CHECKING, Self, cast, override
 
 from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
 from discord.ui import ActionRow, Button, TextDisplay
@@ -213,6 +213,7 @@ class InfoPrimarySection(LayoutView):
 
         self.add_item(self.container)
 
+    @override
     def add_text(self, text : str) -> None:
         if self.last_added_row is not None:
             self.container.add_item(VisibleLargeSeparator())
@@ -243,6 +244,7 @@ class InfoSecondarySection(LayoutView):
 
         self.add_item(self.container)
 
+    @override
     def add_text(self, text : str) -> None:
         if self.last_added_row is not None:
             self.container.add_item(VisibleLargeSeparator())
