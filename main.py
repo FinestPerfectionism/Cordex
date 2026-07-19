@@ -23,8 +23,8 @@ TOKEN = getenv("TOKEN")
 
 async def main() -> None:
     if not TOKEN:
-        warning = "TOKEN environment variable not set."
-        raise RuntimeError(warning)
+        error = "TOKEN environment variable not set."
+        raise RuntimeError(error)
 
     log.info("Starting Discord connection")
 

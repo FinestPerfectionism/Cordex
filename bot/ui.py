@@ -48,6 +48,30 @@ class LayoutView(BaseLayoutView):
         self.add_item(TextDisplay(text))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Container
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class Container(BaseContainer[LayoutView]):
+    def __init__(
+       self,
+       *children : Item[LayoutView],
+       color     : Color | None = None,
+       spoiler   : bool         = False,
+    ) -> None:
+        super().__init__(*children, accent_color = color, spoiler = spoiler)
+
+    @property
+    def color(self) -> Color | None:
+        return self.accent_color
+
+    @color.setter
+    def color(self, value : Color | None, /) -> None:
+        self.accent_color : Color | None = value
+
+    def add_text(self, text : str, /) -> None:
+        self.add_item(TextDisplay(text))
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Separator Sizes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -245,30 +269,6 @@ class ChannelModalSelect(Label[Modal]):
     @property
     def values(self) -> list[AppCommandChannel | AppCommandThread]:
         return self._underlying_component.values
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Container
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-class Container(BaseContainer[LayoutView]):
-    def __init__(
-       self,
-       *children : Item[LayoutView],
-       color     : Color | None = None,
-       spoiler   : bool         = False,
-    ) -> None:
-        super().__init__(*children, accent_color = color, spoiler = spoiler)
-
-    @property
-    def color(self) -> Color | None:
-        return self.accent_color
-
-    @color.setter
-    def color(self, value : Color | None, /) -> None:
-        self.accent_color : Color | None = value
-
-    def add_text(self, text : str, /) -> None:
-        self.add_item(TextDisplay(text))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Section Variants

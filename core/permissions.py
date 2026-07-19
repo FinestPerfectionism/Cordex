@@ -50,8 +50,8 @@ def access_control[F : Callable[..., object]](
     roles = allowed_roles or []
 
     if roles and context != "Main Guild":
-        warning = f"allowed_roles can only be used when context is 'Main Guild' (got context = {context!r})"
-        raise ValueError(warning)
+        error = "allowed_roles can only be used when context is 'Main Guild'"
+        raise ValueError(error)
 
     def predicate(target : Interaction) -> bool:
         guild_id = target.guild_id

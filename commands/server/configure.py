@@ -127,7 +127,7 @@ class LoggingConfigurationView(LayoutView):
             f"{ACCEPTED_EMOJI} **Antinuke Logs Channel:**\n"
             f"Configured to <#{antinuke_id}>."
         ) if antinuke_id else (
-            f"{DENIED_EMOJI} **Antinuke Logs Channel:**\n"
+           f"{DENIED_EMOJI} **Antinuke Logs Channel:**\n"
             "Not configured!"
         )
 
@@ -135,7 +135,7 @@ class LoggingConfigurationView(LayoutView):
             f"{ACCEPTED_EMOJI} **Moderation Logs Channel:**\n"
             f"Configured to <#{moderation_id}>."
         ) if moderation_id else (
-            f"{DENIED_EMOJI} **Moderation Logs Channel:**\n"
+           f"{DENIED_EMOJI} **Moderation Logs Channel:**\n"
             "Not configured!"
         )
 
