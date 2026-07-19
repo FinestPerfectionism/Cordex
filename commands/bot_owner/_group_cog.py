@@ -72,7 +72,7 @@ class BotOwnerCommands(
         await run_bo_cogs_reload(self.bot, interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner load Command
+    # /bot-owner cog load Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @cog.command(

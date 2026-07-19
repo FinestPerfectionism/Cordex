@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, Self, cast, override
 
@@ -33,7 +34,7 @@ if TYPE_CHECKING:
 async def ensure_views(
     bot        : "Cordex",
     channel_id : int,
-    views      : list[LayoutView],
+    views      : Sequence[LayoutView],
     files      : list[list[File]] | None = None,
 ) -> None:
     log.info("Starting view ensurement for channel: %s", channel_id)

@@ -19,6 +19,7 @@ from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
     PARTNERSHIPS_CHANNEL_ID,
     RULES_CHANNEL_ID,
+    STAFF_LEAVE_CHANNEL_ID,
     TICKETS_CHANNEL_ID,
 )
 from core.cog_loader import discover_cogs
@@ -31,6 +32,7 @@ from guild_info import (
     RuleViewsList,
     ensure_views,
 )
+from guild_info.leave import LeaveComponents
 from guild_info.partnerships import build_partnership_views
 from guild_info.tickets import TicketComponents
 
@@ -171,6 +173,13 @@ class Cordex(commands.Bot):
             channel_id = HIERARCHY_CHANNEL_ID,
             views      = HierarchyViewsList,
         )
+
+        await ensure_views(
+            bot        = self,
+            channel_id = STAFF_LEAVE_CHANNEL_ID,
+            views      = [LeaveComponents()],
+        )
+        self.add_view(LeaveComponents())
 
         await ensure_views(
             bot        = self,

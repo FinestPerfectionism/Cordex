@@ -1,4 +1,4 @@
-from discord.ui import LayoutView
+from bot.ui import LayoutView
 
 from ._base import ensure_views
 from .hierarchy import (
