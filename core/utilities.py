@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING, Literal
 
 from discord import Guild, Member, Role
 
-from bot import Cordex
-
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from discord.app_commands import AppCommand
+
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def format_command(
-    bot   : Cordex,
+    bot   : "Cordex",
     path  : str,
     guild : Guild | None = None,
 ) -> str:
