@@ -6,6 +6,7 @@ from asyncio import (
     get_running_loop,
 )
 from collections.abc import Coroutine
+from secrets import randbelow
 from sys import exc_info
 from traceback import format_exception
 from typing import override
@@ -44,6 +45,7 @@ from core.exceptions import (
     send_bad_operation,
     send_bad_permissions_command,
 )
+from core.responses import format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -174,7 +176,18 @@ class ErrorLogger(commands.Cog):
         error       : AppCommandError,
     ) -> None:
         if isinstance(error, BadPermissionsCommand):
-            await send_bad_permissions_command(interaction)
+            if randbelow(100) == 0:
+                await format_send(
+                    interaction,
+                    msg_type  = "error",
+                    title     = "I'm sorry, Dave,",
+                    subtitle  = "I'm afraid I can't do that.",
+                    footer    = "You are not authorized to run this command — Bad request.",
+                    override  = True,
+                    ephemeral = False,
+                )
+            else:
+                await send_bad_permissions_command(interaction)
             return
 
         if isinstance(error, BadEnvironmentGuild):

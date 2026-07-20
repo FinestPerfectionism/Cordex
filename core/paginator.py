@@ -93,13 +93,13 @@ class PageRow(ActionRow["Paginator"]):
 
         # ⸻ Update.
 
-        self.update_button_states()
+        self.update_states()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # update_button_states
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def update_button_states(self) -> None:
+    def update_states(self) -> None:
         current = self.paginator.current_page
         total   = len(self.paginator.pages)
 
@@ -202,6 +202,8 @@ class Paginator(LayoutView):
     def _render(self) -> None:
         self.clear_items()
 
+        # ⸻ Add all items above.
+
         for item in self.above_items:
             self.add_item(item)
 
@@ -214,14 +216,18 @@ class Paginator(LayoutView):
         ]
 
         if self.page_row:
-            self.page_row.update_button_states()
+            self.page_row.update_states()
             items.append(self.page_row)
+
+        # ⸻ Add all items to the container if chosen or directly to the view if not
 
         if self.container:
             self.add_item(Container(*items))
         else:
             for item in items:
                 self.add_item(item)
+
+        # ⸻ Add all items below.
 
         for item in self.below_items:
             self.add_item(item)
