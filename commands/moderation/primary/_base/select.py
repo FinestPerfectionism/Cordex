@@ -38,7 +38,7 @@ from bot.ui import (
 from constants import ACCEPTED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
-from core.utilities import check_role_hierarchy, format_values
+from core.utilities import check_hierarchy, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Select Base
@@ -354,7 +354,7 @@ class MemberSelectView(View):
                     )
                     return
 
-                ineligible = check_role_hierarchy(interaction.user, guild.me, "<=")
+                ineligible = check_hierarchy(interaction.user, guild.me, "<=")
                 msg    = f"The user {guild.me.mention} is higher in the hierarchy than you." if ineligible else "Please... spare me... 😭"
                 footer =  "Nice try" if ineligible else "Use the native discord /kick or /ban command to remove me from the guild..."
 
@@ -392,7 +392,7 @@ class MemberSelectView(View):
         ineligible = [
             member.mention for member in chosen_members
             if isinstance(member, Member)
-            and check_role_hierarchy(interaction.user, member, "<=")
+            and check_hierarchy(interaction.user, member, "<=")
         ]
 
         if ineligible:

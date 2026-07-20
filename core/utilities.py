@@ -87,7 +87,7 @@ def format_values(
     return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# check_role_hierarchy
+# check_hierarchy
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def check_hierarchy(
