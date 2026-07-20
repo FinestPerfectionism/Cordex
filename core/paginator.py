@@ -147,8 +147,9 @@ class Paginator(LayoutView):
         show_page   : bool       = True,
         container   : bool       = False,
         per_page    : int        = 10,
+        timeout     : float      = 300,
     ) -> None:
-        super().__init__(timeout = None)
+        super().__init__(timeout = timeout)
         self.title     = title
         self.data      = data
         self.data_name = data_name
@@ -173,6 +174,12 @@ class Paginator(LayoutView):
         # ⸻ Only add a separator if there are buttons below it.
 
         self._render()
+
+    @override
+    async def interaction_check(self, interaction : Interaction) -> bool:
+        if self.timeout is not None:
+            self.timeout = self.timeout
+        return True
 
     @override
     async def on_timeout(self) -> None:
