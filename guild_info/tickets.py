@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 # Ticket Support Information
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class TicketModal(Modal, title = "Open Ticket"):
+class _TicketModal(Modal, title = "Open Ticket"):
     def __init__(self) -> None:
         super().__init__(timeout = None)
 
@@ -87,7 +87,7 @@ class TicketModal(Modal, title = "Open Ticket"):
             )
             await ticket.send(team_mention)
 
-class TicketButton(Button["TicketComponents"]):
+class _TicketButton(Button["TicketComponents"]):
     def __init__(self) -> None:
         super().__init__(label = "Open Ticket", style = blurple, custom_id = "persistent:ticket_button")
 
@@ -145,7 +145,7 @@ class TicketButton(Button["TicketComponents"]):
 
         # ⸻ Members users may open any ticket.
 
-        await interaction.response.send_modal(TicketModal())
+        await interaction.response.send_modal(_TicketModal())
 
 class TicketComponents(InfoSupportSection):
     def __init__(self) -> None:
@@ -164,5 +164,5 @@ class TicketComponents(InfoSupportSection):
                 "We look forward to assisting you! Sincerely,\n"
                 "-# The Goobers Moderation team"
             ),
-            button      = TicketButton(),
+            button      = _TicketButton(),
         )

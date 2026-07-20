@@ -19,10 +19,10 @@ if TYPE_CHECKING:
 # Response Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
-type SendTarget = "ContextOrInteraction | Messageable"
+type _MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
+type _SendTarget = "ContextOrInteraction | Messageable"
 
-def emoji_match(msg_type : MessageType) -> str:
+def _emoji_match(msg_type : _MessageType) -> str:
     match msg_type:
         case "success":
             return ACCEPTED_EMOJI
@@ -37,7 +37,7 @@ def emoji_match(msg_type : MessageType) -> str:
         case "unlock":
             return FORUM_EMOJI
 
-def title_match(msg_type : MessageType) -> str:
+def _title_match(msg_type : _MessageType) -> str:
     match msg_type:
         case "success":
             return "Successfully"
@@ -50,17 +50,17 @@ def title_match(msg_type : MessageType) -> str:
 # Internal Builders
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def build_title(msg_type : MessageType, title : str, *, override : bool = False) -> str:
+def _build_title(msg_type : _MessageType, title : str, *, override : bool = False) -> str:
     if override:
-        return f"{emoji_match(msg_type)} **{title}**"
+        return f"{_emoji_match(msg_type)} **{title}**"
 
-    prefix      = title_match(msg_type)
+    prefix      = _title_match(msg_type)
     punctuation = "!" if msg_type in {"warning", "error"} else "."
     clean_title = title.rstrip(".!") + punctuation
 
     if prefix:
-        return f"{emoji_match(msg_type)} **{prefix} {clean_title}**"
-    return f"{emoji_match(msg_type)} **{clean_title}**"
+        return f"{_emoji_match(msg_type)} **{prefix} {clean_title}**"
+    return f"{_emoji_match(msg_type)} **{clean_title}**"
 
 def build_footer(footer : str | None) -> str | None:
     if footer is None:
@@ -71,8 +71,8 @@ def build_footer(footer : str | None) -> str | None:
 # Internal Send
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send(
-    target       : SendTarget,
+async def _send(
+    target       : _SendTarget,
     /,
     *,
     content      : str,
@@ -100,13 +100,13 @@ async def send(
 
 def format_message(
     *,
-    msg_type : MessageType,
+    msg_type : _MessageType,
     title    : str,
     subtitle : str | None = None,
     footer   : str | None = None,
     override : bool       = False,
 ) -> str:
-    lines : list[str] = [build_title(msg_type, title, override = override)]
+    lines : list[str] = [_build_title(msg_type, title, override = override)]
     if subtitle:
         lines.append(subtitle)
 
@@ -117,10 +117,10 @@ def format_message(
     return "\n".join(lines)
 
 async def format_send(
-    target       : SendTarget,
+    target       : _SendTarget,
     /,
     *,
-    msg_type     : MessageType,
+    msg_type     : _MessageType,
     title        : str,
     subtitle     : str     | None = None,
     footer       : str     | None = None,
@@ -136,7 +136,7 @@ async def format_send(
         footer   = footer,
         override = override,
     )
-    return await send(
+    return await _send(
         target,
         content      = content,
         ephemeral    = ephemeral,

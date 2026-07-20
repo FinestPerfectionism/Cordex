@@ -32,7 +32,7 @@ from .exceptions import (
 # @access_control
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-ContextType = Literal[
+_ContextType = Literal[
     "DMs",
     "Guild",
     "Guild + DMs",
@@ -41,7 +41,7 @@ ContextType = Literal[
 ]
 
 def access_control[F : Callable[..., object]](
-    context       : ContextType | None = "Guild + DMs",
+    context       : _ContextType | None = "Guild + DMs",
     *,
     allowed_users : list[int]   | None = None,
     allowed_roles : list[int]   | None = None,

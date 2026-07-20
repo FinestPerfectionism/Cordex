@@ -86,7 +86,11 @@ def format_values(
 
     return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
 
-def check_role_hierarchy(
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# check_role_hierarchy
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def check_hierarchy(
     actor      : Member,
     target     : Member,
     comparison : Literal[">", "<", "=", ">=", "<="],
@@ -117,6 +121,9 @@ def check_role_hierarchy(
 
     return ops[comparison](actor_role, target_role)
 
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# codeblock
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def codeblock(code : str, language : str | None = "py") -> str:
     return (

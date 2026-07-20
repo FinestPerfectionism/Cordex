@@ -19,7 +19,7 @@ from .exceptions import send_bad_operation, send_bad_request
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
-class PageJumpModal(Modal, title = "Jump to Page"):
+class _PageJumpModal(Modal, title = "Jump to Page"):
     page_input : TextInput[Self]
 
     def __init__(self, paginator : "Paginator") -> None:
@@ -80,7 +80,7 @@ class PageJumpModal(Modal, title = "Jump to Page"):
             raise
 
 @final
-class PageRow(ActionRow["Paginator"]):
+class _PageRow(ActionRow["Paginator"]):
     def __init__(self, paginator : "Paginator") -> None:
         super().__init__()
         self.paginator = paginator
@@ -124,7 +124,7 @@ class PageRow(ActionRow["Paginator"]):
 
     @button(label = "1 / 1", style = green)
     async def btn_page(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        await interaction.response.send_modal(PageJumpModal(self.paginator))
+        await interaction.response.send_modal(_PageJumpModal(self.paginator))
 
     @button(label = ">", style = grey)
     async def btn_forward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
@@ -139,13 +139,13 @@ class Paginator(LayoutView):
     def __init__(
         self,
         title       : str,
-        data        : list[str],
+        data        : list[str | Item[Self]],
         /,
         *,
         data_name   : str | None = None,
         show_page   : bool       = True,
         container   : bool       = False,
-        per_page    : int        = 10,
+        per_page    : int        = 5,
     ) -> None:
         super().__init__(timeout = 600)
         self.title     = title
@@ -153,13 +153,12 @@ class Paginator(LayoutView):
         self.data_name = data_name
         self.container = container
 
-        self.pages                       = [
-            "\n".join(data[i:i + per_page])
+        self.pages        = [
+            data[i:i + per_page]
             for i in range(0, len(data), per_page)
-        ] or ["No content available."]
-        self.current_page                = 0
-        self.display : TextDisplay[Self] = TextDisplay(self.pages[0])
-        self.page_row                    = PageRow(self) if len(self.pages) >= 2 else None
+        ] or [["No content available."]]
+        self.current_page = 0
+        self.page_row     = _PageRow(self) if len(self.pages) >= 2 else None
 
         self.above_items : list[Item[Self]] = []
         self.below_items : list[Item[Self]] = []
@@ -207,10 +206,15 @@ class Paginator(LayoutView):
         for item in self.above_items:
             self.add_item(item)
 
-        items : list[TextDisplay[Self] | VisibleLargeSeparator | PageRow] = [
+        page_items : list[Item[Self]] = [
+            TextDisplay(item) if isinstance(item, str) else item
+            for item in self.pages[self.current_page]
+        ]
+
+        items : list[TextDisplay[Self] | VisibleLargeSeparator | _PageRow | Item[Self]] = [
             TextDisplay(self.title),
             VisibleLargeSeparator(),
-            TextDisplay(self.pages[self.current_page]),
+            *page_items,
             VisibleLargeSeparator(),
             TextDisplay(self._get_page_footer()),
         ]
