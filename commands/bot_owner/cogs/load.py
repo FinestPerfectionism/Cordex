@@ -3,9 +3,9 @@ from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner cog load Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_cogs_load(
     bot         : Cordex,
@@ -22,12 +22,14 @@ async def run_bo_cogs_load(
         return
     try:
         await bot.load_extension(cog)
+        bot.destroy_commands_cache()
         await format_send(
             interaction,
             msg_type =  "success",
             title    =  "loaded cog",
             subtitle = f"Loaded cog `{cog}`.",
         )
+        bot.build_commands_cache()
         log.info("Loaded cog %s", cog)
     except Exception as e:
         log.exception("Failed to load cog %s", cog)

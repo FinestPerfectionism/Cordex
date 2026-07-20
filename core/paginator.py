@@ -148,20 +148,20 @@ class Paginator(LayoutView):
         per_page    : int        = 5,
     ) -> None:
         super().__init__(timeout = 600)
-        self.title     = title
-        self.data      = data
-        self.data_name = data_name
-        self.container = container
+        self._title     = title
+        self._data      = data
+        self._data_name = data_name
+        self._container = container
 
         self.pages        = [
             data[i:i + per_page]
             for i in range(0, len(data), per_page)
         ] or [["No content available."]]
         self.current_page = 0
-        self.page_row     = _PageRow(self) if len(self.pages) >= 2 else None
+        self._page_row    = _PageRow(self) if len(self.pages) >= 2 else None
 
-        self.above_items : list[Item[Self]] = []
-        self.below_items : list[Item[Self]] = []
+        self._above_items : list[Item[Self]] = []
+        self._below_items : list[Item[Self]] = []
 
         if show_page and not data_name:
             error = "data_name must be provided if show_page is True"
@@ -176,14 +176,14 @@ class Paginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def _get_page_footer(self) -> str:
-        return f"-# Page {self.current_page + 1} of {len(self.pages)} | {len(self.data)} {self.data_name}"
+        return f"-# Page {self.current_page + 1} of {len(self.pages)} | {len(self._data)} {self._data_name}"
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_above
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_above(self, *items : Item[Self]) -> None:
-        self.above_items.extend(items)
+        self._above_items.extend(items)
         self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -191,7 +191,7 @@ class Paginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_below(self, *items : Item[Self]) -> None:
-        self.below_items.extend(items)
+        self._below_items.extend(items)
         self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -203,7 +203,7 @@ class Paginator(LayoutView):
 
         # ⸻ Add all items above.
 
-        for item in self.above_items:
+        for item in self._above_items:
             self.add_item(item)
 
         page_items : list[Item[Self]] = [
@@ -212,20 +212,20 @@ class Paginator(LayoutView):
         ]
 
         items : list[TextDisplay[Self] | VisibleLargeSeparator | _PageRow | Item[Self]] = [
-            TextDisplay(self.title),
+            TextDisplay(self._title),
             VisibleLargeSeparator(),
             *page_items,
             VisibleLargeSeparator(),
             TextDisplay(self._get_page_footer()),
         ]
 
-        if self.page_row:
-            self.page_row.update_states()
-            items.append(self.page_row)
+        if self._page_row:
+            self._page_row.update_states()
+            items.append(self._page_row)
 
         # ⸻ Add all items to the container if chosen or directly to the view if not
 
-        if self.container:
+        if self._container:
             self.add_item(Container(*items))
         else:
             for item in items:
@@ -233,7 +233,7 @@ class Paginator(LayoutView):
 
         # ⸻ Add all items below.
 
-        for item in self.below_items:
+        for item in self._below_items:
             self.add_item(item)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

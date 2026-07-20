@@ -7,8 +7,12 @@ from typing import Self, TypedDict, Unpack, override
 from aiosqlite import Connection, connect
 from discord import CustomActivity, Embed, Intents, Message, Status
 from discord import Interaction as BaseInteraction
+from discord.app_commands import Command, Group
 from discord.ext import commands
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
+    Cog,
+)
+from discord.ext.commands import (
     Context as BaseContext,
 )
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
@@ -48,22 +52,22 @@ log = get_logger("Cordex")
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type Inter = Callable[["Interaction"], Coroutine[None, None, None]]
+type _Inter = Callable[["Interaction"], Coroutine[None, None, None]]
 
-class ContextKwargs(TypedDict, total = False):
+class _ContextKwargs(TypedDict, total = False):
     message : Message
     bot     : "Cordex"
     view    : StringView
 
-class ContextClass(BaseContext["Cordex"]):
-    def __init__(self, **kwargs : Unpack[ContextKwargs]) -> None:
+class _ContextClass(BaseContext["Cordex"]):
+    def __init__(self, **kwargs : Unpack[_ContextKwargs]) -> None:
         super().__init__(**kwargs)
 
-    async def send_button(self, callback : Inter, /) -> None:
+    async def send_button(self, callback : _Inter, /) -> None:
         class ViewButton(View):
-            def __init__(self, view_callback : Inter, /) -> None:
+            def __init__(self, view_callback : _Inter, /) -> None:
                 super().__init__(timeout = None)
-                self.callback : Inter = view_callback
+                self.callback : _Inter = view_callback
 
             @button(label = "Click me!")
             async def btn_basic(self, interaction : "Interaction", _button : Button[Self]) -> None:
@@ -97,7 +101,7 @@ class ContextClass(BaseContext["Cordex"]):
         await msg.reply(content, mention_author = ping)
 
 
-type Context              = ContextClass
+type Context              = _ContextClass
 type Interaction          = BaseInteraction["Cordex"] | BaseInteraction
 type ContextOrInteraction = Interaction | Context
 
@@ -120,7 +124,12 @@ class Cordex(commands.Bot):
             status           = status,
             activity         = activity,
         )
-        self.db : Connection
+        self.db              : Connection
+        self._commands_cache : list[Command[Group | Cog, ..., object] | Group] = []
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Custom Context
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @override
     async def get_context[ContextT : BaseContext[Cordex]](
@@ -129,7 +138,11 @@ class Cordex(commands.Bot):
         *,
         cls    : type[ContextT] | None = None,
     ) -> ContextT | Context:
-        return await super().get_context(origin, cls = cls or ContextClass)
+        return await super().get_context(origin, cls = cls or _ContextClass)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # setup_hook
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @override
     async def setup_hook(self) -> None:
@@ -222,6 +235,30 @@ class Cordex(commands.Bot):
                 log.info("Loaded cog %s", cog)
             except Exception:
                 log.exception("Failed to load cog %s", cog)
+
+        # ⸻ Cache
+
+        self.build_commands_cache()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Commands Cache
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def build_commands_cache(self) -> None:
+        self._commands_cache = list(self.tree.walk_commands())
+
+    def get_commands_cache(self) -> list[Command[Group | Cog, ..., object] | Group]:
+        if not self._commands_cache:
+            self.build_commands_cache()
+        return self._commands_cache
+
+    def destroy_commands_cache(self) -> None:
+        self._commands_cache.clear()
+        self.build_commands_cache()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # close
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @override
     async def close(self) -> None:

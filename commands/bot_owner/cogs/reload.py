@@ -3,15 +3,16 @@ from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner cog reload Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_cogs_reload(
     bot         : Cordex,
     interaction : Interaction,
     cog         : str | None,
 ) -> None:
+    await interaction.response.defer()
     cogs : list[str] = get_cogs()
 
     if cog:
@@ -20,12 +21,14 @@ async def run_bo_cogs_reload(
             return
         try:
             await bot.reload_extension(cog)
+            bot.destroy_commands_cache()
             await format_send(
                 interaction,
                 msg_type =  "success",
                 title    =  "reloaded cog",
                 subtitle = f"Reloaded cog `{cog}`.",
             )
+            bot.build_commands_cache()
             log.info("Reloaded cog %s", cog)
         except Exception as e:
             log.exception("Failed to reload cog %s", cog)

@@ -3,9 +3,9 @@ from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner cog unload Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_cogs_unload(
     bot         : Cordex,
@@ -28,6 +28,7 @@ async def run_bo_cogs_unload(
 
     try:
         await bot.unload_extension(cog)
+        bot.destroy_commands_cache()
         await format_send(
             interaction,
             msg_type =  "success",

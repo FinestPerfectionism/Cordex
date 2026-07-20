@@ -10,9 +10,9 @@ from core.exceptions import send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner state restart Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_state_restart(bot : Cordex, interaction : Interaction) -> None:
     restarting : list[bool] = [False]
