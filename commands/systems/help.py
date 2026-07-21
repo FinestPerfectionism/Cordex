@@ -1,4 +1,3 @@
-from asyncio import gather
 from typing import final, override
 
 from discord import SelectOption
@@ -9,6 +8,7 @@ from discord.ui import ActionRow, Button, Item, Modal, Select, TextDisplay, Text
 from bot import Cordex, Interaction, bot
 from bot.ui import ButtonSection, Container, LayoutView, blurple
 from constants import (
+    BOT_OWNER_ID,
     COMMAND_EMOJI,
     EMOJI_EMOJI,
     HORIZONTAL_SETTINGS,
@@ -28,7 +28,7 @@ class _QueryModal(Modal, title = "Query"):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        await interaction.response.send_message("This doesn't do anything!", ephemeral = True)
+        await interaction.response.send_message("This modal does nothing right now. :[", ephemeral = True)
 
 class _InfoButton(Button[Paginator]):
     def __init__(self) -> None:
@@ -36,7 +36,7 @@ class _InfoButton(Button[Paginator]):
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_message("This doesn't do anything!", ephemeral = True)
+        await interaction.response.send_message("This button does nothing right now. :[", ephemeral = True)
 
 class _CategorySelect(Select[Paginator]):
     def __init__(self) -> None:
@@ -63,7 +63,7 @@ class _CategorySelect(Select[Paginator]):
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_message("This doesn't do anything!", ephemeral = True)
+        await interaction.response.send_message("This button does nothing right now. :[", ephemeral = True)
 
 class _QueryButton(Button[Paginator]):
     def __init__(self) -> None:
@@ -98,12 +98,10 @@ class HelpCommand(commands.Cog):
             cmds = [c for c in bot.get_commands_cache() if isinstance(c, Command)]
             cmds.sort(key = lambda c : c.qualified_name)
 
-            mention_strings = await gather(
-               *[
-                    format_command(bot, cmd.qualified_name)
-                    for cmd in cmds
-                ],
-            )
+            mention_strings = [
+                format_command(bot, cmd.qualified_name)
+                for cmd in cmds
+            ]
 
             sections : list[str | Item[LayoutView]] = [
                 ButtonSection(
@@ -114,7 +112,7 @@ class HelpCommand(commands.Cog):
             ]
 
             view = Paginator(
-                "# All Commands",
+                f"# {HORIZONTAL_SETTINGS} All Commands",
                 sections,
                 data_name = "Commands",
                 container = True,
@@ -135,8 +133,16 @@ class HelpCommand(commands.Cog):
                 Container(
                     TextDisplay(
                         (
-                            "# About Cordex,\n"
-                            ""
+                            "# About me,\n"
+                            "I am a bot designed exclusively to serve the server *goobers*. You won't see me anywhere else! (probably)\n"
+                            "## My Developer\n"
+                           f"My developer is <@{BOT_OWNER_ID}>. I was created and am actively maintained by him.\n"
+                            "## What I Do\n"
+                            "- **Advanced Moderation:** Staff can moderate multiple users at once with advanced logging, appeals, and state. I also have a ticket system for user support.\n"
+                            "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
+                            "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
+                            "## Issues?\n"
+                           f"Should you have feedback or any issues with me, please speak to my developer."
                         ),
                     ),
                 ),

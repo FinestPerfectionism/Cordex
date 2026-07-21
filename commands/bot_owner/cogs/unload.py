@@ -1,4 +1,4 @@
-from bot import Cordex, Interaction, log
+from bot import Cordex, Interaction, log, tree
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
@@ -28,7 +28,8 @@ async def run_bo_cogs_unload(
 
     try:
         await bot.unload_extension(cog)
-        bot.destroy_commands_cache()
+        await tree.sync()
+        await bot.rebuild_commands_cache()
         await format_send(
             interaction,
             msg_type =  "success",

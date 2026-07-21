@@ -9,9 +9,8 @@ from core.utilities import codeblock
 
 async def run_bo_state_sync(bot : Cordex, interaction : Interaction) -> None:
     try:
-        bot.destroy_commands_cache()
         await tree.sync()
-        bot.build_commands_cache()
+        await bot.rebuild_commands_cache()
         await format_send(
             interaction,
             msg_type = "success",

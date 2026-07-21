@@ -1,12 +1,10 @@
 from operator import eq, ge, gt, le, lt
 from typing import TYPE_CHECKING, Literal
 
-from discord import Guild, Member, Role
+from discord import Member, Role
 
 if TYPE_CHECKING:
     from collections.abc import Callable
-
-    from discord.app_commands import AppCommand
 
     from bot import Cordex
 
@@ -18,26 +16,16 @@ if TYPE_CHECKING:
 # format_command
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def format_command(
-    bot   : "Cordex",
-    path  : str,
-    guild : Guild | None = None,
-) -> str:
+def format_command(bot : "Cordex", path  : str) -> str:
     parts : list[str] = path.strip().split()
 
     if not parts:
         return "`Invalid Command`"
 
-    root_name : str              = parts[0]
-    commands  : list[AppCommand] = []
+    root_name : str        = parts[0]
+    root_id   : int | None = None
 
-    if guild:
-        commands = await bot.tree.fetch_commands(guild = guild)
-
-    if not any(cmd.name == root_name for cmd in commands):
-        commands = await bot.tree.fetch_commands()
-
-    root_id : int | None = None
+    commands = bot.get_app_commands_cache()
 
     for cmd in commands:
         if cmd.name == root_name:

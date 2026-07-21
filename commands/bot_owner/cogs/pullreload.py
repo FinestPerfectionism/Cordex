@@ -1,6 +1,6 @@
 from asyncio import create_subprocess_exec, subprocess
 
-from bot import Cordex, Interaction, log
+from bot import Cordex, Interaction, log, tree
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_operation
 from core.responses import format_send
@@ -40,8 +40,8 @@ async def run_bo_cogs_pullreload(bot : Cordex, interaction : Interaction) -> Non
     for c in cogs:
         try:
             await bot.reload_extension(c)
-            bot.destroy_commands_cache()
-            bot.build_commands_cache()
+            await tree.sync()
+            await bot.rebuild_commands_cache()
             log.info("Reloaded cog %s", c)
         except Exception as e:
             failed.append((c, e))

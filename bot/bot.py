@@ -7,7 +7,7 @@ from typing import Self, TypedDict, Unpack, override
 from aiosqlite import Connection, connect
 from discord import CustomActivity, Embed, Intents, Message, Status
 from discord import Interaction as BaseInteraction
-from discord.app_commands import Command, Group
+from discord.app_commands import AppCommand, Command, Group
 from discord.ext import commands
 from discord.ext.commands import Cog  # type: ignore[reportMissingTypeStubs]
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
@@ -98,6 +98,14 @@ class _ContextClass(BaseContext["Cordex"]):
         msg = await self.channel.fetch_message(msg_id)
         await msg.reply(content, mention_author = ping)
 
+    async def fetch_and_edit(self, content : str, msg_id : int, /) -> None:
+        msg = await self.channel.fetch_message(msg_id)
+        await msg.edit(content = content)
+
+    async def fetch_and_delete(self, msg_id : int, /) -> None:
+        msg = await self.channel.fetch_message(msg_id)
+        await msg.delete()
+
 
 type Context              = _ContextClass
 type Interaction          = BaseInteraction["Cordex"] | BaseInteraction
@@ -122,8 +130,9 @@ class Cordex(commands.Bot):
             status           = status,
             activity         = activity,
         )
-        self.db              : Connection
-        self._commands_cache : list[Command[Group | Cog, ..., object] | Group] = []
+        self.db                  : Connection
+        self._commands_cache     : list[Command[Group | Cog, ..., object] | Group] = []
+        self._app_commands_cache : list[AppCommand] = []
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Custom Context
@@ -237,6 +246,7 @@ class Cordex(commands.Bot):
         # ⸻ Cache
 
         self.build_commands_cache()
+        await self.build_app_commands_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Commands Cache
@@ -245,14 +255,23 @@ class Cordex(commands.Bot):
     def build_commands_cache(self) -> None:
         self._commands_cache = list(self.tree.walk_commands())
 
+    async def build_app_commands_cache(self) -> None:
+        self._app_commands_cache = await self.tree.fetch_commands()
+
     def get_commands_cache(self) -> list[Command[Group | Cog, ..., object] | Group]:
         if not self._commands_cache:
             self.build_commands_cache()
         return self._commands_cache
 
-    def destroy_commands_cache(self) -> None:
+    def get_app_commands_cache(self) -> list[AppCommand]:
+        return self._app_commands_cache
+
+    async def rebuild_commands_cache(self) -> None:
         self._commands_cache.clear()
+        self._app_commands_cache.clear()
+
         self.build_commands_cache()
+        await self.build_app_commands_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # close
