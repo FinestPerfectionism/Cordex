@@ -138,14 +138,14 @@ class _PageRow(ActionRow["Paginator"]):
 class Paginator(LayoutView):
     def __init__(
         self,
-        title       : str,
-        data        : list[str | Item[Self]],
+        title     : str,
+        data      : list[str | Item[LayoutView]],
         /,
         *,
-        data_name   : str | None = None,
-        show_page   : bool       = True,
-        container   : bool       = False,
-        per_page    : int        = 5,
+        data_name : str | None = None,
+        show_page : bool       = True,
+        container : bool       = False,
+        per_page  : int        = 5,
     ) -> None:
         super().__init__(timeout = 600)
         self._title     = title
@@ -160,8 +160,8 @@ class Paginator(LayoutView):
         self.current_page = 0
         self._page_row    = _PageRow(self) if len(self.pages) >= 2 else None
 
-        self._above_items : list[Item[Self]] = []
-        self._below_items : list[Item[Self]] = []
+        self._above_items : list[Item[LayoutView]] = []
+        self._below_items : list[Item[LayoutView]] = []
 
         if show_page and not data_name:
             error = "data_name must be provided if show_page is True"
@@ -182,7 +182,7 @@ class Paginator(LayoutView):
     # add_above
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_above(self, *items : Item[Self]) -> None:
+    def add_above(self, *items : Item[LayoutView]) -> None:
         self._above_items.extend(items)
         self._render()
 
@@ -190,7 +190,7 @@ class Paginator(LayoutView):
     # add_below
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_below(self, *items : Item[Self]) -> None:
+    def add_below(self, *items : Item[LayoutView]) -> None:
         self._below_items.extend(items)
         self._render()
 
@@ -206,12 +206,12 @@ class Paginator(LayoutView):
         for item in self._above_items:
             self.add_item(item)
 
-        page_items : list[Item[Self]] = [
+        page_items : list[Item[LayoutView]] = [
             TextDisplay(item) if isinstance(item, str) else item
             for item in self.pages[self.current_page]
         ]
 
-        items : list[TextDisplay[Self] | VisibleLargeSeparator | _PageRow | Item[Self]] = [
+        items : list[TextDisplay[LayoutView] | VisibleLargeSeparator | _PageRow | Item[LayoutView]] = [
             TextDisplay(self._title),
             VisibleLargeSeparator(),
             *page_items,

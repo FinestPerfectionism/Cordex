@@ -9,10 +9,8 @@ from discord import CustomActivity, Embed, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.app_commands import Command, Group
 from discord.ext import commands
+from discord.ext.commands import Cog  # type: ignore[reportMissingTypeStubs]
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
-    Cog,
-)
-from discord.ext.commands import (
     Context as BaseContext,
 )
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
