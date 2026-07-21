@@ -90,7 +90,10 @@ class HelpCommand(commands.Cog):
         await interaction.response.defer(ephemeral = True)
 
         if name:
-            await interaction.followup.send("`name` does nothing right now :[, but running the command with no argument works.")
+            await interaction.followup.send(
+                "`name` does nothing right now :[, but running the command with no argument works.",
+                ephemeral = True,
+            )
         else:
             cmds = [c for c in bot.get_commands_cache() if isinstance(c, Command)]
             cmds.sort(key = lambda c : c.qualified_name)
@@ -139,7 +142,7 @@ class HelpCommand(commands.Cog):
                 ),
             )
 
-            await interaction.followup.send(view = view)
+            await interaction.followup.send(view = view, ephemeral = True)
 
 async def setup(bot : Cordex) -> None:
     cog = HelpCommand(bot)
