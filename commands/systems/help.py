@@ -1,3 +1,5 @@
+import operator
+from difflib import SequenceMatcher
 from typing import cast, final, override
 
 from discord import SelectOption
@@ -15,10 +17,12 @@ from constants import (
     MODERATION_EMOJI,
     SEARCH_EMOJI,
 )
+from core.exceptions import send_bad_operation, send_bad_request
 from core.paginator import Paginator
 from core.utilities import format_command
 
-type CommandList = list[Command[Group | commands.Cog, ..., object]]
+type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
+type CommandList      = list[AnnotatedCommand]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Help Command
@@ -38,13 +42,66 @@ def _build_sections(cmds : CommandList) -> list[str | Item[LayoutView]]:
         for n, (cmd, m_str) in enumerate(zip(cmds, mention_strings, strict = False), start = 1)
     ]
 
+def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
+    query_lower = query.strip().lower()
+
+    scored : list[tuple[float, AnnotatedCommand]] = [
+        (
+            SequenceMatcher(
+                None,
+                query_lower,
+                cmd.qualified_name.lower(),
+            ).ratio(),
+            cmd,
+        )
+        for cmd in cmds
+    ]
+
+    for index, (score, cmd) in enumerate(scored):
+        if query_lower and query_lower in cmd.qualified_name.lower():
+            scored[index] = (max(score, 0.85), cmd)
+
+    scored.sort(key = operator.itemgetter(0), reverse = True)
+
+    return [cmd for score, cmd in scored if score >= 0.4]
+
 @final
 class _QueryModal(Modal, title = "Query"):
     text_input : TextInput[LayoutView] = TextInput(label = "Enter a command name.")
 
+    def __init__(self, cmds : CommandList) -> None:
+        super().__init__()
+        self._commands = cmds
+
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        await interaction.response.send_message("This modal does nothing right now. :[", ephemeral = True)
+        query   = self.text_input.value
+        matches = _fuzzy_search(query, self._commands)
+
+        # ⸻ No commands matched closely enough to the query...
+
+        if not matches:
+            return await send_bad_request(
+                interaction,
+                title    =  "query commands",
+                subtitle = f'No commands found matching "{query}".',
+            )
+
+        paginator = Paginator(
+            f"# {SEARCH_EMOJI} Search Results",
+            _build_sections(matches),
+            data_name = "Commands",
+            container = True,
+        )
+
+        try:
+            await interaction.response.send_message(view = paginator, ephemeral = True)
+
+        # ⸻ Unhandled error.
+
+        except Exception:
+            await send_bad_operation(interaction, title = "query commands")
+            raise
 
 @final
 class _InfoButton(Button[Paginator]):
@@ -107,13 +164,15 @@ class _CategorySelect(Select[Paginator]):
 
         await interaction.response.edit_message(view = paginator)
 
+@final
 class _QueryButton(Button[Paginator]):
-    def __init__(self) -> None:
+    def __init__(self, cmds : CommandList) -> None:
+        self._commands = cmds
         super().__init__(style = blurple, label = "Query")
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_modal(_QueryModal())
+        await interaction.response.send_modal(_QueryModal(self._commands))
 
 class HelpCommand(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -138,7 +197,7 @@ class HelpCommand(commands.Cog):
             )
         else:
 
-            # ⸻ Grab the commands from the cache and then sort them
+            # ⸻ Grab the commands from the cache and then sort them.
 
             cmds = [
                 c for c in bot.get_commands_cache()
@@ -164,7 +223,7 @@ class HelpCommand(commands.Cog):
                            f"# {COMMAND_EMOJI} Command Browser\n"
                             "-# Select a category to view commands."
                         ),
-                        button = _QueryButton(),
+                        button = _QueryButton(cmds),
                     ),
                     ActionRow(_CategorySelect(cmds)),
                 ),
