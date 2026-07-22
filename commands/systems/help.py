@@ -16,7 +16,7 @@ from constants import (
     HORIZONTAL_SETTINGS,
     MEMBER_EMOJI,
     MODERATION_EMOJI,
-    PARTNER_EMOJI,
+    PARTNERSHIP_EMOJI,
     PENCIL_EMOJI,
     QUERY_EMOJI,
     SEARCH_EMOJI,
@@ -206,7 +206,7 @@ class _CategorySelect(Select[Paginator]):
                     label       = "Partnership Commands",
                     value       = "partnership",
                     description = "Partnership commands. Children: add, update, remove",
-                    emoji       = PARTNER_EMOJI,
+                    emoji       = PARTNERSHIP_EMOJI,
                 ),
             ],
         )
@@ -233,7 +233,7 @@ class _CategorySelect(Select[Paginator]):
                 title    = f"# {MEMBER_EMOJI} Member Commands"
             case "partnership":
                 filtered = [c for c in self._commands if c.qualified_name.startswith("partnership")]
-                title    = f"# {PARTNER_EMOJI} Partnership Commands"
+                title    = f"# {PARTNERSHIP_EMOJI} Partnership Commands"
             case _:
                 filtered = self._commands
                 title    = f"# {HORIZONTAL_SETTINGS} All Commands"

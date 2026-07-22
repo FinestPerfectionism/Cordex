@@ -51,12 +51,12 @@ class LayoutView(BaseLayoutView):
 # Container
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class Container(BaseContainer[LayoutView]):
+class Container[V : BaseLayoutView = LayoutView](BaseContainer[V]):
     def __init__(
-       self,
-       *children : Item[LayoutView],
-       color     : Color | None = None,
-       spoiler   : bool         = False,
+        self,
+        *children: Item[V],
+        color     : Color | None = None,
+        spoiler   : bool = False,
     ) -> None:
         super().__init__(*children, accent_color = color, spoiler = spoiler)
 
