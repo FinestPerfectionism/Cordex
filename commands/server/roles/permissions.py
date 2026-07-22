@@ -25,8 +25,8 @@ async def run_server_role_permissions(
         lines.append(format_permission(perm_name, value = value))
 
     embed = Embed(
-        title       = f"Permissions for {role.mention}",
-        description = f"**{role.mention}:**\n" + "\n".join(lines) if lines else "No permissions match this filter.",
+        title       = f"Permissions for {role.name}",
+        description = f"**{role.name}:**\n" + "\n".join(lines) if lines else "No permissions match this filter.",
         color       = COLOR_BLURPLE,
     )
 

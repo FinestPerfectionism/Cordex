@@ -177,7 +177,7 @@ class ErrorLogger(commands.Cog):
         error       : AppCommandError,
     ) -> None:
         if isinstance(error, BadPermissionsCommand):
-            if randbelow(100) == 0:
+            if randbelow(10) == 0:
                 await format_send(
                     interaction,
                     msg_type  = "error",

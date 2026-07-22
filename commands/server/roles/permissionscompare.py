@@ -33,7 +33,7 @@ async def run_server_role_permissionscompare(
             diffs_role2.append(format_permission(perm_name, value = value2))
 
     embed = Embed(
-        title = f"Permission Differences for {role1.mention} and {role2.mention}",
+        title = f"Permission Differences for {role1.name} and {role2.name}",
         color = COLOR_BLURPLE,
     )
 
@@ -41,12 +41,12 @@ async def run_server_role_permissionscompare(
         embed.description = "Roles have identical permissions."
     else:
         embed.add_field(
-            name   = role1.mention,
+            name   = role1.name,
             value  = "No permissions." if role1.permissions.value == 0 else "\n".join(diffs_role1),
             inline = True,
         )
         embed.add_field(
-            name   = role2.mention,
+            name   = role2.name,
             value  = "No permissions." if role2.permissions.value == 0 else "\n".join(diffs_role2),
             inline = True,
         )
