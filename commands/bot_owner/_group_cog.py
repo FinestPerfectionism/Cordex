@@ -133,7 +133,7 @@ class BotOwnerCommands(
     )
     @bot_owner_cmd()
     async def cmd_bo_state_sync(self, interaction : Interaction) -> None:
-        await run_bo_state_sync(interaction)
+        await run_bo_state_sync(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command

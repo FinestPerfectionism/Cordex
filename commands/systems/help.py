@@ -1,7 +1,7 @@
-from typing import final, override
+from typing import cast, final, override
 
 from discord import SelectOption
-from discord.app_commands import Command, command, describe
+from discord.app_commands import Command, Group, command, describe
 from discord.ext import commands
 from discord.ui import ActionRow, Button, Item, Modal, Select, TextDisplay, TextInput
 
@@ -18,9 +18,25 @@ from constants import (
 from core.paginator import Paginator
 from core.utilities import format_command
 
+type CommandList = list[Command[Group | commands.Cog, ..., object]]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Help Command
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def _build_sections(cmds : CommandList) -> list[str | Item[LayoutView]]:
+    mention_strings = [
+        format_command(bot, cmd.qualified_name)
+        for cmd in cmds
+    ]
+
+    return [
+        ButtonSection(
+            f"**{n}.** {m_str}\n-# {cmd.description or "*No description provided.*"}",
+            button = _InfoButton(),
+        )
+        for n, (cmd, m_str) in enumerate(zip(cmds, mention_strings, strict = False), start = 1)
+    ]
 
 @final
 class _QueryModal(Modal, title = "Query"):
@@ -30,6 +46,7 @@ class _QueryModal(Modal, title = "Query"):
     async def on_submit(self, interaction : Interaction) -> None:
         await interaction.response.send_message("This modal does nothing right now. :[", ephemeral = True)
 
+@final
 class _InfoButton(Button[Paginator]):
     def __init__(self) -> None:
         super().__init__(emoji = SEARCH_EMOJI)
@@ -38,23 +55,30 @@ class _InfoButton(Button[Paginator]):
     async def callback(self, interaction : Interaction) -> None:
         await interaction.response.send_message("This button does nothing right now. :[", ephemeral = True)
 
+@final
 class _CategorySelect(Select[Paginator]):
-    def __init__(self) -> None:
+    def __init__(self, cmds : CommandList) -> None:
+        self._commands = cmds
+
         super().__init__(
             placeholder = "Select a command category.",
             options     = [
                 SelectOption(
                     label       = "All Commands",
+                    value       = "all",
                     description = "All bot commands. Children: moderation, server, bot-owner, help",
                     emoji       = HORIZONTAL_SETTINGS,
+                    default     = True,
                 ),
                 SelectOption(
-                    label       = "Moderation",
+                    label       = "Moderation Commands",
+                    value       = "moderation",
                     description = "Moderation commands. Children: ban, lockdown, note, quarantine, timeout, tickets, kick, purge",
                     emoji       = MODERATION_EMOJI,
                 ),
                 SelectOption(
-                    label       = "Server",
+                    label       = "Server Commands",
+                    value       = "server",
                     description = "Server commands. Children: channel, member, partnership, role, configure, info",
                     emoji       = EMOJI_EMOJI,
                 ),
@@ -63,7 +87,25 @@ class _CategorySelect(Select[Paginator]):
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_message("This button does nothing right now. :[", ephemeral = True)
+        value = self.values[0]
+
+        if value == "moderation":
+            filtered = [c for c in self._commands if c.qualified_name.startswith("moderation")]
+            title    = f"# {MODERATION_EMOJI} Moderation Commands"
+        elif value == "server":
+            filtered = [c for c in self._commands if c.qualified_name.startswith("server")]
+            title    = f"# {EMOJI_EMOJI} Server Commands"
+        else:
+            filtered = self._commands
+            title    = f"# {HORIZONTAL_SETTINGS} All Commands"
+
+        for option in self.options:
+            option.default = (option.value == value)
+
+        paginator = cast(Paginator, self.view)
+        paginator.update_data(title, _build_sections(filtered))
+
+        await interaction.response.edit_message(view = paginator)
 
 class _QueryButton(Button[Paginator]):
     def __init__(self) -> None:
@@ -95,21 +137,19 @@ class HelpCommand(commands.Cog):
                 ephemeral = True,
             )
         else:
-            cmds = [c for c in bot.get_commands_cache() if isinstance(c, Command)]
+
+            # ⸻ Grab the commands from the cache and then sort them
+
+            cmds = [
+                c for c in bot.get_commands_cache()
+                if isinstance(c, Command)
+                and not c.qualified_name.startswith("bot-owner")
+            ]
             cmds.sort(key = lambda c : c.qualified_name)
 
-            mention_strings = [
-                format_command(bot, cmd.qualified_name)
-                for cmd in cmds
-            ]
+            sections = _build_sections(cmds)
 
-            sections : list[str | Item[LayoutView]] = [
-                ButtonSection(
-                    f"**{n}.** {m_str}\n-# {cmd.description or "*No description provided.*"}",
-                    button = _InfoButton(),
-                )
-                for n, (cmd, m_str) in enumerate(zip(cmds, mention_strings, strict = False), start = 1)
-            ]
+            # ⸻ Build the view,
 
             view = Paginator(
                 f"# {HORIZONTAL_SETTINGS} All Commands",
@@ -126,7 +166,7 @@ class HelpCommand(commands.Cog):
                         ),
                         button = _QueryButton(),
                     ),
-                    ActionRow(_CategorySelect()),
+                    ActionRow(_CategorySelect(cmds)),
                 ),
             )
             view.add_below(
@@ -147,6 +187,8 @@ class HelpCommand(commands.Cog):
                     ),
                 ),
             )
+
+            # ⸻ and then send it
 
             await interaction.followup.send(view = view, ephemeral = True)
 

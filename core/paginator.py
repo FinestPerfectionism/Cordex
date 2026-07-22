@@ -143,14 +143,14 @@ class Paginator(LayoutView):
         /,
         *,
         data_name : str | None = None,
-        show_page : bool       = True,
-        container : bool       = False,
         per_page  : int        = 5,
+        container : bool       = False,
     ) -> None:
         super().__init__(timeout = 600)
         self._title     = title
         self._data      = data
         self._data_name = data_name
+        self._per_page  = per_page
         self._container = container
 
         self.pages        = [
@@ -162,10 +162,6 @@ class Paginator(LayoutView):
 
         self._above_items : list[Item[LayoutView]] = []
         self._below_items : list[Item[LayoutView]] = []
-
-        if show_page and not data_name:
-            error = "data_name must be provided if show_page is True"
-            raise ValueError(error)
 
         # ⸻ Only add a separator if there are buttons below it.
 
@@ -192,6 +188,24 @@ class Paginator(LayoutView):
 
     def add_below(self, *items : Item[LayoutView]) -> None:
         self._below_items.extend(items)
+        self._render()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # update_data
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def update_data(self, title : str, data : list[str | Item[LayoutView]]) -> None:
+        self._title       = title
+        self._data        = data
+        self.current_page = 0
+
+        self.pages = [
+            data[i:i + self._per_page]
+            for i in range(0, len(data), self._per_page)
+        ] or [["No content available."]]
+
+        self._page_row = _PageRow(self) if len(self.pages) >= 2 else None
+
         self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -245,4 +259,8 @@ class Paginator(LayoutView):
             self.current_page = target
             self._render()
 
-            await interaction.response.edit_message(view = self)
+            try:
+                await interaction.response.edit_message(view = self)
+            except Exception:
+                await send_bad_operation(interaction, title = "turn page")
+                raise
