@@ -45,11 +45,11 @@ from core.utilities import check_hierarchy, format_values
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class StateEntry(TypedDict, total = False):
-    r : str
-    l : str
-    a : bool
-    d : bool
-    f : str | None
+    reason     : str
+    length     : str
+    appealable : bool
+    dm_user    : bool
+    file       : str | None
 
 
 type StateMap = dict[int, StateEntry]
@@ -58,20 +58,20 @@ def build_member_label(member : Member, state : StateEntry | None) -> str:
     if not state:
         return member.mention
 
-    reason_str = escape_markdown(str(state.get("r", "")))
-    length_str = state.get("l", "N/A")
+    reason_str = escape_markdown(str(state.get("reason", "")))
+    length_str = state.get("length", "N/A")
 
     lines = [member.mention, f'**Reason:** "{reason_str}"']
     lines.extend(
         [
             f"**Length:** `{length_str}`",
-            f"**Appealable:** `{state.get("a", False)}`",
-            f"**DM:** `{state.get("d", False)}`",
+            f"**Appealable:** `{state.get("appealable", False)}`",
+            f"**DM:** `{state.get("dm_user", False)}`",
         ],
     )
 
-    if "f" in state:
-        lines.append(f"**File:** `{state["f"]}`")
+    if "file" in state:
+        lines.append(f"**File:** `{state["file"]}`")
 
     return "\n".join(lines)
 
@@ -133,17 +133,17 @@ class ReasonModal(Modal):
         self.reason_input : TextInput[Modal] = TextInput[Modal](
             label       = "Reason",
             placeholder = 'ex: "nsfw spam"',
-            default     = str(existing.get("r", "")),
+            default     = str(existing.get("reason", "")),
             required    = True,
         )
         self.length_input : TextInput[Modal] = TextInput[Modal](
             label       = "Length",
             placeholder = 'ex: "30m, 2d"',
-            default     = str(existing.get("l", "")),
+            default     = str(existing.get("length", "")),
             required    = True,
         )
-        self.appealable_checkbox : Checkbox[Modal]   = Checkbox(default = bool(existing.get("a", False)))
-        self.dm_checkbox         : Checkbox[Modal]   = Checkbox(default = bool(existing.get("d", False)))
+        self.appealable_checkbox : Checkbox[Modal]   = Checkbox(default = bool(existing.get("appealable", False)))
+        self.dm_checkbox         : Checkbox[Modal]   = Checkbox(default = bool(existing.get("dm_user",    False)))
         self.proof_fileupload    : FileUpload[Modal] = FileUpload(required = False, max_values = 1)
 
         for item in [
@@ -151,7 +151,7 @@ class ReasonModal(Modal):
             self.length_input,
             Label(
                 text        = "Appealable",
-                description = "Whether the moderation action is appealable. *DM must be set to true for the action to be appealable!",
+                description = "Whether the action is appealable. *DM must be set to true for the action to be appealable!",
                 component   = self.appealable_checkbox,
             ),
             Label(
@@ -201,11 +201,11 @@ class ReasonModal(Modal):
             None,
         )
         self.editor.state_map[user_id] = {
-            "r" : self.reason_input.value,
-            "l" : self.length_input.value,
-            "a" : self.appealable_checkbox.value,
-            "d" : self.dm_checkbox.value,
-            "f" : filename,
+            "reason"     : self.reason_input.value,
+            "length"     : self.length_input.value,
+            "appealable" : self.appealable_checkbox.value,
+            "dm_user"    : self.dm_checkbox.value,
+            "file"       : filename,
         }
         await self.editor.refresh(interaction)
 
@@ -241,9 +241,9 @@ class EditorView(LayoutView):
             for member in self.members:
                 entry               = resolve_state(member, self.state_map, global_entry)
                 missing : list[str] = []
-                if not entry or not entry.get("r"):
+                if not entry or not entry.get("reason"):
                     missing.append("reason")
-                if not entry or not entry.get("l"):
+                if not entry or not entry.get("length"):
                     missing.append("timer")
                 if missing:
                     errors.append(f"- {member.mention}: Missing {format_values(missing)}")
@@ -270,11 +270,11 @@ class EditorView(LayoutView):
                 for member in self.members:
                     entry = resolve_state(member, self.state_map, global_entry)
                     if entry:
-                        reason     = escape_markdown(entry.get("r", "N/A"))
-                        length     = entry.get("l", "N/A")
-                        appealable = "Yes" if entry.get("a") else "No"
-                        dm_user    = "Yes" if entry.get("d") else "No"
-                        file       = escape_markdown(entry.get("f") or "None")
+                        reason     = escape_markdown(entry.get("reason", "N/A"))
+                        length     = entry.get("length", "N/A")
+                        appealable = "Yes" if entry.get("appealable") else "No"
+                        dm_user    = "Yes" if entry.get("dm_user")    else "No"
+                        file       = escape_markdown(entry.get("file") or "None")
 
                         summary_lines.append(
                             (

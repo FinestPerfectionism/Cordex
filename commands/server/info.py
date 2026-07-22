@@ -22,6 +22,21 @@ from core.utilities import format_table
 # /server info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+verification_level_map = {
+    VerificationLevel.none    : "Off",
+    VerificationLevel.low     : "Low",
+    VerificationLevel.medium  : "Medium",
+    VerificationLevel.high    : "High",
+    VerificationLevel.highest : "Max",
+}
+verification_requirement_map = {
+    VerificationLevel.none    : "Unrestricted",
+    VerificationLevel.low     : "Must be verified via email",
+    VerificationLevel.medium  : "Must be registered for more than 5 minutes",
+    VerificationLevel.high    : "Must be a member for more than 10 minutes",
+    VerificationLevel.highest : "Must be verified via phone number",
+}
+
 async def run_server_info(interaction : Interaction, *, ephemeral : bool = True) -> None:
     await interaction.response.defer(ephemeral = ephemeral)
 
@@ -42,30 +57,17 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
     bots         = sum(1 for member in guild.members if member.bot)
     humans       = member_total - bots
 
-    text          = len(guild.text_channels)
-    voice         = len(guild.voice_channels)
-    categories    = len(guild.categories)
-    stage         = len(guild.stage_channels)
-    forum         = len(guild.forums)
-    channel_total = len(guild.channels)
+    channel_text = (
+        f"{len(guild.text_channels)} text, "
+        f"{len(guild.voice_channels)} voice, "
+        f"{len(guild.categories)} categories, "
+        f"{len(guild.stage_channels)} stage, "
+        f"{len(guild.forums)} forum | "
+        f"{len(guild.channels)} total"
+    )
 
     boost_level = guild.premium_tier
     boost_count = guild.premium_subscription_count
-
-    verification_level_map = {
-      VerificationLevel.none    : "Off",
-      VerificationLevel.low     : "Low",
-      VerificationLevel.medium  : "Medium",
-      VerificationLevel.high    : "High",
-      VerificationLevel.highest : "Max",
-    }
-    verification_requirement_map = {
-      VerificationLevel.none    : "Unrestricted",
-      VerificationLevel.low     : "Must be verified via email",
-      VerificationLevel.medium  : "Must be registered for more than 5 minutes",
-      VerificationLevel.high    : "Must be a member for more than 10 minutes",
-      VerificationLevel.highest : "Must be verified via phone number",
-    }
 
     verification_level       = verification_level_map.get(guild.verification_level, "Unknown")
     verification_requirement = verification_requirement_map.get(guild.verification_level, "Unknown")
@@ -101,7 +103,7 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
                 "2FA"           :  "Enabled" if guild.mfa_level else "Disabled",
                 "Roles"         : f"{len(guild.roles)}",
                 "Members"       : f"{humans} humans, {bots} bots | {member_total} total",
-                "Channels"      : f"{text} text, {voice} voice, {categories} categories, {stage} stage, {forum} forum | {channel_total} total",
+                "Channels"      : channel_text,
                 "Server Boosts" : f"Level {boost_level} | {boost_count} boosts total",
                 "Vanity Link"   : guild.vanity_url or "None",
                 "Created at"    : f"{format_dt(guild.created_at, style = "F")} | {format_dt(guild.created_at, style = "R")}",

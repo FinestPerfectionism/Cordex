@@ -9,10 +9,10 @@ from core.exceptions import send_bad_argument
 from ._base import format_permission
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server role permissions-compare Logic
+# /role compare Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_role_permissionscompare(
+async def run_role_compare(
     interaction : Interaction,
     role1       : Role,
     role2       : Role,

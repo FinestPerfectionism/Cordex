@@ -2,11 +2,11 @@ from discord.abc import GuildChannel
 
 from bot import Interaction
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server channel duplicate Logic
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# /channel duplicate Logic
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_channel_duplicate(
+async def run_channel_duplicate(
     interaction : Interaction,
     _channel    : GuildChannel | None = None,
 ) -> None:

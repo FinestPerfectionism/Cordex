@@ -19,10 +19,10 @@ from constants import (
 from core.utilities import codeblock, format_table, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server member info Logic
+# /member info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_member_info(
+async def run_member_info(
     interaction : Interaction,
     user        : Member | None = None,
     *,
@@ -41,8 +41,6 @@ async def run_server_member_info(
     if not isinstance(target, Member):
         target = guild.get_member(target.id) or await guild.fetch_member(target.id)
 
-    member = await interaction.client.fetch_user(target.id)
-
     # ⸻ Sort the joined and roles lists
 
     all_members : list[Member] = sorted(
@@ -50,48 +48,41 @@ async def run_server_member_info(
         key = lambda m : m.joined_at or utcnow(),
     )
 
-    join_list  = ""
+    join_list  = "Unknown"
     roles_list = format_values(
         [role.name for role in target.roles if not role.is_default()],
         wrap     = "`",
         use_conj = False,
     )
-    characteristics : list[str] = []
 
     # ⸻ Is the user special in anyway?
 
-    if target.id == BOT_OWNER_ID:
-        characteristics.append(f"- {DEVELOPER_EMOJI} This user is **my owner**.")
-    if interaction.client.user and target.id == interaction.client.user.id:
-        characteristics.append("- <a:pet_cordex:1526024713078571141> This user is a **good boy**.")
-    if target.public_flags.staff:
-        characteristics.append(f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**.")
-    if target.public_flags.partner:
-        characteristics.append(f"- {PARTNER_EMOJI} This user is a **Discord Partner**.")
-    if guild.owner_id == target.id:
-        characteristics.append(f"- {OWNER_EMOJI} This user is the **Server Owner**.")
-    if target.premium_since is not None:
-        characteristics.append(f"- {BOOSTER_EMOJI} This user is a **Server Booster**.")
-
-    characteristics_list = "\n".join(characteristics)
+    characteristics_list = "\n".join(
+        filter(
+            None,
+            [
+                f"- {DEVELOPER_EMOJI} This user is **my owner**." if target.id == BOT_OWNER_ID else None,
+                "- <a:pet_cordex:1526024713078571141> This user is a **good boy**." if interaction.client.user and target.id == interaction.client.user.id else None,
+                f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**." if target.public_flags.staff else None,
+                f"- {PARTNER_EMOJI} This user is a **Discord Partner**." if target.public_flags.partner else None,
+                f"- {OWNER_EMOJI} This user is the **Server Owner**." if guild.owner_id == target.id else None,
+                f"- {BOOSTER_EMOJI} This user is a **Server Booster**." if target.premium_since is not None else None,
+            ],
+        ),
+    )
 
     if target in all_members:
-        target_index : int = all_members.index(target)
-        start_index  : int = max(0, target_index - 3)
-        end_index    : int = min(len(all_members), target_index + 4)
+        target_index = all_members.index(target)
 
-        joined_lines : list[str] = []
-
-        for i in range(start_index, end_index):
-            current_member : Member = all_members[i]
-            position       : int = i + 1
-
-            username  : str = str(current_member) if current_member.discriminator != "0" else current_member.name
-            indicator : str = "> " if i == target_index else "  "
-
-            joined_lines.append(f"{position:>4}. {indicator}{username}")
+        joined_lines = [
+            f"{i + 1:>4}. {'> ' if i == target_index else '  '}{str(m) if m.discriminator != '0' else m.name}"
+            for i in range(max(0, target_index - 3), min(len(all_members), target_index + 4))
+            for m in [all_members[i]]
+        ]
 
         join_list = codeblock("\n".join(joined_lines), language = None) or "Unknown"
+
+    global_user = await interaction.client.fetch_user(target.id)
 
     # ⸻ Build the view
 
@@ -146,8 +137,8 @@ async def run_server_member_info(
             ),
         )
 
-        if member.banner:
-            container.add_item(MediaGallery(MediaGalleryItem(member.banner.url)))
+        if global_user.banner:
+            container.add_item(MediaGallery(MediaGalleryItem(global_user.banner.url)))
 
     await interaction.followup.send(
         view             = InfoView(),

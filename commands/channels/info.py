@@ -30,13 +30,41 @@ from constants import (
 from core.utilities import format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server channel info Logic
+# /channel info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def is_private(channel : GuildChannel) -> bool:
     return not channel.permissions_for(channel.guild.default_role).view_channel
 
-async def run_server_channel_info(
+def get_channel_emoji(target : GuildChannel) -> str | None:
+    if target.guild.rules_channel and target.id == target.guild.rules_channel.id:
+        return RULES_EMOJI
+
+    private = is_private(target)
+
+    if isinstance(target, StageChannel):
+        if len(target.members) > 0:
+            return ACTIVE_LOCKED_STAGE_EMOJI if private else ACTIVE_STAGE_EMOJI
+        return LOCKED_STAGE_EMOJI if private else STAGE_EMOJI
+
+    if isinstance(target, VoiceChannel):
+        if len(target.members) > 0:
+            return ACTIVE_LOCKED_VOICE_EMOJI if private else ACTIVE_VOICE_EMOJI
+        return LOCKED_VOICE_EMOJI if private else VOICE_EMOJI
+
+    if isinstance(target, ForumChannel):
+        if target.is_media():
+            return LOCKED_MEDIA_EMOJI if private else MEDIA_EMOJI
+        return LOCKED_FORUM_EMOJI if private else FORUM_EMOJI
+
+    if isinstance(target, TextChannel):
+        if target.is_news():
+            return LOCKED_ANNOUNCEMENT_EMOJI if private else ANNOUNCEMENT_EMOJI
+        return LOCKED_TEXT_EMOJI if private else TEXT_EMOJI
+
+    return None
+
+async def run_channel_info(
     interaction : Interaction,
     channel     : GuildChannel | None = None,
     *,
@@ -61,48 +89,7 @@ async def run_server_channel_info(
 
     # ⸻ Channel emoji
 
-    channel_type_emoji = None
-
-    if target.guild.rules_channel and target.id == target.guild.rules_channel.id:
-        channel_type_emoji = RULES_EMOJI
-
-    elif isinstance(target, StageChannel) and is_private(target) and len(target.members) > 0:
-        channel_type_emoji = ACTIVE_LOCKED_STAGE_EMOJI
-    elif isinstance(target, StageChannel) and len(target.members) > 0:
-        channel_type_emoji = ACTIVE_STAGE_EMOJI
-    elif isinstance(target, StageChannel) and is_private(target):
-        channel_type_emoji = LOCKED_STAGE_EMOJI
-    elif isinstance(target, StageChannel):
-        channel_type_emoji = STAGE_EMOJI
-
-    elif isinstance(target, VoiceChannel) and is_private(target) and len(target.members) > 0:
-        channel_type_emoji = ACTIVE_LOCKED_VOICE_EMOJI
-    elif isinstance(target, VoiceChannel) and len(target.members) > 0:
-        channel_type_emoji = ACTIVE_VOICE_EMOJI
-    elif isinstance(target, VoiceChannel) and is_private(target):
-        channel_type_emoji = LOCKED_VOICE_EMOJI
-    elif isinstance(target, VoiceChannel):
-        channel_type_emoji = VOICE_EMOJI
-
-    elif isinstance(target, ForumChannel) and target.is_media() and is_private(target):
-        channel_type_emoji = LOCKED_MEDIA_EMOJI
-    elif isinstance(target, ForumChannel) and target.is_media():
-        channel_type_emoji = MEDIA_EMOJI
-
-    elif isinstance(target, ForumChannel) and is_private(target):
-        channel_type_emoji = LOCKED_FORUM_EMOJI
-    elif isinstance(target, ForumChannel):
-        channel_type_emoji = FORUM_EMOJI
-
-    elif isinstance(target, TextChannel) and target.is_news() and is_private(target):
-        channel_type_emoji = LOCKED_ANNOUNCEMENT_EMOJI
-    elif isinstance(target, TextChannel) and target.is_news():
-        channel_type_emoji = ANNOUNCEMENT_EMOJI
-
-    elif isinstance(target, TextChannel) and is_private(target):
-        channel_type_emoji = LOCKED_TEXT_EMOJI
-    elif isinstance(target, TextChannel):
-        channel_type_emoji = TEXT_EMOJI
+    channel_type_emoji = get_channel_emoji(target)
 
     # ⸻ Build the view
 

@@ -43,10 +43,10 @@ class BaseActions:
         format_table(explain_table)
 
         await target.send(
-
+            (
                f"{title}\n"
-                "",
-
+                ""
+            ),
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

@@ -8,10 +8,10 @@ from guild_info.partnerships import rebuild_partnership_view
 from ._base import get_channel
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server partnership remove Logic
+# /partnership remove Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_partnership_remove(
+async def run_partnership_remove(
     bot         : Cordex,
     interaction : Interaction,
     server_name : str,

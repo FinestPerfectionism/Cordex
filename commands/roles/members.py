@@ -4,10 +4,10 @@ from bot import Interaction
 from constants import COLOR_BLURPLE
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server role members Logic
+# /role members Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_role_members(
+async def run_role_members(
     interaction   : Interaction,
     role          : Role,
     role_filter   : str | None = None,

@@ -17,10 +17,10 @@ from guild_info.partnerships import rebuild_partnership_view
 from ._base import INVITE_REGEX, get_channel
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server partnership add Logic
+# /partnership add Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_partnership_add(
+async def run_partnership_add(
     bot                : Cordex,
     interaction        : Interaction,
     server_name        : str,

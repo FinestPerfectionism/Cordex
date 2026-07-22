@@ -95,9 +95,9 @@ extend-exclude = [
 ]
 
 [tool.ruff.lint]
-select = ["ALL"]
+select  = ["ALL"]
 preview = true
-ignore = [
+ignore  = [
     "D",
     "BLE",
     "PD011",

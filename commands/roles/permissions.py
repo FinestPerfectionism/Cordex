@@ -6,10 +6,10 @@ from constants import COLOR_BLURPLE
 from ._base import format_permission
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server role permissions Logic
+# /role permissions Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_role_permissions(
+async def run_role_permissions(
     interaction : Interaction,
     role        : Role,
     perm_filter : str | None = None,

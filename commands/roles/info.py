@@ -10,10 +10,10 @@ from constants import COLOR_GREY
 from core.utilities import codeblock, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server role info Logic
+# /role info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_role_info(
+async def run_role_info(
     interaction : Interaction,
     role        : Role,
     *,

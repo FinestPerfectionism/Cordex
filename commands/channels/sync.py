@@ -6,10 +6,10 @@ from core.exceptions import send_bad_argument
 from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /server channel sync Logic
+# /channel sync Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_server_channel_sync(
+async def run_channel_sync(
     interaction : Interaction,
     channel     : GuildChannel | None = None,
 ) -> None:

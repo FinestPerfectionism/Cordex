@@ -14,9 +14,13 @@ from constants import (
     COMMAND_EMOJI,
     EMOJI_EMOJI,
     HORIZONTAL_SETTINGS,
+    MEMBER_EMOJI,
     MODERATION_EMOJI,
+    PARTNER_EMOJI,
+    PENCIL_EMOJI,
     QUERY_EMOJI,
     SEARCH_EMOJI,
+    TEXT_EMOJI,
 )
 from core.exceptions import send_bad_operation, send_bad_request
 from core.help import (
@@ -177,8 +181,32 @@ class _CategorySelect(Select[Paginator]):
                 SelectOption(
                     label       = "Server Commands",
                     value       = "server",
-                    description = "Server commands. Children: channel, member, partnership, role, configure, info",
+                    description = "Server commands. Children: configure, info",
                     emoji       = EMOJI_EMOJI,
+                ),
+                SelectOption(
+                    label       = "Role Commands",
+                    value       = "role",
+                    description = "Role commands. Children: info, members, permissions, compare",
+                    emoji       = PENCIL_EMOJI,
+                ),
+                SelectOption(
+                    label       = "Channel Commands",
+                    value       = "channel",
+                    description = "Channel commands. Children: info, sync, duplicate",
+                    emoji       = TEXT_EMOJI,
+                ),
+                SelectOption(
+                    label       = "Member Commands",
+                    value       = "member",
+                    description = "Member commands. Children: info",
+                    emoji       = MEMBER_EMOJI,
+                ),
+                SelectOption(
+                    label       = "Partnership Commands",
+                    value       = "partnership",
+                    description = "Partnership commands. Children: add, update, remove",
+                    emoji       = PARTNER_EMOJI,
                 ),
             ],
         )
@@ -187,15 +215,28 @@ class _CategorySelect(Select[Paginator]):
     async def callback(self, interaction : Interaction) -> None:
         value = self.values[0]
 
-        if value == "moderation":
-            filtered = [c for c in self._commands if c.qualified_name.startswith("moderation")]
-            title    = f"# {MODERATION_EMOJI} Moderation Commands"
-        elif value == "server":
-            filtered = [c for c in self._commands if c.qualified_name.startswith("server")]
-            title    = f"# {EMOJI_EMOJI} Server Commands"
-        else:
-            filtered = self._commands
-            title    = f"# {HORIZONTAL_SETTINGS} All Commands"
+        match value:
+            case "moderation":
+                filtered = [c for c in self._commands if c.qualified_name.startswith("moderation")]
+                title    = f"# {MODERATION_EMOJI} Moderation Commands"
+            case "server":
+                filtered = [c for c in self._commands if c.qualified_name.startswith("server")]
+                title    = f"# {EMOJI_EMOJI} Server Commands"
+            case "role":
+                filtered = [c for c in self._commands if c.qualified_name.startswith("role")]
+                title    = f"# {PENCIL_EMOJI} Role Commands"
+            case "channel":
+                filtered = [c for c in self._commands if c.qualified_name.startswith("channel")]
+                title    = f"# {TEXT_EMOJI} Channel Commands"
+            case "member":
+                filtered = [c for c in self._commands if c.qualified_name.startswith("member")]
+                title    = f"# {MEMBER_EMOJI} Member Commands"
+            case "partnership":
+                filtered = [c for c in self._commands if c.qualified_name.startswith("partnership")]
+                title    = f"# {PARTNER_EMOJI} Partnership Commands"
+            case _:
+                filtered = self._commands
+                title    = f"# {HORIZONTAL_SETTINGS} All Commands"
 
         for option in self.options:
             option.default = (option.value == value)
