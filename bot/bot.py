@@ -183,6 +183,27 @@ class Cordex(commands.Bot):
         await self.db.executescript(tickets_schema)
         await self.db.commit()
 
+        # ⸻ Cogs
+
+        cogs  : list[str] = await to_thread(
+            discover_cogs,
+            "commands",
+            "events",
+            "core",
+        )
+
+        for cog in cogs:
+            try:
+                await self.load_extension(cog)
+                log.info("Loaded cog %s", cog)
+            except Exception:
+                log.exception("Failed to load cog %s", cog)
+
+        # ⸻ Cache
+
+        self.build_commands_cache()
+        await self.build_app_commands_cache()
+
         # ⸻ Guild Information
 
         data = await load_partnership_data(self.db)
@@ -226,27 +247,6 @@ class Cordex(commands.Bot):
             channel_id = PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
             views      = PartnershipViewsList,
         )
-
-        # ⸻ Cogs
-
-        cogs  : list[str] = await to_thread(
-            discover_cogs,
-            "commands",
-            "events",
-            "core",
-        )
-
-        for cog in cogs:
-            try:
-                await self.load_extension(cog)
-                log.info("Loaded cog %s", cog)
-            except Exception:
-                log.exception("Failed to load cog %s", cog)
-
-        # ⸻ Cache
-
-        self.build_commands_cache()
-        await self.build_app_commands_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Commands Cache
