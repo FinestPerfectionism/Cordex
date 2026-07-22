@@ -15,6 +15,7 @@ from discord.app_commands import (
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.help import help_description
 from core.permissions import administrator_cmd, director_cmd
 from core.state import load_partnership_data
 
@@ -85,6 +86,7 @@ class ServerCommands(
     # /server member info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(arguments = {"user" : "The user to view information for. Defaults to yourself."})
     @member.command(
         name        = "info",
         description = "View information for a user.",
@@ -120,6 +122,7 @@ class ServerCommands(
     # /server role info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(arguments = {"role" : "The role to view information for."})
     @role.command(
         name        = "info",
         description = "View information for a role.",
@@ -136,6 +139,13 @@ class ServerCommands(
     # /server role members Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(
+        arguments = {
+            "role"          : "The role to view members or the lack thereof for.",
+            "role-filter"   : "Whether to check who has or who doesn't have the role selected. Defaults to \"member of\".",
+            "person-filter" : "Whether to show humans or bots. Defaults to both.",
+        },
+    )
     @role.command(
         name        = "members",
         description = "List members based on role possession and human/bot filtering.",
@@ -172,6 +182,12 @@ class ServerCommands(
     # /server role permissions Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(
+        arguments = {
+            "role"        : "The role to list permissions for.",
+            "perm-filter" : "Whether to show enabled or disabled permissions. Defaults to both.",
+        },
+    )
     @role.command(
         name        = "permissions",
         description = "List permissions for a selected role.",
@@ -200,31 +216,38 @@ class ServerCommands(
     # /server role permissions-compare Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(
+        arguments = {
+            "role-1" : "The first role to compare.",
+            "role-2" : "The second role to compare.",
+        },
+    )
     @role.command(
         name        = "permissions-compare",
         description = "List all differing permissions for two selected roles.",
     )
     @rename(
-        role1 = "role-1",
-        role2 = "role-2",
+        role_1 = "role-1",
+        role_2 = "role-2",
     )
     @describe(
-        role1 = "The first role to compare.",
-        role2 = "The second role to compare.",
+        role_1 = "The first role to compare.",
+        role_2 = "The second role to compare.",
     )
     @administrator_cmd()
     async def cmd_server_role_permissionscompare(
         self,
         interaction : Interaction,
-        role1       : Role,
-        role2       : Role,
+        role_1       : Role,
+        role_2       : Role,
     ) -> None:
-        await run_server_role_permissionscompare(interaction, role1, role2)
+        await run_server_role_permissionscompare(interaction, role_1, role_2)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /server channel info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(arguments = {"channel" : "The channel to view information for. Defaults to the current one."})
     @channel.command(
         name        = "info",
         description = "View information for a channel.",
@@ -241,6 +264,7 @@ class ServerCommands(
     # /server channel sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(arguments = {"channel" : "The channel to sync permissions for. Defaults to the current one."})
     @channel.command(
         name        = "sync",
         description = "Sync a channel's permissions to it's category. Defaults to the current one.",
@@ -258,6 +282,7 @@ class ServerCommands(
     # /server channel duplicate Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(arguments = {"channel" : "The channel to duplicate. Defaults to the current one."})
     @channel.command(
         name        = "duplicate",
         description = "Duplicate a channel or category.",
@@ -275,6 +300,15 @@ class ServerCommands(
     # /server partnership add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(
+        arguments = {
+            "server_picture"     : "The server's picture.",
+            "server_name"        : "The server's name.",
+            "server_description" : "The server's description.",
+            "server_owner"       : "The server's owner.",
+            "server_link"        : "The server's invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+        },
+    )
     @partnership.command(
         name        = "add",
         description = "Add a server partnership.",
@@ -317,6 +351,16 @@ class ServerCommands(
     # /server partnership update
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(
+        arguments = {
+            "server-name"        : "The name of the server to update.",
+            "server-picture"     : "The server's new picture.",
+            "new-server-name"    : "The server's new name.",
+            "server-description" : "The server's new description.",
+            "server-owner"       : "The server's new owner.",
+            "server-link"        : "The server's new invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+        },
+    )
     @partnership.command(
         name        = "update",
         description = "Update an existing server partnership.",
@@ -364,6 +408,7 @@ class ServerCommands(
     # /server partnership remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(arguments = {"server_name" : "The name of the server to remove."})
     @partnership.command(
         name        = "remove",
         description = "Remove a server partnership.",

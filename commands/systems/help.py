@@ -71,7 +71,7 @@ def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
 
     return [cmd for score, cmd in scored if score >= 0.4]
 
-def _build_info_items(cmd: AnnotatedCommand) -> list[Item[LayoutView]]:
+def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
     metadata = get_help_metadata(cmd)
     summary  = metadata.summary or cmd.description or "*No description provided.*"
 
@@ -90,7 +90,7 @@ def _build_info_items(cmd: AnnotatedCommand) -> list[Item[LayoutView]]:
                 VisibleLargeSeparator(),
                 TextDisplay("## Arguments"),
                 *(
-                    TextDisplay(f"`{param.name} | {label_for_parameter(param, metadata)}:` {param.description or '*No description provided.*'}")
+                    TextDisplay(f"`{param.name} | {label_for_parameter(param)}:` {metadata.arguments.get(param.name, param.description) or '*No description provided.*'}")
                     for param in cmd.parameters
                 ),
             ],

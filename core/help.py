@@ -47,12 +47,7 @@ def help_description[GroupT : Group | commands.Cog, **P, T](
 def get_help_metadata[GroupT : Group | commands.Cog, **P, T](cmd : Command[GroupT, P, T]) -> HelpMetadata:
     return _registry.get(cmd.qualified_name, HelpMetadata())
 
-def label_for_parameter(param : Parameter, metadata : HelpMetadata) -> str:
-    override = metadata.arguments.get(param.name)
-
-    if override:
-        return override
-
+def label_for_parameter(param : Parameter) -> str:
     if param.choices:
         return "Choice"
 
