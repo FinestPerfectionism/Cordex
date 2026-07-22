@@ -1,14 +1,14 @@
-import operator
 from difflib import SequenceMatcher
+from operator import itemgetter
 from typing import cast, final, override
 
 from discord import SelectOption
-from discord.app_commands import Command, Group, command, describe
+from discord.app_commands import Command, command, describe
 from discord.ext import commands
 from discord.ui import ActionRow, Button, Item, Modal, Select, TextDisplay, TextInput
 
 from bot import Cordex, Interaction, bot
-from bot.ui import ButtonSection, Container, LayoutView
+from bot.ui import ButtonSection, Container, LayoutView, VisibleLargeSeparator
 from constants import (
     BOT_OWNER_ID,
     COMMAND_EMOJI,
@@ -19,11 +19,16 @@ from constants import (
     SEARCH_EMOJI,
 )
 from core.exceptions import send_bad_operation, send_bad_request
+from core.help import (
+    AnnotatedCommand,
+    get_help_metadata,
+    help_description,
+    label_for_parameter,
+)
 from core.paginator import Paginator
 from core.utilities import format_command
 
-type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
-type CommandList      = list[AnnotatedCommand]
+type CommandList = list[AnnotatedCommand]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Help Command
@@ -38,7 +43,7 @@ def _build_sections(cmds : CommandList) -> list[str | Item[LayoutView]]:
     return [
         ButtonSection(
             f"**{n}.** {m_str}\n-# {cmd.description or "*No description provided.*"}",
-            button = _InfoButton(),
+            button = _InfoButton(cmd),
         )
         for n, (cmd, m_str) in enumerate(zip(cmds, mention_strings, strict = False), start = 1)
     ]
@@ -62,9 +67,42 @@ def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
         if query_lower and query_lower in cmd.qualified_name.lower():
             scored[index] = (max(score, 0.85), cmd)
 
-    scored.sort(key = operator.itemgetter(0), reverse = True)
+    scored.sort(key = itemgetter(0), reverse = True)
 
     return [cmd for score, cmd in scored if score >= 0.4]
+
+def _build_info_items(cmd: AnnotatedCommand) -> list[Item[LayoutView]]:
+    metadata = get_help_metadata(cmd)
+    summary  = metadata.summary or cmd.description or "*No description provided.*"
+
+    items : list[Item[LayoutView]] = [
+        TextDisplay(
+            (
+                f"# {format_command(bot, cmd.qualified_name)} Command\n"
+                f"*{summary}*"
+            ),
+        ),
+    ]
+
+    if cmd.parameters:
+        items.extend(
+            [
+                VisibleLargeSeparator(),
+                TextDisplay("## Arguments"),
+                *(
+                    TextDisplay(f"`{param.name} | {label_for_parameter(param, metadata)}:` {param.description or '*No description provided.*'}")
+                    for param in cmd.parameters
+                ),
+            ],
+        )
+
+    return items
+
+@final
+class _InfoView(LayoutView):
+    def __init__(self, cmd : AnnotatedCommand) -> None:
+        super().__init__()
+        self.add_item(Container(*_build_info_items(cmd)))
 
 @final
 class _QueryModal(Modal, title = "Query"):
@@ -92,6 +130,7 @@ class _QueryModal(Modal, title = "Query"):
             f"# {SEARCH_EMOJI} Search Results",
             _build_sections(matches),
             data_name = "Commands",
+            per_page  = 10,
             container = True,
         )
 
@@ -106,12 +145,13 @@ class _QueryModal(Modal, title = "Query"):
 
 @final
 class _InfoButton(Button[Paginator]):
-    def __init__(self) -> None:
+    def __init__(self, cmd : AnnotatedCommand) -> None:
+        self._command = cmd
         super().__init__(emoji = SEARCH_EMOJI)
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_message("This button does nothing right now. :[", ephemeral = True)
+        await interaction.response.send_message(view = _InfoView(self._command), ephemeral = True)
 
 @final
 class _CategorySelect(Select[Paginator]):
@@ -184,30 +224,35 @@ class HelpCommand(commands.Cog):
     # /help Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(arguments = {"name" : "The name of the command to view information for."})
     @command(
         name        = "help",
         description = "Provides assistance into a command. Defaults to information about the bot and a list of commands.",
     )
-    @describe(name = "The name of the command (or command group) to view information for.")
+    @describe(name = "The name of the command to view information for.")
     async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
         await interaction.response.defer(ephemeral = True)
 
+        # ⸻ Grab the commands from the cache and then sort them.
+
+        cmds = [
+            c for c in bot.get_commands_cache()
+            if isinstance(c, Command)
+            and not c.qualified_name.startswith("bot-owner")
+        ]
+        cmds.sort(key = lambda c : c.qualified_name)
+
         if name:
-            await interaction.followup.send(
-                "`name` does nothing right now :[, but running the command with no argument works.",
-                ephemeral = True,
-            )
+            matches = _fuzzy_search(name, cmds)
+
+            # ⸻ No commands matched closely enough to the query...
+
+            if not matches:
+                await send_bad_request(interaction, subtitle = f'No commands found matching "{name}".')
+                return
+
+            await interaction.followup.send(view = _InfoView(matches[0]), ephemeral = True)
         else:
-
-            # ⸻ Grab the commands from the cache and then sort them.
-
-            cmds = [
-                c for c in bot.get_commands_cache()
-                if isinstance(c, Command)
-                and not c.qualified_name.startswith("bot-owner")
-            ]
-            cmds.sort(key = lambda c : c.qualified_name)
-
             sections = _build_sections(cmds)
 
             # ⸻ Build the view,
