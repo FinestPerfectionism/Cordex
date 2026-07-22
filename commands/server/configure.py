@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, final
 
 from discord import ChannelType
 from discord.ui import (
@@ -85,10 +85,11 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
         await self.view.refresh_display()
         await interaction.response.edit_message(view = self.view)
 
+@final
 class LoggingConfigurationView(LayoutView):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : Cordex = bot
+        self.bot = bot
 
         self.antinuke_display   : TextDisplay[Self] = TextDisplay("")
         self.moderation_display : TextDisplay[Self] = TextDisplay("")
@@ -175,10 +176,11 @@ class PickerRow(ActionRow["ConfigurationView"]):
             ephemeral = True,
         )
 
+@final
 class ConfigurationView(LayoutView):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : Cordex = bot
+        self.bot = bot
         self.add_item(
             Container(
                 TextDisplay("# Guild Configuration"),

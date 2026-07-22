@@ -9,7 +9,7 @@ from collections.abc import Coroutine
 from secrets import randbelow
 from sys import exc_info
 from traceback import format_exception
-from typing import override
+from typing import final, override
 
 from aiohttp import ClientError
 from discord import (
@@ -52,9 +52,10 @@ from core.utilities import codeblock
 # Errors Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class ErrorLogger(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
-        self.bot   : Cordex            = bot
+        self.bot                       = bot
         self.tasks : set[Task[object]] = set()
         tree.error(self.command_error_handler)
 

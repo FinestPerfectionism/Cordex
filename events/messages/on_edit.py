@@ -1,3 +1,5 @@
+from typing import final
+
 from discord import Embed, Message
 from discord.abc import Messageable
 from discord.ext import commands
@@ -24,10 +26,11 @@ from . import (
 # Message Edit Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class MessageEditHandler(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : Cordex = bot
+        self.bot = bot
 
     @commands.Cog.listener("on_message_edit")
     async def message_edit_handler(self, before : Message, after : Message) -> None:

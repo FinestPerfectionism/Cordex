@@ -1,3 +1,5 @@
+from typing import final
+
 from discord import Message, Thread
 from discord.ext import commands
 
@@ -24,10 +26,11 @@ FACTOIDS = {
 # Message Send Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class MessageSendHandler(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : Cordex = bot
+        self.bot = bot
 
     @commands.Cog.listener("on_message")
     async def message_send_handler(self, message : Message) -> None:

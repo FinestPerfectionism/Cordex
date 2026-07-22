@@ -175,9 +175,10 @@ class _QueryButton(Button[Paginator]):
     async def callback(self, interaction : Interaction) -> None:
         await interaction.response.send_modal(_QueryModal(self._commands))
 
+@final
 class HelpCommand(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
-        self.bot : Cordex = bot
+        self.bot = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /help Command

@@ -1,3 +1,5 @@
+from typing import final
+
 from discord import TextChannel
 from discord.app_commands import Group, autocomplete, describe, rename
 from discord.ext import commands
@@ -23,6 +25,7 @@ from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_syn
 # Bot Owner Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class BotOwnerCommands(
     commands.GroupCog,
     name        = "bot-owner",
@@ -30,7 +33,7 @@ class BotOwnerCommands(
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : Cordex = bot
+        self.bot = bot
 
     cog     : Group = Group(
         name        = "cogs",

@@ -1,5 +1,6 @@
 from collections import defaultdict
 from time import time
+from typing import final
 
 from discord import Member, Message
 from discord.ext import commands
@@ -16,10 +17,11 @@ TRIGGER_PHOTOS  = 5
 # Auto-Moderation System
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class AutomoderationSystem(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot  : Cordex                 = bot
+        self.bot                           = bot
         self.heat : dict[int, list[float]] = defaultdict(list)
 
     @commands.Cog.listener("on_message")

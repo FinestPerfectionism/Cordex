@@ -1,3 +1,5 @@
+from typing import final
+
 from discord.app_commands import Group, command, guild_only
 from discord.ext import commands
 
@@ -46,6 +48,7 @@ from .tickets import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @guild_only
+@final
 class ModerationCommands(
     commands.GroupCog,
     name        = "moderation",
@@ -53,7 +56,7 @@ class ModerationCommands(
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : Cordex = bot
+        self.bot = bot
 
     ban        : Group = Group(
         name        = "ban",

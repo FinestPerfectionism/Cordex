@@ -1,5 +1,5 @@
 from asyncio import Semaphore, gather, sleep
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, final, override
 
 from discord import Forbidden, HTTPException, PermissionOverwrite, Role
 from discord.abc import GuildChannel
@@ -15,11 +15,12 @@ if TYPE_CHECKING:
 # Quarantine Enforcement System
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class QuarantineEnforcerSystem(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
-        self.bot        : Cordex    = bot
-        self.semaphore  : Semaphore = Semaphore(3)
-        self.processing : set[int]  = set()
+        self.bot                   = bot
+        self.semaphore             = Semaphore(3)
+        self.processing : set[int] = set()
         self.loop_quarantine_enforce.start()
 
     @override

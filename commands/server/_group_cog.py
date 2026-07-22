@@ -1,3 +1,5 @@
+from typing import final
+
 from discord import Attachment, Member, Role, User
 from discord.abc import GuildChannel
 from discord.app_commands import (
@@ -41,6 +43,7 @@ from .roles import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @guild_only
+@final
 class ServerCommands(
     commands.GroupCog,
     name        = "server",
@@ -48,7 +51,7 @@ class ServerCommands(
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot : Cordex = bot
+        self.bot = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Server Name Autocomplete
