@@ -9,7 +9,6 @@ from bot.ui import (
     TextDisplay,
     VisibleLargeSeparator,
     green,
-    grey,
 )
 
 from .exceptions import send_bad_operation, send_bad_request
@@ -114,11 +113,11 @@ class _PageRow(ActionRow["Paginator"]):
         self.btn_backward.disabled = is_first
         self.btn_forward.disabled  = is_last
 
-    @button(label = "<<", style = grey)
+    @button(label = "<<")
     async def btn_first(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, 0)
 
-    @button(label = "<", style = grey)
+    @button(label = "<")
     async def btn_backward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, self.paginator.current_page - 1)
 
@@ -126,11 +125,11 @@ class _PageRow(ActionRow["Paginator"]):
     async def btn_page(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await interaction.response.send_modal(_PageJumpModal(self.paginator))
 
-    @button(label = ">", style = grey)
+    @button(label = ">")
     async def btn_forward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, self.paginator.current_page + 1)
 
-    @button(label = ">>", style = grey)
+    @button(label = ">>")
     async def btn_last(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, len(self.paginator.pages) - 1)
 

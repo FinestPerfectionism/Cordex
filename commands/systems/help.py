@@ -8,13 +8,14 @@ from discord.ext import commands
 from discord.ui import ActionRow, Button, Item, Modal, Select, TextDisplay, TextInput
 
 from bot import Cordex, Interaction, bot
-from bot.ui import ButtonSection, Container, LayoutView, blurple
+from bot.ui import ButtonSection, Container, LayoutView
 from constants import (
     BOT_OWNER_ID,
     COMMAND_EMOJI,
     EMOJI_EMOJI,
     HORIZONTAL_SETTINGS,
     MODERATION_EMOJI,
+    QUERY_EMOJI,
     SEARCH_EMOJI,
 )
 from core.exceptions import send_bad_operation, send_bad_request
@@ -168,7 +169,7 @@ class _CategorySelect(Select[Paginator]):
 class _QueryButton(Button[Paginator]):
     def __init__(self, cmds : CommandList) -> None:
         self._commands = cmds
-        super().__init__(style = blurple, label = "Query")
+        super().__init__(emoji = QUERY_EMOJI)
 
     @override
     async def callback(self, interaction : Interaction) -> None:
