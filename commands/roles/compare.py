@@ -14,40 +14,40 @@ from ._base import format_permission
 
 async def run_role_compare(
     interaction : Interaction,
-    role1       : Role,
-    role2       : Role,
+    role_1      : Role,
+    role_2      : Role,
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 
-    if role1.id == role2.id:
+    if role_1.id == role_2.id:
         await send_bad_argument(interaction, subtitle = {("role-1", "role-2") : "You cannot compare a role with itself."})
         return
 
-    diffs_role1 : list[str] = []
-    diffs_role2 : list[str] = []
+    diffs_role_1 : list[str] = []
+    diffs_role_2 : list[str] = []
 
-    for perm_name, value1 in role1.permissions:
-        value2 : bool = cast(bool, getattr(role2.permissions, perm_name))
+    for perm_name, value1 in role_1.permissions:
+        value2 : bool = cast(bool, getattr(role_2.permissions, perm_name))
         if value1 != value2:
-            diffs_role1.append(format_permission(perm_name, value = value1))
-            diffs_role2.append(format_permission(perm_name, value = value2))
+            diffs_role_1.append(format_permission(perm_name, value = value1))
+            diffs_role_2.append(format_permission(perm_name, value = value2))
 
     embed = Embed(
-        title = f"Permission Differences for {role1.name} and {role2.name}",
+        title = f"Permission Differences for {role_1.name} and {role_2.name}",
         color = COLOR_BLURPLE,
     )
 
-    if not diffs_role1:
+    if not diffs_role_1:
         embed.description = "Roles have identical permissions."
     else:
         embed.add_field(
-            name   = role1.name,
-            value  = "No permissions." if role1.permissions.value == 0 else "\n".join(diffs_role1),
+            name   = role_1.name,
+            value  = "No permissions." if role_1.permissions.value == 0 else "\n".join(diffs_role_1),
             inline = True,
         )
         embed.add_field(
-            name   = role2.name,
-            value  = "No permissions." if role2.permissions.value == 0 else "\n".join(diffs_role2),
+            name   = role_2.name,
+            value  = "No permissions." if role_2.permissions.value == 0 else "\n".join(diffs_role_2),
             inline = True,
         )
 

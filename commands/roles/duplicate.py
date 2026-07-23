@@ -1,15 +1,14 @@
-from discord.abc import GuildChannel
+from discord import Role
 
 from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /channel permissions Logic
+# /role duplicate Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_channel_permissions(
-    interaction  : Interaction,
-    _channel     : GuildChannel | None = None,
-    _perm_filter : str          | None = None,
+async def run_role_duplicate(
+    interaction : Interaction,
+    _role       : Role,
 ) -> None:
     await interaction.response.defer()
 

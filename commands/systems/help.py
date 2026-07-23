@@ -218,6 +218,8 @@ class _CategorySelect(Select[Paginator]):
     async def callback(self, interaction : Interaction) -> None:
         value = self.values[0]
 
+        # ⸻ Filter the title and commands based on the select input
+
         match value:
             case "moderation":
                 filtered = [c for c in self._commands if c.qualified_name.startswith("moderation")]

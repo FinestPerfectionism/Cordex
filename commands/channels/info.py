@@ -1,4 +1,4 @@
-from typing import final
+from typing import Self, final
 
 from discord import ForumChannel, StageChannel, TextChannel, Thread, VoiceChannel
 from discord.abc import GuildChannel
@@ -102,7 +102,7 @@ async def run_channel_info(
 
     @final
     class InfoView(LayoutView):
-        container = Container(
+        container = Container[Self](
             TextDisplay(header_text),
             TextDisplay(
                 format_table(

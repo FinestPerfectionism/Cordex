@@ -9,6 +9,7 @@ from core.help import help_description
 from core.permissions import administrator_cmd
 
 from .compare import run_role_compare
+from .duplicate import run_role_duplicate
 from .info import run_role_info
 from .members import run_role_members
 from .permissions import run_role_permissions
@@ -27,6 +28,24 @@ class RoleCommands(
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /role duplicate Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @help_description(arguments = {"role" : "The role to duplicate. Defaults to the current one."})
+    @command(
+        name        = "duplicate",
+        description = "Duplicate a role.",
+    )
+    @describe(role = "The role to duplicate. Defaults to the current one.")
+    @administrator_cmd()
+    async def cmd_role_duplicate(
+        self,
+        interaction : Interaction,
+        role        : Role,
+    ) -> None:
+        await run_role_duplicate(interaction, role)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role info Command
@@ -133,7 +152,7 @@ class RoleCommands(
         },
     )
     @command(
-        name        = "permissions-compare",
+        name        = "compare",
         description = "List all differing permissions for two selected roles.",
     )
     @rename(
@@ -148,8 +167,8 @@ class RoleCommands(
     async def cmd_role_compare(
         self,
         interaction : Interaction,
-        role_1       : Role,
-        role_2       : Role,
+        role_1      : Role,
+        role_2      : Role,
     ) -> None:
         await run_role_compare(interaction, role_1, role_2)
 
