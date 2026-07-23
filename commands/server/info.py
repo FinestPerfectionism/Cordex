@@ -1,4 +1,4 @@
-from typing import final
+from typing import Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, VerificationLevel
 from discord.ui import MediaGallery, TextDisplay, Thumbnail
@@ -9,11 +9,16 @@ from bot.ui import Container, LayoutView, ThumbnailSection
 from constants import (
     BOOSTED_GLOBAL_SERVER_EMOJI,
     BOOSTED_SERVER_EMOJI,
+    CATEGORY_EMOJI,
     COLOR_GREY,
+    FORUM_EMOJI,
     GLOBAL_SERVER_EMOJI,
     PARTNERED_SERVER_EMOJI,
     SERVER_EMOJI,
+    STAGE_EMOJI,
+    TEXT_EMOJI,
     VERIFIED_SERVER_EMOJI,
+    VOICE_EMOJI,
 )
 from core.exceptions import send_bad_operation
 from core.utilities import format_table
@@ -58,11 +63,11 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
     humans       = member_total - bots
 
     channel_text = (
-        f"{len(guild.text_channels)} text, "
-        f"{len(guild.voice_channels)} voice, "
-        f"{len(guild.categories)} categories, "
-        f"{len(guild.stage_channels)} stage, "
-        f"{len(guild.forums)} forum | "
+        f"{len(guild.text_channels)} {TEXT_EMOJI}, "
+        f"{len(guild.voice_channels)} {VOICE_EMOJI}, "
+        f"{len(guild.categories)} {CATEGORY_EMOJI}, "
+        f"{len(guild.stage_channels)} {STAGE_EMOJI}, "
+        f"{len(guild.forums)} {FORUM_EMOJI} | "
         f"{len(guild.channels)} total"
     )
 
@@ -90,7 +95,7 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
 
     @final
     class InfoView(LayoutView):
-        container = Container(
+        container = Container[Self](
             TextDisplay(f"### {guild.name} {f"| {server_type_emoji} " if server_type_emoji else ""}| {guild.id}"),
             color = owner.color if owner.color.value else COLOR_GREY,
         )

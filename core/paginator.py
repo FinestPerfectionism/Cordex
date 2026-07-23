@@ -89,6 +89,8 @@ class _PageRow(ActionRow["Paginator"]):
         if len(paginator.pages) == 2:
             for button in [self.btn_first, self.btn_page, self.btn_last]:
                 self.remove_item(button)
+        elif len(paginator.pages) == 3:
+            self.remove_item(self.btn_page)
 
         # ⸻ Update.
 

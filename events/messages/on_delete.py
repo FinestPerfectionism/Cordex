@@ -1,6 +1,6 @@
 from typing import final
 
-from discord import AuditLogAction, Embed, Member, Message, User
+from discord import Embed, Message
 from discord.abc import Messageable
 from discord.ext import commands
 from discord.utils import utcnow
@@ -52,38 +52,17 @@ class MessageDeleteHandler(commands.Cog):
         if not isinstance(log_channel, Messageable):
             return
 
-        deleter = "Unknown"
-        async for entry in message.guild.audit_logs(limit = 5, action = AuditLogAction.message_delete):
-            if not isinstance(entry.target, User | Member):
-                continue
-            if entry.target.id != message.author.id:
-                continue
-            extra = entry.extra
-            if extra is None:
-                continue
-
-            if getattr(extra, "channel", None) != message.channel:
-                continue
-            max_log_age_seconds = 5
-            if (utcnow() - entry.created_at).total_seconds() > max_log_age_seconds:
-                continue
-            if entry.user:
-                deleter = f"`{entry.user}`\n`{entry.user.id}`"
-            break
-
         embed = Embed(
             title     = "Message Deleted",
             color     = COLOR_RED,
             timestamp = utcnow(),
         )
         embed.add_field(
-            name   = "Author",
-            value  = f"`{message.author}`\n`{message.author.id}`",
-            inline = True,
-        )
-        embed.add_field(
-            name   = "Deleted By",
-            value  = deleter,
+            name   =  "Author",
+            value  = (
+                f"`{message.author}`\n"
+                f"`{message.author.id}`"
+            ),
             inline = True,
         )
         embed.add_field(
@@ -102,7 +81,6 @@ class MessageDeleteHandler(commands.Cog):
             value  = format_attachments(message.attachments),
             inline = True,
         )
-        embed.set_footer(text = 'Please note that the "Deleted By" section guesses by checking the audit log, and may not always be accurate')
         await log_channel.send(embed = embed)
 
 async def setup(bot : Cordex) -> None:

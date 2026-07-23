@@ -25,10 +25,10 @@ async def get_channel(interaction : Interaction) -> TextChannel | None:
     if not isinstance(channel, TextChannel):
         await format_send(
             interaction,
-            msg_type          = "error",
-            title             = "update",
-            subtitle          = "The partnerships channel ID is missing or points to the wrong channel type.",
-            footer            = "Bad configuration",
+            msg_type = "error",
+            title    = "update",
+            subtitle = "The partnerships channel ID is missing or points to the wrong channel type.",
+            footer   = "Bad configuration",
         )
         return None
     return channel

@@ -68,7 +68,7 @@ class PartnershipCommands(
         server_name        = "The server's name.",
         server_description = "The server's description.",
         server_owner       = "The server's owner.",
-        server_link        = "The server's invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+        server_link        = "The server's invite link. Must be a valid Discord invite of the form \"https://discord.gg/example\".",
     )
     @director_cmd()
     @rename(
@@ -121,7 +121,7 @@ class PartnershipCommands(
         new_server_name    = "The server's new name.",
         server_description = "The server's new description.",
         server_owner       = "The server's new owner.",
-        server_link        = "The server's new invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+        server_link        = "The server's new invite link. Must be a valid Discord invite of the form \"https://discord.gg/example\".",
     )
     @rename(
         server_name        = "server-name",

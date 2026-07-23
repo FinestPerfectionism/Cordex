@@ -75,7 +75,7 @@ class MessageEditHandler(commands.Cog):
 
             # ⸻ Remove our old response (done after the reinvocation since faster reevaluation is better)
 
-            if old_response_id := eval_message_ids.pop(before.id, None) is not None:
+            if (old_response_id := eval_message_ids.pop(before.id, None)) is not None:
                 old_msg = await before.channel.fetch_message(old_response_id)
                 await old_msg.delete()
 
@@ -105,7 +105,10 @@ class MessageEditHandler(commands.Cog):
         )
         embed.add_field(
             name   =  "Edited By",
-            value  = f"`{before.author}`\n`{before.author.id}`",
+            value  = (
+                f"`{before.author}`\n"
+                f"`{before.author.id}`"
+            ),
             inline = True,
         )
         embed.add_field(

@@ -12,6 +12,8 @@ from bot.ui import ButtonSection, Container, LayoutView, VisibleLargeSeparator
 from constants import (
     BOT_OWNER_ID,
     COMMAND_EMOJI,
+    CONTESTED_EMOJI,
+    DEVELOPER_EMOJI,
     EMOJI_EMOJI,
     HORIZONTAL_SETTINGS,
     MEMBER_EMOJI,
@@ -20,6 +22,7 @@ from constants import (
     PENCIL_EMOJI,
     QUERY_EMOJI,
     SEARCH_EMOJI,
+    STANDSTILL_EMOJI,
     TEXT_EMOJI,
 )
 from core.exceptions import send_bad_operation, send_bad_request
@@ -322,13 +325,13 @@ class HelpCommand(commands.Cog):
                         (
                             "# About me,\n"
                             "I am a bot designed exclusively to serve the server *goobers*. You won't see me anywhere else! (probably)\n"
-                            "## My Developer\n"
+                           f"## {DEVELOPER_EMOJI} My Developer\n"
                            f"My developer is <@{BOT_OWNER_ID}>. I was created and am actively maintained by him.\n"
-                            "## What I Do\n"
+                           f"## {STANDSTILL_EMOJI} What I Do\n"
                             "- **Advanced Moderation:** Staff can moderate multiple users at once with advanced logging, appeals, and state. I also have a ticket system for user support.\n"
                             "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
                             "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
-                            "## Issues?\n"
+                           f"## {CONTESTED_EMOJI} Issues?\n"
                            f"Should you have feedback or any issues with me, please speak to my developer."
                         ),
                     ),

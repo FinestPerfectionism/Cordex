@@ -1,14 +1,8 @@
 from collections.abc import Sequence
 from re import match
-from typing import Self, TypedDict, override
+from typing import Literal, Self, TypedDict, final, override
 
-from discord import (
-    AllowedMentions,
-    ButtonStyle,
-    Emoji,
-    Member,
-    PartialEmoji,
-)
+from discord import AllowedMentions, ButtonStyle, Member
 from discord.ui import (
     ActionRow,
     Button,
@@ -44,7 +38,11 @@ from core.utilities import check_hierarchy, format_values
 # Moderation Select Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class StateEntry(TypedDict, total = False):
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# State
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class _StateEntry(TypedDict, total = False):
     reason     : str
     length     : str
     appealable : bool
@@ -52,9 +50,9 @@ class StateEntry(TypedDict, total = False):
     file       : str | None
 
 
-type StateMap = dict[int, StateEntry]
+type _StateMap = dict[int, _StateEntry]
 
-def build_member_label(member : Member, state : StateEntry | None) -> str:
+def _build_member_label(member : Member, state : _StateEntry | None) -> str:
     if not state:
         return member.mention
 
@@ -75,57 +73,50 @@ def build_member_label(member : Member, state : StateEntry | None) -> str:
 
     return "\n".join(lines)
 
-def resolve_state(
+def _resolve_state(
     member       : Member,
-    state_map    : StateMap,
-    global_state : StateEntry | None,
-) -> StateEntry | None:
+    state_map    : _StateMap,
+    global_state : _StateEntry | None,
+) -> _StateEntry | None:
     return state_map.get(member.id) or global_state
 
-class ActionButton(Button[LayoutView]):
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# _ActionButton
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class _ActionButton(Button[LayoutView]):
     def __init__(
         self,
-        target    : Member                     | None,
-        editor    : "EditorView",
+        target : Member | None,
+        editor : "_EditorView",
         *,
-        style     : ButtonStyle                       = grey,
-        label     : str                        | None = None,
-        disabled  : bool                              = False,
-        custom_id : str                        | None = None,
-        url       : str                        | None = None,
-        emoji     : str | Emoji | PartialEmoji | None = None,
-        row       : int                        | None = None,
-        sku_id    : int                        | None = None,
+        style  : ButtonStyle   = grey,
+        label  : str    | None = None,
     ) -> None:
-        super().__init__(
-            style     = style,
-            label     = label,
-            disabled  = disabled,
-            custom_id = custom_id,
-            url       = url,
-            emoji     = emoji,
-            row       = row,
-            sku_id    = sku_id,
-        )
+        super().__init__(style = style, label = label)
         self.target : Member | None = target
-        self.editor : "EditorView"  = editor
+        self.editor : "_EditorView" = editor
 
     @override
     async def callback(self, interaction : Interaction) -> None:
         try:
-            await interaction.response.send_modal(ReasonModal(self.target, self.editor))
+            await interaction.response.send_modal(_ReasonModal(self.target, self.editor))
         except Exception:
             await send_bad_operation(interaction, title = "open modal")
             raise
 
-class ReasonModal(Modal):
-    def __init__(self, target : Member | None, editor : "EditorView") -> None:
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# _ReasonModal
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class _ReasonModal(Modal):
+    def __init__(self, target : Member | None, editor : "_EditorView") -> None:
         title = f"Reason: {target.name}" if target else "Global Action"
         super().__init__(title = title)
         self.target : Member | None = target
-        self.editor : "EditorView"  = editor
+        self.editor : "_EditorView"  = editor
 
-        existing : StateEntry = editor.state_map.get(
+        existing : _StateEntry = editor.state_map.get(
             target.id if target else 0,
             editor.state_map.get(0, {}),
         )
@@ -209,12 +200,21 @@ class ReasonModal(Modal):
         }
         await self.editor.refresh(interaction)
 
-class EditorView(LayoutView):
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# _EditorView
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+@final
+class _EditorView(LayoutView):
     def __init__(self, members : Sequence[Member] | None = None) -> None:
         super().__init__(timeout = None)
         self.members   : list[Member] = list(members) if members else []
-        self.state_map : StateMap     = {}
+        self.state_map : _StateMap    = {}
         self.rebuild()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # rebuild
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def rebuild(self) -> None:
         self.clear_items()
@@ -222,15 +222,15 @@ class EditorView(LayoutView):
         global_state          = self.state_map.get(0)
 
         for member in self.members:
-            resolved = resolve_state(member, self.state_map, global_state)
-            label    = build_member_label(member, resolved)
+            resolved = _resolve_state(member, self.state_map, global_state)
+            label    = _build_member_label(member, resolved)
 
             if resolved:
                 style = green if (member.id in self.state_map or 0 in self.state_map) else blurple
             else:
                 style = grey
 
-            button = ActionButton(member, self, style = style, label = "Action")
+            button = _ActionButton(member, self, style = style, label = "Action")
             container.add_item(ButtonSection(label, button = button))
         container.add_item(VisibleLargeSeparator())
 
@@ -239,7 +239,7 @@ class EditorView(LayoutView):
             global_entry       = self.state_map.get(0)
 
             for member in self.members:
-                entry               = resolve_state(member, self.state_map, global_entry)
+                entry               = _resolve_state(member, self.state_map, global_entry)
                 missing : list[str] = []
                 if not entry or not entry.get("reason"):
                     missing.append("reason")
@@ -268,7 +268,8 @@ class EditorView(LayoutView):
                 summary_lines = [f"**{ACCEPTED_EMOJI} Successfully mass moderated all members.**"]
 
                 for member in self.members:
-                    entry = resolve_state(member, self.state_map, global_entry)
+                    entry = _resolve_state(member, self.state_map, global_entry)
+
                     if entry:
                         reason     = escape_markdown(entry.get("reason", "N/A"))
                         length     = entry.get("length", "N/A")
@@ -279,10 +280,10 @@ class EditorView(LayoutView):
                         summary_lines.append(
                             (
                                 f"{member.mention}\n"
-                                f"`    Reason:` {reason}\n"
-                                f"`    Length:` {length}\n"
-                                f"`Appealable:` {appealable} | `DM Sent:` {dm_user}\n"
-                                f"`Attachment:` {file}"
+                                f"`     Reason:` {reason}\n"
+                                f"`     Length:` {length}\n"
+                                f"` Appealable:` {appealable} | `DM Sent:` {dm_user}\n"
+                                f"` Attachment:` {file}"
                             ),
                         )
 
@@ -307,11 +308,15 @@ class EditorView(LayoutView):
 
         container.add_item(
             ActionRow(
-                ActionButton(None, self, style = blurple, label = "Global"),
+                _ActionButton(None, self, style = blurple, label = "Global"),
                 execute_button,
             ),
         )
         self.add_item(container)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # refresh
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def refresh(self, interaction : Interaction) -> None:
         self.rebuild()
@@ -324,8 +329,25 @@ class EditorView(LayoutView):
             await send_bad_operation(interaction, title = "compile window")
             raise
 
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# MemberSelectView
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+@final
 class MemberSelectView(View):
-    def __init__(self) -> None:
+    action_type = Literal[
+        "lockdown_add",
+        "lockdown_remove",
+        "ban_add",
+        "ban_remove",
+        "kick",
+        "quarantine_add",
+        "quarantine_remove",
+        "timeout_add",
+        "timeout_remove",
+    ]
+
+    def __init__(self, action_type : action_type) -> None:
         super().__init__(timeout = None)
 
     @select(cls = UserSelect, placeholder = "Choose members...", max_values = 1)
@@ -410,7 +432,7 @@ class MemberSelectView(View):
         members = [user for user in select.values if isinstance(user, Member)]
 
         try:
-            await interaction.response.edit_message(view = EditorView(members = members))
+            await interaction.response.edit_message(view = _EditorView(members = members))
         except Exception:
             await send_bad_operation(interaction, title = "compile window")
             raise
