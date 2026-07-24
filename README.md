@@ -1,11 +1,11 @@
 # Cordex
 Cordex is a Discord bot tailored and designed specifically for the server "The Goobers" with advanced moderation, utilities, and more. Usage outside this server is not recommended. (See below.)
 ## Forking Notice
-Forking this project for purposes other than direct contribution is highly discouraged. To make this bot usable for your own server, you will need to make major reforms across numerous undocumented files.
+Forking this project for purposes other than direct contribution is highly discouraged. To make this bot usable for your own server, you will need to make major reforms across numerous files that I won't be disclosing here (use that as further discouragement ;]).
 ### Why?
 There are minimal configuration options and many things are hardcoded, like roles, users, and channels. There are also minimal to no safety checks implemented into the bot as the bot expects the administrator permission.
 ### I'm going to anyway.
-Sigh. Should you intend do use the bot regardless of this warning, please give the bot the administrator permission for the reason stated above. Change instances of "The Goobers", "Cordex", "Directors", etc, change the EMOJIs and stuff in constants. Make sure you put `TOKEN=...` in a `.env` file.
+Sigh. Should you intend to use the bot regardless of this warning, please give the bot the administrator permission for the reason stated above. Change instances of "Goobers", "Cordex", "Directors", etc, change everything in constants to your preferences. Make sure you put `TOKEN=...` in a `.env` file.
 ## Built with...
 * python 3.14
 * discord.py 2.7.1

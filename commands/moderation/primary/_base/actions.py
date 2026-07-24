@@ -1,19 +1,32 @@
-from typing import Literal
+from typing import Literal, final
 
-from constants import CONTESTED_EMOJI
-from core.cases import BanPayload, KickPayload, QuarantinePayload, TimeoutPayload
+from discord.ui import Button, View, button
+
+from bot import Interaction, bot
+from constants import CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
+from core.cases import (
+    BanAddPayload,
+    BanRemovePayload,
+    KickPayload,
+    QuarantineAddPayload,
+    QuarantineRemovePayload,
+    TimeoutAddPayload,
+    TimeoutRemovePayload,
+)
 from core.utilities import format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class BaseActions:
     def __init__(self) -> None:
         super().__init__()
 
-    async def dm_upon_action(
-        self,
+    @classmethod
+    async def _dm_target(
+        cls,
         action_type : Literal[
             "Ban Add",
             "Ban Remove",
@@ -23,9 +36,19 @@ class BaseActions:
             "Timeout Add",
             "Timeout Remove",
         ],
-        action      : BanPayload | KickPayload | QuarantinePayload | TimeoutPayload,
+        action      : (
+            BanAddPayload
+            | BanRemovePayload
+            | KickPayload
+            | QuarantineAddPayload
+            | QuarantineRemovePayload
+            | TimeoutAddPayload
+            | TimeoutRemovePayload
+        ),
     ) -> None:
-        target = action.target
+        moderator = action.moderator
+        target    = action.target
+
         type_map : dict[str, str] = {
             "Ban Add"           : f'# {CONTESTED_EMOJI} You have been banned in the "goobers" server.',
             "Ban Remove"        : f'# {CONTESTED_EMOJI} You have been un-banned the "goobers" server.',
@@ -38,16 +61,33 @@ class BaseActions:
 
         title = type_map[action_type]
 
-        explain_table : dict[str, str] = {}
+        table_data : dict[str, str] = {"Reason": action.reason}
 
-        format_table(explain_table)
+        length = getattr(action, "length", None)
+        if length is not None:
+            table_data["Length"]    = length
+            table_data["Moderator"] = f"{moderator.mention} | {moderator.id}"
 
-        await target.send(
-            (
-               f"{title}\n"
-                ""
-            ),
+        format_table(table_data)
+
+        @final
+        class _AppealableView(View):
+            def __init__(self) -> None:
+                super().__init__(timeout = None)
+
+            @button(label = "Appeal")
+            async def btn_appeal(self, interaction : Interaction, _button : Button[View]) -> None:
+                await interaction.response.send_message("This button does nothing right now. :[")
+
+        content = (
+            f"{title}\n"
+            f"{action.reason}"
         )
+
+        if hasattr(action, "appealable"):
+            await target.send(content, view = _AppealableView())
+        else:
+            await target.send(content)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_add
@@ -70,17 +110,17 @@ class BaseActions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def ban_add(cls, targets : list[BanPayload]) -> None:
+    async def ban_add(cls, targets : list[BanAddPayload]) -> None:
         for action in targets:
             target = action.target
 
             await target.ban(
                 reason                 = action.reason,
-                delete_message_seconds = action.length,
+                delete_message_seconds = 86400,
             )
 
             if action.dm_user:
-                ...
+                await cls._dm_target("Ban Add", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_view
@@ -95,24 +135,48 @@ class BaseActions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def ban_remove(cls) -> None:
-        ...
+    async def ban_remove(cls, targets : list[BanRemovePayload]) -> None:
+        for action in targets:
+            target = action.target
+            guild  = bot.get_guild(MAIN_GUILD_ID)
+
+            if guild is not None:
+                await guild.unban(target, reason = action.reason)
+
+            if action.dm_user:
+                await cls._dm_target("Ban Remove", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # kick
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def kick(cls) -> None:
-        ...
+    async def kick(cls, targets : list[KickPayload]) -> None:
+        for action in targets:
+            target = action.target
+
+            await target.kick(reason = action.reason)
+
+            if action.dm_user:
+                await cls._dm_target("Kick", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def quarantine_add(cls) -> None:
-        ...
+    async def quarantine_add(cls, targets : list[QuarantineAddPayload]) -> None:
+        for action in targets:
+            target = action.target
+            guild  = bot.get_guild(MAIN_GUILD_ID)
+
+            if guild:
+                quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
+                if quarantine_role:
+                    await target.add_roles(quarantine_role)
+
+            if action.dm_user:
+                await cls._dm_target("Quarantine Add", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_view
@@ -127,16 +191,30 @@ class BaseActions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def quarantine_remove(cls) -> None:
-        ...
+    async def quarantine_remove(cls, targets : list[QuarantineRemovePayload]) -> None:
+        for action in targets:
+            target = action.target
+            guild  = bot.get_guild(MAIN_GUILD_ID)
+
+            if guild:
+                quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
+                if quarantine_role:
+                    await target.remove_roles(quarantine_role)
+
+            if action.dm_user:
+                await cls._dm_target("Quarantine Remove", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def timeout_add(cls) -> None:
-        ...
+    async def timeout_add(cls, targets : list[TimeoutAddPayload]) -> None:
+        for action in targets:
+            _target = action.target
+
+            if action.dm_user:
+                await cls._dm_target("Timeout Add", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_view
@@ -151,8 +229,14 @@ class BaseActions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @classmethod
-    async def timeout_remove(cls) -> None:
-        ...
+    async def timeout_remove(cls, targets : list[TimeoutRemovePayload]) -> None:
+        for action in targets:
+            target = action.target
+
+            target.timed_out_until = None
+
+            if action.dm_user:
+                await cls._dm_target("Timeout Remove", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # purge

@@ -12,6 +12,8 @@ async def run_bo_cogs_unload(
     interaction : Interaction,
     cog         : str,
 ) -> None:
+    await interaction.response.defer(ephemeral = True)
+
     cogs : list[str] = get_cogs()
 
     if cog == "commands.bot_owner._group_cog":

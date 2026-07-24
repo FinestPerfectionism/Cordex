@@ -13,7 +13,7 @@ async def run_channel_sync(
     interaction : Interaction,
     channel     : GuildChannel | None = None,
 ) -> None:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral = True)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 

@@ -12,7 +12,8 @@ async def run_bo_cogs_reload(
     interaction : Interaction,
     cog         : str | None,
 ) -> None:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral = True)
+
     cogs : list[str] = get_cogs()
 
     if cog:

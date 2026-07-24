@@ -57,9 +57,9 @@ eval_message_ids : dict[int, int] = {}
 
 async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
     env : dict[str, object] = {
-        "bot"     : bot,
-        "ctx"     : ctx,
-        "tree"    : tree,
+        "bot"  : bot,
+        "ctx"  : ctx,
+        "tree" : tree,
 
         "channel" : ctx.channel,
         "author"  : ctx.author,

@@ -32,7 +32,7 @@ from bot.ui import (
 from constants import ACCEPTED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
-from core.utilities import check_hierarchy, format_values
+from core.utilities import check_hierarchy, format_table, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Select Base
@@ -41,6 +41,16 @@ from core.utilities import check_hierarchy, format_values
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # State
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+ActionType = Literal[
+    "Ban Add",
+    "Ban Remove",
+    "Kick",
+    "Quarantine Add",
+    "Quarantine Remove",
+    "Timeout Add",
+    "Timeout Remove",
+]
 
 class _StateEntry(TypedDict, total = False):
     reason     : str
@@ -57,21 +67,21 @@ def _build_member_label(member : Member, state : _StateEntry | None) -> str:
         return member.mention
 
     reason_str = escape_markdown(str(state.get("reason", "")))
-    length_str = state.get("length", "N/A")
 
-    lines = [member.mention, f'**Reason:** "{reason_str}"']
-    lines.extend(
-        [
-            f"**Length:** `{length_str}`",
-            f"**Appealable:** `{state.get("appealable", False)}`",
-            f"**DM:** `{state.get("dm_user", False)}`",
-        ],
-    )
+    table_data = {
+        "Reason"     : f'"{reason_str}"',
+        "Length"     : f'`{state.get("length", "N/A")}`',
+        "Appealable" : f'`{state.get("appealable", False)}`',
+        "DM"         : f'`{state.get("dm_user", False)}`',
+    }
 
     if "file" in state:
-        lines.append(f"**File:** `{state["file"]}`")
+        table_data["File"] = f'`{state["file"]}`'
 
-    return "\n".join(lines)
+    return (
+        f"{member.mention}\n"
+        f"{format_table(table_data)}"
+    )
 
 def _resolve_state(
     member       : Member,
@@ -87,20 +97,22 @@ def _resolve_state(
 class _ActionButton(Button[LayoutView]):
     def __init__(
         self,
-        target : Member | None,
-        editor : "_EditorView",
+        action_type : ActionType,
+        target      : Member | None,
+        editor      : "_EditorView",
         *,
-        style  : ButtonStyle   = grey,
-        label  : str    | None = None,
+        style       : ButtonStyle   = grey,
+        label       : str    | None = None,
     ) -> None:
         super().__init__(style = style, label = label)
-        self.target : Member | None = target
-        self.editor : "_EditorView" = editor
+        self.action_type : ActionType    = action_type
+        self.target      : Member | None = target
+        self.editor      : "_EditorView" = editor
 
     @override
     async def callback(self, interaction : Interaction) -> None:
         try:
-            await interaction.response.send_modal(_ReasonModal(self.target, self.editor))
+            await interaction.response.send_modal(_ReasonModal(self.action_type, self.target, self.editor))
         except Exception:
             await send_bad_operation(interaction, title = "open modal")
             raise
@@ -109,12 +121,17 @@ class _ActionButton(Button[LayoutView]):
 # _ReasonModal
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class _ReasonModal(Modal):
-    def __init__(self, target : Member | None, editor : "_EditorView") -> None:
-        title = f"Reason: {target.name}" if target else "Global Action"
-        super().__init__(title = title)
-        self.target : Member | None = target
-        self.editor : "_EditorView"  = editor
+    def __init__(
+        self,
+        action_type : ActionType,
+        target      : Member | None,
+        editor      : "_EditorView",
+    ) -> None:
+        super().__init__(title = f"Reason: {target.name}" if target else "Global Action")
+        self.target = target
+        self.editor = editor
 
         existing : _StateEntry = editor.state_map.get(
             target.id if target else 0,
@@ -206,10 +223,15 @@ class _ReasonModal(Modal):
 
 @final
 class _EditorView(LayoutView):
-    def __init__(self, members : Sequence[Member] | None = None) -> None:
+    def __init__(
+        self,
+        action_type : ActionType,
+        members     : Sequence[Member] | None = None,
+    ) -> None:
         super().__init__(timeout = None)
-        self.members   : list[Member] = list(members) if members else []
-        self.state_map : _StateMap    = {}
+        self.action_type : ActionType = action_type
+        self.members                  = list(members) if members else []
+        self.state_map   : _StateMap  = {}
         self.rebuild()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -230,7 +252,7 @@ class _EditorView(LayoutView):
             else:
                 style = grey
 
-            button = _ActionButton(member, self, style = style, label = "Action")
+            button = _ActionButton(self.action_type, member, self, style = style, label = "Action")
             container.add_item(ButtonSection(label, button = button))
         container.add_item(VisibleLargeSeparator())
 
@@ -308,7 +330,13 @@ class _EditorView(LayoutView):
 
         container.add_item(
             ActionRow(
-                _ActionButton(None, self, style = blurple, label = "Global"),
+                _ActionButton(
+                    self.action_type,
+                    None,
+                    self,
+                    style = blurple,
+                    label = "Global",
+                ),
                 execute_button,
             ),
         )
@@ -335,22 +363,25 @@ class _EditorView(LayoutView):
 
 @final
 class MemberSelectView(View):
-    action_type = Literal[
-        "lockdown_add",
-        "lockdown_remove",
-        "ban_add",
-        "ban_remove",
-        "kick",
-        "quarantine_add",
-        "quarantine_remove",
-        "timeout_add",
-        "timeout_remove",
-    ]
+    type_map : dict[ActionType, str] = {
+        "Ban Add"           : "Select members to ban...",
+        "Ban Remove"        : "Select members to un-ban...",
+        "Kick"              : "Select members to kick...",
+        "Quarantine Add"    : "Select members to place in quarantine...",
+        "Quarantine Remove" : "Select members to remove from quarantine...",
+        "Timeout Add"       : "Select members to place in timeout...",
+        "Timeout Remove"    : "Select members to remove from timeout...",
+    }
 
-    def __init__(self, action_type : action_type) -> None:
+    current_action : ActionType = "Ban Add"
+
+    placeholder = type_map[current_action]
+
+    def __init__(self, action_type : ActionType) -> None:
         super().__init__(timeout = None)
+        self.action_type : ActionType = action_type
 
-    @select(cls = UserSelect, placeholder = "Choose members...", max_values = 1)
+    @select(cls = UserSelect, placeholder = placeholder, max_values = 1)
     async def slct_moderation_members(
         self,
         interaction : Interaction,
@@ -432,7 +463,7 @@ class MemberSelectView(View):
         members = [user for user in select.values if isinstance(user, Member)]
 
         try:
-            await interaction.response.edit_message(view = _EditorView(members = members))
+            await interaction.response.edit_message(view = _EditorView(self.action_type, members = members))
         except Exception:
             await send_bad_operation(interaction, title = "compile window")
             raise

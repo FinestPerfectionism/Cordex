@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 # format_command
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_command(bot : "Cordex", path  : str) -> str:
+def format_command(bot : "Cordex", path : str) -> str:
     parts : list[str] = path.strip().split()
 
     if not parts:

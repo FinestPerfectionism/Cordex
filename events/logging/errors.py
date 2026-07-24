@@ -26,7 +26,7 @@ from discord.app_commands import AppCommandError
 from discord.ext import commands
 from discord.utils import utcnow
 
-from bot import Cordex, Interaction, tree
+from bot import Context, Cordex, Interaction, bot, tree
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
     BOT_OWNER_ID,
@@ -46,7 +46,7 @@ from core.exceptions import (
     send_bad_permissions_command,
 )
 from core.responses import format_send
-from core.utilities import codeblock
+from core.utilities import codeblock, format_command
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Errors Handling
@@ -212,13 +212,24 @@ class ErrorLogger(commands.Cog):
         traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self.send_error(
-            title           =  "Command Error",
+            title           = "Command Error",
             user            = interaction.user,
             guild           = interaction.guild,
-            command_display = f"/{interaction.command.qualified_name}" if interaction.command else "Unknown",
+            command_display = format_command(bot, interaction.command.qualified_name) if interaction.command else "Unknown",
             error_text      = str(error),
             traceback_text  = traceback_text,
         )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # "Prefix Command Errors"
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @commands.Cog.listener("on_command_error")
+    async def prefix_command_error_handler(self, _ctx : Context, _error : commands.CommandError) -> None:
+
+        # ⸻ Literally just pass since only eval uses prefix
+
+        pass
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Extension Errors

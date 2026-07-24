@@ -18,35 +18,62 @@ from constants import (
 # Cases Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Action Payloads
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 @dataclass
-class BasePayload:
+class BaseRemovePayload:
+    moderator : Member
+    target    : Member
+    reason    : str
+    dm_user   : bool
+
+@dataclass
+class BaseAddPayload:
+    moderator  : Member
     target     : Member
     reason     : str
     dm_user    : bool
     appealable : bool
 
 @dataclass
-class BanPayload(BasePayload):
-    length : int
+class BanAddPayload(BaseAddPayload):
+    length : int | None
+
+
+type BanRemovePayload = BaseRemovePayload
 
 @dataclass
 class KickPayload:
-    target  : Member
-    reason  : str
-    dm_user : bool
+    moderator : Member
+    target    : Member
+    reason    : str
+    dm_user   : bool
 
 @dataclass
-class TimeoutPayload(BasePayload):
+class TimeoutAddPayload(BaseAddPayload):
     length : int
 
+
+type TimeoutRemovePayload = BaseRemovePayload
+
 @dataclass
-class QuarantinePayload(BasePayload):
-    length : int
+class QuarantineAddPayload(BaseAddPayload):
+    length : int | None
+
+
+type QuarantineRemovePayload = BaseRemovePayload
 
 @dataclass
 class PurgePayload:
-    target : Member
-    reason : str
+    moderator : Member
+    target    : Member
+    reason    : str
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# ...
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @dataclass(frozen = True)
 class CaseData:

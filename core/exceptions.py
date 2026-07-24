@@ -68,28 +68,26 @@ async def send_bad_argument(
     target   : "ContextOrInteraction",
     *,
     title    : str = "run command",
-    subtitle : dict[
-        str | tuple[str, ...] | set[str] | None,
-        str,
-    ],
+    subtitle : dict[str | tuple[str, ...] | None, str],
     footer   : str = "Bad argument",
 ) -> None:
-    formatted_lines : list[str] = []
+    lines : list[str] = []
 
     for arg, notice in subtitle.items():
-        if arg is None:
-            formatted_lines.append(notice)
-        elif isinstance(arg, set | tuple | list):
-            joined_args = ", ".join(f"`{a}`" for a in arg)
-            formatted_lines.append(f"{joined_args}: {notice}")
-        else:
-            formatted_lines.append(f"`{arg}`: {notice}")
+        match arg:
+            case None:
+                lines.append(notice)
+            case tuple() as args:
+                joined_args = ", ".join(f"`{a}`" for a in args)
+                lines.append(f"{joined_args}: {notice}")
+            case _:
+                lines.append(f"`{arg}`: {notice}")
 
     await format_send(
         target,
         msg_type = "warning",
         title    = title,
-        subtitle = "\n".join(formatted_lines),
+        subtitle = "\n".join(lines),
         footer   = footer,
     )
 

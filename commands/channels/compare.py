@@ -11,7 +11,7 @@ async def run_channel_compare(
     _channel_1  : GuildChannel | None = None,
     _channel_2  : GuildChannel | None = None,
 ) -> None:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral = True)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
