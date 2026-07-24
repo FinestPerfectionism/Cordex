@@ -66,17 +66,17 @@ def _build_member_label(member : Member, state : _StateEntry | None) -> str:
     if not state:
         return member.mention
 
-    reason_str = escape_markdown(str(state.get("reason", "")))
+    reason = escape_markdown(str(state.get("reason", "")))
 
     table_data = {
-        "Reason"     : f'"{reason_str}"',
-        "Length"     : f'`{state.get("length", "N/A")}`',
-        "Appealable" : f'`{state.get("appealable", False)}`',
-        "DM"         : f'`{state.get("dm_user", False)}`',
+        "Reason"     : f'"{reason}"',
+        "Length"     : f"{state.get("length", "N/A")}",
+        "Appealable" : f"{state.get("appealable", False)}",
+        "DM"         : f"{state.get("dm_user", False)}",
     }
 
     if "file" in state:
-        table_data["File"] = f'`{state["file"]}`'
+        table_data["File"] = f"{state["file"]}"
 
     return (
         f"{member.mention}\n"

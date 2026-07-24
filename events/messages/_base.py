@@ -32,7 +32,7 @@ WAPPLE_EMOJIS : list[str] = [
     "<:susapple:1483533565005402144>",
 ]
 
-WAPPLE_PATTERN : Pattern[str] = compile(rf"^({'|'.join(map(escape, WAPPLE_EMOJIS))}| )+$")
+WAPPLE_PATTERN : Pattern[str] = compile(rf"^({"|".join(map(escape, WAPPLE_EMOJIS))}| )+$")
 
 def is_valid_wapple_chain(content : str) -> bool:
     return bool(WAPPLE_PATTERN.fullmatch(content.strip()))
