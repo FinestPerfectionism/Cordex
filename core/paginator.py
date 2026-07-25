@@ -84,7 +84,7 @@ class _PageRow(ActionRow["Paginator"]):
         super().__init__()
         self.paginator = paginator
 
-        # ⸻ Remove the first, page, and last buttons if we have 2 pages, and remove the page button if we have 3 pages.
+        # ⸻ Remove the first, page, and last buttons if we have 2 pages, and remove only the page button if we have 3 pages.
 
         if len(paginator.pages) == 2:
             self.remove_item(self.btn_first)
@@ -117,7 +117,7 @@ class _PageRow(ActionRow["Paginator"]):
         self.btn_forward.disabled  = is_last
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # buttons
+    # Buttons
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @button(label = "<<")
