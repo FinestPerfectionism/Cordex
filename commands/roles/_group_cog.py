@@ -7,6 +7,7 @@ from discord.ext import commands
 from bot import Cordex, Interaction
 from core.help import help_description
 from core.permissions import administrator_cmd
+from core.utilities import unimplemented
 
 from .compare import run_role_compare
 from .duplicate import run_role_duplicate
@@ -40,6 +41,7 @@ class RoleCommands(
     )
     @describe(role = "The role to duplicate. Defaults to the current one.")
     @administrator_cmd()
+    @unimplemented()
     async def cmd_role_duplicate(
         self,
         interaction : Interaction,

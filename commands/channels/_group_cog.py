@@ -7,6 +7,7 @@ from discord.ext import commands
 from bot import Cordex, Interaction
 from core.help import help_description
 from core.permissions import administrator_cmd
+from core.utilities import unimplemented
 
 from .compare import run_channel_compare
 from .duplicate import run_channel_duplicate
@@ -75,6 +76,7 @@ class ChannelCommands(
     )
     @describe(channel = "The channel to duplicate. Defaults to the current one.")
     @administrator_cmd()
+    @unimplemented()
     async def cmd_channel_duplicate(
         self,
         interaction : Interaction,
@@ -105,6 +107,7 @@ class ChannelCommands(
         channel_2 = "The second channel to compare.",
     )
     @administrator_cmd()
+    @unimplemented()
     async def cmd_channel_compare(
         self,
         interaction : Interaction,
@@ -139,6 +142,7 @@ class ChannelCommands(
         ],
     )
     @administrator_cmd()
+    @unimplemented()
     async def cmd_channel_permissions(
         self,
         interaction : Interaction,

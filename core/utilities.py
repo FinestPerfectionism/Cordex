@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, Literal
 from discord import Member, Role
 from discord.app_commands import check
 
-from bot import Interaction
-
 from .exceptions import UnimplementedCommand
 
 if TYPE_CHECKING:
