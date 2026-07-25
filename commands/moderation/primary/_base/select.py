@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from re import match
+from re import findall, match
 from types import MappingProxyType
 from typing import Literal, Self, TypedDict, cast, final, override
 
@@ -31,9 +31,18 @@ from bot.ui import (
     red,
 )
 from constants import ACCEPTED_EMOJI
+from core.cases import (
+    BanAddPayload,
+    BaseRemovePayload,
+    KickPayload,
+    QuarantineAddPayload,
+    TimeoutAddPayload,
+)
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
 from core.utilities import check_hierarchy, format_table, format_values
+
+from .actions import BaseActions
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Select Base
@@ -68,11 +77,28 @@ _LENGTH_TYPES  = frozenset(
     },
 )
 
+_LENGTH_UNITS : MappingProxyType[str, int] = MappingProxyType(
+    {
+        "s" : 1,
+        "m" : 60,
+        "h" : 3600,
+        "d" : 86400,
+    },
+)
+
 def _wants_length(action_type : ActionType) -> bool:
     return action_type in _LENGTH_TYPES
 
 def _wants_extra(action_type : ActionType) -> bool:
     return action_type not in _REMOVAL_TYPES and action_type != "Kick"
+
+def _parse_length(raw : str) -> int:
+    total = 0
+    matches : list[tuple[str, str]] = findall(r"(\d+)([hmds])", raw)
+    for value, unit in matches:
+        if unit in _LENGTH_UNITS:
+            total += int(value) * _LENGTH_UNITS[unit]
+    return total
 
 class _StateEntry(TypedDict, total = False):
     reason     : str
@@ -180,7 +206,7 @@ class _ReasonModal(Modal):
         if _wants_length(action_type):
             self.length_input = TextInput[Modal](
                 label       = "Length",
-                placeholder = 'ex: "30m, 2d"' if action_type == "Timeout Add" else 'ex: "30m, 2d" — Permanant if empty',
+                placeholder = 'ex: "30m, 2d"' if action_type == "Timeout Add" else 'ex: "30m, 2d" — Permanant if empty.',
                 default     = str(existing.get("length", "")),
                 required    = (action_type == "Timeout Add"),
             )
@@ -234,17 +260,27 @@ class _ReasonModal(Modal):
             )
             return
 
-        # ⸻ Improper time signature.
+        # ⸻ Improper time signature or exceeds maximum duration.
 
         length_value = self.length_input.value.strip().lower() if self.length_input is not None else ""
-        if length_value and not match(r"^(\d+[hmds])+$", length_value):
-            await format_send(
-                interaction,
-                msg_type =  "warning",
-                title    =  "compile window",
-                subtitle = f"The time signature `{self.length_input.value if self.length_input is not None else ''}` is not valid. Use formats like 10m, 2h, 1d.",
-            )
-            return
+        if length_value:
+            if not match(r"^(\d+[hmds])+$", length_value):
+                await format_send(
+                    interaction,
+                    msg_type =  "warning",
+                    title    =  "compile window",
+                    subtitle = f"The time signature `{self.length_input.value if self.length_input is not None else ""}` is not valid. Use formats like 10m, 2h, 1d.",
+                )
+                return
+
+            if self.action_type == "Timeout Add" and _parse_length(length_value) > 2_419_200:
+                await format_send(
+                    interaction,
+                    msg_type = "warning",
+                    title    = "compile window",
+                    subtitle = "Timeouts cannot exceed 28 days.",
+                )
+                return
 
         user_id = self.target.id if self.target else 0
         if user_id == 0:
@@ -312,8 +348,8 @@ class _EditorView(LayoutView):
             global_entry       = self.state_map.get(0)
 
             for member in self.members:
-                entry           = _resolve_state(member, self.state_map, global_entry)
-                missing : list[str] = []
+                entry   : _StateEntry = _resolve_state(member, self.state_map, global_entry) or _StateEntry()
+                missing : list[str]   = []
                 if not entry or not entry.get("reason"):
                     missing.append("reason")
                 if self.action_type == "Timeout Add" and (not entry or not entry.get("length")):
@@ -337,44 +373,194 @@ class _EditorView(LayoutView):
                     raise
                 return
 
+            moderator = interaction.user
+            if not isinstance(moderator, Member):
+                return
+
+            action_errors : list[tuple[Member, str]] = []
+
             try:
-                summary_lines = [f"**{ACCEPTED_EMOJI} Successfully mass moderated all members.**"]
+                if self.action_type == "Ban Add":
+                    ban_add_payloads : list[BanAddPayload] = []
 
-                for member in self.members:
-                    entry = _resolve_state(member, self.state_map, global_entry)
+                    for member in self.members:
+                        resolved = _resolve_state(member, self.state_map, global_entry)
+                        entry    = resolved if resolved is not None else {}
+                        length   = entry.get("length")
 
-                    if entry:
-                        reason  = escape_markdown(entry.get("reason", "N/A"))
-                        dm_user = "Yes" if entry.get("dm_user") else "No"
-
-                        lines : list[str] = [
-                            f"{member.mention}",
-                            f"`      Reason:` {reason}",
-                        ]
-
-                        if _wants_length(self.action_type):
-                            lines.append(f"`      Length:` {entry.get('length', 'N/A')}")
-
-                        lines.append(f"`     DM Sent:` {dm_user}")
-
-                        if _wants_extra(self.action_type):
-                            appealable = "Yes" if entry.get("appealable") else "No"
-                            file       = escape_markdown(entry.get("file") or "None")
-                            lines.extend(
-                                [
-                                    f"`  Appealable:` {appealable}",
-                                    f"`  Attachment:` {file}",
-                                ],
-                            )
-
-                        summary_lines.append("\n".join(lines))
-                    else:
-                        summary_lines.append(
-                            (
-                               f"### Partial success for {member.mention}.\n"
-                                "-# Missing configuration data for this member."
+                        ban_add_payloads.append(
+                            BanAddPayload(
+                                moderator  = moderator,
+                                target     = member,
+                                reason     = entry.get("reason", ""),
+                                dm_user    = bool(entry.get("dm_user", False)),
+                                appealable = bool(entry.get("appealable", False)),
+                                length     = _parse_length(length) if length else None,
                             ),
                         )
+
+                    action_errors = await BaseActions.ban_add(ban_add_payloads)
+
+                elif self.action_type == "Ban Remove":
+                    ban_remove_payloads : list[BaseRemovePayload] = []
+
+                    for member in self.members:
+                        resolved = _resolve_state(member, self.state_map, global_entry)
+                        entry    = resolved if resolved is not None else {}
+
+                        ban_remove_payloads.append(
+                            BaseRemovePayload(
+                                moderator = moderator,
+                                target    = member,
+                                reason    = entry.get("reason", ""),
+                                dm_user   = bool(entry.get("dm_user", False)),
+                            ),
+                        )
+
+                    action_errors = await BaseActions.ban_remove(ban_remove_payloads)
+
+                elif self.action_type == "Kick":
+                    kick_payloads : list[KickPayload] = []
+
+                    for member in self.members:
+                        resolved = _resolve_state(member, self.state_map, global_entry)
+                        entry    = resolved if resolved is not None else {}
+
+                        kick_payloads.append(
+                            KickPayload(
+                                moderator = moderator,
+                                target    = member,
+                                reason    = entry.get("reason", ""),
+                                dm_user   = bool(entry.get("dm_user", False)),
+                            ),
+                        )
+
+                    action_errors = await BaseActions.kick(kick_payloads)
+
+                elif self.action_type == "Quarantine Add":
+                    quarantine_add_payloads : list[QuarantineAddPayload] = []
+
+                    for member in self.members:
+                        resolved = _resolve_state(member, self.state_map, global_entry)
+                        entry    = resolved if resolved is not None else {}
+                        length   = entry.get("length")
+
+                        quarantine_add_payloads.append(
+                            QuarantineAddPayload(
+                                moderator  = moderator,
+                                target     = member,
+                                reason     = entry.get("reason", ""),
+                                dm_user    = bool(entry.get("dm_user", False)),
+                                appealable = bool(entry.get("appealable", False)),
+                                length     = _parse_length(length) if length else None,
+                            ),
+                        )
+
+                    action_errors = await BaseActions.quarantine_add(quarantine_add_payloads)
+
+                elif self.action_type == "Quarantine Remove":
+                    quarantine_remove_payloads : list[BaseRemovePayload] = []
+
+                    for member in self.members:
+                        entry = _resolve_state(member, self.state_map, global_entry) or {}
+
+                        quarantine_remove_payloads.append(
+                            BaseRemovePayload(
+                                moderator = moderator,
+                                target    = member,
+                                reason    = entry.get("reason", ""),
+                                dm_user   = bool(entry.get("dm_user", False)),
+                            ),
+                        )
+
+                    action_errors = await BaseActions.quarantine_remove(quarantine_remove_payloads)
+
+                elif self.action_type == "Timeout Add":
+                    timeout_add_payloads : list[TimeoutAddPayload] = []
+
+                    for member in self.members:
+                        entry = _resolve_state(member, self.state_map, global_entry) or {}
+
+                        timeout_add_payloads.append(
+                            TimeoutAddPayload(
+                                moderator  = moderator,
+                                target     = member,
+                                reason     = entry.get("reason", ""),
+                                dm_user    = bool(entry.get("dm_user", False)),
+                                appealable = bool(entry.get("appealable", False)),
+                                length     = _parse_length(entry.get("length", "")),
+                            ),
+                        )
+
+                    action_errors = await BaseActions.timeout_add(timeout_add_payloads)
+
+                else:
+                    timeout_remove_payloads : list[BaseRemovePayload] = []
+
+                    for member in self.members:
+                        entry = _resolve_state(member, self.state_map, global_entry) or {}
+
+                        timeout_remove_payloads.append(
+                            BaseRemovePayload(
+                                moderator = moderator,
+                                target    = member,
+                                reason    = entry.get("reason", ""),
+                                dm_user   = bool(entry.get("dm_user", False)),
+                            ),
+                        )
+
+                    action_errors = await BaseActions.timeout_remove(timeout_remove_payloads)
+
+            except Exception:
+                await send_bad_operation(interaction, title = "compile window")
+                raise
+
+            try:
+                failed_ids    = {member.id for member, _ in action_errors}
+                summary_lines = [
+                    f"**{ACCEPTED_EMOJI} Mass moderation completed{" with errors" if failed_ids else ""}.**",
+                ]
+
+                for member in self.members:
+                    entry       = _resolve_state(member, self.state_map, global_entry) or {}
+                    error : str | None = next(
+                        (message for failed_member, message in action_errors if failed_member.id == member.id),
+                        None,
+                    )
+
+                    if error:
+                        summary_lines.append(
+                            (
+                                f"### Failed for {member.mention}.\n"
+                                f"-# {escape_markdown(error)}"
+                            ),
+                        )
+                        continue
+
+                    reason  = escape_markdown(entry.get("reason", "N/A"))
+                    dm_user = "Yes" if entry.get("dm_user") else "No"
+
+                    lines : list[str] = [
+                        f"{member.mention}",
+                        f"`      Reason:` {reason}",
+                    ]
+
+                    if _wants_length(self.action_type):
+                        lines.append(f"`      Length:` {entry.get("length", "N/A")}")
+
+                    lines.append(f"`     DM Sent:` {dm_user}")
+
+                    if _wants_extra(self.action_type):
+                        appealable = "Yes" if entry.get("appealable") else "No"
+                        file       = escape_markdown(entry.get("file") or "None")
+                        lines.extend(
+                            [
+                                f"`  Appealable:` {appealable}",
+                                f"`  Attachment:` {file}",
+                            ],
+                        )
+
+                    summary_lines.append("\n".join(lines))
 
                 class FinalizedView(LayoutView):
                     text : TextDisplay[Self] = TextDisplay("\n".join(summary_lines))

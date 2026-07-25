@@ -120,8 +120,8 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_note_add(self, interaction : Interaction) -> None:
-        await run_mod_primary_note_add(interaction)
+    async def cmd_moderation_primary_ban_add(self, interaction : Interaction) -> None:
+        await run_mod_primary_ban_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation ban view Command
@@ -263,8 +263,8 @@ class ModerationCommands(
     )
     # @moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_ban_add(self, interaction : Interaction) -> None:
-        await run_mod_primary_ban_add(interaction)
+    async def cmd_moderation_primary_note_add(self, interaction : Interaction) -> None:
+        await run_mod_primary_note_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation note view Command
