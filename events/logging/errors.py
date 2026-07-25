@@ -38,12 +38,14 @@ from core.exceptions import (
     BadEnvironmentMainGuild,
     BadEnvironmentMainGuildOrDMs,
     BadPermissionsCommand,
+    UnimplementedCommand,
     send_bad_environment_dms,
     send_bad_environment_guild,
     send_bad_environment_mainguild,
     send_bad_environment_mainguildordms,
     send_bad_operation,
     send_bad_permissions_command,
+    send_unimplemented_command,
 )
 from core.responses import format_send
 from core.utilities import codeblock, format_command
@@ -205,6 +207,10 @@ class ErrorLogger(commands.Cog):
 
         if isinstance(error, BadEnvironmentMainGuildOrDMs):
             await send_bad_environment_mainguildordms(interaction)
+            return
+
+        if isinstance(error, UnimplementedCommand):
+            await send_unimplemented_command(interaction)
             return
 
         await send_bad_operation(interaction)
