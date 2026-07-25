@@ -121,10 +121,10 @@ def _build_member_label(member : Member, state : _StateEntry | None, action_type
     if _wants_length(action_type):
         table_data["Length"] = str(state.get("length", "N/A"))
 
+    table_data["DM"] = str(state.get("dm_user", False))
+
     if _wants_extra(action_type):
         table_data["Appealable"] = str(state.get("appealable", False))
-
-    table_data["DM"] = str(state.get("dm_user", False))
 
     if "file" in state:
         table_data["File"] = str(state["file"])
@@ -540,27 +540,21 @@ class _EditorView(LayoutView):
                     reason  = escape_markdown(entry.get("reason", "N/A"))
                     dm_user = "Yes" if entry.get("dm_user") else "No"
 
-                    lines : list[str] = [
-                        f"{member.mention}",
-                        f"`      Reason:` {reason}",
-                    ]
+                    table_data : dict[str, str] = {"Reason" : reason}
 
                     if _wants_length(self.action_type):
-                        lines.append(f"`      Length:` {entry.get("length", "N/A")}")
+                        table_data["Length"] = str(entry.get("length", "N/A"))
 
-                    lines.append(f"`     DM Sent:` {dm_user}")
+                    table_data["DM Sent"] = dm_user
 
                     if _wants_extra(self.action_type):
-                        appealable = "Yes" if entry.get("appealable") else "No"
-                        file       = escape_markdown(entry.get("file") or "None")
-                        lines.extend(
-                            [
-                                f"`  Appealable:` {appealable}",
-                                f"`  Attachment:` {file}",
-                            ],
-                        )
+                        table_data["Appealable"] = "Yes" if entry.get("appealable") else "No"
+                        table_data["Attachment"] = escape_markdown(entry.get("file") or "None")
 
-                    summary_lines.append("\n".join(lines))
+                    summary_lines.append(
+                        f"{member.mention}\n"
+                        f"{format_table(table_data)}",
+                    )
 
                 class FinalizedView(LayoutView):
                     text : TextDisplay[Self] = TextDisplay("\n".join(summary_lines))

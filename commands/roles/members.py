@@ -1,7 +1,8 @@
-from discord import Embed, Role
+from discord import AllowedMentions, Role
 
 from bot import Interaction
-from constants import COLOR_BLURPLE
+from constants import COLOR_GREY
+from core.paginator import Paginator
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role members Logic
@@ -38,27 +39,20 @@ async def run_role_members(
         case _:
             filtered = [m for m in guild.members if role not in m.roles]
 
-    formatted : str = "\n".join(f"- {m.mention}" for m in filtered) if filtered else "No members found."
+    person_label = "Bots"   if person_filter      == "bots"          else ("Humans" if person_filter == "humans" else "Members")
+    role_label   = "not in" if actual_role_filter == "whodoesnthave" else "in"
 
-    embed = Embed(
-        title       = f"Members for {role.name}",
-        description = formatted,
-        color       = COLOR_BLURPLE,
+    _view = Paginator(
+        f"### {person_label} {role_label} {role.mention}",
+        [f"- {m.mention}" for m in filtered] if filtered else ["No members found."],
+        data_name = person_label.lower(),
+        per_page  = 15,
+        color     = role.color if role.color.value else COLOR_GREY,
+        container = True,
     )
 
-    role_filter_name   = "Not a Member of" if actual_role_filter == "whodoesnthave" else "Member of"
-    person_filter_name = "Both" if person_filter is None else person_filter.capitalize()
-
-    embed.add_field(
-        name   = "Role Filter",
-        value  = role_filter_name,
-        inline = True,
+    await interaction.followup.send(
+        view             = _view,
+        ephemeral        = True,
+        allowed_mentions = AllowedMentions.none(),
     )
-    embed.add_field(
-        name   = "Person Filter",
-        value  = person_filter_name,
-        inline = True,
-    )
-    embed.set_footer(text = f"{len(filtered)} member(s) found.")
-
-    await interaction.followup.send(embed = embed)

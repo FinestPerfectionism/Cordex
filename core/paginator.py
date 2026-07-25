@@ -1,5 +1,6 @@
 from typing import Self, final, override
 
+from discord import Color
 from discord.ui import ActionRow, Button, Item, Modal, TextInput, button
 
 from bot import Interaction
@@ -148,16 +149,18 @@ class Paginator(LayoutView):
         data      : list[str | Item[LayoutView]],
         /,
         *,
-        data_name : str | None = None,
-        per_page  : int        = 5,
-        container : bool       = False,
-        force     : bool       = False,
+        data_name : str   | None = None,
+        per_page  : int          = 5,
+        color     : Color | None = None,
+        container : bool         = False,
+        force     : bool         = False,
     ) -> None:
         super().__init__(timeout = 600)
         self._title     = title
         self._data      = data
         self._data_name = data_name
         self._per_page  = per_page
+        self._color     = color
         self._container = container
         self._force     = force
 
@@ -170,6 +173,12 @@ class Paginator(LayoutView):
 
         self._above_items : list[Item[LayoutView]] = []
         self._below_items : list[Item[LayoutView]] = []
+
+        # ⸻ color is dependent on container.
+
+        if color and not container:
+            error = "color is dependent on container"
+            raise ValueError(error)
 
         # ⸻ Only add a separator if there are buttons below it.
 
@@ -263,10 +272,10 @@ class Paginator(LayoutView):
             self._page_row.update_states()
             items.append(self._page_row)
 
-        # ⸻ Add all items to the container if chosen or directly to the view if not
+        # ⸻ Add all items to the container if chosen or directly to the view if not.
 
         if self._container:
-            self.add_item(Container(*items))
+            self.add_item(Container(*items, color = self._color))
         else:
             for item in items:
                 self.add_item(item)
