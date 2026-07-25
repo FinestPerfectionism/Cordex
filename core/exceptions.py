@@ -103,7 +103,7 @@ async def send_unimplemented_command(target : "ContextOrInteraction") -> None:
         target,
         msg_type = "error",
         title    = "run command",
-        subtitle = "This command is currently unimplemented",
+        subtitle = "This command is currently unimplemented.",
         footer   = "Bad request",
     )
 

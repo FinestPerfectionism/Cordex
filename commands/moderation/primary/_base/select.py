@@ -53,6 +53,28 @@ ActionType = Literal[
     "Timeout Remove",
 ]
 
+_REMOVAL_TYPES : frozenset[ActionType] = frozenset(
+    {
+        "Ban Remove",
+        "Quarantine Remove",
+        "Timeout Remove",
+    },
+)
+
+_LENGTH_TYPES : frozenset[ActionType] = frozenset(
+    {
+        "Ban Add",
+        "Quarantine Add",
+        "Timeout Add",
+    },
+)
+
+def _wants_length(action_type : ActionType) -> bool:
+    return action_type in _LENGTH_TYPES
+
+def _wants_extra(action_type : ActionType) -> bool:
+    return action_type not in _REMOVAL_TYPES
+
 class _StateEntry(TypedDict, total = False):
     reason     : str
     length     : str
@@ -63,18 +85,21 @@ class _StateEntry(TypedDict, total = False):
 
 type _StateMap = dict[int, _StateEntry]
 
-def _build_member_label(member : Member, state : _StateEntry | None) -> str:
+def _build_member_label(member : Member, state : _StateEntry | None, action_type : ActionType) -> str:
     if not state:
         return member.mention
 
     reason = escape_markdown(str(state.get("reason", "")))
 
-    table_data = {
-        "Reason"     : f'"{reason}"',
-        "Length"     : str(state.get("length", "N/A")),
-        "Appealable" : str(state.get("appealable", False)),
-        "DM"         : str(state.get("dm_user", False)),
-    }
+    table_data : dict[str, str] = {"Reason" : f'"{reason}"'}
+
+    if _wants_length(action_type):
+        table_data["Length"] = str(state.get("length", "N/A"))
+
+    if _wants_extra(action_type):
+        table_data["Appealable"] = str(state.get("appealable", False))
+
+    table_data["DM"] = str(state.get("dm_user", False))
 
     if "file" in state:
         table_data["File"] = str(state["file"])
@@ -132,8 +157,9 @@ class _ReasonModal(Modal):
         editor      : "_EditorView",
     ) -> None:
         super().__init__(title = f"Reason: {target.name}" if target else "Global Action")
-        self.target = target
-        self.editor = editor
+        self.target      = target
+        self.editor      = editor
+        self.action_type = action_type
 
         existing : _StateEntry = editor.state_map.get(
             target.id if target else 0,
@@ -146,43 +172,61 @@ class _ReasonModal(Modal):
             default     = str(existing.get("reason", "")),
             required    = True,
         )
-        self.length_input : TextInput[Modal] = TextInput[Modal](
-            label       = "Length",
-            placeholder = 'ex: "30m, 2d"',
-            default     = str(existing.get("length", "")),
-            required    = True,
-        )
-        self.appealable_checkbox : Checkbox[Modal]   = Checkbox(default = bool(existing.get("appealable", False)))
-        self.dm_checkbox         : Checkbox[Modal]   = Checkbox(default = bool(existing.get("dm_user",    False)))
-        self.proof_fileupload    : FileUpload[Modal] = FileUpload(required = False, max_values = 10)
+        self.dm_checkbox : Checkbox[Modal] = Checkbox(default = bool(existing.get("dm_user", False)))
 
-        for item in (
-            self.reason_input,
-            self.length_input,
-            Label(
-                text        = "Appealable",
-                description = "Whether the action is appealable. *DM must be set to true for the action to be appealable!",
-                component   = self.appealable_checkbox,
-            ),
+        self.length_input        : TextInput[Modal]  | None = None
+        self.appealable_checkbox : Checkbox[Modal]   | None = None
+        self.proof_fileupload    : FileUpload[Modal] | None = None
+
+        if _wants_length(action_type):
+            self.length_input = TextInput[Modal](
+                label       = "Length",
+                placeholder = 'ex: "30m, 2d"' if action_type == "Timeout Add" else 'ex: "30m, 2d" — Permanant if empty',
+                default     = str(existing.get("length", "")),
+                required    = (action_type == "Timeout Add"),
+            )
+
+        if _wants_extra(action_type):
+            self.appealable_checkbox = Checkbox(default = bool(existing.get("appealable", False)))
+            self.proof_fileupload    = FileUpload(required = False, max_values = 10)
+
+        self.add_item(self.reason_input)
+
+        if self.length_input is not None:
+            self.add_item(self.length_input)
+
+        self.add_item(
             Label(
                 text        = "DM",
                 description = "Whether to DM the user.",
                 component   = self.dm_checkbox,
             ),
-            Label(
-                text        = "Proof",
-                description = "Upload a file as proof.",
-                component   = self.proof_fileupload,
-            ),
-        ):
-            self.add_item(item)
+        )
+
+        if self.appealable_checkbox is not None:
+            self.add_item(
+                Label(
+                    text        = "Appealable",
+                    description = "Whether the action is appealable. *DM must be set to true for the action to be appealable!",
+                    component   = self.appealable_checkbox,
+                ),
+            )
+
+        if self.proof_fileupload is not None:
+            self.add_item(
+                Label(
+                    text        = "Proof",
+                    description = "Upload a file as proof.",
+                    component   = self.proof_fileupload,
+                ),
+            )
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
 
         # ⸻ You cannot make an action appealable without DMing the user.
 
-        if self.appealable_checkbox.value and not self.dm_checkbox.value:
+        if self.appealable_checkbox is not None and self.appealable_checkbox.value and not self.dm_checkbox.value:
             await format_send(
                 interaction,
                 msg_type = "warning",
@@ -193,13 +237,13 @@ class _ReasonModal(Modal):
 
         # ⸻ Improper time signature.
 
-        length_value = self.length_input.value.strip().lower()
+        length_value = self.length_input.value.strip().lower() if self.length_input is not None else ""
         if length_value and not match(r"^(\d+[hmds])+$", length_value):
             await format_send(
                 interaction,
                 msg_type =  "warning",
                 title    =  "compile window",
-                subtitle = f"The time signature `{self.length_input.value}` is not valid. Use formats like 10m, 2h, 1d.",
+                subtitle = f"The time signature `{self.length_input.value if self.length_input is not None else ''}` is not valid. Use formats like 10m, 2h, 1d.",
             )
             return
 
@@ -207,14 +251,22 @@ class _ReasonModal(Modal):
         if user_id == 0:
             self.editor.state_map.clear()
 
-        filename : str | None = next((f.filename for f in self.proof_fileupload.values), None)
-        self.editor.state_map[user_id] = {
-            "reason"     : self.reason_input.value,
-            "length"     : self.length_input.value,
-            "appealable" : self.appealable_checkbox.value,
-            "dm_user"    : self.dm_checkbox.value,
-            "file"       : filename,
+        entry : _StateEntry = {
+            "reason"  : self.reason_input.value,
+            "dm_user" : self.dm_checkbox.value,
         }
+
+        if self.length_input is not None:
+            entry["length"] = self.length_input.value
+
+        if self.appealable_checkbox is not None:
+            entry["appealable"] = self.appealable_checkbox.value
+
+        if self.proof_fileupload is not None:
+            filename      : str | None = next((f.filename for f in self.proof_fileupload.values), None)
+            entry["file"] = filename
+
+        self.editor.state_map[user_id] = entry
         await self.editor.refresh(interaction)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -245,7 +297,7 @@ class _EditorView(LayoutView):
 
         for member in self.members:
             resolved = _resolve_state(member, self.state_map, global_state)
-            label    = _build_member_label(member, resolved)
+            label    = _build_member_label(member, resolved, self.action_type)
 
             if resolved:
                 style = green if (member.id in self.state_map or 0 in self.state_map) else blurple
@@ -265,7 +317,7 @@ class _EditorView(LayoutView):
                 missing : list[str] = []
                 if not entry or not entry.get("reason"):
                     missing.append("reason")
-                if not entry or not entry.get("length"):
+                if self.action_type == "Timeout Add" and (not entry or not entry.get("length")):
                     missing.append("timer")
                 if missing:
                     errors.append(f"- {member.mention}: Missing {format_values(missing)}")
@@ -293,22 +345,30 @@ class _EditorView(LayoutView):
                     entry = _resolve_state(member, self.state_map, global_entry)
 
                     if entry:
-                        reason     = escape_markdown(entry.get("reason", "N/A"))
-                        length     = entry.get("length", "N/A")
-                        appealable = "Yes" if entry.get("appealable") else "No"
-                        dm_user    = "Yes" if entry.get("dm_user")    else "No"
-                        file       = escape_markdown(entry.get("file") or "None")
+                        reason  = escape_markdown(entry.get("reason", "N/A"))
+                        dm_user = "Yes" if entry.get("dm_user") else "No"
 
-                        summary_lines.append(
-                            (
-                                f"{member.mention}\n"
-                                f"`      Reason:` {reason}\n"
-                                f"`      Length:` {length}\n"
-                                f"`     DM Sent:` {dm_user}\n"
-                                f"`  Appealable:` {appealable}\n"
-                                f"`  Attachment:` {file}"
-                            ),
-                        )
+                        lines : list[str] = [
+                            f"{member.mention}",
+                            f"`      Reason:` {reason}",
+                        ]
+
+                        if _wants_length(self.action_type):
+                            lines.append(f"`      Length:` {entry.get('length', 'N/A')}")
+
+                        lines.append(f"`     DM Sent:` {dm_user}")
+
+                        if _wants_extra(self.action_type):
+                            appealable = "Yes" if entry.get("appealable") else "No"
+                            file       = escape_markdown(entry.get("file") or "None")
+                            lines.extend(
+                                [
+                                    f"`  Appealable:` {appealable}",
+                                    f"`  Attachment:` {file}",
+                                ],
+                            )
+
+                        summary_lines.append("\n".join(lines))
                     else:
                         summary_lines.append(
                             (
