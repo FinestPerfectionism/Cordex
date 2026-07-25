@@ -84,11 +84,12 @@ class _PageRow(ActionRow["Paginator"]):
         super().__init__()
         self.paginator = paginator
 
-        # ⸻ Only the forward and backward buttons matter.
+        # ⸻ Remove the first, page, and last buttons if we have 2 pages, and remove the page button if we have 3 pages.
 
         if len(paginator.pages) == 2:
-            for button in [self.btn_first, self.btn_page, self.btn_last]:
-                self.remove_item(button)
+            self.remove_item(self.btn_first)
+            self.remove_item(self.btn_page)
+            self.remove_item(self.btn_last)
         elif len(paginator.pages) == 3:
             self.remove_item(self.btn_page)
 
@@ -97,7 +98,7 @@ class _PageRow(ActionRow["Paginator"]):
         self.update_states()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # update_button_states
+    # update_states
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def update_states(self) -> None:
@@ -114,6 +115,10 @@ class _PageRow(ActionRow["Paginator"]):
 
         self.btn_backward.disabled = is_first
         self.btn_forward.disabled  = is_last
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # buttons
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @button(label = "<<")
     async def btn_first(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
@@ -146,6 +151,7 @@ class Paginator(LayoutView):
         data_name : str | None = None,
         per_page  : int        = 5,
         container : bool       = False,
+        force     : bool       = False,
     ) -> None:
         super().__init__(timeout = 600)
         self._title     = title
@@ -153,6 +159,7 @@ class Paginator(LayoutView):
         self._data_name = data_name
         self._per_page  = per_page
         self._container = container
+        self._force     = force
 
         self.pages        = [
             data[i:i + per_page]
@@ -221,10 +228,28 @@ class Paginator(LayoutView):
         for item in self._above_items:
             self.add_item(item)
 
-        page_items : list[Item[LayoutView]] = [
-            TextDisplay(item) if isinstance(item, str) else item
-            for item in self.pages[self.current_page]
-        ]
+        page_items : list[Item[LayoutView]] = []
+
+        if self._force:
+            page_items = [
+                TextDisplay(item)
+                if isinstance(item, str) else item
+                for item in self.pages[self.current_page]
+            ]
+        else:
+            accumulated : list[str] = []
+
+            for item in self.pages[self.current_page]:
+                if isinstance(item, str):
+                    accumulated.append(item)
+                else:
+                    if accumulated:
+                        page_items.append(TextDisplay("\n".join(accumulated)))
+                        accumulated.clear()
+                    page_items.append(item)
+
+            if accumulated:
+                page_items.append(TextDisplay("\n".join(accumulated)))
 
         items : list[TextDisplay[LayoutView] | VisibleLargeSeparator | _PageRow | Item[LayoutView]] = [
             TextDisplay(self._title),

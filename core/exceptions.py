@@ -92,6 +92,22 @@ async def send_bad_argument(
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Unimplemented Command Exception
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class UnimplementedCommand(CheckFailure):
+    pass
+
+async def send_unimplemented_command(target : "ContextOrInteraction") -> None:
+    await format_send(
+        target,
+        msg_type = "error",
+        title    = "run command",
+        subtitle = "This command is currently unimplemented",
+        footer   = "Bad request",
+    )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Permissions Command Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -114,9 +130,11 @@ async def send_bad_permissions_command(target : "ContextOrInteraction") -> None:
 async def send_bad_permissions_argument(target : "ContextOrInteraction", *args : str) -> None:
     arguments : tuple[str, ...] = args
     formatted_args = [f"`{arg}`" for arg in arguments]
+
+    subtitle = f"You are not authorized to use these arguments: {", ".join(formatted_args)}"
+
     if len(formatted_args) == 1:
         subtitle = f"You are not authorized to use the {formatted_args[0]} argument."
-    subtitle = f"You are not authorized to use these arguments: {", ".join(formatted_args)}"
 
     await format_send(
         target,

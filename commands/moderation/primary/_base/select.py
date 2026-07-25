@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from re import match
-from typing import Literal, Self, TypedDict, final, override
+from types import MappingProxyType
+from typing import Literal, Self, TypedDict, cast, final, override
 
 from discord import AllowedMentions, ButtonStyle, Member
 from discord.ui import (
@@ -70,13 +71,13 @@ def _build_member_label(member : Member, state : _StateEntry | None) -> str:
 
     table_data = {
         "Reason"     : f'"{reason}"',
-        "Length"     : f"{state.get("length", "N/A")}",
-        "Appealable" : f"{state.get("appealable", False)}",
-        "DM"         : f"{state.get("dm_user", False)}",
+        "Length"     : str(state.get("length", "N/A")),
+        "Appealable" : str(state.get("appealable", False)),
+        "DM"         : str(state.get("dm_user", False)),
     }
 
     if "file" in state:
-        table_data["File"] = f"{state["file"]}"
+        table_data["File"] = str(state["file"])
 
     return (
         f"{member.mention}\n"
@@ -94,6 +95,7 @@ def _resolve_state(
 # _ActionButton
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class _ActionButton(Button[LayoutView]):
     def __init__(
         self,
@@ -105,9 +107,9 @@ class _ActionButton(Button[LayoutView]):
         label       : str    | None = None,
     ) -> None:
         super().__init__(style = style, label = label)
-        self.action_type : ActionType    = action_type
-        self.target      : Member | None = target
-        self.editor      : "_EditorView" = editor
+        self.action_type : ActionType = action_type
+        self.target                   = target
+        self.editor                   = editor
 
     @override
     async def callback(self, interaction : Interaction) -> None:
@@ -152,9 +154,9 @@ class _ReasonModal(Modal):
         )
         self.appealable_checkbox : Checkbox[Modal]   = Checkbox(default = bool(existing.get("appealable", False)))
         self.dm_checkbox         : Checkbox[Modal]   = Checkbox(default = bool(existing.get("dm_user",    False)))
-        self.proof_fileupload    : FileUpload[Modal] = FileUpload(required = False, max_values = 1)
+        self.proof_fileupload    : FileUpload[Modal] = FileUpload(required = False, max_values = 10)
 
-        for item in [
+        for item in (
             self.reason_input,
             self.length_input,
             Label(
@@ -172,13 +174,13 @@ class _ReasonModal(Modal):
                 description = "Upload a file as proof.",
                 component   = self.proof_fileupload,
             ),
-        ]:
+        ):
             self.add_item(item)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
 
-        # ⸻ You cannot make an action appealable without DMing the user
+        # ⸻ You cannot make an action appealable without DMing the user.
 
         if self.appealable_checkbox.value and not self.dm_checkbox.value:
             await format_send(
@@ -189,7 +191,7 @@ class _ReasonModal(Modal):
             )
             return
 
-        # ⸻ Improper time signature
+        # ⸻ Improper time signature.
 
         length_value = self.length_input.value.strip().lower()
         if length_value and not match(r"^(\d+[hmds])+$", length_value):
@@ -201,13 +203,11 @@ class _ReasonModal(Modal):
             )
             return
 
-        if (user_id := self.target.id if self.target else 0) == 0:
+        user_id = self.target.id if self.target else 0
+        if user_id == 0:
             self.editor.state_map.clear()
 
-        filename : str | None = next(
-            (f.filename for f in self.proof_fileupload.values),
-            None,
-        )
+        filename : str | None = next((f.filename for f in self.proof_fileupload.values), None)
         self.editor.state_map[user_id] = {
             "reason"     : self.reason_input.value,
             "length"     : self.length_input.value,
@@ -261,7 +261,7 @@ class _EditorView(LayoutView):
             global_entry       = self.state_map.get(0)
 
             for member in self.members:
-                entry               = _resolve_state(member, self.state_map, global_entry)
+                entry           = _resolve_state(member, self.state_map, global_entry)
                 missing : list[str] = []
                 if not entry or not entry.get("reason"):
                     missing.append("reason")
@@ -274,9 +274,9 @@ class _EditorView(LayoutView):
                 try:
                     await format_send(
                         interaction,
-                        msg_type  = "warning",
-                        title     = "moderate members",
-                        subtitle  = (
+                        msg_type = "warning",
+                        title    = "moderate members",
+                        subtitle = (
                             "Fix the following assignments before executing:\n"
                             + "\n".join(errors)
                         ),
@@ -302,13 +302,13 @@ class _EditorView(LayoutView):
                         summary_lines.append(
                             (
                                 f"{member.mention}\n"
-                                f"`     Reason:` {reason}\n"
-                                f"`     Length:` {length}\n"
-                                f"` Appealable:` {appealable} | `DM Sent:` {dm_user}\n"
-                                f"` Attachment:` {file}"
+                                f"`      Reason:` {reason}\n"
+                                f"`      Length:` {length}\n"
+                                f"`     DM Sent:` {dm_user}\n"
+                                f"`  Appealable:` {appealable}\n"
+                                f"`  Attachment:` {file}"
                             ),
                         )
-
                     else:
                         summary_lines.append(
                             (
@@ -319,6 +319,7 @@ class _EditorView(LayoutView):
 
                 class FinalizedView(LayoutView):
                     text : TextDisplay[Self] = TextDisplay("\n".join(summary_lines))
+
                 await interaction.response.edit_message(view = FinalizedView())
 
             except Exception:
@@ -363,32 +364,33 @@ class _EditorView(LayoutView):
 
 @final
 class MemberSelectView(View):
-    type_map : dict[ActionType, str] = {
-        "Ban Add"           : "Select members to ban...",
-        "Ban Remove"        : "Select members to un-ban...",
-        "Kick"              : "Select members to kick...",
-        "Quarantine Add"    : "Select members to place in quarantine...",
-        "Quarantine Remove" : "Select members to remove from quarantine...",
-        "Timeout Add"       : "Select members to place in timeout...",
-        "Timeout Remove"    : "Select members to remove from timeout...",
-    }
-
-    current_action : ActionType = "Ban Add"
-
-    placeholder = type_map[current_action]
+    type_map : MappingProxyType[ActionType, str] = MappingProxyType(
+        {
+            "Ban Add"           : "Select members to ban...",
+            "Ban Remove"        : "Select members to un-ban...",
+            "Kick"              : "Select members to kick...",
+            "Quarantine Add"    : "Select members to place in quarantine...",
+            "Quarantine Remove" : "Select members to remove from quarantine...",
+            "Timeout Add"       : "Select members to place in timeout...",
+            "Timeout Remove"    : "Select members to remove from timeout...",
+        },
+    )
 
     def __init__(self, action_type : ActionType) -> None:
         super().__init__(timeout = None)
         self.action_type : ActionType = action_type
 
-    @select(cls = UserSelect, placeholder = placeholder, max_values = 1)
+        select = cast(UserSelect[Self], self.slct_moderation_members)
+        select.placeholder = self.type_map[action_type]
+
+    @select(cls = UserSelect, max_values = 1)
     async def slct_moderation_members(
         self,
         interaction : Interaction,
         select      : UserSelect[Self],
     ) -> None:
         chosen_members = select.values
-        guild = interaction.guild
+        guild          = interaction.guild
 
         # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -419,7 +421,7 @@ class MemberSelectView(View):
                 return
 
             other_members = [m for m in chosen_members if m != guild.me]
-            mentions = [m.mention for m in other_members]
+            mentions      = [m.mention for m in other_members]
 
             word_user = "user" if len(mentions) == 1 else "users"
             word_is   = "is"   if len(mentions) == 1 else "are"
@@ -431,7 +433,7 @@ class MemberSelectView(View):
             )
             return
 
-        # ⸻ You cannot moderate yourself
+        # ⸻ You cannot moderate yourself.
 
         if interaction.user in chosen_members:
             await send_bad_argument(
@@ -440,7 +442,7 @@ class MemberSelectView(View):
             )
             return
 
-        # ⸻ You cannot moderate those higher in the hierarchy than you
+        # ⸻ You cannot moderate those higher in the hierarchy than you.
 
         ineligible = [
             member.mention for member in chosen_members
@@ -458,12 +460,15 @@ class MemberSelectView(View):
             )
             return
 
-        # ⸻ Final try
+        # ⸻ Success!
 
         members = [user for user in select.values if isinstance(user, Member)]
 
         try:
             await interaction.response.edit_message(view = _EditorView(self.action_type, members = members))
+
+        # ⸻ Unhandled error.
+
         except Exception:
             await send_bad_operation(interaction, title = "compile window")
             raise

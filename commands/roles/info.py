@@ -1,4 +1,4 @@
-from typing import final
+from typing import Self, final
 
 from discord import AllowedMentions, Member, Role
 from discord.ui import TextDisplay
@@ -56,7 +56,7 @@ async def run_role_info(
 
     @final
     class InfoView(LayoutView):
-        container = Container(
+        container = Container[Self](
             TextDisplay(f"### {role.mention} | {role.id}"),
             TextDisplay(
                 format_table(

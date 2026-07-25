@@ -61,7 +61,7 @@ class BaseActions:
 
         title = type_map[action_type]
 
-        table_data : dict[str, str] = {"Reason": action.reason}
+        table_data : dict[str, str] = {"Reason" : action.reason}
 
         length = getattr(action, "length", None)
         if length is not None:
@@ -114,13 +114,13 @@ class BaseActions:
         for action in targets:
             target = action.target
 
+            if action.dm_user:
+                await cls._dm_target("Ban Add", action)
+
             await target.ban(
                 reason                 = action.reason,
                 delete_message_seconds = 86400,
             )
-
-            if action.dm_user:
-                await cls._dm_target("Ban Add", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_view
@@ -140,11 +140,11 @@ class BaseActions:
             target = action.target
             guild  = bot.get_guild(MAIN_GUILD_ID)
 
-            if guild is not None:
-                await guild.unban(target, reason = action.reason)
-
             if action.dm_user:
                 await cls._dm_target("Ban Remove", action)
+
+            if guild is not None:
+                await guild.unban(target, reason = action.reason)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # kick
@@ -155,10 +155,10 @@ class BaseActions:
         for action in targets:
             target = action.target
 
-            await target.kick(reason = action.reason)
-
             if action.dm_user:
                 await cls._dm_target("Kick", action)
+
+            await target.kick(reason = action.reason)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_add

@@ -1,4 +1,4 @@
-from typing import final
+from typing import Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, Member
 from discord.ui import MediaGallery, TextDisplay, Thumbnail
@@ -15,6 +15,7 @@ from constants import (
     EMPLOYEE_EMOJI,
     OWNER_EMOJI,
     PARTNER_EMOJI,
+    PET_CORDEX_EMOJI,
 )
 from core.utilities import codeblock, format_table, format_values
 
@@ -62,7 +63,7 @@ async def run_member_info(
             None,
             [
                 f"- {DEVELOPER_EMOJI} This user is **my owner**." if target.id == BOT_OWNER_ID else None,
-                "- <a:pet_cordex:1526024713078571141> This user is a **good boy**." if interaction.client.user and target.id == interaction.client.user.id else None,
+                f"- {PET_CORDEX_EMOJI} This user is a **good boy**." if interaction.client.user and target.id == interaction.client.user.id else None,
                 f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**." if target.public_flags.staff else None,
                 f"- {PARTNER_EMOJI} This user is a **Discord Partner**." if target.public_flags.partner else None,
                 f"- {OWNER_EMOJI} This user is the **Server Owner**." if guild.owner_id == target.id else None,
@@ -88,7 +89,7 @@ async def run_member_info(
 
     @final
     class InfoView(LayoutView):
-        container = Container(
+        container = Container[Self](
             TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
             color = target.color if target.color.value else COLOR_GREY,
         )

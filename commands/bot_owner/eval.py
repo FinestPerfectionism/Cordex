@@ -12,6 +12,7 @@ from discord import app_commands, ui
 from discord.ext import commands
 from discord.utils import format_dt, get, utcnow
 
+import constants
 from bot import Context, ContextOrInteraction, Cordex, Interaction, tree
 from bot.ui import (
     ButtonSection,
@@ -70,6 +71,13 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "Interaction"          : Interaction,
         "ContextOrInteraction" : ContextOrInteraction,
 
+        "constants"    : constants,
+        "asyncio"      : asyncio,
+        "commands"     : commands,
+        "app_commands" : app_commands,
+        "discord"      : discord,
+        "ui"           : ui,
+
         "ACCEPTED_EMOJI"   : ACCEPTED_EMOJI,
         "CONTESTED_EMOJI"  : CONTESTED_EMOJI,
         "DENIED_EMOJI"     : DENIED_EMOJI,
@@ -84,12 +92,6 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "COLOR_GREY"    : COLOR_GREY,
         "COLOR_BLACK"   : COLOR_BLACK,
         "COLOR_WHITE"   : COLOR_WHITE,
-
-        "asyncio"      : asyncio,
-        "commands"     : commands,
-        "app_commands" : app_commands,
-        "discord"      : discord,
-        "ui"           : ui,
 
         "utcnow"         : utcnow,
         "get"            : get,

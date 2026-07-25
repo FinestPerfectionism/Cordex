@@ -11,7 +11,7 @@ from discord import (
 from discord.abc import GuildChannel, Messageable
 from discord.utils import escape_markdown
 
-from constants import DIRECTORSHIP_CATEGORY_ID
+from constants import ARROW_EMOJI, DIRECTORSHIP_CATEGORY_ID
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Messages Handling Base
@@ -66,9 +66,9 @@ def channel_display(channel : Messageable | GuildChannel) -> str:
         parent = channel.parent
 
         if isinstance(parent, ForumChannel):
-            return f"{parent.mention} / {channel.mention}"
+            return f"{parent.mention} {ARROW_EMOJI} {channel.mention}"
         if parent is not None:
-            return f"{parent.mention} / {channel.mention}"
+            return f"{parent.mention} {ARROW_EMOJI} {channel.mention}"
 
         return channel.mention
 

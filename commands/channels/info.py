@@ -3,6 +3,7 @@ from typing import Self, final
 from discord import ForumChannel, StageChannel, TextChannel, Thread, VoiceChannel
 from discord.abc import GuildChannel
 from discord.ui import TextDisplay
+from discord.utils import format_dt
 
 from bot import Interaction
 from bot.ui import Container, LayoutView
@@ -12,6 +13,7 @@ from constants import (
     ACTIVE_STAGE_EMOJI,
     ACTIVE_VOICE_EMOJI,
     ANNOUNCEMENT_EMOJI,
+    ARROW_EMOJI,
     COLOR_GREY,
     FORUM_EMOJI,
     LOCKED_ANNOUNCEMENT_EMOJI,
@@ -33,14 +35,14 @@ from core.utilities import format_table
 # /channel info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def is_private(channel : GuildChannel) -> bool:
-    return not channel.permissions_for(channel.guild.default_role).view_channel
+def _is_private(target : GuildChannel) -> bool:
+    return not target.permissions_for(target.guild.default_role).view_channel
 
-def get_channel_emoji(target : GuildChannel) -> str | None:
+def _get_channel_emoji(target : GuildChannel) -> str | None:
     if target.guild.rules_channel and target.id == target.guild.rules_channel.id:
         return RULES_EMOJI
 
-    private = is_private(target)
+    private = _is_private(target)
 
     if isinstance(target, StageChannel):
         if len(target.members) > 0:
@@ -87,18 +89,20 @@ async def run_channel_info(
     if not isinstance(target, GuildChannel):
         return
 
-    # ⸻ Channel emoji
+    # ⸻ Channel emoji.
 
-    channel_type_emoji = get_channel_emoji(target)
+    channel_type_emoji = _get_channel_emoji(target)
 
-    # ⸻ Build the view
+    # ⸻ Build the view,
 
     if thread_target:
-        emoji_display = f"| {channel_type_emoji} ➔ {THREAD_EMOJI} " if channel_type_emoji else f"| {THREAD_EMOJI} "
+        emoji_display = f"| {channel_type_emoji} {ARROW_EMOJI} {THREAD_EMOJI} " if channel_type_emoji else f"| {THREAD_EMOJI} "
         header_text   = f"### {thread_target.mention} {emoji_display}| {thread_target.id}"
     else:
         emoji_display = f"| {channel_type_emoji} " if channel_type_emoji else ""
         header_text   = f"### {target.mention} {emoji_display}| {target.id}"
+
+    topic = getattr(target, "topic", None)
 
     @final
     class InfoView(LayoutView):
@@ -107,12 +111,21 @@ async def run_channel_info(
             TextDisplay(
                 format_table(
                     {
-                        "???" : "This doesn't display any information... yet.",
+                        "???"        :  "This (mostly) doesn't display any information... yet.",
+                        "Created at" : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
                     },
                     padding = 0,
                 ),
             ),
             color = COLOR_GREY,
         )
+
+        if topic:
+            container.add_text(
+
+                    "**Description**\n"
+                   f"{topic}",
+
+            )
 
     await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)

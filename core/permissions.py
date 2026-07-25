@@ -43,8 +43,8 @@ _ContextType = Literal[
 def access_control[F : Callable[..., object]](
     context       : _ContextType | None = "Guild + DMs",
     *,
-    allowed_users : list[int]   | None = None,
-    allowed_roles : list[int]   | None = None,
+    allowed_users : list[int]    | None = None,
+    allowed_roles : list[int]    | None = None,
 ) -> Callable[[F], F]:
     users = allowed_users or []
     roles = allowed_roles or []
@@ -71,13 +71,16 @@ def access_control[F : Callable[..., object]](
         if context == "Main Guild" and guild_id != MAIN_GUILD_ID:
             raise BadEnvironmentMainGuild
 
-        # ⸻ You're not in the main guild or DMs
+        # ⸻ You're not in the main guild or DMs!
 
         if context == "Main Guild + DMs" and guild_id is not None and guild_id != MAIN_GUILD_ID:
             raise BadEnvironmentMainGuildOrDMs
 
+        # ⸻ No restrictions provided..?
+
         if not users and not roles:
-            return True
+            error = "access_control must have a restriction of one or more users and/or one or more roles"
+            raise ValueError(error)
 
         user = target.user
 

@@ -1,16 +1,34 @@
+from collections.abc import Callable
 from operator import eq, ge, gt, le, lt
 from typing import TYPE_CHECKING, Literal
 
 from discord import Member, Role
+from discord.app_commands import check
+
+from bot import Interaction
+
+from .exceptions import UnimplementedCommand
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from bot import Cordex
+    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# @unimplemented
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
+    def predicate(_interaction : "Interaction") -> bool:
+        raise UnimplementedCommand
+
+    def decorator(func : F) -> F:
+        check(predicate)(func)
+        return func
+
+    return decorator
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_command
