@@ -19,8 +19,8 @@ from .permissions import run_role_permissions
 # Role Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-@guild_only
 @final
+@guild_only
 class RoleCommands(
     commands.GroupCog,
     name        = "role",

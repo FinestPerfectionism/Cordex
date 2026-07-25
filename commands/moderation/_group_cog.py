@@ -5,13 +5,13 @@ from discord.ext import commands
 
 from bot import Cordex, Interaction
 from core.permissions import (
-    director_cmd,
+    bot_owner_cmd,
+    # director_cmd,
     moderator_cmd,
-    senior_moderator_cmd,
-    staff_cmd,
 )
-from core.utilities import unimplemented
 
+# senior_moderator_cmd,
+# staff_cmd,
 from .primary.ban import (
     run_mod_primary_ban_add,
     run_mod_primary_ban_remove,
@@ -48,8 +48,8 @@ from .tickets import (
 # Moderation Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-@guild_only
 @final
+@guild_only
 class ModerationCommands(
     commands.GroupCog,
     name        = "moderation",
@@ -92,8 +92,8 @@ class ModerationCommands(
         name        = "add",
         description = "Add channel(s) or the server to lockdown.",
     )
-    @senior_moderator_cmd()
-    @unimplemented()
+    # @senior_moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_lockdown_add(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_add(interaction)
 
@@ -105,8 +105,8 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove channel(s) or the server from lockdown.",
     )
-    @director_cmd()
-    @unimplemented()
+    # @director_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_lockdown_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_remove(interaction)
 
@@ -118,8 +118,8 @@ class ModerationCommands(
         name        = "add",
         description = "Ban member(s) from the server.",
     )
-    @senior_moderator_cmd()
-    @unimplemented()
+    # @senior_moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_note_add(self, interaction : Interaction) -> None:
         await run_mod_primary_note_add(interaction)
 
@@ -131,8 +131,8 @@ class ModerationCommands(
         name        = "view",
         description = "View all banned members.",
     )
-    @staff_cmd()
-    @unimplemented()
+    # @staff_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_ban_view(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_view(interaction)
 
@@ -144,8 +144,8 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove a ban from member(s).",
     )
-    @director_cmd()
-    @unimplemented()
+    # @director_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_ban_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_remove(interaction)
 
@@ -157,8 +157,8 @@ class ModerationCommands(
         name        = "kick",
         description = "Kick member(s) from the server.",
     )
-    @senior_moderator_cmd()
-    @unimplemented()
+    # @senior_moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_kick(self, interaction : Interaction) -> None:
         await run_mod_primary_kick(interaction)
 
@@ -170,8 +170,8 @@ class ModerationCommands(
         name        = "add",
         description = "Add member(s) to quarantine.",
     )
-    @senior_moderator_cmd()
-    @unimplemented()
+    # @senior_moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_quarantine_add(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_add(interaction)
 
@@ -183,8 +183,8 @@ class ModerationCommands(
         name        = "view",
         description = "View all quarantined members.",
     )
-    @staff_cmd()
-    @unimplemented()
+    # @staff_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_quarantine_view(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_view(interaction)
 
@@ -196,8 +196,8 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove member(s) from quarantine.",
     )
-    @senior_moderator_cmd()
-    @unimplemented()
+    # @senior_moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_quarantine_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_remove(interaction)
 
@@ -209,8 +209,8 @@ class ModerationCommands(
         name        = "add",
         description = "Add member(s) to timeout.",
     )
-    @moderator_cmd()
-    @unimplemented()
+    # @moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_timeout_add(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_add(interaction)
 
@@ -222,8 +222,8 @@ class ModerationCommands(
         name        = "view",
         description = "View all timed out members.",
     )
-    @staff_cmd()
-    @unimplemented()
+    # @staff_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_timeout_view(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_view(interaction)
 
@@ -235,8 +235,8 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove member(s) from timeout.",
     )
-    @senior_moderator_cmd()
-    @unimplemented()
+    # @senior_moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_timeout_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_remove(interaction)
 
@@ -248,8 +248,8 @@ class ModerationCommands(
         name        = "purge",
         description = "Purge messages from member(s) or channel(s).",
     )
-    @senior_moderator_cmd()
-    @unimplemented()
+    # @senior_moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_purge(self, interaction : Interaction) -> None:
         await run_mod_primary_purge(interaction)
 
@@ -261,8 +261,8 @@ class ModerationCommands(
         name        = "add",
         description = "Add a note to a member.",
     )
-    @moderator_cmd()
-    @unimplemented()
+    # @moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_ban_add(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_add(interaction)
 
@@ -274,8 +274,8 @@ class ModerationCommands(
         name        = "view",
         description = "View a member's notes.",
     )
-    @staff_cmd()
-    @unimplemented()
+    # @staff_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_note_view(self, interaction : Interaction) -> None:
         await run_mod_primary_note_view(interaction)
 
@@ -287,8 +287,8 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove a note from a member.",
     )
-    @moderator_cmd()
-    @unimplemented()
+    # @moderator_cmd()
+    @bot_owner_cmd()
     async def cmd_moderation_primary_note_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_note_remove(interaction)
 

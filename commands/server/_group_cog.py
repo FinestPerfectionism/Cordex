@@ -13,8 +13,8 @@ from .info import run_server_info
 # Server Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-@guild_only
 @final
+@guild_only
 class ServerCommands(
     commands.GroupCog,
     name        = "server",

@@ -19,8 +19,8 @@ from .sync import run_channel_sync
 # Channel Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-@guild_only
 @final
+@guild_only
 class ChannelCommands(
     commands.GroupCog,
     name        = "channel",

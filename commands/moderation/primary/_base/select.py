@@ -53,15 +53,14 @@ ActionType = Literal[
     "Timeout Remove",
 ]
 
-_REMOVAL_TYPES : frozenset[ActionType] = frozenset(
+_REMOVAL_TYPES = frozenset(
     {
         "Ban Remove",
         "Quarantine Remove",
         "Timeout Remove",
     },
 )
-
-_LENGTH_TYPES : frozenset[ActionType] = frozenset(
+_LENGTH_TYPES  = frozenset(
     {
         "Ban Add",
         "Quarantine Add",
@@ -73,7 +72,7 @@ def _wants_length(action_type : ActionType) -> bool:
     return action_type in _LENGTH_TYPES
 
 def _wants_extra(action_type : ActionType) -> bool:
-    return action_type not in _REMOVAL_TYPES
+    return action_type not in _REMOVAL_TYPES and action_type != "Kick"
 
 class _StateEntry(TypedDict, total = False):
     reason     : str
@@ -423,7 +422,7 @@ class _EditorView(LayoutView):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
-class MemberSelectView(View):
+class ModerationTargetView(View):
     type_map : MappingProxyType[ActionType, str] = MappingProxyType(
         {
             "Ban Add"           : "Select members to ban...",

@@ -13,8 +13,8 @@ from .info import run_member_info
 # Member Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-@guild_only
 @final
+@guild_only
 class MemberCommands(
     commands.GroupCog,
     name        = "member",

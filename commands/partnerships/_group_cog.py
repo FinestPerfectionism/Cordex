@@ -24,8 +24,8 @@ from .update import run_partnership_update
 # Partnership Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-@guild_only
 @final
+@guild_only
 class PartnershipCommands(
     commands.GroupCog,
     name        = "partnership",
