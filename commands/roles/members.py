@@ -23,28 +23,28 @@ async def run_role_members(
     if interaction.guild is None:
         return
 
-    guild = interaction.guild
+    not_members = set(interaction.guild.members) - set(role.members)
 
     match (actual_role_filter, person_filter):
         case ("whohas", "humans"):
-            filtered = [m for m in guild.members if role in m.roles and not m.bot]
+            filtered = [m for m in role.members if not m.bot]
         case ("whohas", "bots"):
-            filtered = [m for m in guild.members if role in m.roles and m.bot]
+            filtered = [m for m in role.members if m.bot]
         case ("whohas", _):
-            filtered = [m for m in guild.members if role in m.roles]
+            filtered = list(role.members)
         case (_, "humans"):
-            filtered = [m for m in guild.members if role not in m.roles and not m.bot]
+            filtered = [m for m in not_members if not m.bot]
         case (_, "bots"):
-            filtered = [m for m in guild.members if role not in m.roles and m.bot]
+            filtered = [m for m in not_members if m.bot]
         case _:
-            filtered = [m for m in guild.members if role not in m.roles]
+            filtered = list(not_members)
 
     person_label = "Bots"   if person_filter      == "bots"          else ("Humans" if person_filter == "humans" else "Members")
     role_label   = "not in" if actual_role_filter == "whodoesnthave" else "in"
 
     _view = Paginator(
         f"### {person_label} {role_label} {role.mention}",
-        [f"- {m.mention}" for m in filtered] if filtered else ["No members found."],
+        [f"- {member.mention}" for member in filtered] if filtered else ["No members found."],
         data_name = person_label.lower(),
         per_page  = 15,
         color     = role.color if role.color.value else COLOR_GREY,

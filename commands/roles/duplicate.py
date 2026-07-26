@@ -9,6 +9,8 @@ from bot import Interaction
 async def run_role_duplicate(
     interaction : Interaction,
     _role       : Role,
+    *,
+    _bare       : bool = False,
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 

@@ -16,27 +16,8 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
 from discord.ui import Button, Modal, View, button
 
-from constants import (
-    HIERARCHY_CHANNEL_ID,
-    PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
-    PARTNERSHIPS_CHANNEL_ID,
-    RULES_CHANNEL_ID,
-    STAFF_LEAVE_CHANNEL_ID,
-    TICKETS_CHANNEL_ID,
-)
 from core.cog_loader import discover_cogs
 from core.responses import format_send
-from core.state import load_partnership_data
-from core.utilities import codeblock
-from guild_info import (
-    HierarchyViewsList,
-    PartnershipViewsList,
-    RuleViewsList,
-    ensure_views,
-)
-from guild_info.leave import LeaveComponents
-from guild_info.partnerships import build_partnership_views
-from guild_info.tickets import TicketComponents
 
 from .ui import LayoutView
 
@@ -75,8 +56,12 @@ class _ContextClass(BaseContext["Cordex"]):
                     await format_send(
                         interaction,
                         msg_type = "error",
-                        title    = "Error.",
-                        subtitle = codeblock(f"{e}"),
+                        title    = "Error! :[",
+                        subtitle = (
+                            "```py\n"
+                           f"{e}\n"
+                            "```"
+                        ),
                         override = True,
                     )
 
@@ -203,50 +188,6 @@ class Cordex(commands.Bot):
 
         self.build_commands_cache()
         await self.build_app_commands_cache()
-
-        # ⸻ Guild Information
-
-        data = await load_partnership_data(self.db)
-        views, files = build_partnership_views(data["partnerships"])
-
-        await ensure_views(
-            bot        = self,
-            channel_id = HIERARCHY_CHANNEL_ID,
-            views      = HierarchyViewsList,
-        )
-
-        await ensure_views(
-            bot        = self,
-            channel_id = STAFF_LEAVE_CHANNEL_ID,
-            views      = [LeaveComponents()],
-        )
-        self.add_view(LeaveComponents())
-
-        await ensure_views(
-            bot        = self,
-            channel_id = TICKETS_CHANNEL_ID,
-            views      = [TicketComponents()],
-        )
-        self.add_view(TicketComponents())
-
-        await ensure_views(
-            bot        = self,
-            channel_id = PARTNERSHIPS_CHANNEL_ID,
-            views      = views,
-            files      = files,
-        )
-
-        await ensure_views(
-            bot        = self,
-            channel_id = RULES_CHANNEL_ID,
-            views      = RuleViewsList,
-        )
-
-        await ensure_views(
-            bot        = self,
-            channel_id = PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
-            views      = PartnershipViewsList,
-        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Commands Cache

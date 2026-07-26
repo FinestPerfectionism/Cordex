@@ -43,7 +43,7 @@ type CommandList = list[AnnotatedCommand]
 
 def _build_sections(cmds : CommandList) -> list[str | Item[LayoutView]]:
     mention_strings = [
-        format_command(bot, cmd.qualified_name)
+        format_command(cmd.qualified_name)
         for cmd in cmds
     ]
 
@@ -85,7 +85,7 @@ def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
     items : list[Item[LayoutView]] = [
         TextDisplay(
             (
-                f"# {format_command(bot, cmd.qualified_name)} Command\n"
+                f"# {format_command(cmd.qualified_name)} Command\n"
                 f"*{summary}*"
             ),
         ),

@@ -1,14 +1,13 @@
 from collections.abc import Callable
 from operator import eq, ge, gt, le, lt
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 from discord import Member, Role
 from discord.app_commands import check
 
-from .exceptions import UnimplementedCommand
+from bot import Interaction, bot
 
-if TYPE_CHECKING:
-    from bot import Cordex, Interaction
+from .exceptions import UnimplementedCommand
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
@@ -32,7 +31,7 @@ def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
 # format_command
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_command(bot : "Cordex", path : str) -> str:
+def format_command(path : str) -> str:
     parts : list[str] = path.strip().split()
 
     if not parts:
@@ -56,11 +55,12 @@ def format_command(bot : "Cordex", path : str) -> str:
 # format_table
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_table(table : dict[str, str], *, padding : int = 1) -> str:
-    biggest_key = max(len(key) for key in table)
+def format_table(table : dict[str, str], /, *, padding : int = 1) -> str:
+    biggest_key = max((len(str(key)) for key in table), default = 0)
+    width       = biggest_key + padding
 
     rows = [
-        f"`{key.rjust(biggest_key + padding)}:` {value}"
+        f"`{key:>{width}}:` {value}"
         for key, value in table.items()
     ]
 

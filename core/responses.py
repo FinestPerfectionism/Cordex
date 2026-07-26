@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Literal, cast
 
-from discord import Interaction, Message
+from discord import AllowedMentions, Interaction, Message
 from discord.abc import Messageable
 
 from constants import (
@@ -76,23 +76,44 @@ async def _send(
     /,
     *,
     content      : str,
-    ephemeral    : bool           = True,
-    delete_after : float   | None = None,
-    message      : Message | None = None,
+    ephemeral    : bool                   = True,
+    delete_after : float           | None = None,
+    message      : Message         | None = None,
+    mentions     : AllowedMentions | None = None,
 ) -> Message | None:
     if isinstance(target, Interaction):
         if target.response.is_done():
-            return await target.followup.send(content, ephemeral = ephemeral)
-        await target.response.send_message(content, ephemeral = ephemeral)
+            return await target.followup.send(
+                content          = content,
+                ephemeral        = ephemeral,
+                allowed_mentions = mentions or AllowedMentions.all(),
+            )
+
+        await target.response.send_message(
+            content          = content,
+            ephemeral        = ephemeral,
+            allowed_mentions = mentions or AllowedMentions.all(),
+        )
         return await target.original_response()
 
     if message is not None:
-        return await message.edit(content = content, delete_after = delete_after)
+        return await message.edit(
+            content          = content,
+            delete_after     = delete_after,
+            allowed_mentions = mentions or AllowedMentions.all(),
+        )
 
     if delete_after is not None:
-        return await cast(Messageable, target).send(content, delete_after = delete_after)
+        return await cast(Messageable, target).send(
+            content          = content,
+            delete_after     = delete_after,
+            allowed_mentions = mentions or AllowedMentions.all(),
+        )
 
-    return await cast(Messageable, target).send(content)
+    return await cast(Messageable, target).send(
+        content          = content,
+        allowed_mentions = mentions or AllowedMentions.all(),
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Custom Message Builders
@@ -107,6 +128,7 @@ def format_message(
     override : bool       = False,
 ) -> str:
     lines : list[str] = [_build_title(msg_type, title, override = override)]
+
     if subtitle:
         lines.append(subtitle)
 
@@ -122,12 +144,13 @@ async def format_send(
     *,
     msg_type     : _MessageType,
     title        : str,
-    subtitle     : str     | None = None,
-    footer       : str     | None = None,
-    override     : bool           = False,
-    ephemeral    : bool           = True,
-    delete_after : float   | None = None,
-    message      : Message | None = None,
+    subtitle     : str             | None = None,
+    footer       : str             | None = None,
+    override     : bool                   = False,
+    ephemeral    : bool                   = True,
+    delete_after : float           | None = None,
+    message      : Message         | None = None,
+    mentions     : AllowedMentions | None = None,
 ) -> Message | None:
     content = format_message(
         msg_type = msg_type,
@@ -142,4 +165,5 @@ async def format_send(
         ephemeral    = ephemeral,
         delete_after = delete_after,
         message      = message,
+        mentions     = mentions,
     )

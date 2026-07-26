@@ -93,7 +93,7 @@ async def run_channel_info(
 
     channel_type_emoji = _get_channel_emoji(target)
 
-    # ⸻ Build the view,
+    # ⸻ Build the view.
 
     if thread_target:
         emoji_display = f"| {channel_type_emoji} {ARROW_EMOJI} {THREAD_EMOJI} " if channel_type_emoji else f"| {THREAD_EMOJI} "
@@ -111,10 +111,10 @@ async def run_channel_info(
             TextDisplay(
                 format_table(
                     {
-                        "???"        :  "This (mostly) doesn't display any information... yet.",
-                        "Created at" : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
+                        "???"               :  "This (mostly) doesn't display any information... yet.",
+                        "Not Safe for Work" :  "Yes" if getattr(target, "nsfw", False) else "No",
+                        "Created at"        : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
                     },
-                    padding = 0,
                 ),
             ),
             color = COLOR_GREY,

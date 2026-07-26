@@ -1,12 +1,15 @@
-from typing import final
+from typing import Self, final
 
-from discord import Embed, Message
+from discord import AllowedMentions, Message
 from discord.abc import Messageable
 from discord.ext import commands
-from discord.utils import utcnow
+from discord.ui import TextDisplay
+from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Cordex
+from bot.ui import Container, LayoutView, VisibleLargeSeparator
 from constants import COLOR_RED, MAIN_GUILD_ID, MESSAGE_DELETE_LOG_CHANNEL_ID
+from core.utilities import format_table
 
 from . import (
     channel_display,
@@ -52,36 +55,25 @@ class MessageDeleteHandler(commands.Cog):
         if not isinstance(log_channel, Messageable):
             return
 
-        embed = Embed(
-            title     = "Message Deleted",
-            color     = COLOR_RED,
-            timestamp = utcnow(),
-        )
-        embed.add_field(
-            name   =  "Author",
-            value  = (
-                f"`{message.author}`\n"
-                f"`{message.author.id}`"
-            ),
-            inline = True,
-        )
-        embed.add_field(
-            name   = "Channel",
-            value  = channel_display(message.channel),
-            inline = True,
-        )
-        content = message.content or "[No content, likely an embed or attachment]"
-        embed.add_field(
-            name   = "Content",
-            value  = truncate_text(content),
-            inline = True,
-        )
-        embed.add_field(
-            name   = "Attachments",
-            value  = format_attachments(message.attachments),
-            inline = True,
-        )
-        await log_channel.send(embed = embed)
+        @final
+        class _DeleteView(LayoutView):
+            container = Container[Self](
+                TextDisplay(f"# Message Deleted | {format_dt(message.edited_at or utcnow(), style = "F")}"),
+                TextDisplay(
+                    format_table(
+                        {
+                            "Author"      : f"{author.mention} | {author.id}",
+                            "Channel"     : f"{channel_display(message.channel)} | {message.channel.id}",
+                            "Attachments" : format_attachments(message.attachments),
+                        },
+                    ),
+                ),
+                VisibleLargeSeparator(),
+                TextDisplay(truncate_text(escape_markdown(content) or "[No content, likely an embed or attachment]")),
+                color = COLOR_RED,
+            )
+
+        await log_channel.send(view = _DeleteView(), allowed_mentions = AllowedMentions.none())
 
 async def setup(bot : Cordex) -> None:
     cog = MessageDeleteHandler(bot)

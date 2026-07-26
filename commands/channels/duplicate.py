@@ -9,6 +9,8 @@ from bot import Interaction
 async def run_channel_duplicate(
     interaction : Interaction,
     _channel    : GuildChannel | None = None,
+    *,
+    _bare       : bool                = False,
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 

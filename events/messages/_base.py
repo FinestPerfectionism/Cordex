@@ -41,7 +41,7 @@ def is_valid_wapple_chain(content : str) -> bool:
 # truncate_text
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def truncate_text(text : str, max_length : int = 1024) -> str:
+def truncate_text(text : str, max_length : int = 2048) -> str:
     return (escape_markdown(text)[:max_length - 3] + "...") if len(text) > max_length else text
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

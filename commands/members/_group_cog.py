@@ -28,14 +28,14 @@ class MemberCommands(
     # /member info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"user" : "The user to view information for. Defaults to yourself."})
+    @help_description(arguments = {"member" : "The user to view information for. Defaults to yourself."})
     @command(
         name        = "info",
-        description = "View information for a user.",
+        description = "View information for a member.",
     )
-    @describe(user = "The user to view information for. Defaults to yourself.")
-    async def cmd_member_info(self, interaction : Interaction, user : Member | None = None) -> None:
-        await run_member_info(interaction, user)
+    @describe(member = "The user to view information for. Defaults to yourself.")
+    async def cmd_member_info(self, interaction : Interaction, member : Member | None = None) -> None:
+        await run_member_info(interaction, member)
 
 async def setup(bot : Cordex) -> None:
     cog = MemberCommands(bot)

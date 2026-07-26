@@ -25,7 +25,7 @@ from core.utilities import codeblock, format_table, format_values
 
 async def run_member_info(
     interaction : Interaction,
-    user        : Member | None = None,
+    member      : Member | None = None,
     *,
     ephemeral   : bool          = True,
 ) -> None:
@@ -37,7 +37,7 @@ async def run_member_info(
         return
 
     guild  = interaction.guild
-    target = user or interaction.user
+    target = member or interaction.user
 
     if not isinstance(target, Member):
         target = guild.get_member(target.id) or await guild.fetch_member(target.id)
@@ -83,7 +83,7 @@ async def run_member_info(
 
         join_list = codeblock("\n".join(joined_lines), language = None) or "Unknown"
 
-    global_user = await interaction.client.fetch_user(target.id)
+    global_user = interaction.client.get_user(target.id) or await interaction.client.fetch_user(target.id)
 
     # ⸻ Build the view
 

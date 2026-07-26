@@ -26,7 +26,7 @@ from discord.app_commands import AppCommandError
 from discord.ext import commands
 from discord.utils import utcnow
 
-from bot import Context, Cordex, Interaction, bot, tree
+from bot import Context, Cordex, Interaction, tree
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
     BOT_OWNER_ID,
@@ -221,7 +221,7 @@ class ErrorLogger(commands.Cog):
             title           = "Command Error",
             user            = interaction.user,
             guild           = interaction.guild,
-            command_display = format_command(bot, interaction.command.qualified_name) if interaction.command else "Unknown",
+            command_display = format_command(interaction.command.qualified_name) if interaction.command else "Unknown",
             error_text      = str(error),
             traceback_text  = traceback_text,
         )

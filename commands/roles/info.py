@@ -28,7 +28,7 @@ async def run_role_info(
 
     guild = interaction.guild
 
-    roles       = sorted(guild.roles, key = lambda r : r.position)
+    roles = sorted(guild.roles, key = lambda r : r.position)
 
     hierarchy_lines = ""
     for p in range(role.position + 3, role.position - 4, -1):
@@ -62,18 +62,18 @@ async def run_role_info(
                 format_table(
                     {
                         "Appearance"        : color,
-                        "Hoisted"           : "Yes" if role.hoist else "No",
-                        "Mentionable"       : "Yes" if role.mentionable else "No",
+                        "Hoisted"           :  "Yes" if role.hoist else "No",
+                        "Mentionable"       :  "Yes" if role.mentionable else "No",
                         "Number of Members" : f"{len(role.members)}",
                         "Created at"        : f"{format_dt(role.created_at, style = "F")} | {format_dt(role.created_at, style = "R")}",
                     },
                 ),
             ),
+            TextDisplay(diff_string),
             TextDisplay(
                 (
                     f"**Relative Hierarchy**\n"
                     f"{codeblock(hierarchy_lines, language = None)}"
-                    f"{diff_string}"
                 ),
             ),
             color = role.color if role.color.value else COLOR_GREY,

@@ -1,11 +1,13 @@
-from typing import final
+from typing import Self, final
 
-from discord import Embed, Message
+from discord import AllowedMentions, Message
 from discord.abc import Messageable
 from discord.ext import commands
-from discord.utils import utcnow
+from discord.ui import TextDisplay
+from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Cordex
+from bot.ui import Container, LayoutView, VisibleLargeSeparator
 from commands.bot_owner.eval import eval_message_ids
 from constants import (
     COLOR_GREY,
@@ -13,6 +15,7 @@ from constants import (
     MESSAGE_EDIT_LOG_CHANNEL_ID,
     WAPPLE_CHAIN_CHANNEL_ID,
 )
+from core.utilities import format_table
 
 from . import (
     WAPPLE_PATTERN,
@@ -34,7 +37,8 @@ class MessageEditHandler(commands.Cog):
 
     @commands.Cog.listener("on_message_edit")
     async def message_edit_handler(self, before : Message, after : Message) -> None:
-        author = before.author
+        author  = before.author
+        channel = after.channel
 
         # ⸻ Block the bot itself
 
@@ -98,44 +102,36 @@ class MessageEditHandler(commands.Cog):
         if not isinstance(log_channel, Messageable):
             return
 
-        embed = Embed(
-            title     = "Message Edited",
-            color     = COLOR_GREY,
-            timestamp = after.edited_at or utcnow(),
-        )
-        embed.add_field(
-            name   =  "Edited By",
-            value  = (
-                f"`{before.author}`\n"
-                f"`{before.author.id}`"
-            ),
-            inline = True,
-        )
-        embed.add_field(
-            name   = "Channel",
-            value  = channel_display(before.channel),
-            inline = True,
-        )
+        @final
+        class _EditView(LayoutView):
+            container = Container[Self](
+                TextDisplay(f"# Message Edited | {format_dt(after.edited_at or utcnow(), style = "F")}"),
+                TextDisplay(
+                    format_table(
+                        {
+                            "Author"      : f"{author.mention} | {author.id}",
+                            "Channel"     : f"{channel_display(after.channel)} | {channel.id}",
+                            "Attachments" : format_attachments(after.attachments),
+                        },
+                    ),
+                ),
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    (
+                        f"### Before\n"
+                        f"{truncate_text(escape_markdown(before.content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
+                    ),
+                ),
+                TextDisplay(
+                    (
+                        f"### After\n"
+                        f"{truncate_text(escape_markdown(after.content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
+                    ),
+                ),
+                color = COLOR_GREY,
+            )
 
-        before_text = before.content or "[No content]"
-        after_text  = after.content  or "[No content]"
-
-        embed.add_field(
-            name   = "Before",
-            value  = truncate_text(before_text),
-            inline = True,
-        )
-        embed.add_field(
-            name   = "After",
-            value  = truncate_text(after_text),
-            inline = True,
-        )
-        embed.add_field(
-            name   = "Attachments (After)",
-            value  = format_attachments(after.attachments),
-            inline = True,
-        )
-        await log_channel.send(embed = embed)
+        await log_channel.send(view = _EditView(), allowed_mentions = AllowedMentions.none())
 
         await self.bot.process_commands(after)
 

@@ -54,9 +54,9 @@ class LayoutView(BaseLayoutView):
 class Container[V : BaseLayoutView = LayoutView](BaseContainer[V]):
     def __init__(
         self,
-        *children: Item[V],
+        *children : Item[V],
         color     : Color | None = None,
-        spoiler   : bool = False,
+        spoiler   : bool         = False,
     ) -> None:
         super().__init__(*children, accent_color = color, spoiler = spoiler)
 
@@ -93,19 +93,19 @@ link    = ButtonStyle.link
 # Separator Variants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class VisibleLargeSeparator(Separator[LayoutView]):
+class VisibleLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = large)
 
-class VisibleSmallSeparator(Separator[LayoutView]):
+class VisibleSmallSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = small)
 
-class HiddenLargeSeparator(Separator[LayoutView]):
+class HiddenLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = False, spacing = large)
 
-class HiddenSmallSeparator(Separator[LayoutView]):
+class HiddenSmallSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = False, spacing = small)
 
