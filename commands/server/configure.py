@@ -48,7 +48,7 @@ class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
         )
         await bot.db.commit()
 
-        await self.view.refresh_display()
+        await self.view.refresh()
         await interaction.response.edit_message(view = self.view)
 
 class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
@@ -81,7 +81,7 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
         )
         await bot.db.commit()
 
-        await self.view.refresh_display()
+        await self.view.refresh()
         await interaction.response.edit_message(view = self.view)
 
 @final
@@ -101,7 +101,7 @@ class LoggingConfigurationView(LayoutView):
         )
         self.add_item(self.container)
 
-    async def refresh_display(self) -> None:
+    async def refresh(self) -> None:
         query = (
             "SELECT config_key, config_value FROM GuildConfig "
             "WHERE config_key IN ('logging_moderation_channel', 'logging_antinuke_channel')"
@@ -168,7 +168,7 @@ class PickerRow(ActionRow["ConfigurationView"]):
         await interaction.response.defer(ephemeral = True)
 
         logging_view = LoggingConfigurationView(self.view.bot)
-        await logging_view.refresh_display()
+        await logging_view.refresh()
 
         await interaction.followup.send(
             view      = logging_view,

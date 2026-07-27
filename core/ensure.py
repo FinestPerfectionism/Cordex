@@ -38,14 +38,16 @@ class CoreEnsurementHandler(commands.Cog):
         await self._ensure()
 
     async def _ensure(self) -> None:
-        data = await load_partnership_data(self.bot.db)
-        views, files = build_partnership_views(data["partnerships"])
+
+        # ⸻ Hierarchy
 
         await ensure_views(
             bot        = self.bot,
             channel_id = HIERARCHY_CHANNEL_ID,
             views      = HierarchyViewsList,
         )
+
+        # ⸻ Leave
 
         await ensure_views(
             bot        = self.bot,
@@ -54,12 +56,19 @@ class CoreEnsurementHandler(commands.Cog):
         )
         self.bot.add_view(LeaveComponents())
 
+        # ⸻ Tickets
+
         await ensure_views(
             bot        = self.bot,
             channel_id = TICKETS_CHANNEL_ID,
             views      = [TicketComponents()],
         )
         self.bot.add_view(TicketComponents())
+
+        # ⸻ Partnerships
+
+        data = await load_partnership_data(self.bot.db)
+        views, files = build_partnership_views(data["partnerships"])
 
         await ensure_views(
             bot        = self.bot,
@@ -68,11 +77,15 @@ class CoreEnsurementHandler(commands.Cog):
             files      = files,
         )
 
+        # ⸻ Rules
+
         await ensure_views(
             bot        = self.bot,
             channel_id = RULES_CHANNEL_ID,
             views      = RuleViewsList,
         )
+
+        # ⸻ Partnership Requirements
 
         await ensure_views(
             bot        = self.bot,

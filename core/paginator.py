@@ -155,7 +155,7 @@ class Paginator(LayoutView):
         container : bool         = False,
         force     : bool         = False,
     ) -> None:
-        super().__init__(timeout = 600)
+        super().__init__()
         self._title     = title
         self._data      = data
         self._data_name = data_name
@@ -260,7 +260,7 @@ class Paginator(LayoutView):
             if accumulated:
                 page_items.append(TextDisplay("\n".join(accumulated)))
 
-        items : list[TextDisplay[LayoutView] | VisibleLargeSeparator | _PageRow | Item[LayoutView]] = [
+        items : list[TextDisplay[LayoutView] | VisibleLargeSeparator[LayoutView] | _PageRow | Item[LayoutView]] = [
             TextDisplay(self._title),
             VisibleLargeSeparator(),
             *page_items,

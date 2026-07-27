@@ -41,7 +41,7 @@ __all__ = ["TextDisplay"]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class LayoutView(BaseLayoutView):
-    def __init__(self, *, timeout : float | None = None) -> None:
+    def __init__(self, *, timeout : float | None = 600) -> None:
         super().__init__(timeout = timeout)
 
     def add_text(self, text : str, /) -> None:

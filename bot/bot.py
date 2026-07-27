@@ -2,10 +2,10 @@ from asyncio import to_thread
 from collections.abc import Callable, Coroutine
 from logging import getLogger as get_logger
 from pathlib import Path
-from typing import Self, TypedDict, Unpack, override
+from typing import Self, TypedDict, Unpack, final, override
 
 from aiosqlite import Connection, connect
-from discord import CustomActivity, Embed, Intents, Message, Status
+from discord import Embed, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand, Command, Group
 from discord.ext import commands
@@ -14,9 +14,10 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     Context as BaseContext,
 )
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
+from discord.http import Route
 from discord.ui import Button, Modal, View, button
 
-from constants import DENIED_EMOJI
+from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
 
 from .ui import LayoutView
@@ -43,10 +44,11 @@ class _ContextClass(BaseContext["Cordex"]):
         super().__init__(**kwargs)
 
     async def send_button(self, callback : _Inter, /) -> None:
-        class ViewButton(View):
+        @final
+        class _ViewButton(View):
             def __init__(self, view_callback : _Inter, /) -> None:
                 super().__init__(timeout = None)
-                self.callback : _Inter = view_callback
+                self.callback = view_callback
 
             @button(label = "Click me!")
             async def btn_basic(self, interaction : "Interaction", _button : Button[Self]) -> None:
@@ -72,7 +74,7 @@ class _ContextClass(BaseContext["Cordex"]):
                             ),
                         )
 
-        await self.send(view = ViewButton(callback))
+        await self.send(view = _ViewButton(callback))
 
     async def send_embed(self, embed : Embed, /) -> None:
         await self.send(embed = embed)
@@ -107,12 +109,12 @@ type ContextOrInteraction = Interaction | Context
 # Cordex Class
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class Cordex(commands.Bot):
     def __init__(self) -> None:
         prefix   = commands.when_mentioned_or(".")
         intents  = Intents.all()
         status   = Status.online
-        activity = CustomActivity(name = "Utility Bot 1.5.")
 
         super().__init__(
             command_prefix   = prefix,
@@ -120,11 +122,36 @@ class Cordex(commands.Bot):
             case_insensitive = True,
             help_command     = None,
             status           = status,
-            activity         = activity,
         )
         self.db                  : Connection
         self._commands_cache     : list[Command[Group | Cog, ..., object] | Group] = []
         self._app_commands_cache : list[AppCommand] = []
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # set_name_style
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def set_name_style(
+        self,
+        *,
+        font_id            : DisplayNameFont,
+        effect_id          : DisplayNameEffect,
+        colors             : list[str],
+        ctx_or_interaction : ContextOrInteraction,
+    ) -> None:
+        if not ctx_or_interaction.guild:
+            return
+
+        route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = ctx_or_interaction.guild.id)
+
+        color_integers = [int(hex_code, 16) for hex_code in colors]
+
+        payload = {
+          "display_name_font_id"   : font_id,
+          "display_name_effect_id" : effect_id,
+          "display_name_colors"    : color_integers,
+        }
+        await self.http.request(route, json = payload)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Custom Context

@@ -1,3 +1,5 @@
+from enum import Enum
+
 from discord import Color
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -5,8 +7,36 @@ from discord import Color
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Enums
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class DisplayNameFont(Enum):
+    default       = 11
+    bangers       = 1
+    bio_rhyme     = 2
+    cherry_bomb   = 3
+    chicle        = 4
+    compagnon     = 5
+    museo_moderno = 6
+    neo_castel    = 7
+    pixelify      = 8
+    ribes         = 9
+    sinistre      = 10
+    zilla_slab    = 12
+
+
+class DisplayNameEffect(Enum):
+    solid    = 1
+    gradient = 2
+    neon     = 3
+    toon     = 4
+    pop      = 5
+    glow     = 6
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Colors
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 COLOR_BLURPLE = Color(0x5765F2)
 COLOR_BLUE    = Color(0x87acdf)

@@ -32,11 +32,11 @@ class CustomFormatter(Formatter):
     log_fmt = "%(asctime)s | {}%(levelname)s{} | %(name)s | %(message)s"
 
     FORMATS : ClassVar = {
-        DEBUG    : log_fmt.format(_hex_to_ansi(COLOR_GREY.value), reset),
-        INFO     : log_fmt.format(_hex_to_ansi(COLOR_BLUE.value), reset),
+        DEBUG    : log_fmt.format(_hex_to_ansi(COLOR_GREY.value),   reset),
+        INFO     : log_fmt.format(_hex_to_ansi(COLOR_BLUE.value),   reset),
         WARNING  : log_fmt.format(_hex_to_ansi(COLOR_YELLOW.value), reset),
-        ERROR    : log_fmt.format(_hex_to_ansi(COLOR_RED.value), reset),
-        CRITICAL : log_fmt.format(_hex_to_ansi(COLOR_BLACK.value), reset),
+        ERROR    : log_fmt.format(_hex_to_ansi(COLOR_RED.value),    reset),
+        CRITICAL : log_fmt.format(_hex_to_ansi(COLOR_BLACK.value),  reset),
     }
 
     @override
