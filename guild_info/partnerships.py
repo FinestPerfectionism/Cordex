@@ -1,9 +1,7 @@
-from logging import getLogger as get_logger
-from typing import TYPE_CHECKING
-
 from discord import File, HTTPException, TextChannel, Thread
 from discord.ui import Thumbnail
 
+from bot import Cordex, log
 from bot.ui import LayoutView, ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
@@ -19,12 +17,7 @@ from ._base import (
     TOSButton,
 )
 
-if TYPE_CHECKING:
-    from bot import Cordex
-
 CHARACTERS_PER_GROUP_LIMIT = 4000
-
-log = get_logger("Cordex")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Partnership Views
@@ -118,10 +111,7 @@ def build_partnership_views(entries : list[PartnershipEntry]) -> tuple[list[Layo
 
     return views, files
 
-async def rebuild_partnership_view(
-    bot     : "Cordex",
-    entries : list[PartnershipEntry],
-) -> None:
+async def rebuild_partnership_view(bot : Cordex, entries : list[PartnershipEntry]) -> None:
 
     # ⸻ First, fetch the channel
 

@@ -1,10 +1,8 @@
-from typing import TYPE_CHECKING, final, override
+from typing import final, override
 
 from discord.ext import commands
 
-if TYPE_CHECKING:
-    from bot import Cordex
-
+from bot import Cordex
 from constants import (
     HIERARCHY_CHANNEL_ID,
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
@@ -31,12 +29,15 @@ from .state import load_partnership_data
 
 @final
 class CoreEnsurementHandler(commands.Cog):
-    def __init__(self, bot : "Cordex") -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
     @override
     async def cog_load(self) -> None:
+        await self._ensure()
+
+    async def _ensure(self) -> None:
         data = await load_partnership_data(self.bot.db)
         views, files = build_partnership_views(data["partnerships"])
 
@@ -79,6 +80,6 @@ class CoreEnsurementHandler(commands.Cog):
             views      = PartnershipViewsList,
         )
 
-async def setup(bot : "Cordex") -> None:
+async def setup(bot : Cordex) -> None:
     cog = CoreEnsurementHandler(bot)
     await bot.add_cog(cog)

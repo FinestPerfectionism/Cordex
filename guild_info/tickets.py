@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING, cast, override
+from typing import cast, override
 
 from discord import ChannelType, Member, SelectOption, TextChannel
 from discord.ui import Button, Modal
 
+from bot import Cordex, Interaction
 from bot.ui import ModalSelect, blurple
 from constants import (
     DIRECTOR_EMOJI,
@@ -16,9 +17,6 @@ from core.responses import format_send
 from core.state import save_ticket
 
 from ._base import InfoSupportSection
-
-if TYPE_CHECKING:
-    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Ticket Support Information
@@ -50,7 +48,7 @@ class _TicketModal(Modal, title = "Open Ticket"):
         )
 
     @override
-    async def on_submit(self, interaction : "Interaction") -> None:
+    async def on_submit(self, interaction : Interaction) -> None:
         await interaction.response.defer(ephemeral = True)
 
         channel = interaction.channel
@@ -63,7 +61,7 @@ class _TicketModal(Modal, title = "Open Ticket"):
         ticket_type, team_mention, team_name = mapping[choice]
 
         if isinstance(channel, TextChannel):
-            client = cast("Cordex", interaction.client)
+            client = cast(Cordex, interaction.client)
 
             # ⸻ Create thread and add the ticket opener
 
@@ -92,7 +90,7 @@ class _TicketButton(Button["TicketComponents"]):
         super().__init__(label = "Open Ticket", style = blurple, custom_id = "persistent:ticket_button")
 
     @override
-    async def callback(self, interaction : "Interaction") -> None:
+    async def callback(self, interaction : Interaction) -> None:
 
         # ⸻ We know that the button will run in a guild but the type checker doesn't...
 
@@ -118,7 +116,7 @@ class _TicketButton(Button["TicketComponents"]):
 
             channel = interaction.channel
             if isinstance(channel, TextChannel):
-                client = cast("Cordex", interaction.client)
+                client = cast(Cordex, interaction.client)
 
                 # ⸻ Create thread and add the staff member
 

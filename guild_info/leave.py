@@ -1,13 +1,11 @@
-from typing import TYPE_CHECKING, override
+from typing import override
 
 from discord.ui import Button
 
+from bot import Interaction
 from bot.ui import blurple
 
 from ._base import InfoSupportSection
-
-if TYPE_CHECKING:
-    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Leave Support Information
@@ -18,7 +16,7 @@ class LeaveButton(Button["LeaveComponents"]):
         super().__init__(label = "Open Leave Ticket", style = blurple, custom_id = "persistent:leave_button")
 
     @override
-    async def callback(self, interaction : "Interaction") -> None:
+    async def callback(self, interaction : Interaction) -> None:
         await interaction.response.send_message(
             "This button does nothing right now. :[",
             ephemeral = True,

@@ -18,7 +18,7 @@ from .exceptions import UnimplementedCommand
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
-    def predicate(_interaction : "Interaction") -> bool:
+    def predicate(_interaction : Interaction) -> bool:
         raise UnimplementedCommand
 
     def decorator(func : F) -> F:

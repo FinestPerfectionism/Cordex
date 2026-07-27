@@ -16,8 +16,8 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
 from discord.ui import Button, Modal, View, button
 
+from constants import DENIED_EMOJI
 from core.cog_loader import discover_cogs
-from core.responses import format_send
 
 from .ui import LayoutView
 
@@ -53,17 +53,24 @@ class _ContextClass(BaseContext["Cordex"]):
                 try:
                     await self.callback(interaction)
                 except Exception as e:
-                    await format_send(
-                        interaction,
-                        msg_type = "error",
-                        title    = "Error! :[",
-                        subtitle = (
-                            "```py\n"
-                           f"{e}\n"
-                            "```"
-                        ),
-                        override = True,
-                    )
+                    if not interaction.response.is_done():
+                        await interaction.response.send_message(
+                            (
+                               f"{DENIED_EMOJI} **Error! :[**\n"
+                                "```py\n"
+                               f"{e}\n"
+                                "```"
+                            ),
+                        )
+                    else:
+                        await interaction.followup.send(
+                            (
+                               f"{DENIED_EMOJI} **Error! :[**\n"
+                                "```py\n"
+                               f"{e}\n"
+                                "```"
+                            ),
+                        )
 
         await self.send(view = ViewButton(callback))
 

@@ -1,11 +1,11 @@
 from collections.abc import Sequence
-from logging import getLogger as get_logger
-from typing import TYPE_CHECKING, Self, cast, override
+from typing import Self, cast, override
 
 from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
 from discord.ui import ActionRow, Button, TextDisplay
 from discord.utils import format_dt, utcnow
 
+from bot import Cordex, log
 from bot.ui import (
     ButtonSection,
     Container,
@@ -18,11 +18,6 @@ from bot.ui import (
 from constants import STANDSTILL_EMOJI
 from core.utilities import format_values
 
-log = get_logger("Cordex")
-
-if TYPE_CHECKING:
-    from bot import Cordex
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Guild Information Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -32,7 +27,7 @@ if TYPE_CHECKING:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def ensure_views(
-    bot        : "Cordex",
+    bot        : Cordex,
     channel_id : int,
     views      : Sequence[LayoutView],
     files      : list[list[File]] | None = None,
