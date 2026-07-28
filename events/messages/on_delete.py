@@ -30,12 +30,15 @@ class MessageDeleteHandler(commands.Cog):
 
     @commands.Cog.listener("on_message_delete")
     async def message_delete_handler(self, message : Message) -> None:
-        content = message.content
-        author  = message.author
+        content     = message.content
+        attachments = message.attachments
+        author      = message.author
+        channel     = message.channel
+        guild       = message.guild
 
         # ⸻ Block the bot itself
 
-        if author.bot or author == self.bot.user:
+        if author == self.bot.user:
             return
 
         # ⸻ Block bots
@@ -45,13 +48,13 @@ class MessageDeleteHandler(commands.Cog):
 
         # ⸻ Block non-guild messages or messages not in the main guild
 
-        if message.guild is None or message.guild.id != MAIN_GUILD_ID:
+        if guild is None or guild.id != MAIN_GUILD_ID:
             return
 
-        if is_directorship_channel(message.channel):
+        if is_directorship_channel(channel):
             return
 
-        log_channel = message.guild.get_channel(MESSAGE_DELETE_LOG_CHANNEL_ID)
+        log_channel = guild.get_channel(MESSAGE_DELETE_LOG_CHANNEL_ID)
         if not isinstance(log_channel, Messageable):
             return
 
@@ -62,15 +65,33 @@ class MessageDeleteHandler(commands.Cog):
                 TextDisplay(
                     format_table(
                         {
-                            "Author"      : f"{author.mention} | {author.id}",
-                            "Channel"     : f"{channel_display(message.channel)} | {message.channel.id}",
-                            "Attachments" : format_attachments(message.attachments),
+                            "Author"  : f"{author.mention} | {author.id}",
+                            "Channel" : channel_display(channel),
                         },
                     ),
                 ),
-                VisibleLargeSeparator(),
-                TextDisplay(truncate_text(escape_markdown(content) or "[No content, likely an embed or attachment]")),
                 color = COLOR_RED,
+            )
+
+            if attachments:
+                container.add_items(
+                    VisibleLargeSeparator(),
+                    TextDisplay(
+                        (
+                            "### Attachments\n"
+                           f"{escape_markdown(format_attachments(attachments))}"
+                        ),
+                    ),
+                )
+
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+
+                        "### Content\n"
+                       f"{truncate_text(escape_markdown(content) or "[No content, likely an embed or attachment]")}",
+
+                ),
             )
 
         await log_channel.send(view = _DeleteView(), allowed_mentions = AllowedMentions.none())

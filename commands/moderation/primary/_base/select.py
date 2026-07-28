@@ -327,8 +327,8 @@ class _EditorView(LayoutView):
 
     def rebuild(self) -> None:
         self.clear_items()
-        container : Container = Container()
-        global_state          = self.state_map.get(0)
+        container : Container[LayoutView] = Container()
+        global_state                      = self.state_map.get(0)
 
         for member in self.members:
             resolved = _resolve_state(member, self.state_map, global_state)
@@ -552,8 +552,10 @@ class _EditorView(LayoutView):
                         table_data["Attachment"] = escape_markdown(entry.get("file") or "None")
 
                     summary_lines.append(
-                        f"{member.mention}\n"
-                        f"{format_table(table_data)}",
+                        (
+                            f"{member.mention}\n"
+                            f"{format_table(table_data)}"
+                        ),
                     )
 
                 class FinalizedView(LayoutView):

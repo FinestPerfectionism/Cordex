@@ -37,8 +37,15 @@ class MessageEditHandler(commands.Cog):
 
     @commands.Cog.listener("on_message_edit")
     async def message_edit_handler(self, before : Message, after : Message) -> None:
-        author  = before.author
-        channel = after.channel
+        author = before.author
+
+        before_content = before.content
+        before_id      = before.id
+        before_channel = before.channel
+        before_guild   = before.guild
+
+        after_content     = after.content
+        after_attachments = after.attachments
 
         # ⸻ Block the bot itself
 
@@ -52,18 +59,18 @@ class MessageEditHandler(commands.Cog):
 
         # ⸻ Block non-guild messages or messages not in the main guild
 
-        if before.guild is None or before.guild.id != MAIN_GUILD_ID:
+        if before_guild is None or before_guild.id != MAIN_GUILD_ID:
             return
 
         # ⸻ Block non-wapple text in wapple channel
 
-        if before.channel.id == WAPPLE_CHAIN_CHANNEL_ID and not WAPPLE_PATTERN.fullmatch((after.content or "").strip()):
+        if before_channel.id == WAPPLE_CHAIN_CHANNEL_ID and not WAPPLE_PATTERN.fullmatch((after_content or "").strip()):
             await after.delete()
             return
 
         # ⸻ Eval command editing
 
-        if before.id in eval_message_ids:
+        if before_id in eval_message_ids:
 
             # ⸻ Remove our old reactions
 
@@ -79,15 +86,15 @@ class MessageEditHandler(commands.Cog):
 
             # ⸻ Remove our old response (done after the reinvocation since faster reevaluation is better)
 
-            if (old_response_id := eval_message_ids.pop(before.id, None)) is not None:
-                old_msg = await before.channel.fetch_message(old_response_id)
+            if (old_response_id := eval_message_ids.pop(before_id, None)) is not None:
+                old_msg = await before_channel.fetch_message(old_response_id)
                 await old_msg.delete()
 
             return
 
         # ⸻ Block nessage logging of directorship channels
 
-        if is_directorship_channel(before.channel):
+        if is_directorship_channel(before_channel):
             return
 
         # ⸻ Edit message logging
@@ -95,10 +102,10 @@ class MessageEditHandler(commands.Cog):
         before_files = [a.url for a in before.attachments]
         after_files  = [a.url for a in after.attachments]
 
-        if before.content == after.content and before_files == after_files:
+        if before_content == after_content and before_files == after_files:
             return
 
-        log_channel = before.guild.get_channel(MESSAGE_EDIT_LOG_CHANNEL_ID)
+        log_channel = before_guild.get_channel(MESSAGE_EDIT_LOG_CHANNEL_ID)
         if not isinstance(log_channel, Messageable):
             return
 
@@ -110,25 +117,38 @@ class MessageEditHandler(commands.Cog):
                     format_table(
                         {
                             "Author"      : f"{author.mention} | {author.id}",
-                            "Channel"     : f"{channel_display(after.channel)} | {channel.id}",
-                            "Attachments" : format_attachments(after.attachments),
+                            "Channel"     : channel_display(after.channel),
                         },
                     ),
                 ),
+                color = COLOR_GREY,
+            )
+
+            if after_attachments:
+                container.add_items(
+                    VisibleLargeSeparator(),
+                    TextDisplay(
+                        (
+                            "### Attachments\n"
+                           f"{escape_markdown(format_attachments(after_attachments))}"
+                        ),
+                    ),
+                )
+
+            container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
                     (
-                        f"### Before\n"
-                        f"{truncate_text(escape_markdown(before.content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
+                        "### Before\n"
+                       f"{truncate_text(escape_markdown(before_content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
                     ),
                 ),
                 TextDisplay(
                     (
-                        f"### After\n"
-                        f"{truncate_text(escape_markdown(after.content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
+                        "### After\n"
+                       f"{truncate_text(escape_markdown(after_content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
                     ),
                 ),
-                color = COLOR_GREY,
             )
 
         await log_channel.send(view = _EditView(), allowed_mentions = AllowedMentions.none())

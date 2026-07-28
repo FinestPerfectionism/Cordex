@@ -11,7 +11,6 @@ from discord import Color
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class DisplayNameFont(Enum):
-    default       = 11
     bangers       = 1
     bio_rhyme     = 2
     cherry_bomb   = 3
@@ -22,6 +21,7 @@ class DisplayNameFont(Enum):
     pixelify      = 8
     ribes         = 9
     sinistre      = 10
+    default       = 11
     zilla_slab    = 12
 
 

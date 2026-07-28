@@ -16,16 +16,11 @@ import constants
 from bot import Context, ContextOrInteraction, Cordex, Interaction, tree
 from bot.ui import (
     ButtonSection,
-    ChannelModalSelect,
     Container,
     HiddenLargeSeparator,
     HiddenSmallSeparator,
     LayoutView,
-    MentionableModalSelect,
-    ModalSelect,
-    RoleModalSelect,
     ThumbnailSection,
-    UserModalSelect,
     VisibleLargeSeparator,
     VisibleSmallSeparator,
 )
@@ -144,17 +139,6 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "VSSep"                 : VisibleSmallSeparator,
         "HLSep"                 : HiddenLargeSeparator,
         "HSSep"                 : HiddenSmallSeparator,
-
-        "ModalSelect"            : ModalSelect,
-        "UserModalSelect"        : UserModalSelect,
-        "RoleModalSelect"        : RoleModalSelect,
-        "MentionableModalSelect" : MentionableModalSelect,
-        "ChannelModalSelect"     : ChannelModalSelect,
-        "MSelect"                : ModalSelect,
-        "UMSelect"               : UserModalSelect,
-        "RMSelect"               : RoleModalSelect,
-        "MMSelect"               : MentionableModalSelect,
-        "CMSelect"               : ChannelModalSelect,
 
         "RadioGroup"    : ui.RadioGroup,
         "Checkbox"      : ui.Checkbox,

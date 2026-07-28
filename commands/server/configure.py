@@ -90,9 +90,9 @@ class LoggingConfigurationView(LayoutView):
         super().__init__()
         self.bot = bot
 
-        self.antinuke_display   : TextDisplay[Self] = TextDisplay("")
-        self.moderation_display : TextDisplay[Self] = TextDisplay("")
-        self.container          : Container         = Container(
+        self.antinuke_display   : TextDisplay[Self]     = TextDisplay("")
+        self.moderation_display : TextDisplay[Self]     = TextDisplay("")
+        self.container          : Container[LayoutView] = Container(
             self.antinuke_display,
             LoggingAntinukeRow(),
             self.moderation_display,

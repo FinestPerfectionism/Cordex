@@ -66,14 +66,14 @@ def channel_display(channel : Messageable | GuildChannel) -> str:
         parent = channel.parent
 
         if isinstance(parent, ForumChannel):
-            return f"{parent.mention} {ARROW_EMOJI} {channel.mention}"
+            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.mention}"
         if parent is not None:
-            return f"{parent.mention} {ARROW_EMOJI} {channel.mention}"
+            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.mention}"
 
         return channel.mention
 
     if isinstance(channel, TextChannel):
-        return channel.mention
+        return f"{channel.mention} | {channel.id}"
 
     return "Unknown Channel"
 
@@ -82,6 +82,4 @@ def channel_display(channel : Messageable | GuildChannel) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def format_attachments(attachments : list[Attachment]) -> str:
-    if not attachments:
-        return "None"
-    return "\n".join(f"- {a.filename} ({a.url})" for a in attachments)
+    return "\n".join(f"- {attachment.filename} | {attachment.url}" for attachment in attachments)

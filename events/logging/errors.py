@@ -65,7 +65,7 @@ class ErrorLogger(commands.Cog):
     # Central Error Sender
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def send_error(
+    async def _send_error(
         self,
         *,
         title           : str,
@@ -155,7 +155,7 @@ class ErrorLogger(commands.Cog):
             return
 
         if exc is None:
-            await self.send_error(
+            await self._send_error(
                 title      =  "Bot Event Error",
                 error_text = f"{event}: Unknown exception",
             )
@@ -163,7 +163,7 @@ class ErrorLogger(commands.Cog):
 
         traceback_text = "".join(format_exception(exc_type, exc, tb))
 
-        await self.send_error(
+        await self._send_error(
             title          =  "Bot Event Error",
             error_text     = f"{event}: {exc}",
             traceback_text = traceback_text,
@@ -217,7 +217,7 @@ class ErrorLogger(commands.Cog):
 
         traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
 
-        await self.send_error(
+        await self._send_error(
             title           = "Command Error",
             user            = interaction.user,
             guild           = interaction.guild,
@@ -233,7 +233,7 @@ class ErrorLogger(commands.Cog):
     @commands.Cog.listener("on_command_error")
     async def prefix_command_error_handler(self, _ctx : Context, _error : commands.CommandError) -> None:
 
-        # ⸻ Literally just pass since only eval uses prefix
+        # ⸻ Literally just pass since only eval uses prefix and we shouldn't care.
 
         pass
 
@@ -249,7 +249,7 @@ class ErrorLogger(commands.Cog):
     ) -> None:
         traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
 
-        await self.send_error(
+        await self._send_error(
             title          =  "Extension Error",
             error_text     = f"{extension}: {error}",
             traceback_text = traceback_text,
@@ -270,7 +270,7 @@ class ErrorLogger(commands.Cog):
         ) as exc:
             traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
-            await self.send_error(
+            await self._send_error(
                 title          = "HTTP / REST Error",
                 error_text     = str(exc),
                 traceback_text = traceback_text,
@@ -307,7 +307,7 @@ class ErrorLogger(commands.Cog):
         traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
         self.create_task(
-            self.send_error(
+            self._send_error(
                 title          = "Background Task Error",
                 error_text     = str(exc),
                 traceback_text = traceback_text,
@@ -337,7 +337,7 @@ class ErrorLogger(commands.Cog):
             traceback_text = msg_str
 
         loop.create_task(
-            self.send_error(
+            self._send_error(
                 title          = "Asyncio Event Loop Error",
                 error_text     = msg_str,
                 traceback_text = traceback_text,

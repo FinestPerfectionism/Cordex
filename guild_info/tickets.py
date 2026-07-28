@@ -1,10 +1,10 @@
 from typing import cast, override
 
 from discord import ChannelType, Member, SelectOption, TextChannel
-from discord.ui import Button, Modal
+from discord.ui import Button, Label, Modal, Select
 
 from bot import Cordex, Interaction
-from bot.ui import ModalSelect, blurple
+from bot.ui import blurple
 from constants import (
     DIRECTOR_EMOJI,
     DIRECTORS_ROLE_ID,
@@ -26,9 +26,7 @@ class _TicketModal(Modal, title = "Open Ticket"):
     def __init__(self) -> None:
         super().__init__(timeout = None)
 
-        self.select : ModalSelect = ModalSelect(
-            text        = "Team",
-            description = "Select which staff team to contact.",
+        self.select : Select[Modal] = Select(
             placeholder = "Which team would you like to contact?",
             options     = [
                 SelectOption(
@@ -45,6 +43,12 @@ class _TicketModal(Modal, title = "Open Ticket"):
                     default     = True,
                 ),
             ],
+        )
+
+        self.label : Label[Modal] = Label(
+            text        = "Team",
+            description = "Select which staff team to contact.",
+            component   = self.select,
         )
 
     @override

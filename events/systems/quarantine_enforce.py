@@ -21,13 +21,20 @@ class QuarantineEnforcerSystem(commands.Cog):
         self.bot                   = bot
         self.semaphore             = Semaphore(3)
         self.processing : set[int] = set()
+
+    @override
+    async def cog_load(self) -> None:
         self.loop_quarantine_enforce.start()
 
     @override
     async def cog_unload(self) -> None:
         self.loop_quarantine_enforce.cancel()
 
-    def needs_update(self, channel : GuildChannel, role : Role) -> bool:
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Internal Helpers
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def _needs_update(self, channel : GuildChannel, role : Role) -> bool:
         overwrite = channel.overwrites_for(role)
         return (
             overwrite.view_channel             is not False or
@@ -38,7 +45,7 @@ class QuarantineEnforcerSystem(commands.Cog):
             overwrite.create_private_threads   is not False
         )
 
-    async def update_channel(self, channel : GuildChannel, role : Role) -> bool:
+    async def _update_channel(self, channel : GuildChannel, role : Role) -> bool:
         if channel.id in self.processing:
             return False
 
@@ -68,14 +75,18 @@ class QuarantineEnforcerSystem(commands.Cog):
 
         return True
 
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Event Listeners (Fast track loop for channel update and creation)
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
     @commands.Cog.listener("on_guild_channel_update")
     async def on_channel_update(self, _before : GuildChannel, after : GuildChannel) -> None:
         if after.guild.id != MAIN_GUILD_ID:
             return
 
         role = after.guild.get_role(QUARANTINE_ROLE_ID)
-        if role and self.needs_update(after, role):
-            await self.update_channel(after, role)
+        if role and self._needs_update(after, role):
+            await self._update_channel(after, role)
 
     @commands.Cog.listener("on_guild_channel_create")
     async def on_channel_create(self, channel : GuildChannel) -> None:
@@ -83,8 +94,12 @@ class QuarantineEnforcerSystem(commands.Cog):
             return
 
         role = channel.guild.get_role(QUARANTINE_ROLE_ID)
-        if role and self.needs_update(channel, role):
-            await self.update_channel(channel, role)
+        if role and self._needs_update(channel, role):
+            await self._update_channel(channel, role)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Loop
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @tasks.loop(minutes = 10.0)
     async def loop_quarantine_enforce(self) -> None:
@@ -101,9 +116,9 @@ class QuarantineEnforcerSystem(commands.Cog):
         tasks_to_run : list[Coroutine[None, None, bool]] = []
 
         tasks_to_run = [
-            self.update_channel(channel, role)
+            self._update_channel(channel, role)
             for channel in all_channels
-            if self.needs_update(channel, role)
+            if self._needs_update(channel, role)
         ]
 
         if not tasks_to_run:

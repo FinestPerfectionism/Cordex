@@ -63,6 +63,7 @@ class _ContextClass(BaseContext["Cordex"]):
                                f"{e}\n"
                                 "```"
                             ),
+                            ephemeral = True,
                         )
                     else:
                         await interaction.followup.send(
@@ -72,6 +73,7 @@ class _ContextClass(BaseContext["Cordex"]):
                                f"{e}\n"
                                 "```"
                             ),
+                            ephemeral = True,
                         )
 
         await self.send(view = _ViewButton(callback))
@@ -87,18 +89,6 @@ class _ContextClass(BaseContext["Cordex"]):
             await interaction.response.send_modal(modal)
 
         await self.send_button(func)
-
-    async def fetch_and_reply(self, content : str, msg_id : int, /, *, ping : bool) -> None:
-        msg = await self.channel.fetch_message(msg_id)
-        await msg.reply(content, mention_author = ping)
-
-    async def fetch_and_edit(self, content : str, msg_id : int, /) -> None:
-        msg = await self.channel.fetch_message(msg_id)
-        await msg.edit(content = content)
-
-    async def fetch_and_delete(self, msg_id : int, /) -> None:
-        msg = await self.channel.fetch_message(msg_id)
-        await msg.delete()
 
 
 type Context              = _ContextClass

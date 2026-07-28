@@ -36,6 +36,8 @@ class MessageSendHandler(commands.Cog):
     async def message_send_handler(self, message : Message) -> None:
         content = message.content
         author  = message.author
+        channel = message.channel
+        guild   = message.guild
 
         # ⸻ Block the bot itself
 
@@ -49,29 +51,29 @@ class MessageSendHandler(commands.Cog):
 
         # ⸻ Block non-guild messages or messages not in the main guild
 
-        if message.guild is None or message.guild.id != MAIN_GUILD_ID:
+        if guild is None or guild.id != MAIN_GUILD_ID:
             return
 
         # ⸻ Block non-wapple text in wapple channel
 
-        if message.channel.id == WAPPLE_CHAIN_CHANNEL_ID and not WAPPLE_PATTERN.fullmatch(content.strip()):
+        if channel.id == WAPPLE_CHAIN_CHANNEL_ID and not WAPPLE_PATTERN.fullmatch(content.strip()):
             await message.delete()
             return
 
         # ⸻ Factoids
 
-        if content.startswith("?") and " " not in content[1:] and message.guild and message.guild.id == MAIN_GUILD_ID:
+        if content.startswith("?") and " " not in content[1:] and guild.id == MAIN_GUILD_ID:
             key = content[1:].lower()
 
             if key in FACTOIDS:
-                async with message.channel.typing():
-                    await message.channel.send(FACTOIDS[key])
+                async with channel.typing():
+                    await channel.send(FACTOIDS[key])
                     return
 
         # ⸻ Mention directors upon thread creation
 
-        if isinstance(message.channel, Thread):
-            thread = message.channel
+        if isinstance(channel, Thread):
+            thread = channel
             if message.id == thread.id and thread.parent_id == DIRECTOR_TASKS_CHANNEL_ID:
                 await thread.send(f"<@&{DIRECTORS_ROLE_ID}>")
 

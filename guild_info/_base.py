@@ -178,7 +178,7 @@ class InfoPrimarySection(LayoutView):
                f"-# Assembled by the Directorate team. Primarily written by {format_values(authors)}.\n"
             )
 
-        self.container      : Container                    = Container()
+        self.container      : Container[LayoutView]        =  Container()
         self.last_added_row : ActionRow[LayoutView] | None = None
 
         if button is not None:
@@ -232,7 +232,7 @@ class InfoSecondarySection(LayoutView):
     def __init__(self, *, text : str | None = None) -> None:
         super().__init__(timeout = None)
 
-        self.container      : Container                    = Container()
+        self.container      : Container[LayoutView]        = Container()
         self.last_added_row : ActionRow[LayoutView] | None = None
 
         if text is not None:
@@ -272,7 +272,7 @@ class InfoSupportSection(LayoutView):
     ) -> None:
         super().__init__(timeout = None)
 
-        description_text : ButtonSection | TextDisplay[Self]
+        description_text : ButtonSection[LayoutView] | TextDisplay[Self]
 
         if button:
             description_text = ButtonSection(

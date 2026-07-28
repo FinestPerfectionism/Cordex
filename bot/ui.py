@@ -1,31 +1,17 @@
-from typing import final
+from typing import Self, final
 
 from discord import (
     ButtonStyle,
-    ChannelType,
     Color,
-    Member,
-    Role,
-    SelectDefaultValue,
-    SelectOption,
     SeparatorSpacing,
-    User,
 )
-from discord.app_commands import AppCommandChannel, AppCommandThread
 from discord.ui import (
     Button,
-    ChannelSelect,
     Item,
-    Label,
-    MentionableSelect,
-    Modal,
-    RoleSelect,
     Section,
-    Select,
     Separator,
     TextDisplay,
     Thumbnail,
-    UserSelect,
 )
 from discord.ui import Container as BaseContainer
 from discord.ui import LayoutView as BaseLayoutView
@@ -47,11 +33,15 @@ class LayoutView(BaseLayoutView):
     def add_text(self, text : str, /) -> None:
         self.add_item(TextDisplay(text))
 
+    def add_items(self, *items : Item[Self]) -> None:
+        for item in items:
+            self.add_item(item)
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Container
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class Container[V : BaseLayoutView = LayoutView](BaseContainer[V]):
+class Container[V : LayoutView](BaseContainer[V]):
     def __init__(
         self,
         *children : Item[V],
@@ -70,6 +60,10 @@ class Container[V : BaseLayoutView = LayoutView](BaseContainer[V]):
 
     def add_text(self, text : str, /) -> None:
         self.add_item(TextDisplay(text))
+
+    def add_items(self, *items : Item[V]) -> None:
+        for item in items:
+            self.add_item(item)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Separator Sizes
@@ -93,193 +87,36 @@ link    = ButtonStyle.link
 # Separator Variants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+@final
 class VisibleLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = large)
 
+@final
 class VisibleSmallSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = small)
 
+@final
 class HiddenLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = False, spacing = large)
 
+@final
 class HiddenSmallSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = False, spacing = small)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Modal Select Variants
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-@final
-class ModalSelect(Label[Modal]):
-    def __init__(
-        self,
-        *,
-        placeholder : str | None = None,
-        min_values  : int        = 1,
-        max_values  : int        = 1,
-        options     : list[SelectOption],
-        required    : bool       = True,
-        text        : str,
-        description : str | None = None,
-    ) -> None:
-        component : Select[Modal] = Select(
-            placeholder = placeholder,
-            min_values  = min_values,
-            max_values  = max_values,
-            options     = options,
-            required    = required,
-        )
-        super().__init__(
-            text        = text,
-            description = description,
-            component   = component,
-        )
-        self._underlying_component = component
-
-    @property
-    def values(self) -> list[str]:
-        return self._underlying_component.values
-
-@final
-class UserModalSelect(Label[Modal]):
-    def __init__(
-        self,
-        *,
-        placeholder    : str | None = None,
-        min_values     : int        = 1,
-        max_values     : int        = 1,
-        required       : bool       = True,
-        text           : str,
-        description    : str | None = None,
-        default_values : list[SelectDefaultValue],
-    ) -> None:
-        component : UserSelect[Modal] = UserSelect(
-            placeholder    = placeholder,
-            min_values     = min_values,
-            max_values     = max_values,
-            required       = required,
-            default_values = default_values,
-        )
-        super().__init__(
-            text        = text,
-            description = description,
-            component   = component,
-        )
-        self._underlying_component = component
-
-    @property
-    def values(self) -> list[User | Member]:
-        return self._underlying_component.values
-
-@final
-class RoleModalSelect(Label[Modal]):
-    def __init__(
-        self,
-        *,
-        placeholder    : str | None = None,
-        min_values     : int        = 1,
-        max_values     : int        = 1,
-        required       : bool       = True,
-        text           : str,
-        description    : str | None = None,
-        default_values : list[SelectDefaultValue],
-    ) -> None:
-        component : RoleSelect[Modal] = RoleSelect(
-            placeholder    = placeholder,
-            min_values     = min_values,
-            max_values     = max_values,
-            required       = required,
-            default_values = default_values,
-        )
-        super().__init__(
-            text        = text,
-            description = description,
-            component   = component,
-        )
-        self._underlying_component = component
-
-    @property
-    def values(self) -> list[Role]:
-        return self._underlying_component.values
-
-@final
-class MentionableModalSelect(Label[Modal]):
-    def __init__(
-        self,
-        *,
-        placeholder    : str | None = None,
-        min_values     : int        = 1,
-        max_values     : int        = 1,
-        required       : bool       = True,
-        text           : str,
-        description    : str | None = None,
-        default_values : list[SelectDefaultValue],
-    ) -> None:
-        component : MentionableSelect[Modal] = MentionableSelect(
-            placeholder    = placeholder,
-            min_values     = min_values,
-            max_values     = max_values,
-            required       = required,
-            default_values = default_values,
-        )
-        super().__init__(
-            text        = text,
-            description = description,
-            component   = component,
-        )
-        self._underlying_component = component
-
-    @property
-    def values(self) -> list[Role | User | Member]:
-        return self._underlying_component.values
-
-@final
-class ChannelModalSelect(Label[Modal]):
-    def __init__(
-        self,
-        *,
-        channel_types  : list[ChannelType],
-        placeholder    : str | None = None,
-        min_values     : int        = 1,
-        max_values     : int        = 1,
-        required       : bool       = True,
-        text           : str,
-        description    : str | None = None,
-        default_values : list[SelectDefaultValue],
-    ) -> None:
-        component : ChannelSelect[Modal] = ChannelSelect(
-            channel_types  = channel_types,
-            placeholder    = placeholder,
-            min_values     = min_values,
-            max_values     = max_values,
-            required       = required,
-            default_values = default_values,
-        )
-        super().__init__(
-            text        = text,
-            description = description,
-            component   = component,
-        )
-        self._underlying_component = component
-
-    @property
-    def values(self) -> list[AppCommandChannel | AppCommandThread]:
-        return self._underlying_component.values
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Section Variants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class ButtonSection(Section[LayoutView]):
-    def __init__(self, *args : str | TextDisplay[LayoutView], button : Button[LayoutView]) -> None:
+class ButtonSection[V : LayoutView](Section[V]):
+    def __init__(self, *args : str | TextDisplay[V], button : Button[V]) -> None:
         super().__init__(*args, accessory = button)
-        self.button : Button[LayoutView] = button
+        self.button : Button[V] = button
 
-class ThumbnailSection(Section[LayoutView]):
-    def __init__(self, *args : str | TextDisplay[LayoutView], thumbnail : Thumbnail[LayoutView]) -> None:
+class ThumbnailSection[V : LayoutView](Section[V]):
+    def __init__(self, *args : str | TextDisplay[V], thumbnail : Thumbnail[V]) -> None:
         super().__init__(*args, accessory = thumbnail)
-        self.thumbnail : Thumbnail[LayoutView] = thumbnail
+        self.thumbnail : Thumbnail[V] = thumbnail
