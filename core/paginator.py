@@ -1,14 +1,19 @@
 from typing import Self, final, override
 
 from discord import Color
-from discord.ui import ActionRow, Button, Item, Modal, TextInput, button
 
 from bot import Interaction
 from bot.ui import (
+    ActionRow,
+    Button,
     Container,
+    Item,
     LayoutView,
+    Modal,
     TextDisplay,
+    TextInput,
     VisibleLargeSeparator,
+    button,
     green,
 )
 

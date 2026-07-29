@@ -2,10 +2,10 @@ from datetime import timedelta
 from typing import Literal, final
 
 from discord import Member
-from discord.ui import Button, View, button
 from discord.utils import utcnow
 
 from bot import Interaction, bot
+from bot.ui import Button, View, button
 from constants import CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
 from core.cases import (
     BanAddPayload,

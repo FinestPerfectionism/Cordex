@@ -4,31 +4,29 @@ from types import MappingProxyType
 from typing import Literal, Self, TypedDict, cast, final, override
 
 from discord import AllowedMentions, ButtonStyle, Member
-from discord.ui import (
+from discord.utils import escape_markdown
+
+from bot import Interaction
+from bot.ui import (
     ActionRow,
     Button,
+    ButtonSection,
     Checkbox,
+    Container,
     FileUpload,
     Label,
+    LayoutView,
     Modal,
     TextDisplay,
     TextInput,
     UserSelect,
     View,
-    select,
-)
-from discord.utils import escape_markdown
-
-from bot import Interaction
-from bot.ui import (
-    ButtonSection,
-    Container,
-    LayoutView,
     VisibleLargeSeparator,
     blurple,
     green,
     grey,
     red,
+    select,
 )
 from constants import ACCEPTED_EMOJI
 from core.cases import (

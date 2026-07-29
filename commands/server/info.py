@@ -1,11 +1,17 @@
 from typing import Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, VerificationLevel
-from discord.ui import MediaGallery, TextDisplay, Thumbnail
 from discord.utils import format_dt
 
 from bot import Interaction
-from bot.ui import Container, LayoutView, ThumbnailSection
+from bot.ui import (
+    Container,
+    LayoutView,
+    MediaGallery,
+    TextDisplay,
+    Thumbnail,
+    ThumbnailSection,
+)
 from constants import (
     BOOSTED_GLOBAL_SERVER_EMOJI,
     BOOSTED_SERVER_EMOJI,

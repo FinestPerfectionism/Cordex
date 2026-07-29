@@ -7,7 +7,7 @@ from core.responses import format_send
 # /bot-owner cog load Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_cogs_load(
+async def run_bo_cog_load(
     bot         : Cordex,
     interaction : Interaction,
     cog         : str,

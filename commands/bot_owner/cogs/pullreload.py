@@ -9,7 +9,7 @@ from core.responses import format_send
 # /bot-owner cog pull-reload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_cogs_pullreload(bot : Cordex, interaction : Interaction) -> None:
+async def run_bo_cog_pullreload(bot : Cordex, interaction : Interaction) -> None:
     await interaction.response.defer(ephemeral = True)
 
     cogs : list[str] = get_cogs()

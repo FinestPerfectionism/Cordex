@@ -1,17 +1,21 @@
 from typing import Self, final
 
 from discord import ChannelType
-from discord.ui import (
+
+from bot import Cordex, Interaction
+from bot.ui import (
     ActionRow,
     Button,
     ChannelSelect,
+    Container,
+    LayoutView,
     TextDisplay,
+    VisibleLargeSeparator,
+    blurple,
     button,
+    red,
     select,
 )
-
-from bot import Cordex, Interaction
-from bot.ui import Container, LayoutView, VisibleLargeSeparator, blurple, red
 from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

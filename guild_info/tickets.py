@@ -1,10 +1,9 @@
 from typing import cast, override
 
 from discord import ChannelType, Member, SelectOption, TextChannel
-from discord.ui import Button, Label, Modal, Select
 
 from bot import Cordex, Interaction
-from bot.ui import blurple
+from bot.ui import Button, Label, Modal, Select, blurple
 from constants import (
     DIRECTOR_EMOJI,
     DIRECTORS_ROLE_ID,
@@ -82,8 +81,8 @@ class _TicketModal(Modal, title = "Open Ticket"):
             await save_ticket(client.db, thread_id = ticket.id, team = choice)
             await format_send(
                 interaction,
-                msg_type  = "success",
-                title     = "created ticket",
+                msg_type  =  "success",
+                title     =  "created ticket",
                 subtitle  = f"{team_name} ticket created: {ticket.mention}",
                 ephemeral = True,
             )

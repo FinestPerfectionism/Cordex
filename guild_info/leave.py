@@ -1,9 +1,7 @@
 from typing import override
 
-from discord.ui import Button
-
 from bot import Interaction
-from bot.ui import blurple
+from bot.ui import Button, blurple
 
 from ._base import InfoSupportSection
 
@@ -11,7 +9,7 @@ from ._base import InfoSupportSection
 # Leave Support Information
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class LeaveButton(Button["LeaveComponents"]):
+class _LeaveButton(Button["LeaveComponents"]):
     def __init__(self) -> None:
         super().__init__(label = "Open Leave Ticket", style = blurple, custom_id = "persistent:leave_button")
 
@@ -45,5 +43,5 @@ class LeaveComponents(InfoSupportSection):
                 "We look forward to assisting you! Sincerely,\n"
                 "-# The Goobers Moderation team"
             ),
-            button      = LeaveButton(),
+            button      = _LeaveButton(),
         )

@@ -1,11 +1,10 @@
 from typing import Self, final
 
 from discord import AllowedMentions, Member, Role
-from discord.ui import TextDisplay
 from discord.utils import format_dt
 
 from bot import Interaction
-from bot.ui import Container, LayoutView
+from bot.ui import Container, LayoutView, TextDisplay
 from constants import COLOR_GREY
 from core.utilities import codeblock, format_table
 

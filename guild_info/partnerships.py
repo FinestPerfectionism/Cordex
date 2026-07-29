@@ -1,8 +1,7 @@
 from discord import File, HTTPException, TextChannel, Thread
-from discord.ui import Thumbnail
 
 from bot import Cordex, log
-from bot.ui import LayoutView, ThumbnailSection
+from bot.ui import LayoutView, Thumbnail, ThumbnailSection
 from constants import (
     PARTNERSHIP_REQUIREMENTS_CHANNEL_ID,
     PARTNERSHIPS_CHANNEL_ID,
@@ -47,8 +46,8 @@ class PartnershipComponents2(InfoPrimarySection):
 # Functions
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def build_partnership_thumbnail_section(entry : PartnershipEntry) -> ThumbnailSection:
-    return ThumbnailSection(
+def build_partnership_thumbnail_section(entry : PartnershipEntry) -> ThumbnailSection[LayoutView]:
+    return ThumbnailSection[LayoutView](
         (
            f"# {entry['server_name']}\n"
             "**Description:**\n"

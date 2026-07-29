@@ -15,12 +15,11 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
 )
 from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
 from discord.http import Route
-from discord.ui import Button, Modal, View, button
 
 from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
 
-from .ui import LayoutView
+from .ui import Button, LayoutView, Modal, View, button
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management

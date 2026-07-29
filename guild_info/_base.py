@@ -2,15 +2,17 @@ from collections.abc import Sequence
 from typing import Self, cast, override
 
 from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
-from discord.ui import ActionRow, Button, TextDisplay
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex, log
 from bot.ui import (
+    ActionRow,
+    Button,
     ButtonSection,
     Container,
     HiddenSmallSeparator,
     LayoutView,
+    TextDisplay,
     VisibleLargeSeparator,
     VisibleSmallSeparator,
     link,

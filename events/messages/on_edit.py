@@ -3,11 +3,10 @@ from typing import Self, final
 from discord import AllowedMentions, Message
 from discord.abc import Messageable
 from discord.ext import commands
-from discord.ui import TextDisplay
 from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Cordex
-from bot.ui import Container, LayoutView, VisibleLargeSeparator
+from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from commands.bot_owner.eval import eval_message_ids
 from constants import (
     COLOR_GREY,

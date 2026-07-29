@@ -12,10 +12,10 @@ from core.permissions import bot_owner_cmd
 
 from . import cog_autocomplete
 from .cogs import (
-    run_bo_cogs_load,
-    run_bo_cogs_pullreload,
-    run_bo_cogs_reload,
-    run_bo_cogs_unload,
+    run_bo_cog_load,
+    run_bo_cog_pullreload,
+    run_bo_cog_reload,
+    run_bo_cog_unload,
 )
 from .eval import run_bo_eval
 from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
@@ -36,7 +36,7 @@ class BotOwnerCommands(
         self.bot = bot
 
     cog     : Group = Group(
-        name        = "cogs",
+        name        = "cog",
         description = "Bot owner cog commands",
     )
     message : Group = Group(
@@ -57,8 +57,8 @@ class BotOwnerCommands(
         description = "Pull from main, then reload all cogs.",
     )
     @bot_owner_cmd()
-    async def cmd_bo_cogs_pullreload(self, interaction : Interaction) -> None:
-        await run_bo_cogs_pullreload(self.bot, interaction)
+    async def cmd_bo_cog_pullreload(self, interaction : Interaction) -> None:
+        await run_bo_cog_pullreload(self.bot, interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner cog reload Command
@@ -71,8 +71,8 @@ class BotOwnerCommands(
     @describe(cog = "The cog to reload. Leave empty to reload all cogs.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_bo_cogs_reload(self, interaction : Interaction, cog : str | None) -> None:
-        await run_bo_cogs_reload(self.bot, interaction, cog)
+    async def cmd_bo_cog_reload(self, interaction : Interaction, cog : str | None) -> None:
+        await run_bo_cog_reload(self.bot, interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner cog load Command
@@ -85,8 +85,8 @@ class BotOwnerCommands(
     @describe(cog = "The cog to load.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_bo_cogs_load(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cogs_load(self.bot, interaction, cog)
+    async def cmd_bo_cog_load(self, interaction : Interaction, cog : str) -> None:
+        await run_bo_cog_load(self.bot, interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner cog unload Command
@@ -99,8 +99,8 @@ class BotOwnerCommands(
     @describe(cog = "The cog to unload.")
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
-    async def cmd_bo_cogs_unload(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cogs_unload(self.bot, interaction, cog)
+    async def cmd_bo_cog_unload(self, interaction : Interaction, cog : str) -> None:
+        await run_bo_cog_unload(self.bot, interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner state shutdown Command

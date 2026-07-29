@@ -67,6 +67,7 @@ useLibraryCodeForTypes              = true
 target-version = "py312"
 line-length    = 88
 extend-exclude = [
+    ".local/skills",
     ".cache",
     ".bzr",
     ".direnv",

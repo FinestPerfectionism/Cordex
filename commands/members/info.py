@@ -1,11 +1,17 @@
 from typing import Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, Member
-from discord.ui import MediaGallery, TextDisplay, Thumbnail
 from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Interaction
-from bot.ui import Container, LayoutView, ThumbnailSection
+from bot.ui import (
+    Container,
+    LayoutView,
+    MediaGallery,
+    TextDisplay,
+    Thumbnail,
+    ThumbnailSection,
+)
 from constants import (
     BIG_BOT_EMOJI,
     BOOSTER_EMOJI,

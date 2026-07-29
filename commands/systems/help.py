@@ -5,10 +5,21 @@ from typing import cast, final, override
 from discord import SelectOption
 from discord.app_commands import Command, command, describe
 from discord.ext import commands
-from discord.ui import ActionRow, Button, Item, Modal, Select, TextDisplay, TextInput
 
 from bot import Cordex, Interaction, bot
-from bot.ui import ButtonSection, Container, LayoutView, VisibleLargeSeparator
+from bot.ui import (
+    ActionRow,
+    Button,
+    ButtonSection,
+    Container,
+    Item,
+    LayoutView,
+    Modal,
+    Select,
+    TextDisplay,
+    TextInput,
+    VisibleLargeSeparator,
+)
 from constants import (
     BOT_OWNER_ID,
     COMMAND_EMOJI,
