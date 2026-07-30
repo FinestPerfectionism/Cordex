@@ -19,6 +19,10 @@ from bot.ui import (
 
 from .exceptions import send_bad_operation, send_bad_request
 
+__all__ = ["Paginator"]
+
+type _ItemsList = list[Item[LayoutView]]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Paginator
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -176,8 +180,10 @@ class Paginator(LayoutView):
         self.current_page = 0
         self._page_row    = _PageRow(self) if len(self.pages) >= 2 else None
 
-        self._above_items : list[Item[LayoutView]] = []
-        self._below_items : list[Item[LayoutView]] = []
+        self._above_items : _ItemsList = []
+        self._over_items  : _ItemsList = []
+        self._under_items : _ItemsList = []
+        self._below_items : _ItemsList = []
 
         # ⸻ color is dependent on container.
 
@@ -202,6 +208,22 @@ class Paginator(LayoutView):
 
     def add_above(self, *items : Item[LayoutView]) -> None:
         self._above_items.extend(items)
+        self._render()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # add_over
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def add_over(self, *items : Item[LayoutView]) -> None:
+        self._over_items.extend(items)
+        self._render()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # add_under
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def add_under(self, *items : Item[LayoutView]) -> None:
+        self._under_items.extend(items)
         self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -266,6 +288,7 @@ class Paginator(LayoutView):
                 page_items.append(TextDisplay("\n".join(accumulated)))
 
         items : list[TextDisplay[LayoutView] | VisibleLargeSeparator[LayoutView] | _PageRow | Item[LayoutView]] = [
+            *self._over_items,
             TextDisplay(self._title),
             VisibleLargeSeparator(),
             *page_items,
@@ -276,6 +299,8 @@ class Paginator(LayoutView):
         if self._page_row:
             self._page_row.update_states()
             items.append(self._page_row)
+
+        items.extend(self._under_items)
 
         # ⸻ Add all items to the container if chosen or directly to the view if not.
 

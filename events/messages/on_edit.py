@@ -46,19 +46,44 @@ class MessageEditHandler(commands.Cog):
         after_content     = after.content
         after_attachments = after.attachments
 
-        # ⸻ Block the bot itself
+        # ⸻ Block the bot itself.
 
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Block bots
+        # ⸻ Block bots.
 
         if author.bot:
             return
 
-        # ⸻ Block non-guild messages or messages not in the main guild
+        # ⸻ Block non-guild messages or messages not in the main guild.
 
         if before_guild is None or before_guild.id != MAIN_GUILD_ID:
+            return
+
+        # ⸻ Eval command editing.
+
+        if before_id in eval_message_ids:
+
+            # ⸻ Remove our old reactions.
+
+            if self.bot.user is not None:
+                for reaction in before.reactions:
+                    if reaction.me:
+                        await reaction.remove(self.bot.user)
+
+            # ⸻ Reinvoke the command.
+
+            ctx = await self.bot.get_context(after)
+            await self.bot.invoke(ctx)
+
+            # ⸻ Remove our old response (done after the reinvocation since faster reevaluation is better).
+
+            old_response_id = eval_message_ids.pop(before_id, None)
+            if old_response_id is not None:
+                old_msg = await before_channel.fetch_message(old_response_id)
+                await old_msg.delete()
+
             return
 
         # ⸻ Block non-wapple text in wapple channel
@@ -67,36 +92,12 @@ class MessageEditHandler(commands.Cog):
             await after.delete()
             return
 
-        # ⸻ Eval command editing
-
-        if before_id in eval_message_ids:
-
-            # ⸻ Remove our old reactions
-
-            if self.bot.user is not None:
-                for reaction in before.reactions:
-                    if reaction.me:
-                        await reaction.remove(self.bot.user)
-
-            # ⸻ Reinvoke the command
-
-            ctx = await self.bot.get_context(after)
-            await self.bot.invoke(ctx)
-
-            # ⸻ Remove our old response (done after the reinvocation since faster reevaluation is better)
-
-            if (old_response_id := eval_message_ids.pop(before_id, None)) is not None:
-                old_msg = await before_channel.fetch_message(old_response_id)
-                await old_msg.delete()
-
-            return
-
-        # ⸻ Block nessage logging of directorship channels
+        # ⸻ Block nessage logging of directorship channels.
 
         if is_directorship_channel(before_channel):
             return
 
-        # ⸻ Edit message logging
+        # ⸻ Edit message logging.
 
         before_files = [a.url for a in before.attachments]
         after_files  = [a.url for a in after.attachments]
@@ -129,7 +130,7 @@ class MessageEditHandler(commands.Cog):
                     TextDisplay(
                         (
                             "### Attachments\n"
-                           f"{escape_markdown(format_attachments(after_attachments))}"
+                           f"{format_attachments(after_attachments)}"
                         ),
                     ),
                 )

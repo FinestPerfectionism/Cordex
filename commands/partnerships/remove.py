@@ -3,7 +3,7 @@ from discord import HTTPException
 from bot import Cordex, Interaction, log
 from core.responses import format_send
 from core.state import IMAGE_DIRECTORY, load_partnership_data, save_partnership_data
-from guild_info.partnerships import rebuild_partnership_view
+from guild_info import rebuild_partnership_view
 
 from ._base import get_channel
 

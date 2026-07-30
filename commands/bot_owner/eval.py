@@ -8,13 +8,15 @@ from traceback import format_exc
 from typing import cast
 
 import discord
-from discord import app_commands, ui
+from discord import app_commands
 from discord.ext import commands
 from discord.utils import format_dt, get, utcnow
 
 import constants
-from bot import Context, ContextOrInteraction, Cordex, Interaction, tree
+from bot import Context, ContextOrInteraction, Cordex, Interaction, tree, ui
 from bot.ui import (
+    BaseContainer,
+    BaseLayoutView,
     ButtonSection,
     Container,
     HiddenLargeSeparator,
@@ -111,11 +113,11 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
 
         "View"           : ui.View,
         "LayoutView"     : LayoutView,
-        "BaseLayoutView" : ui.LayoutView,
+        "BaseLayoutView" : BaseLayoutView,
         "Modal"          : ui.Modal,
 
         "Container"     : Container,
-        "BaseContainer" : ui.Container,
+        "BaseContainer" : BaseContainer,
         "Section"       : ui.Section,
         "Separator"     : ui.Separator,
         "ActionRow"     : ui.ActionRow,

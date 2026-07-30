@@ -1,6 +1,6 @@
 from collections.abc import Awaitable, Callable
 from re import compile
-from typing import Self
+from typing import Self, final
 
 from discord import DMChannel, TextChannel, Thread, VoiceChannel
 from discord.app_commands import Choice
@@ -10,6 +10,8 @@ from bot.ui import Button, View, button, green, red
 from core.cog_loader import discover_cogs
 from core.responses import format_message
 from core.utilities import format_values
+
+type _Inter = Callable[[Interaction], Awaitable[None]]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Commands Base
@@ -37,10 +39,11 @@ def _inaccessible_emoji_ids(text : str) -> list[str]:
 
     return inaccessible_ids
 
+@final
 class _NoEmojiAccessView(View):
-    def __init__(self, on_continue : Callable[[Interaction], Awaitable[None]]) -> None:
+    def __init__(self, on_continue : _Inter) -> None:
         super().__init__(timeout = None)
-        self.on_continue : Callable[[Interaction], Awaitable[None]] = on_continue
+        self.on_continue = on_continue
 
     @button(label = "Send", style = green)
     async def btn_send(self, interaction : Interaction, _button : Button[Self]) -> None:
@@ -51,8 +54,8 @@ class _NoEmojiAccessView(View):
         await interaction.response.edit_message(view = self)
         await self.on_continue(interaction)
 
-    @button(label = "End", style = red)
-    async def btn_end(self, interaction : Interaction, _button : Button[Self]) -> None:
+    @button(label = "Abort", style = red)
+    async def btn_abort(self, interaction : Interaction, _button : Button[Self]) -> None:
         for child in self.children:
             if isinstance(child, Button):
                 child.disabled = True
@@ -62,7 +65,7 @@ class _NoEmojiAccessView(View):
 async def emoji_inaccessible(
     interaction : Interaction,
     text        : str,
-    on_continue : Callable[[Interaction], Awaitable[None]],
+    on_continue : _Inter,
 ) -> bool:
     inaccessible_ids = _inaccessible_emoji_ids(text)
 

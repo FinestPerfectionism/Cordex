@@ -31,7 +31,7 @@ log = get_logger("Cordex")
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type _Inter = Callable[["Interaction"], Coroutine[None, None, None]]
+type _Inter = Callable[[Interaction], Coroutine[None, None, None]]
 
 class _ContextKwargs(TypedDict, total = False):
     message : Message
@@ -84,14 +84,14 @@ class _ContextClass(BaseContext["Cordex"]):
         await self.send(view = view)
 
     async def send_modal(self, modal : Modal, /) -> None:
-        async def func(interaction : "Interaction") -> None:
+        async def func(interaction : Interaction) -> None:
             await interaction.response.send_modal(modal)
 
         await self.send_button(func)
 
 
 type Context              = _ContextClass
-type Interaction          = BaseInteraction["Cordex"] | BaseInteraction
+type Interaction          = BaseInteraction[Cordex] | BaseInteraction
 type ContextOrInteraction = Interaction | Context
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

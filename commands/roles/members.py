@@ -43,8 +43,8 @@ async def run_role_members(
     role_label   = "not in" if actual_role_filter == "whodoesnthave" else "in"
 
     _view = Paginator(
-        f"### {person_label} {role_label} {role.mention}",
-        [f"- {member.mention}" for member in filtered] if filtered else ["No members found."],
+        f"### {person_label} {role_label} {role.mention},",
+        [f"- {member.mention} | {member.id}" for member in filtered] if filtered else ["No members found."],
         data_name = person_label.lower(),
         per_page  = 15,
         color     = role.color if role.color.value else COLOR_GREY,

@@ -78,7 +78,7 @@ class MessageDeleteHandler(commands.Cog):
                     TextDisplay(
                         (
                             "### Attachments\n"
-                           f"{escape_markdown(format_attachments(attachments))}"
+                           f"{format_attachments(attachments)}"
                         ),
                     ),
                 )

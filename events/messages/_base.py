@@ -82,4 +82,4 @@ def channel_display(channel : Messageable | GuildChannel) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def format_attachments(attachments : list[Attachment]) -> str:
-    return "\n".join(f"- {attachment.filename} | {attachment.url}" for attachment in attachments)
+    return "\n".join(f"- {escape_markdown(f"{attachment.filename} | {attachment.url}")}" for attachment in attachments)

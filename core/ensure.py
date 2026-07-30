@@ -13,13 +13,13 @@ from constants import (
 )
 from guild_info import (
     HierarchyViewsList,
+    LeaveComponents,
     PartnershipViewsList,
     RuleViewsList,
+    TicketComponents,
+    build_partnership_views,
     ensure_views,
 )
-from guild_info.leave import LeaveComponents
-from guild_info.partnerships import build_partnership_views
-from guild_info.tickets import TicketComponents
 
 from .state import load_partnership_data
 

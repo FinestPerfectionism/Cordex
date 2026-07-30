@@ -12,7 +12,7 @@ from core.state import (
     load_partnership_data,
     save_partnership_data,
 )
-from guild_info.partnerships import rebuild_partnership_view
+from guild_info import rebuild_partnership_view
 
 from ._base import INVITE_REGEX, get_channel
 
