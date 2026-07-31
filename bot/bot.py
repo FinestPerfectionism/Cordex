@@ -133,8 +133,8 @@ class Cordex(commands.Bot):
         color_integers = [int(hex_code, 16) for hex_code in colors]
 
         payload = {
-          "display_name_font_id"   : font_id,
-          "display_name_effect_id" : effect_id,
+          "display_name_font_id"   : font_id.value,
+          "display_name_effect_id" : effect_id.value,
           "display_name_colors"    : color_integers,
         }
         await self.http.request(route, json = payload)
