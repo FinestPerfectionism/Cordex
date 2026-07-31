@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Self, TypedDict, Unpack, final, override
 
 from aiosqlite import Connection, connect
-from discord import Embed, Intents, Message, Status
+from discord import Embed, Guild, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand, Command, Group
 from discord.ext import commands
@@ -123,15 +123,12 @@ class Cordex(commands.Bot):
     async def set_name_style(
         self,
         *,
-        font_id            : DisplayNameFont,
-        effect_id          : DisplayNameEffect,
-        colors             : list[str],
-        ctx_or_interaction : ContextOrInteraction,
+        guild     : Guild,
+        font_id   : DisplayNameFont,
+        effect_id : DisplayNameEffect,
+        colors    : list[str],
     ) -> None:
-        if not ctx_or_interaction.guild:
-            return
-
-        route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = ctx_or_interaction.guild.id)
+        route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = guild.id)
 
         color_integers = [int(hex_code, 16) for hex_code in colors]
 

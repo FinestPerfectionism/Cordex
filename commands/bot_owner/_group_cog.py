@@ -1,7 +1,15 @@
 from typing import final
 
 from discord import TextChannel
-from discord.app_commands import Group, autocomplete, describe, rename
+from discord.app_commands import (
+    Choice,
+    Group,
+    autocomplete,
+    choices,
+    command,
+    describe,
+    rename,
+)
 from discord.ext import commands
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     command as prefix_command,
@@ -20,6 +28,7 @@ from .cogs import (
 from .eval import run_bo_eval
 from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
+from .style import run_bo_style
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
@@ -233,6 +242,53 @@ class BotOwnerCommands(
             message_id,
             channel,
         )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /bot-owner style Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @command(
+        name        = "style",
+        description = "Make the bot change it's server specfiic display name style.",
+    )
+    @describe(
+        font   = "The display name's font.",
+        effect = "The display name's effect.",
+        colors = "The display name's colors.",
+    )
+    @choices(
+        font   = [
+            Choice(name = "Bangers",       value = "bangers"),
+            Choice(name = "Bio Rhyme",     value = "bio_rhyme"),
+            Choice(name = "Cherry Bomb",   value = "cherry_bomb"),
+            Choice(name = "Chicle",        value = "chicle"),
+            Choice(name = "Compagnon",     value = "compagnon"),
+            Choice(name = "Museo Moderno", value = "museo_moderno"),
+            Choice(name = "Neo Castel",    value = "neo_castel"),
+            Choice(name = "Pixelify",      value = "pixelify"),
+            Choice(name = "Ribes",         value = "ribes"),
+            Choice(name = "Sinistre",      value = "sinistre"),
+            Choice(name = "Default",       value = "default"),
+            Choice(name = "Zilla Slab",    value = "zilla_slab"),
+        ],
+        effect = [
+            Choice(name = "Solid",    value = "solid"),
+            Choice(name = "Gradient", value = "gradient"),
+            Choice(name = "Neon",     value = "neon"),
+            Choice(name = "Toon",     value = "toon"),
+            Choice(name = "Pop",      value = "pop"),
+            Choice(name = "Glow",     value = "glow"),
+        ],
+    )
+    @bot_owner_cmd()
+    async def cmd_bo_style(
+        self,
+        interaction : Interaction,
+        font        : str,
+        effect      : str,
+        colors      : str,
+    ) -> None:
+        await run_bo_style(interaction, self.bot, font, effect, colors)
 
 async def setup(bot : Cordex) -> None:
     cog = BotOwnerCommands(bot)
