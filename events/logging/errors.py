@@ -122,10 +122,8 @@ class ErrorLogger(commands.Cog):
 
         if traceback_text:
             embed.description = (
-               f"**Traceback:**\n"
-                "```py\n"
-               f"{traceback_text[:3900]}\n"
-                "```"
+                f"**Traceback:**\n"
+                f"{codeblock(traceback_text[:3900])}"
             )
         else:
             embed.description = None

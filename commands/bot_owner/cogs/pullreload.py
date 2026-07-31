@@ -4,6 +4,7 @@ from bot import Cordex, Interaction, log, tree
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_operation
 from core.responses import format_send
+from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner cog pull-reload Logic
@@ -28,10 +29,8 @@ async def run_bo_cog_pullreload(bot : Cordex, interaction : Interaction) -> None
             interaction,
             title    =  "pull from git",
             subtitle = (
-               f"Failed to pull from git:\n"
-                "```py\n"
-               f"{pull_output[:1800]}\n"
-                "```"
+                f"Failed to pull from git:\n"
+                f"{codeblock(pull_output[:1800])}"
             ),
         )
         return
@@ -60,10 +59,8 @@ async def run_bo_cog_pullreload(bot : Cordex, interaction : Interaction) -> None
             interaction,
             title    = f"reload {amount}",
             subtitle = (
-               f"Pull succeeded. {status}\n"
-                "```py\n"
-               f"{msg[:1800]}\n"
-                "```"
+                f"Pull succeeded. {status}\n"
+                f"{codeblock(msg[:1800])}"
             ),
         )
         return
@@ -73,9 +70,7 @@ async def run_bo_cog_pullreload(bot : Cordex, interaction : Interaction) -> None
         msg_type = "success",
         title    = "reloaded cogs",
         subtitle = (
-           f"Pulled from git and reloaded all cogs.\n"
-            "```py\n"
-           f"{pull_output[:1800]}\n"
-            "```"
+            f"Pulled from git and reloaded all cogs.\n"
+            f"{codeblock(pull_output[:1800])}"
         ),
     )

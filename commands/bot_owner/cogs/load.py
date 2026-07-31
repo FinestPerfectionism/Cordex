@@ -2,6 +2,7 @@ from bot import Cordex, Interaction, log, tree
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
+from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner cog load Logic
@@ -39,10 +40,8 @@ async def run_bo_cog_load(
             interaction,
             title    = "load cog",
             subtitle = (
-               f"Failed to load cog `{cog}`:\n"
-                "```py\n"
-               f"{e}"
-                "```"
+                f"Failed to load cog `{cog}`:\n"
+                f"{codeblock(f"{e}")}"
             ),
         )
         return

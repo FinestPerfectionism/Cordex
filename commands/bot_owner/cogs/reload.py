@@ -2,6 +2,7 @@ from bot import Cordex, Interaction, log, tree
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
+from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner cog reload Logic
@@ -37,10 +38,8 @@ async def run_bo_cog_reload(
                 interaction,
                 title    =  "reload cog",
                 subtitle = (
-                   f"Failed to reload cog `{cog}`:\n"
-                    "```py\n"
-                   f"{e}"
-                    "```"
+                    f"Failed to reload cog `{cog}`:\n"
+                    f"{codeblock(f"{e}")}"
                 ),
             )
             return
@@ -68,10 +67,8 @@ async def run_bo_cog_reload(
             interaction,
             title    = f"reload {amount}",
             subtitle = (
-               f"{status}\n"
-                "```py\n"
-               f"{msg[:1800]}\n"
-                "```"
+                f"{status}\n"
+                f"{codeblock(msg[:1800])}"
             ),
         )
         return
