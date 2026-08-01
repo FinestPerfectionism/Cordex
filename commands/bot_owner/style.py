@@ -28,11 +28,11 @@ async def run_bo_style(
     is_valid = bool(COLOR_PATTERN.match(colors))
     has_dash = "-" in colors
 
-    if not is_valid or (effect == "solid" and has_dash) or (effect != "solid" and not has_dash):
+    if not is_valid or (effect == "gradient" and not has_dash) or (effect != "gradient" and has_dash):
         error = (
-            "Gradient must be of the form `ABCDEF`."
-            if effect == "solid" else
             "Gradient must be of the form `ABCDEF-123456`."
+            if effect == "gradient" else
+            "Color must be of the form `ABCDEF`."
         )
 
         await send_bad_argument(

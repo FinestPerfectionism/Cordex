@@ -11,15 +11,15 @@ from discord import Color
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class DisplayNameFont(Enum):
-    bangers       = 1
-    bio_rhyme     = 2
+    bangers       = 1  # Unimplemented
+    bio_rhyme     = 2  # Unimplemented
     cherry_bomb   = 3
     chicle        = 4
-    compagnon     = 5
+    compagnon     = 5  # Unimplemented
     museo_moderno = 6
     neo_castel    = 7
     pixelify      = 8
-    ribes         = 9
+    ribes         = 9  # Unimplemented
     sinistre      = 10
     default       = 11
     zilla_slab    = 12
@@ -31,7 +31,7 @@ class DisplayNameEffect(Enum):
     neon     = 3
     toon     = 4
     pop      = 5
-    glow     = 6
+    glow     = 6  # Unimplemented
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Colors

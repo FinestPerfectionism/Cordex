@@ -1,8 +1,9 @@
 from typing import final
 
-from discord import TextChannel
+from discord import Message
 from discord.app_commands import (
     Choice,
+    ContextMenu,
     Group,
     autocomplete,
     choices,
@@ -26,7 +27,14 @@ from .cogs import (
     run_bo_cog_unload,
 )
 from .eval import run_bo_eval
-from .messages import run_bo_messages_delete, run_bo_messages_edit, run_bo_messages_send
+from .messages import (
+    run_bo_messages_delete,
+    run_bo_messages_delete_menu,
+    run_bo_messages_edit,
+    run_bo_messages_edit_menu,
+    run_bo_messages_reply_menu,
+    run_bo_messages_send,
+)
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 from .style import run_bo_style
 
@@ -42,7 +50,27 @@ class BotOwnerCommands(
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot = bot
+        self.bot  = bot
+        self.tree = bot.tree
+
+        self.tree.add_command(
+            ContextMenu(
+                name     = "Reply to Message",
+                callback = self.menu_bo_messages_reply,
+            ),
+        )
+        self.tree.add_command(
+            ContextMenu(
+                name     = "Eidt Message",
+                callback = self.menu_bo_messages_edit,
+            ),
+        )
+        self.tree.add_command(
+            ContextMenu(
+                name     = "Delete Message",
+                callback = self.menu_bo_messages_delete,
+            ),
+        )
 
     cog     : Group = Group(
         name        = "cog",
@@ -166,7 +194,6 @@ class BotOwnerCommands(
     @describe(
         text     = "The text to send.",
         reply_id = "The ID of the message to reply to.",
-        channel  = "The channel to send the message in.",
         ping     = "Whether to mention the user upon replying. Does nothing if reply-id is None.",
     )
     @rename(reply_id = "reply-id")
@@ -176,7 +203,6 @@ class BotOwnerCommands(
         interaction : Interaction,
         text        : str,
         reply_id    : str         | None = None,
-        channel     : TextChannel | None = None,
         *,
         ping        : bool        | None = True,
     ) -> None:
@@ -184,9 +210,15 @@ class BotOwnerCommands(
             interaction,
             text,
             reply_id,
-            channel,
             ping = ping,
         )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Reply to Message — Message Menu
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def menu_bo_messages_reply(self, interaction : Interaction, message : Message) -> None:
+        await run_bo_messages_reply_menu(interaction, message)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner message edit Command
@@ -199,7 +231,6 @@ class BotOwnerCommands(
     @describe(
         text       = "The new text for the message.",
         message_id = "The ID of the message to edit.",
-        channel    = "The channel where the message is located.",
     )
     @rename(message_id = "message-id")
     @bot_owner_cmd()
@@ -208,14 +239,15 @@ class BotOwnerCommands(
         interaction : Interaction,
         text        : str,
         message_id  : str,
-        channel     : TextChannel | None = None,
     ) -> None:
-        await run_bo_messages_edit(
-            interaction,
-            text,
-            message_id,
-            channel,
-        )
+        await run_bo_messages_edit(interaction, text, message_id)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Edit Message — Message Menu
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def menu_bo_messages_edit(self, interaction : Interaction, message : Message) -> None:
+        await run_bo_messages_edit_menu(interaction, message)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner message delete Command
@@ -225,23 +257,22 @@ class BotOwnerCommands(
         name        = "delete",
         description = "Make the bot delete one of its own messages.",
     )
-    @describe(
-        message_id = "The ID of the message to delete.",
-        channel    = "The channel where the message is located.",
-    )
+    @describe(message_id = "The ID of the message to delete.")
     @rename(message_id = "message-id")
     @bot_owner_cmd()
     async def cmd_bo_messages_delete(
         self,
         interaction : Interaction,
         message_id  : str,
-        channel     : TextChannel | None = None,
     ) -> None:
-        await run_bo_messages_delete(
-            interaction,
-            message_id,
-            channel,
-        )
+        await run_bo_messages_delete(interaction, message_id)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Delete Message — Message Menu
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def menu_bo_messages_delete(self, interaction : Interaction, message : Message) -> None:
+        await run_bo_messages_delete_menu(interaction, message)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner style Command
@@ -258,15 +289,15 @@ class BotOwnerCommands(
     )
     @choices(
         font   = [
-            Choice(name = "Bangers",       value = "bangers"),
-            Choice(name = "Bio Rhyme",     value = "bio_rhyme"),
+            # Choice(name = "Bangers",       value = "bangers"),
+            # Choice(name = "Bio Rhyme",     value = "bio_rhyme"),
             Choice(name = "Cherry Bomb",   value = "cherry_bomb"),
             Choice(name = "Chicle",        value = "chicle"),
-            Choice(name = "Compagnon",     value = "compagnon"),
+            # Choice(name = "Compagnon",     value = "compagnon"),
             Choice(name = "Museo Moderno", value = "museo_moderno"),
             Choice(name = "Neo Castel",    value = "neo_castel"),
             Choice(name = "Pixelify",      value = "pixelify"),
-            Choice(name = "Ribes",         value = "ribes"),
+            # Choice(name = "Ribes",         value = "ribes"),
             Choice(name = "Sinistre",      value = "sinistre"),
             Choice(name = "Default",       value = "default"),
             Choice(name = "Zilla Slab",    value = "zilla_slab"),
@@ -277,7 +308,7 @@ class BotOwnerCommands(
             Choice(name = "Neon",     value = "neon"),
             Choice(name = "Toon",     value = "toon"),
             Choice(name = "Pop",      value = "pop"),
-            Choice(name = "Glow",     value = "glow"),
+            # Choice(name = "Glow",     value = "glow"),
         ],
     )
     @bot_owner_cmd()
