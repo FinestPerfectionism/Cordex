@@ -1,7 +1,7 @@
 from discord import Forbidden, HTTPException, Message, NotFound
 
 from bot import Interaction
-from commands.bot_owner._base import TextChannelTypes
+from commands.bot_owner._base import TextChannelTypes, check_if_bo
 from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import codeblock
 
@@ -41,6 +41,9 @@ async def run_bo_messages_delete(interaction : Interaction, message_id : str) ->
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_messages_delete_menu(interaction : Interaction, message : Message) -> None:
+    if not await check_if_bo(interaction):
+        return
+
     try:
         await run_bo_messages_delete(
             interaction,

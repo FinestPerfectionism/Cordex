@@ -8,8 +8,11 @@ from discord.app_commands import Choice
 from bot import Interaction, bot
 from bot.ui import Button, View, button, green, red
 from core.cog_loader import discover_cogs
+from core.exceptions import send_bad_permissions_command
 from core.responses import format_message
 from core.utilities import format_values
+
+from constants import BOT_OWNER_ID
 
 type _Inter = Callable[[Interaction], Awaitable[None]]
 
@@ -101,3 +104,14 @@ async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Ch
         Choice(name = cog, value = cog)
         for cog in get_cogs() if current.lower() in cog.lower()
     ][:25]
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Raw Bot-Owner Check
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+async def check_if_bo(interaction : Interaction) -> bool:
+    if interaction.user.id == BOT_OWNER_ID:
+        return True
+
+    await send_bad_permissions_command(interaction)
+    return False

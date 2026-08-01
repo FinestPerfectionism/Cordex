@@ -6,7 +6,7 @@ from discord.ui import Label
 
 from bot import Interaction
 from bot.ui import Checkbox, Modal, TextInput
-from commands.bot_owner._base import TextChannelTypes, emoji_inaccessible
+from commands.bot_owner._base import TextChannelTypes, check_if_bo, emoji_inaccessible
 from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import codeblock
 
@@ -75,6 +75,9 @@ async def run_bo_messages_send(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_messages_reply_menu(interaction : Interaction, message : Message) -> None:
+    if not await check_if_bo(interaction):
+        return
+
     @final
     class MessageModal(Modal, title = "Reply to Message"):
         def __init__(self) -> None:
