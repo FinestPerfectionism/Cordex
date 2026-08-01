@@ -7,12 +7,11 @@ from discord.app_commands import Choice
 
 from bot import Interaction, bot
 from bot.ui import Button, View, button, green, red
+from constants import BOT_OWNER_ID
 from core.cog_loader import discover_cogs
 from core.exceptions import send_bad_permissions_command
 from core.responses import format_message
 from core.utilities import format_values
-
-from constants import BOT_OWNER_ID
 
 type _Inter = Callable[[Interaction], Awaitable[None]]
 
