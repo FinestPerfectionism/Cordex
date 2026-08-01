@@ -58,6 +58,10 @@ async def run_bo_messages_edit_menu(interaction : Interaction, message : Message
     if not await check_if_bo(interaction):
         return
 
+    if message.author != interaction.client.user:
+        await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I can't (and shouldn't) edit it."})
+        return
+
     @final
     class MessageModal(Modal, title = "Edit Message"):
         def __init__(self) -> None:

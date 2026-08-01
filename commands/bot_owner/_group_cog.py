@@ -61,7 +61,7 @@ class BotOwnerCommands(
         )
         self.tree.add_command(
             ContextMenu(
-                name     = "Eidt Message",
+                name     = "Edit Message",
                 callback = self.menu_bo_messages_edit,
             ),
         )

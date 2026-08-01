@@ -17,9 +17,9 @@ from core.utilities import codeblock
 async def run_bo_messages_send(
     interaction : Interaction,
     text        : str,
-    reply_id    : str         | None = None,
+    reply_id    : str  | None = None,
     *,
-    ping        : bool        | None = True,
+    ping        : bool | None = True,
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 
@@ -85,7 +85,7 @@ async def run_bo_messages_reply_menu(interaction : Interaction, message : Messag
             self._ping = Checkbox[Self](default = True)
             self.ping  = Label[Self](
                 text        = "Mention Author",
-                description = "The text to reply with.",
+                description = "Whether to mention the user.",
                 component   = self._ping,
             )
 
@@ -96,7 +96,7 @@ async def run_bo_messages_reply_menu(interaction : Interaction, message : Messag
             )
             self.text  = Label[Self](
                 text        = "Message",
-                description = "Whether to mention the user.",
+                description = "The text to reply with.",
                 component   = self._text,
             )
 
