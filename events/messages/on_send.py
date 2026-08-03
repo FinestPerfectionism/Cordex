@@ -75,7 +75,7 @@ class MessageSendHandler(commands.Cog):
 
                 if target.attachments:
                     items = [
-                        MediaGalleryItem(media = attachment.url)
+                        MediaGalleryItem(attachment.url)
                         for attachment in target.attachments
                         if attachment.content_type and attachment.content_type.startswith(("image/", "video/"))
                     ]

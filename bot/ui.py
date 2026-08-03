@@ -23,7 +23,6 @@ from discord.ui import (
     Section,
     Select,
     Separator,
-    TextDisplay,
     TextInput,
     Thumbnail,
     UserSelect,
@@ -33,6 +32,7 @@ from discord.ui import (
 )
 from discord.ui import Container as BaseContainer
 from discord.ui import LayoutView as BaseLayoutView
+from discord.ui import TextDisplay as BaseTextDisplay
 
 __all__ = [
     "ActionRow",
@@ -54,7 +54,6 @@ __all__ = [
     "Section",
     "Select",
     "Separator",
-    "TextDisplay",
     "TextInput",
     "Thumbnail",
     "UserSelect",
@@ -66,6 +65,14 @@ __all__ = [
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot UI
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# TextDisplay
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class TextDisplay[V : LayoutView](BaseTextDisplay[V]):
+    def __init__(self, content : str, /) -> None:
+        super().__init__(content)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # LayoutView
