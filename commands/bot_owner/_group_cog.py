@@ -286,7 +286,7 @@ class BotOwnerCommands(
         description = "Reset the bot's server specfiic display name style.",
     )
     @describe(branded = "Whether the reset should be the bot's branding instead of normal font. Defaults to True.")
-    async def cmd_bo_style_reset(self, interaction : Interaction, *, branded : bool) -> None:
+    async def cmd_bo_style_reset(self, interaction : Interaction, *, branded : bool | None = None) -> None:
         await run_bo_style_reset(
             interaction = interaction,
             bot         = self.bot,

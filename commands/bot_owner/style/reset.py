@@ -11,8 +11,10 @@ async def run_bo_style_reset(
     interaction : Interaction,
     bot         : Cordex,
     *,
-    branded     : bool = True,
+    branded     : bool | None = True,
 ) -> None:
+    if branded is None:
+        branded = True
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 

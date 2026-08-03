@@ -3,7 +3,7 @@ from typing import Self, final
 from discord import AllowedMentions, Message
 from discord.abc import Messageable
 from discord.ext import commands
-from discord.utils import escape_markdown, format_dt, utcnow
+from discord.utils import format_dt, utcnow
 
 from bot import Cordex
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
@@ -12,9 +12,9 @@ from core.utilities import format_table
 
 from . import (
     channel_display,
+    clean_and_truncate,
     format_attachments,
     is_directorship_channel,
-    truncate_text,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -35,14 +35,9 @@ class MessageDeleteHandler(commands.Cog):
         channel     = message.channel
         guild       = message.guild
 
-        # ⸻ Block the bot itself
+        # ⸻ Block bots and the bot itself.
 
-        if author == self.bot.user:
-            return
-
-        # ⸻ Block bots
-
-        if author.bot:
+        if author.bot or author == self.bot.user:
             return
 
         # ⸻ Block non-guild messages or messages not in the main guild
@@ -88,7 +83,7 @@ class MessageDeleteHandler(commands.Cog):
                 TextDisplay(
                     (
                         "### Content\n"
-                       f"{truncate_text(escape_markdown(content) or "[No content, likely an embed or attachment]")}"
+                       f"{clean_and_truncate((content) or "[No content, likely an embed or attachment]")}"
                     ),
                 ),
             )

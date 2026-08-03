@@ -12,6 +12,7 @@ from discord.abc import GuildChannel, Messageable
 from discord.utils import escape_markdown
 
 from constants import ARROW_EMOJI, DIRECTORSHIP_CATEGORY_ID
+from core.utilities import truncate
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Messages Handling Base
@@ -38,11 +39,11 @@ def is_valid_wapple_chain(content : str) -> bool:
     return bool(WAPPLE_PATTERN.fullmatch(content.strip()))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# truncate_text
+# clean_and_truncate
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def truncate_text(text : str, max_length : int = 2048) -> str:
-    return (escape_markdown(text)[:max_length - 3] + "...") if len(text) > max_length else text
+def clean_and_truncate(text : str) -> str:
+    return escape_markdown(truncate(text))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # is_directorship_channel

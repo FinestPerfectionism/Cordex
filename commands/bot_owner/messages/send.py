@@ -2,10 +2,9 @@ from asyncio import sleep
 from typing import Self, final, override
 
 from discord import Forbidden, HTTPException, Message, NotFound, TextStyle
-from discord.ui import Label
 
 from bot import Interaction
-from bot.ui import Checkbox, Modal, TextInput
+from bot.ui import Checkbox, Label, Modal, TextInput
 from commands.bot_owner._base import TextChannelTypes, check_if_bo, emoji_inaccessible
 from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import codeblock

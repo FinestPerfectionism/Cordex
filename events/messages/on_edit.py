@@ -3,7 +3,7 @@ from typing import Self, final
 from discord import AllowedMentions, Message
 from discord.abc import Messageable
 from discord.ext import commands
-from discord.utils import escape_markdown, format_dt, utcnow
+from discord.utils import format_dt, utcnow
 
 from bot import Cordex
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
@@ -19,9 +19,9 @@ from core.utilities import format_table
 from . import (
     WAPPLE_PATTERN,
     channel_display,
+    clean_and_truncate,
     format_attachments,
     is_directorship_channel,
-    truncate_text,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -46,14 +46,9 @@ class MessageEditHandler(commands.Cog):
         after_content     = after.content
         after_attachments = after.attachments
 
-        # ⸻ Block the bot itself.
+        # ⸻ Block bots and the bot itself.
 
         if author.bot or author == self.bot.user:
-            return
-
-        # ⸻ Block bots.
-
-        if author.bot:
             return
 
         # ⸻ Block non-guild messages or messages not in the main guild.
@@ -116,8 +111,8 @@ class MessageEditHandler(commands.Cog):
                 TextDisplay(
                     format_table(
                         {
-                            "Author"      : f"{author.mention} | {author.id}",
-                            "Channel"     : channel_display(after.channel),
+                            "Author"  : f"{author.mention} | {author.id}",
+                            "Channel" : channel_display(after.channel),
                         },
                     ),
                 ),
@@ -140,13 +135,13 @@ class MessageEditHandler(commands.Cog):
                 TextDisplay(
                     (
                         "### Before\n"
-                       f"{truncate_text(escape_markdown(before_content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
+                       f"{clean_and_truncate(before_content) or "[No content, likely an embed or attachment]"}"
                     ),
                 ),
                 TextDisplay(
                     (
                         "### After\n"
-                       f"{truncate_text(escape_markdown(after_content) or "[No content, likely an embed or attachment]", max_length = 1024)}"
+                       f"{clean_and_truncate(after_content) or "[No content, likely an embed or attachment]"}"
                     ),
                 ),
             )

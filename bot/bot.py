@@ -2,7 +2,7 @@ from asyncio import to_thread
 from collections.abc import Callable, Coroutine
 from logging import getLogger as get_logger
 from pathlib import Path
-from typing import Self, TypedDict, Unpack, final, override
+from typing import Self, final, override
 
 from aiosqlite import Connection, connect
 from discord import Embed, Guild, Intents, Message, Status
@@ -33,14 +33,9 @@ log = get_logger("Cordex")
 
 type _Inter = Callable[[Interaction], Coroutine[None, None, None]]
 
-class _ContextKwargs(TypedDict, total = False):
-    message : Message
-    bot     : "Cordex"
-    view    : StringView
-
 class _ContextClass(BaseContext["Cordex"]):
-    def __init__(self, **kwargs : Unpack[_ContextKwargs]) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, message : Message, bot : "Cordex", view : StringView) -> None:
+        super().__init__(message = message, bot = bot, view = view)
 
     async def send_button(self, callback : _Inter, /) -> None:
         @final

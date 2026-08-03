@@ -135,3 +135,10 @@ def codeblock(code : str, language : str | None = "py") -> str:
        f"{code}\n"
         "```"
     )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# truncate
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def truncate(text : str, length : int = 2000) -> str:
+    return (text)[:length - 3] + "..." if len(text) > length else text

@@ -1,9 +1,18 @@
-from typing import final
+from re import compile
+from typing import Self, final
 
-from discord import Message, Thread
+from discord import AllowedMentions, MediaGalleryItem, Message, Thread
+from discord.abc import Messageable
 from discord.ext import commands
 
 from bot import Cordex
+from bot.ui import (
+    Container,
+    LayoutView,
+    MediaGallery,
+    TextDisplay,
+    VisibleLargeSeparator,
+)
 from constants import (
     DIRECTOR_TASKS_CHANNEL_ID,
     DIRECTORS_ROLE_ID,
@@ -12,6 +21,8 @@ from constants import (
 )
 
 from . import WAPPLE_PATTERN
+
+MESSAGE_LINK_PATTERN = compile(r"https://discord(?:app)?\.com/channels/(\d+|@me)/(\d+)/(\d+)")
 
 FACTOIDS = {
     "bump" : (
@@ -39,20 +50,61 @@ class MessageSendHandler(commands.Cog):
         channel = message.channel
         guild   = message.guild
 
-        # ⸻ Block the bot itself.
+        # ⸻ Block bots and the bot itself.
 
         if author.bot or author == self.bot.user:
-            return
-
-        # ⸻ Block bots.
-
-        if author.bot:
             return
 
         # ⸻ Block non-guild messages or messages not in the main guild.
 
         if guild is None or guild.id != MAIN_GUILD_ID:
             return
+
+        # ⸻ Provide a preview for message links.
+
+        @final
+        class Preview(LayoutView):
+            def __init__(self, *, target : Message, link : str) -> None:
+                super().__init__()
+                author = target.author
+
+                self.container = Container[Self](TextDisplay(f"### {author.mention} | {author.id}: {link}"), VisibleLargeSeparator())
+
+                if target.content:
+                    self.container.add_text(target.content)
+
+                if target.attachments:
+                    items = [
+                        MediaGalleryItem(media = attachment.url)
+                        for attachment in target.attachments
+                        if attachment.content_type and attachment.content_type.startswith(("image/", "video/"))
+                    ]
+
+                    if items:
+                        self.container.add_item(MediaGallery(*items))
+
+                self.add_item(self.container)
+
+        match = MESSAGE_LINK_PATTERN.search(content)
+        if match:
+            channel_id = int(match.group(2))
+            message_id = int(match.group(3))
+
+            target_channel = await self.bot.fetch_channel(channel_id)
+
+            if not isinstance(target_channel, Messageable):
+                return
+
+            target_message = await target_channel.fetch_message(message_id)
+
+            if not target_message.content and not target_message.attachments:
+                return
+
+            await message.reply(
+                view             = Preview(target = target_message, link = content),
+                mention_author   = False,
+                allowed_mentions = AllowedMentions.none(),
+            )
 
         # ⸻ Block non-wapple text in wapple channel.
 

@@ -45,10 +45,7 @@ async def run_bo_messages_delete_menu(interaction : Interaction, message : Messa
         return
 
     try:
-        await run_bo_messages_delete(
-            interaction,
-            message_id = str(message.id),
-        )
+        await run_bo_messages_delete(interaction, message_id = str(message.id))
     except Exception as e:
         await send_bad_operation(
             interaction,

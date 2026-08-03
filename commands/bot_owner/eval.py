@@ -45,7 +45,13 @@ from constants import (
 from core.exceptions import send_bad_permissions_command
 from core.paginator import Paginator
 from core.responses import format_message, format_send
-from core.utilities import codeblock, format_command, format_table, format_values
+from core.utilities import (
+    codeblock,
+    format_command,
+    format_table,
+    format_values,
+    truncate,
+)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
@@ -93,6 +99,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
         "utcnow"         : utcnow,
         "get"            : get,
         "codeblock"      : codeblock,
+        "truncate"       : truncate,
         "format_dt"      : format_dt,
         "format_command" : format_command,
         "format_values"  : format_values,
