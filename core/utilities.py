@@ -31,7 +31,7 @@ def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
 # format_command
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_command(path : str) -> str:
+def format_command(path : str, /) -> str:
     parts : list[str] = path.strip().split()
 
     if not parts:
@@ -56,7 +56,7 @@ def format_command(path : str) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def format_table(table : dict[str, str], /, *, padding : int = 1) -> str:
-    biggest_key = max((len(str(key)) for key in table), default = 0)
+    biggest_key = max([len(str(key)) for key in table], default = 0)
     width       = biggest_key + padding
 
     rows = [
@@ -72,6 +72,7 @@ def format_table(table : dict[str, str], /, *, padding : int = 1) -> str:
 
 def format_values(
     items    : list[str],
+    /,
     *,
     divider  : str  = ", ",
     use_conj : bool = True,
@@ -95,6 +96,7 @@ def format_values(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def check_hierarchy(
+    *,
     actor      : Member,
     target     : Member,
     comparison : Literal[">", "<", "=", ">=", "<="],
@@ -129,7 +131,7 @@ def check_hierarchy(
 # codeblock
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def codeblock(code : str, language : str | None = "py") -> str:
+def codeblock(code : str, /, *, language : str | None = "py") -> str:
     return (
        f"```{language or ""}\n"
        f"{code}\n"
@@ -140,5 +142,5 @@ def codeblock(code : str, language : str | None = "py") -> str:
 # truncate
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def truncate(text : str, length : int = 2000) -> str:
+def truncate(text : str, /, *, length : int = 2000) -> str:
     return (text)[:length - 3] + "..." if len(text) > length else text

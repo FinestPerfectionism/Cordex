@@ -31,11 +31,10 @@ class BaseRemovePayload:
 
 @dataclass
 class BaseAddPayload:
-    moderator  : Member
-    target     : Member
-    reason     : str
-    dm_user    : bool
-    appealable : bool
+    moderator : Member
+    target    : Member
+    reason    : str
+    dm_user   : bool
 
 @dataclass
 class BanAddPayload(BaseAddPayload):

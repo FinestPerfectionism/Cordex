@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher
 from operator import itemgetter
-from typing import cast, final, override
+from typing import Self, cast, final, override
 
 from discord import SelectOption
 from discord.app_commands import Command, command, describe
@@ -108,7 +108,7 @@ def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
                 VisibleLargeSeparator(),
                 TextDisplay("## Arguments"),
                 *(
-                    TextDisplay(f"`{param.name} | {label_for_parameter(param)}:` {metadata.arguments.get(param.name, param.description) or '*No description provided.*'}")
+                    TextDisplay(f"`{param.name} | {label_for_parameter(param)}:` {metadata.arguments.get(param.name, param.description) or "*No description provided.*"}")
                     for param in cmd.parameters
                 ),
             ],
@@ -124,7 +124,7 @@ class _InfoView(LayoutView):
 
 @final
 class _QueryModal(Modal, title = "Query"):
-    text_input : TextInput[LayoutView] = TextInput(label = "Enter a command name.")
+    text_input : TextInput[Self] = TextInput(label = "Enter a command name.")
 
     def __init__(self, cmds : CommandList) -> None:
         super().__init__()
@@ -342,7 +342,7 @@ class HelpCommand(commands.Cog):
                            f"## {DEVELOPER_EMOJI} My Developer\n"
                            f"My developer is <@{BOT_OWNER_ID}>. I was created and am actively maintained by him.\n"
                            f"## {STANDSTILL_EMOJI} What I Do\n"
-                            "- **Advanced Moderation:** Staff can moderate multiple users at once with advanced logging, appeals, and state. I also have a ticket system for user support.\n"
+                            "- **Advanced Moderation:** Staff can moderate multiple users at once with advanced logging and state. I also have a ticket system for user support.\n"
                             "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
                             "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
                            f"## {CONTESTED_EMOJI} Issues?\n"

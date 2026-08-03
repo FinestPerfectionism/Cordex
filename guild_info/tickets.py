@@ -1,4 +1,4 @@
-from typing import cast, override
+from typing import Self, cast, override
 
 from discord import ChannelType, Member, SelectOption, TextChannel
 
@@ -25,7 +25,7 @@ class _TicketModal(Modal, title = "Open Ticket"):
     def __init__(self) -> None:
         super().__init__(timeout = None)
 
-        self.select : Select[Modal] = Select(
+        self.select : Select[Self] = Select(
             placeholder = "Which team would you like to contact?",
             options     = [
                 SelectOption(
@@ -44,11 +44,12 @@ class _TicketModal(Modal, title = "Open Ticket"):
             ],
         )
 
-        self.label : Label[Modal] = Label(
+        self.label : Label[Self] = Label(
             text        = "Team",
             description = "Select which staff team to contact.",
             component   = self.select,
         )
+        self.add_item(self.label)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:

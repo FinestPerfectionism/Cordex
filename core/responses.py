@@ -60,10 +60,10 @@ def _build_title(msg_type : _MessageType, title : str, *, override : bool = Fals
         return f"{_emoji_match(msg_type)} **{prefix} {clean_title}**"
     return f"{_emoji_match(msg_type)} **{clean_title}**"
 
-def build_footer(footer : str | None) -> str | None:
+def _build_footer(footer : str | None) -> str | None:
     if footer is None:
         return None
-    return f"{footer.rstrip('. ')}."
+    return f"{footer.rstrip(". ")}."
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Internal Send
@@ -130,7 +130,7 @@ def format_message(
     if subtitle:
         lines.append(subtitle)
 
-    footer_text = build_footer(footer)
+    footer_text = _build_footer(footer)
     if footer_text:
         lines.append(f"-# {footer_text}")
 

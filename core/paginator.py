@@ -8,6 +8,7 @@ from bot.ui import (
     Button,
     Container,
     Item,
+    Label,
     LayoutView,
     Modal,
     TextDisplay,
@@ -38,12 +39,17 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
         max_digits = len(str(len(paginator.pages)))
 
         self.page_input = TextInput(
-            label       = "Enter a page number.",
             placeholder = "ex: 5",
             min_length  = 1,
             max_length  = max_digits,
         )
-        self.add_item(self.page_input)
+        self.add_item(
+            Label(
+                text        = "Enter a page number.",
+                description = "Enter a positive integer greater than or equal to one.",
+                component   = self.page_input,
+            ),
+        )
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:

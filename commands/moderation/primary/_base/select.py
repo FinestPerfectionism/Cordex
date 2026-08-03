@@ -99,11 +99,10 @@ def _parse_length(raw : str) -> int:
     return total
 
 class _StateEntry(TypedDict, total = False):
-    reason     : str
-    length     : str
-    appealable : bool
-    dm_user    : bool
-    file       : str | None
+    reason  : str
+    length  : str
+    dm_user : bool
+    file    : str | None
 
 
 type _StateMap = dict[int, _StateEntry]
@@ -120,9 +119,6 @@ def _build_member_label(member : Member, state : _StateEntry | None, action_type
         table_data["Length"] = str(state.get("length", "N/A"))
 
     table_data["DM"] = str(state.get("dm_user", False))
-
-    if _wants_extra(action_type):
-        table_data["Appealable"] = str(state.get("appealable", False))
 
     if "file" in state:
         table_data["File"] = str(state["file"])
@@ -189,34 +185,42 @@ class _ReasonModal(Modal):
             editor.state_map.get(0, {}),
         )
 
-        self.reason_input : TextInput[Modal] = TextInput[Modal](
-            label       = "Reason",
+        self.reason_input : TextInput[Self] = TextInput[Self](
             placeholder = 'ex: "nsfw spam"',
             default     = str(existing.get("reason", "")),
             required    = True,
         )
-        self.dm_checkbox : Checkbox[Modal] = Checkbox(default = bool(existing.get("dm_user", False)))
+        self.dm_checkbox : Checkbox[Self] = Checkbox(default = bool(existing.get("dm_user", False)))
 
-        self.length_input        : TextInput[Modal]  | None = None
-        self.appealable_checkbox : Checkbox[Modal]   | None = None
-        self.proof_fileupload    : FileUpload[Modal] | None = None
+        self.length_input     : TextInput[Self]  | None = None
+        self.proof_fileupload : FileUpload[Self] | None = None
 
         if _wants_length(action_type):
-            self.length_input = TextInput[Modal](
-                label       = "Length",
+            self.length_input = TextInput[Self](
                 placeholder = 'ex: "30m, 2d"' if action_type == "Timeout Add" else 'ex: "30m, 2d" — Permanant if empty.',
                 default     = str(existing.get("length", "")),
                 required    = (action_type == "Timeout Add"),
             )
 
         if _wants_extra(action_type):
-            self.appealable_checkbox = Checkbox(default = bool(existing.get("appealable", False)))
-            self.proof_fileupload    = FileUpload(required = False, max_values = 10)
+            self.proof_fileupload = FileUpload(required = False, max_values = 10)
 
-        self.add_item(self.reason_input)
+        self.add_item(
+            Label(
+                text        = "Reason",
+                description = "The reason for the action.",
+                component   = self.reason_input,
+            ),
+        )
 
         if self.length_input is not None:
-            self.add_item(self.length_input)
+            self.add_item(
+                Label(
+                    text        = "Length",
+                    description = "The length of the action.",
+                    component   = self.length_input,
+                ),
+            )
 
         self.add_item(
             Label(
@@ -225,15 +229,6 @@ class _ReasonModal(Modal):
                 component   = self.dm_checkbox,
             ),
         )
-
-        if self.appealable_checkbox is not None:
-            self.add_item(
-                Label(
-                    text        = "Appealable",
-                    description = "Whether the action is appealable. *DM must be set to true for the action to be appealable!",
-                    component   = self.appealable_checkbox,
-                ),
-            )
 
         if self.proof_fileupload is not None:
             self.add_item(
@@ -246,17 +241,6 @@ class _ReasonModal(Modal):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-
-        # ⸻ You cannot make an action appealable without DMing the user.
-
-        if self.appealable_checkbox is not None and self.appealable_checkbox.value and not self.dm_checkbox.value:
-            await format_send(
-                interaction,
-                msg_type = "warning",
-                title    = "compile window",
-                subtitle = "You cannot make an action appealable without DMing the user.",
-            )
-            return
 
         # ⸻ Improper time signature or exceeds maximum duration.
 
@@ -291,9 +275,6 @@ class _ReasonModal(Modal):
 
         if self.length_input is not None:
             entry["length"] = self.length_input.value
-
-        if self.appealable_checkbox is not None:
-            entry["appealable"] = self.appealable_checkbox.value
 
         if self.proof_fileupload is not None:
             filename      : str | None = next((f.filename for f in self.proof_fileupload.values), None)
@@ -388,12 +369,11 @@ class _EditorView(LayoutView):
 
                         ban_add_payloads.append(
                             BanAddPayload(
-                                moderator  = moderator,
-                                target     = member,
-                                reason     = entry.get("reason", ""),
-                                dm_user    = bool(entry.get("dm_user", False)),
-                                appealable = bool(entry.get("appealable", False)),
-                                length     = _parse_length(length) if length else None,
+                                moderator = moderator,
+                                target    = member,
+                                reason    = entry.get("reason", ""),
+                                dm_user   = bool(entry.get("dm_user", False)),
+                                length    = _parse_length(length) if length else None,
                             ),
                         )
 
@@ -445,12 +425,11 @@ class _EditorView(LayoutView):
 
                         quarantine_add_payloads.append(
                             QuarantineAddPayload(
-                                moderator  = moderator,
-                                target     = member,
-                                reason     = entry.get("reason", ""),
-                                dm_user    = bool(entry.get("dm_user", False)),
-                                appealable = bool(entry.get("appealable", False)),
-                                length     = _parse_length(length) if length else None,
+                                moderator = moderator,
+                                target    = member,
+                                reason    = entry.get("reason", ""),
+                                dm_user   = bool(entry.get("dm_user", False)),
+                                length    = _parse_length(length) if length else None,
                             ),
                         )
 
@@ -481,12 +460,11 @@ class _EditorView(LayoutView):
 
                         timeout_add_payloads.append(
                             TimeoutAddPayload(
-                                moderator  = moderator,
-                                target     = member,
-                                reason     = entry.get("reason", ""),
-                                dm_user    = bool(entry.get("dm_user", False)),
-                                appealable = bool(entry.get("appealable", False)),
-                                length     = _parse_length(entry.get("length", "")),
+                                moderator = moderator,
+                                target    = member,
+                                reason    = entry.get("reason", ""),
+                                dm_user   = bool(entry.get("dm_user", False)),
+                                length    = _parse_length(entry.get("length", "")),
                             ),
                         )
 
@@ -546,7 +524,6 @@ class _EditorView(LayoutView):
                     table_data["DM Sent"] = dm_user
 
                     if _wants_extra(self.action_type):
-                        table_data["Appealable"] = "Yes" if entry.get("appealable") else "No"
                         table_data["Attachment"] = escape_markdown(entry.get("file") or "None")
 
                     summary_lines.append(
@@ -648,7 +625,11 @@ class ModerationTargetView(View):
                     )
                     return
 
-                ineligible = check_hierarchy(interaction.user, guild.me, "<=")
+                ineligible = check_hierarchy(
+                    actor      = interaction.user,
+                    target     = guild.me,
+                    comparison = "<=",
+                )
                 msg    = f"The user {guild.me.mention} is higher in the hierarchy than you." if ineligible else "Please... spare me... 😭"
                 footer =  "Nice try" if ineligible else "Use the native discord /kick or /ban command to remove me from the guild..."
 
@@ -686,7 +667,11 @@ class ModerationTargetView(View):
         ineligible = [
             member.mention for member in chosen_members
             if isinstance(member, Member)
-            and check_hierarchy(interaction.user, member, "<=")
+            and check_hierarchy(
+                actor      = interaction.user,
+                target     = member,
+                comparison = "<=",
+            )
         ]
 
         if ineligible:

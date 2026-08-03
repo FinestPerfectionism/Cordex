@@ -44,6 +44,10 @@ async def run_bo_messages_delete_menu(interaction : Interaction, message : Messa
     if not await check_if_bo(interaction):
         return
 
+    if message.author != interaction.client.user:
+        await send_bad_argument(interaction, subtitle = {None : "The message provided was not sent by me, so I shouldn't delete it."})
+        return
+
     try:
         await run_bo_messages_delete(interaction, message_id = str(message.id))
     except Exception as e:

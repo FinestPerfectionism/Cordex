@@ -2,10 +2,9 @@ from datetime import timedelta
 from typing import Literal, final
 
 from discord import Member
-from discord.utils import utcnow
+from discord.utils import format_dt, utcnow
 
-from bot import Interaction, bot
-from bot.ui import Button, View, button
+from bot import bot
 from constants import CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
 from core.cases import (
     BanAddPayload,
@@ -16,16 +15,6 @@ from core.cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-
-
-@final
-class _AppealableView(View):
-    def __init__(self) -> None:
-        super().__init__(timeout = None)
-
-    @button(label = "Appeal")
-    async def btn_appeal(self, interaction : Interaction, _button : Button[View]) -> None:
-        await interaction.response.send_message("This button does nothing right now. :[")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
@@ -71,24 +60,21 @@ class BaseActions:
             "Timeout Remove"    : f'# {CONTESTED_EMOJI} You have been removed from timeout in the "goobers" server.',
         }
 
-        title = type_map[action_type]
+        title  = type_map[action_type]
+        length = getattr(action, "length", None)
 
-        table_data : dict[str, str] = {"Reason" : action.reason}
+        content = [
+            (
+                f"{title}\n"
+                f"-# You were moderated in the goobers by {moderator.mention} | {moderator.id} at {format_dt(utcnow(), style = "s")} for `{action.reason}`!"
+            ),
+        ]
 
-        length : object | None = getattr(action, "length", None)
-        if length is not None:
-            table_data["Length"]    = str(length)
-            table_data["Moderator"] = f"{moderator.mention} | {moderator.id}"
+        if isinstance(length, int):
+            end_time = utcnow() + timedelta(seconds = length)
+            content.append(f"\nThis action will be undone {format_dt(end_time, style = "F")} | {format_dt(end_time, style = "R")}")
 
-        content = (
-            f"{title}\n"
-            f"{action.reason}"
-        )
-
-        if hasattr(action, "appealable"):
-            await target.send(content, view = _AppealableView())
-        else:
-            await target.send(content)
+        await target.send("".join(content))
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_add
