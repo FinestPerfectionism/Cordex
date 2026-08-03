@@ -101,23 +101,22 @@ type ContextOrInteraction = Interaction | Context
 @final
 class Cordex(commands.Bot):
     def __init__(self) -> None:
-        prefix   = commands.when_mentioned_or(".")
-        intents  = Intents.all()
-        status   = Status.online
+        prefix  = commands.when_mentioned_or(".")
+        intents = Intents.all()
+        status  = Status.online
 
         super().__init__(
-            command_prefix   = prefix,
-            intents          = intents,
-            case_insensitive = True,
-            help_command     = None,
-            status           = status,
+            command_prefix = prefix,
+            intents        = intents,
+            help_command   = None,
+            status         = status,
         )
         self.db                  : Connection
         self._commands_cache     : list[Command[Group | Cog, ..., object] | Group] = []
         self._app_commands_cache : list[AppCommand] = []
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # set_name_style
+    # Name Styles
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def set_name_style(
@@ -128,16 +127,27 @@ class Cordex(commands.Bot):
         effect_id : DisplayNameEffect,
         colors    : list[str],
     ) -> None:
-        route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = guild.id)
-
         color_integers = [int(hex_code, 16) for hex_code in colors]
 
-        payload = {
-          "display_name_font_id"   : font_id.value,
-          "display_name_effect_id" : effect_id.value,
-          "display_name_colors"    : color_integers,
-        }
-        await self.http.request(route, json = payload)
+        await self.http.request(
+            route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = guild.id),
+            json  = {
+              "display_name_font_id"   : font_id.value,
+              "display_name_effect_id" : effect_id.value,
+              "display_name_colors"    : color_integers,
+            },
+        )
+
+    async def reset_name_style(self, *, guild : Guild, branded : bool = True) -> None:
+
+        # ⸻ Branded is the bot's special scheme instead of a normal discord font.
+
+        await self.set_name_style(
+            guild     = guild,
+            font_id   = DisplayNameFont.zilla_slab if branded else DisplayNameFont.default,
+            effect_id = DisplayNameEffect.gradient if branded else DisplayNameEffect.solid,
+            colors    = ["FFFFFF", "000000"]       if branded else ["FFFFFF", "FFFFFF"],
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Custom Context

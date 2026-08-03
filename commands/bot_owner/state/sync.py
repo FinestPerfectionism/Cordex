@@ -1,4 +1,4 @@
-from bot import Cordex, Interaction, tree
+from bot import Cordex, Interaction, log, tree
 from core.exceptions import send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock
@@ -9,7 +9,8 @@ from core.utilities import codeblock
 
 async def run_bo_state_sync(bot : Cordex, interaction : Interaction) -> None:
     try:
-        await tree.sync()
+        log.info("Starting a tree sync.")
+        synced = await tree.sync()
         await bot.rebuild_commands_cache()
         await format_send(
             interaction,
@@ -18,9 +19,12 @@ async def run_bo_state_sync(bot : Cordex, interaction : Interaction) -> None:
             subtitle = "Successfully globally synced the app command tree.",
         )
     except Exception as e:
+        log.exception("An exxception occurred during the tree sync.")
         await send_bad_operation(
             interaction,
             title    = "sync app command tree",
             subtitle = codeblock(f"{e}"),
         )
         return
+    else:
+        log.info("Tree sync finished. %s commands synced.", len(synced))

@@ -9,10 +9,10 @@ from core.utilities import codeblock
 COLOR_PATTERN = compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner style Logic
+# /bot-owner style set Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_style(
+async def run_bo_style_set(
     interaction : Interaction,
     bot         : Cordex,
     font        : str,
@@ -37,7 +37,7 @@ async def run_bo_style(
 
         await send_bad_argument(
             interaction,
-            title    = "update display name style",
+            title    = "set display name style",
             subtitle = {"colors" : error},
         )
         return
@@ -54,12 +54,12 @@ async def run_bo_style(
         await format_send(
             interaction,
             msg_type = "success",
-            title    = "updated display name style",
-            subtitle = "The bot's display name style has been changed for this server.",
+            title    = "set display name style",
+            subtitle = "The bot's display name style has been set for this server.",
         )
     except Exception as e:
         await send_bad_operation(
             interaction,
-            title    = "update display name style",
+            title    = "set display name style",
             subtitle = codeblock(f"{e}"),
         )

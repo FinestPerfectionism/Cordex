@@ -138,11 +138,12 @@ class _QueryModal(Modal, title = "Query"):
         # ⸻ No commands matched closely enough to the query...
 
         if not matches:
-            return await send_bad_request(
+            await send_bad_request(
                 interaction,
                 title    =  "query commands",
                 subtitle = f'No commands found matching "{query}".',
             )
+            return
 
         paginator = Paginator(
             f"# {SEARCH_EMOJI} Search Results",

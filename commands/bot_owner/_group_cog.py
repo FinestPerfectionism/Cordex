@@ -7,7 +7,6 @@ from discord.app_commands import (
     Group,
     autocomplete,
     choices,
-    command,
     describe,
     rename,
 )
@@ -36,7 +35,7 @@ from .messages import (
     run_bo_messages_send,
 )
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
-from .style import run_bo_style
+from .style import run_bo_style_reset, run_bo_style_set
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
@@ -83,6 +82,10 @@ class BotOwnerCommands(
     state   : Group = Group(
         name        = "state",
         description = "Bot owner state commands",
+    )
+    style   : Group = Group(
+        name        = "style",
+        description = "Bot owner style commands",
     )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -275,12 +278,28 @@ class BotOwnerCommands(
         await run_bo_messages_delete_menu(interaction, message)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner style Command
+    # /bot-owner style reset Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @command(
-        name        = "style",
-        description = "Make the bot change it's server specfiic display name style.",
+    @style.command(
+        name        = "reset",
+        description = "Reset the bot's server specfiic display name style.",
+    )
+    @describe(branded = "Whether the reset should be the bot's branding instead of normal font. Defaults to True.")
+    async def cmd_bo_style_reset(self, interaction : Interaction, *, branded : bool) -> None:
+        await run_bo_style_reset(
+            interaction = interaction,
+            bot         = self.bot,
+            branded     = branded,
+        )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /bot-owner style set Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @style.command(
+        name        = "set",
+        description = "Set the bot's server specfiic display name style.",
     )
     @describe(
         font   = "The display name's font.",
@@ -312,14 +331,14 @@ class BotOwnerCommands(
         ],
     )
     @bot_owner_cmd()
-    async def cmd_bo_style(
+    async def cmd_bo_style_set(
         self,
         interaction : Interaction,
         font        : str,
         effect      : str,
         colors      : str,
     ) -> None:
-        await run_bo_style(interaction, self.bot, font, effect, colors)
+        await run_bo_style_set(interaction, self.bot, font, effect, colors)
 
 async def setup(bot : Cordex) -> None:
     cog = BotOwnerCommands(bot)

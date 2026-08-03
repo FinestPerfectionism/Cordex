@@ -53,11 +53,12 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
             # ⸻ You're already on this page!
 
             if page == self.paginator.current_page:
-                return await send_bad_request(
+                await send_bad_request(
                     interaction,
                     title    = "jump to page",
                     subtitle = "You are already viewing this page.",
                 )
+                return
 
             # ⸻ Success..?
 
