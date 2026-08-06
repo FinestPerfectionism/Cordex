@@ -328,11 +328,15 @@ class UnnamedPaginator(LayoutView):
 
     async def turn(self, interaction : Interaction, target : int) -> None:
         if 0 <= target < len(self.pages):
+            previous_page = self.current_page
+
             self.current_page = target
             self._render()
 
             try:
                 await interaction.response.edit_message(view = self)
             except Exception:
+                self.current_page = previous_page
+                self._render()
                 await send_bad_operation(interaction, title = "turn page")
                 raise

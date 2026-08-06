@@ -22,7 +22,7 @@ type _NamesList      = list[dict[str, _ItemsOrStrList]]
 type _ItemsList      = list[Item[LayoutView]]
 
 class _InteractionCallback(Protocol):
-    async def __call__(self, interaction: Interaction) -> None: ...
+    async def __call__(self, interaction : Interaction) -> None: ...
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Named Paginator
@@ -30,9 +30,10 @@ class _InteractionCallback(Protocol):
 
 @final
 class _NameRow(ActionRow["NamedPaginator"]):
-    def __init__(self, paginator : "NamedPaginator") -> None:
+    def __init__(self, paginator : "NamedPaginator", indices : range) -> None:
         super().__init__()
         self.paginator = paginator
+        self.indices   = indices
         self.update_states()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -42,12 +43,14 @@ class _NameRow(ActionRow["NamedPaginator"]):
     def update_states(self) -> None:
         self.clear_items()
 
-        for index, entry in enumerate(self.paginator.pages):
-            name = next(iter(entry))
+        for index in self.indices:
+            entry = self.paginator.pages[index]
+            name  = next(iter(entry))
 
+            is_current = index == self.paginator.current_page
             btn : Button[LayoutView] = (
-                Button(label = name, style = blurple)
-                if index == self.paginator.current_page
+                Button(label = name, style = blurple, disabled = is_current)
+                if is_current
                 else Button(label = name)
             )
             btn.callback = self._make_callback(index)
@@ -79,9 +82,18 @@ class NamedPaginator(LayoutView):
         self._container = container
         self._force     = force
 
+        # ⸻ data must contain more than one dictionary.
+
+        if len(data) == 1:
+            error = "data must contain more than one dictionary"
+            raise ValueError(error)
+
         self.pages        = data or [{"No content available." : ["No content available."]}]
         self.current_page = 0
-        self._name_row    = _NameRow(self) if len(self.pages) >= 2 else None
+        self._name_rows   = [
+            _NameRow(self, range(i, min(i + 5, len(self.pages))))
+            for i in range(0, len(self.pages), 5)
+        ] if len(self.pages) >= 2 else []
 
         self._above_items : _ItemsList = []
         self._below_items : _ItemsList = []
@@ -151,15 +163,11 @@ class NamedPaginator(LayoutView):
             if accumulated:
                 page_items.append(TextDisplay("\n".join(accumulated)))
 
-        items : _ItemsList = [
-            TextDisplay(name),
-            VisibleLargeSeparator(),
-            *page_items,
-        ]
+        items : _ItemsList = [*page_items, VisibleLargeSeparator()]
 
-        if self._name_row:
-            self._name_row.update_states()
-            items.append(self._name_row)
+        for name_row in self._name_rows:
+            name_row.update_states()
+            items.append(name_row)
 
         # ⸻ Add all items to the container if chosen or directly to the view if not.
 
@@ -180,11 +188,15 @@ class NamedPaginator(LayoutView):
 
     async def turn(self, interaction : Interaction, target : int) -> None:
         if 0 <= target < len(self.pages):
+            previous_page = self.current_page
+
             self.current_page = target
             self._render()
 
             try:
                 await interaction.response.edit_message(view = self)
             except Exception:
+                self.current_page = previous_page
+                self._render()
                 await send_bad_operation(interaction, title = "turn page")
                 raise
