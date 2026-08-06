@@ -34,7 +34,7 @@ class DisplayNameEffect(Enum):
     neon     = 3
     toon     = 4
     pop      = 5
-    glow     = 6  # ! Unimplemented
+    glow     = 6  # Unimplemented
 
     # ⸻ Extras..?
 

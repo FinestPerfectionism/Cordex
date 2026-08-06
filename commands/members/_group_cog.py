@@ -31,7 +31,7 @@ class MemberCommands(
     @help_description(
         arguments = {
             "member" : "The user to view information for. Defaults to yourself.",
-            "server" : "",
+            "server" : "Whether to view the server profile or the global profile. Defaults to True.",
         },
     )
     @command(
