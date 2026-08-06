@@ -320,6 +320,7 @@ class BotOwnerCommands(
             Choice(name = "Sinistre",      value = "sinistre"),
             Choice(name = "Default",       value = "default"),
             Choice(name = "Zilla Slab",    value = "zilla_slab"),
+            # Choice(name = "???",           value = "thirteen"),
         ],
         effect = [
             Choice(name = "Solid",    value = "solid"),
@@ -328,6 +329,7 @@ class BotOwnerCommands(
             Choice(name = "Toon",     value = "toon"),
             Choice(name = "Pop",      value = "pop"),
             # Choice(name = "Glow",     value = "glow"),
+            # Choice(name = "???",      value = "seven"),
         ],
     )
     @bot_owner_cmd()

@@ -48,8 +48,8 @@ verification_requirement_map = {
     VerificationLevel.highest : "Must be verified via phone number",
 }
 
-async def run_server_info(interaction : Interaction, *, ephemeral : bool = True) -> None:
-    await interaction.response.defer(ephemeral = ephemeral)
+async def run_server_info(interaction : Interaction) -> None:
+    await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -130,6 +130,5 @@ async def run_server_info(interaction : Interaction, *, ephemeral : bool = True)
 
     await interaction.followup.send(
         view             = InfoView(),
-        ephemeral        = ephemeral,
         allowed_mentions = AllowedMentions.none(),
     )

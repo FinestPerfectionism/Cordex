@@ -65,13 +65,8 @@ def _get_channel_emoji(target : GuildChannel) -> str | None:
 
     return None
 
-async def run_channel_info(
-    interaction : Interaction,
-    channel     : GuildChannel | None = None,
-    *,
-    ephemeral   : bool                = True,
-) -> None:
-    await interaction.response.defer(ephemeral = ephemeral)
+async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
+    await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -127,4 +122,4 @@ async def run_channel_info(
                 ),
             )
 
-    await interaction.followup.send(view = InfoView(), ephemeral = ephemeral)
+    await interaction.followup.send(view = InfoView())

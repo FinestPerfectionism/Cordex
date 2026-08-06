@@ -60,7 +60,7 @@ def format_table(table : dict[str, str], /, *, padding : int = 1) -> str:
     width       = biggest_key + padding
 
     rows = [
-        f"`{key:>{width}}:` {value}"
+        f"`{key : > {width}}:` {value}"
         for key, value in table.items()
     ]
 

@@ -12,13 +12,8 @@ from core.utilities import codeblock, format_table
 # /role info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_role_info(
-    interaction : Interaction,
-    role        : Role,
-    *,
-    ephemeral   : bool = True,
-) -> None:
-    await interaction.response.defer(ephemeral = ephemeral)
+async def run_role_info(interaction : Interaction, role : Role) -> None:
+    await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -33,7 +28,7 @@ async def run_role_info(
     for p in range(role.position + 3, role.position - 4, -1):
         if 0 <= p < len(roles):
             prefix = ">" if roles[p] == role else " "
-            hierarchy_lines += f"{len(roles) - p:>4}.   {prefix} {roles[p].name}\n"
+            hierarchy_lines += f"{len(roles) - p : >4}.   {prefix} {roles[p].name}\n"
 
     top_role = interaction.user.top_role
     diff_string = "" if guild.default_role == top_role else (
@@ -80,6 +75,5 @@ async def run_role_info(
 
     await interaction.followup.send(
         view             = InfoView(),
-        ephemeral        = ephemeral,
         allowed_mentions = AllowedMentions.none(),
     )

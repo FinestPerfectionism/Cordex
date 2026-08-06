@@ -43,8 +43,7 @@ from constants import (
     STANDSTILL_EMOJI,
 )
 from core.exceptions import send_bad_argument, send_bad_permissions_command
-from core.paginator import UnnamedPaginator
-from core.paginator.named import NamedPaginator
+from core.paginator import NamedPaginator, PageData, UnnamedPaginator
 from core.responses import format_message, format_send
 from core.utilities import (
     codeblock,
@@ -170,6 +169,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
 
         "NamedPaginator"   : NamedPaginator,
         "UnnamedPaginator" : UnnamedPaginator,
+        "PageData"         : PageData,
     }
 
     # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to really warrant it.
@@ -183,7 +183,7 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
 
     message = ctx.message
 
-    body       = "\n".join(body.split("\n")[1:-1]) if body.startswith("```") else body.strip("` \n")
+    body       = "\n".join(body.split("\n")[1 : -1]) if body.startswith("```") else body.strip("` \n")
     stdout     = StringIO()
     to_compile = (
         f"async def func():\n"

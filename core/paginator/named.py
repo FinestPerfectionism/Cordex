@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Protocol, final
 
 from discord import Color
@@ -15,11 +16,15 @@ from bot.ui import (
 )
 from core.exceptions import send_bad_operation
 
-__all__ = ["NamedPaginator"]
+__all__ = ["NamedPaginator", "PageData"]
 
-type _ItemsOrStrList = list[str | Item[LayoutView]]
-type _NamesList      = list[dict[str, _ItemsOrStrList]]
-type _ItemsList      = list[Item[LayoutView]]
+@dataclass(slots = True)
+class PageData:
+    name    : str
+    content : list[str | Item[LayoutView]]
+
+
+type _ItemsList = list[Item[LayoutView]]
 
 class _InteractionCallback(Protocol):
     async def __call__(self, interaction : Interaction) -> None: ...
@@ -44,14 +49,13 @@ class _NameRow(ActionRow["NamedPaginator"]):
         self.clear_items()
 
         for index in self.indices:
-            entry = self.paginator.pages[index]
-            name  = next(iter(entry))
+            page = self.paginator.pages[index]
 
             is_current = index == self.paginator.current_page
             btn : Button[LayoutView] = (
-                Button(label = name, style = blurple, disabled = is_current)
+                Button(label = page.name, style = blurple, disabled = is_current)
                 if is_current
-                else Button(label = name)
+                else Button(label = page.name)
             )
             btn.callback = self._make_callback(index)
             self.add_item(btn)
@@ -69,7 +73,7 @@ class _NameRow(ActionRow["NamedPaginator"]):
 class NamedPaginator(LayoutView):
     def __init__(
         self,
-        data      : _NamesList,
+        data      : list[PageData],
         /,
         *,
         color     : Color | None = None,
@@ -82,13 +86,13 @@ class NamedPaginator(LayoutView):
         self._container = container
         self._force     = force
 
-        # ⸻ data must contain more than one dictionary.
+        # ⸻ data must contain more than one page.
 
         if len(data) == 1:
-            error = "data must contain more than one dictionary"
+            error = "data must contain more than one page"
             raise ValueError(error)
 
-        self.pages        = data or [{"No content available." : ["No content available."]}]
+        self.pages        = data or [PageData("No content available.", ["No content available."])]
         self.current_page = 0
         self._name_rows   = [
             _NameRow(self, range(i, min(i + 5, len(self.pages))))
@@ -136,9 +140,7 @@ class NamedPaginator(LayoutView):
         for item in self._above_items:
             self.add_item(item)
 
-        entry     = self.pages[self.current_page]
-        name      = next(iter(entry))
-        page_data = entry[name]
+        page = self.pages[self.current_page]
 
         page_items : _ItemsList = []
 
@@ -146,12 +148,12 @@ class NamedPaginator(LayoutView):
             page_items = [
                 TextDisplay(item)
                 if isinstance(item, str) else item
-                for item in page_data
+                for item in page.content
             ]
         else:
             accumulated : list[str] = []
 
-            for item in page_data:
+            for item in page.content:
                 if isinstance(item, str):
                     accumulated.append(item)
                 else:

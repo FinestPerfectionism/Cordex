@@ -33,9 +33,9 @@ async def run_member_info(
     interaction : Interaction,
     member      : Member | None = None,
     *,
-    ephemeral   : bool          = True,
+    server      : bool   | None = True,
 ) -> None:
-    await interaction.response.defer(ephemeral = ephemeral)
+    await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -48,7 +48,7 @@ async def run_member_info(
     if not isinstance(target, Member):
         target = guild.get_member(target.id) or await guild.fetch_member(target.id)
 
-    # ⸻ Sort the joined and roles lists
+    # ⸻ Sort the joined and roles lists.
 
     all_members : list[Member] = sorted(
         guild.members,
@@ -82,7 +82,7 @@ async def run_member_info(
         target_index = all_members.index(target)
 
         joined_lines = [
-            f"{i + 1:>4}. {"> " if i == target_index else "  "}{str(m) if m.discriminator != "0" else m.name}"
+            f"{i + 1 : > 4}. {"> " if i == target_index else "  "}{str(m) if m.discriminator != "0" else m.name}"
             for i in range(max(0, target_index - 3), min(len(all_members), target_index + 4))
             for m in [all_members[i]]
         ]
@@ -91,27 +91,32 @@ async def run_member_info(
 
     global_user = interaction.client.get_user(target.id) or await interaction.client.fetch_user(target.id)
 
-    # ⸻ Build the view
+    # ⸻ Determine avatar and banner based on server parameter.
+
+    avatar = (target.guild_avatar or target.avatar) if server else (target.avatar or global_user.avatar)
+    banner = (getattr(target, "guild_banner", None) or global_user.banner) if server else global_user.banner
+
+    # ⸻ Build the view.
 
     @final
     class InfoView(LayoutView):
         container = Container[Self](
             TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
-            color = target.color if target.color.value else COLOR_GREY,
+            color = target.color if (server and target.color.value) else COLOR_GREY,
         )
 
         user_info = format_table(
             {
                 "Name"       : escape_markdown(target.global_name or target.name),
-                "Nickname"   : escape_markdown(target.nick or "None"),
+                "Nickname"   : escape_markdown(target.nick or "None") if server else "None",
                 "Username"   : escape_markdown(target.name),
                 "Joined at"  : f"{format_dt(target.joined_at, style = "F")} | {format_dt(target.joined_at, style = "R")}" if target.joined_at else "Unknown",
                 "Created at" : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
             },
         )
 
-        if target.avatar:
-            container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(target.avatar.url)))
+        if avatar:
+            container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail(avatar.url)))
         else:
             container.add_text(user_info)
 
@@ -135,20 +140,20 @@ async def run_member_info(
                 ),
             )
 
-        container.add_item(
-            TextDisplay(
-                (
-                    "**Join Order**\n"
-                   f"{join_list}"
+        if server:
+            container.add_item(
+                TextDisplay(
+                    (
+                        "**Join Order**\n"
+                        f"{join_list}"
+                    ),
                 ),
-            ),
-        )
+            )
 
-        if global_user.banner:
-            container.add_item(MediaGallery(MediaGalleryItem(global_user.banner.url)))
+        if banner:
+            container.add_item(MediaGallery(MediaGalleryItem(banner.url)))
 
     await interaction.followup.send(
         view             = InfoView(),
-        ephemeral        = ephemeral,
         allowed_mentions = AllowedMentions.none(),
     )
