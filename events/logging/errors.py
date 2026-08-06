@@ -109,7 +109,7 @@ class ErrorLogger(commands.Cog):
         if command_display:
             embed.add_field(
                 name   = "Command",
-                value  = codeblock(command_display, language = None),
+                value  = command_display,
                 inline = True,
             )
 
