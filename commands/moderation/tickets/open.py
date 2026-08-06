@@ -1,6 +1,6 @@
 from discord import Thread
 
-from bot import Interaction, bot
+from bot import Interaction
 from constants import TICKETS_CHANNEL_ID
 from core.exceptions import send_bad_environment_channel, send_bad_request
 from core.responses import format_send
@@ -34,4 +34,4 @@ async def run_mod_tickets_open(interaction : Interaction) -> None:
         ephemeral = False,
     )
     await channel.edit(locked = False, archived = False)
-    await set_ticket_state(bot.db, thread_id = channel.id, is_open = True)
+    await set_ticket_state(interaction.client.db, thread_id = channel.id, is_open = True)

@@ -11,18 +11,29 @@ from discord import Color
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class DisplayNameFont(Enum):
-    bangers       = 1  # Unimplemented
-    bio_rhyme     = 2  # Unimplemented
+    # bangers       = 1
+    # bio_rhyme     = 2
     cherry_bomb   = 3
     chicle        = 4
-    compagnon     = 5  # Unimplemented
+    # compagnon     = 5
     museo_moderno = 6
     neo_castel    = 7
     pixelify      = 8
-    ribes         = 9  # Unimplemented
+    # ribes         = 9
     sinistre      = 10
     default       = 11
     zilla_slab    = 12
+
+    # ⸻ Aliases
+
+    gg_sans   = 11  # noqa: PIE796
+    tempo     = 12  # noqa: PIE796
+    sakura    = 3  # noqa: PIE796
+    jellybean = 4  # noqa: PIE796
+    modern    = 6  # noqa: PIE796
+    medieval  = 7  # noqa: PIE796
+    eightbit  = 8  # noqa: PIE796
+    vampyre   = 10  # noqa: PIE796
 
 
 class DisplayNameEffect(Enum):

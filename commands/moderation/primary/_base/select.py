@@ -6,7 +6,7 @@ from typing import Literal, Self, TypedDict, cast, final, override
 from discord import AllowedMentions, ButtonStyle, Member
 from discord.utils import escape_markdown
 
-from bot import Interaction
+from bot import Interaction, bot
 from bot.ui import (
     ActionRow,
     Button,
@@ -357,6 +357,7 @@ class _EditorView(LayoutView):
                 return
 
             action_errors : list[tuple[Member, str]] = []
+            actions = BaseActions(bot)
 
             try:
                 if self.action_type == "Ban Add":
@@ -377,7 +378,7 @@ class _EditorView(LayoutView):
                             ),
                         )
 
-                    action_errors = await BaseActions.ban_add(ban_add_payloads)
+                    action_errors = await actions.ban_add(ban_add_payloads)
 
                 elif self.action_type == "Ban Remove":
                     ban_remove_payloads : list[BaseRemovePayload] = []
@@ -395,7 +396,7 @@ class _EditorView(LayoutView):
                             ),
                         )
 
-                    action_errors = await BaseActions.ban_remove(ban_remove_payloads)
+                    action_errors = await actions.ban_remove(ban_remove_payloads)
 
                 elif self.action_type == "Kick":
                     kick_payloads : list[KickPayload] = []
@@ -413,7 +414,7 @@ class _EditorView(LayoutView):
                             ),
                         )
 
-                    action_errors = await BaseActions.kick(kick_payloads)
+                    action_errors = await actions.kick(kick_payloads)
 
                 elif self.action_type == "Quarantine Add":
                     quarantine_add_payloads : list[QuarantineAddPayload] = []
@@ -433,7 +434,7 @@ class _EditorView(LayoutView):
                             ),
                         )
 
-                    action_errors = await BaseActions.quarantine_add(quarantine_add_payloads)
+                    action_errors = await actions.quarantine_add(quarantine_add_payloads)
 
                 elif self.action_type == "Quarantine Remove":
                     quarantine_remove_payloads : list[BaseRemovePayload] = []
@@ -450,7 +451,7 @@ class _EditorView(LayoutView):
                             ),
                         )
 
-                    action_errors = await BaseActions.quarantine_remove(quarantine_remove_payloads)
+                    action_errors = await actions.quarantine_remove(quarantine_remove_payloads)
 
                 elif self.action_type == "Timeout Add":
                     timeout_add_payloads : list[TimeoutAddPayload] = []
@@ -468,7 +469,7 @@ class _EditorView(LayoutView):
                             ),
                         )
 
-                    action_errors = await BaseActions.timeout_add(timeout_add_payloads)
+                    action_errors = await actions.timeout_add(timeout_add_payloads)
 
                 else:
                     timeout_remove_payloads : list[BaseRemovePayload] = []
@@ -485,7 +486,7 @@ class _EditorView(LayoutView):
                             ),
                         )
 
-                    action_errors = await BaseActions.timeout_remove(timeout_remove_payloads)
+                    action_errors = await actions.timeout_remove(timeout_remove_payloads)
 
             except Exception:
                 await send_bad_operation(interaction, title = "compile window")

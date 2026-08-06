@@ -36,13 +36,14 @@ class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
         ],
     )
     async def slct_logging_moderation(self, interaction : Interaction, select : ChannelSelect[LayoutView]) -> None:
+        client = interaction.client
+
         if not self.view:
             return
 
         channel = select.values[0]
-        bot = interaction.client if isinstance(interaction.client, Cordex) else self.view.bot
 
-        await bot.db.execute(
+        await client.db.execute(
             """
             INSERT INTO GuildConfig (config_key, config_value)
             VALUES ('logging_moderation_channel', ?)
@@ -50,7 +51,7 @@ class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
             """,
             [str(channel.id)],
         )
-        await bot.db.commit()
+        await client.db.commit()
 
         await self.view.refresh()
         await interaction.response.edit_message(view = self.view)
@@ -69,13 +70,14 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
         ],
     )
     async def slct_logging_antinuke(self, interaction : Interaction, select_item : ChannelSelect[LayoutView]) -> None:
+        client = interaction.client
+
         if not self.view:
             return
 
         channel = select_item.values[0]
-        bot = interaction.client if isinstance(interaction.client, Cordex) else self.view.bot
 
-        await bot.db.execute(
+        await client.db.execute(
             """
             INSERT INTO GuildConfig (config_key, config_value)
             VALUES ('logging_antinuke_channel', ?)
@@ -83,7 +85,7 @@ class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
             """,
             [str(channel.id)],
         )
-        await bot.db.commit()
+        await client.db.commit()
 
         await self.view.refresh()
         await interaction.response.edit_message(view = self.view)

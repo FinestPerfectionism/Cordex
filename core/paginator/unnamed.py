@@ -17,22 +17,22 @@ from bot.ui import (
     button,
     green,
 )
+from core.exceptions import send_bad_operation, send_bad_request
 
-from .exceptions import send_bad_operation, send_bad_request
+__all__ = ["UnnamedPaginator"]
 
-__all__ = ["Paginator"]
-
-type _ItemsList = list[Item[LayoutView]]
+type _ItemsList      = list[Item[LayoutView]]
+type _ItemsOrStrList = list[str | Item[LayoutView]]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Paginator
+# Unnamed Paginator
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
 class _PageJumpModal(Modal, title = "Jump to Page"):
     page_input : TextInput[Self]
 
-    def __init__(self, paginator : "Paginator") -> None:
+    def __init__(self, paginator : "UnnamedPaginator") -> None:
         super().__init__()
         self.paginator = paginator
 
@@ -96,8 +96,8 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
             raise
 
 @final
-class _PageRow(ActionRow["Paginator"]):
-    def __init__(self, paginator : "Paginator") -> None:
+class _PageRow(ActionRow["UnnamedPaginator"]):
+    def __init__(self, paginator : "UnnamedPaginator") -> None:
         super().__init__()
         self.paginator = paginator
 
@@ -158,11 +158,11 @@ class _PageRow(ActionRow["Paginator"]):
         await self.paginator.turn(interaction, len(self.paginator.pages) - 1)
 
 @final
-class Paginator(LayoutView):
+class UnnamedPaginator(LayoutView):
     def __init__(
         self,
         title     : str,
-        data      : list[str | Item[LayoutView]],
+        data      : _ItemsOrStrList,
         /,
         *,
         data_name : str   | None = None,
@@ -181,7 +181,7 @@ class Paginator(LayoutView):
         self._force     = force
 
         self.pages        = [
-            data[i:i + per_page]
+            data[i : i + per_page]
             for i in range(0, len(data), per_page)
         ] or [["No content available."]]
         self.current_page = 0
@@ -198,7 +198,7 @@ class Paginator(LayoutView):
             error = "color is dependent on container"
             raise ValueError(error)
 
-        # ⸻ Only add a separator if there are buttons below it.
+        # ⸻ Render.
 
         self._render()
 
@@ -245,7 +245,7 @@ class Paginator(LayoutView):
     # update_data
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def update_data(self, title : str, data : list[str | Item[LayoutView]]) -> None:
+    def update_data(self, title : str, data : _ItemsOrStrList) -> None:
         self._title       = title
         self._data        = data
         self.current_page = 0
@@ -271,7 +271,7 @@ class Paginator(LayoutView):
         for item in self._above_items:
             self.add_item(item)
 
-        page_items : list[Item[LayoutView]] = []
+        page_items : _ItemsList = []
 
         if self._force:
             page_items = [
@@ -294,7 +294,7 @@ class Paginator(LayoutView):
             if accumulated:
                 page_items.append(TextDisplay("\n".join(accumulated)))
 
-        items : list[TextDisplay[LayoutView] | VisibleLargeSeparator[LayoutView] | _PageRow | Item[LayoutView]] = [
+        items : _ItemsList = [
             *self._over_items,
             TextDisplay(self._title),
             VisibleLargeSeparator(),

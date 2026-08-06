@@ -27,7 +27,7 @@ MESSAGE_LINK_PATTERN = compile(r"https://discord(?:app)?\.com/channels/(\d+|@me)
 FACTOIDS = {
     "bump" : (
         "# Please bump __both__ bots.\n"
-        "We really appreciate everyone bumping! If you are going to bump, please bump **both** <@735147814878969968> and <@1159147139960676422> (and <@1222548162741538938> too if it's available).\n"
+        "We really appreciate bumping! If you are going to bump, please bump **both** <@735147814878969968> and <@1159147139960676422> (and <@1222548162741538938> too if it's available).\n"
         "### Why?\n"
         "The bots have a cooldown of one bump per 2 (24 for Discadia) hours. We try to sync the timer on each. Bumping both at once ensures that this happens *and* gets our server more recognition."
     ),
@@ -66,24 +66,24 @@ class MessageSendHandler(commands.Cog):
         class Preview(LayoutView):
             def __init__(self, *, target : Message, link : str) -> None:
                 super().__init__()
-                author = target.author
 
-                self.container = Container[Self](TextDisplay(f"### {author.mention} | {author.id}: {link}"), VisibleLargeSeparator())
+                container = Container[Self](TextDisplay(f"{target.author.mention}: {link}"), VisibleLargeSeparator())
 
                 if target.content:
-                    self.container.add_text(target.content)
+                    container.add_text(target.content)
 
                 if target.attachments:
                     items = [
                         MediaGalleryItem(attachment.url)
                         for attachment in target.attachments
-                        if attachment.content_type and attachment.content_type.startswith(("image/", "video/"))
+                        if attachment.content_type
+                        and attachment.content_type.startswith(("image/", "video/"))
                     ]
 
                     if items:
-                        self.container.add_item(MediaGallery(*items))
+                        container.add_item(MediaGallery(*items))
 
-                self.add_item(self.container)
+                self.add_item(container)
 
         match = MESSAGE_LINK_PATTERN.search(content)
         if match:

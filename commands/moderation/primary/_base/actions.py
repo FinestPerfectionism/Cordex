@@ -4,7 +4,7 @@ from typing import Literal, final
 from discord import Member
 from discord.utils import format_dt, utcnow
 
-from bot import bot
+from bot import Cordex
 from constants import CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
 from core.cases import (
     BanAddPayload,
@@ -15,6 +15,7 @@ from core.cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
+from core.utilities import format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
@@ -22,12 +23,12 @@ from core.cases import (
 
 @final
 class BaseActions:
-    def __init__(self) -> None:
+    def __init__(self, bot : Cordex) -> None:
         super().__init__()
+        self.bot = bot
 
-    @classmethod
     async def _dm_target(
-        cls,
+        self,
         action_type : Literal[
             "Ban Add",
             "Ban Remove",
@@ -66,13 +67,21 @@ class BaseActions:
         content = [
             (
                 f"{title}\n"
-                f"-# You were moderated in the goobers by {moderator.mention} | {moderator.id} at {format_dt(utcnow(), style = "s")} for `{action.reason}`!"
+                f"-# You were moderated in the goobers by at {format_dt(utcnow())}!\n"
+                f"{
+                    format_table(
+                        {
+                            "Moderator" : f"{moderator.mention} | {moderator.id}",
+                            "Reason"    : action.reason,
+                        }
+                    )
+                }"
             ),
         ]
 
         if isinstance(length, int):
             end_time = utcnow() + timedelta(seconds = length)
-            content.append(f"\nThis action will be undone {format_dt(end_time, style = "F")} | {format_dt(end_time, style = "R")}")
+            content.append(f"\nThis action will be undone {format_dt(end_time, style = "F")} | {format_dt(end_time, style = "R")}.")
 
         await target.send("".join(content))
 
@@ -80,24 +89,21 @@ class BaseActions:
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def lockdown_add(cls) -> None:
+    async def lockdown_add(self) -> None:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def lockdown_remove(cls) -> None:
+    async def lockdown_remove(self) -> None:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def ban_add(cls, targets : list[BanAddPayload]) -> list[tuple[Member, str]]:
+    async def ban_add(self, targets : list[BanAddPayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
@@ -105,7 +111,7 @@ class BaseActions:
 
             try:
                 if action.dm_user:
-                    await cls._dm_target("Ban Add", action)
+                    await self._dm_target("Ban Add", action)
 
                 await target.ban(
                     reason                 = action.reason,
@@ -121,25 +127,23 @@ class BaseActions:
     # ban_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def ban_view(cls) -> None:
+    async def ban_view(self) -> None:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def ban_remove(cls, targets : list[BanRemovePayload]) -> list[tuple[Member, str]]:
+    async def ban_remove(self, targets : list[BanRemovePayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
             target = action.target
-            guild  = bot.get_guild(MAIN_GUILD_ID)
+            guild  = self.bot.get_guild(MAIN_GUILD_ID)
 
             try:
                 if action.dm_user:
-                    await cls._dm_target("Ban Remove", action)
+                    await self._dm_target("Ban Remove", action)
 
                 if guild is not None:
                     await guild.unban(target, reason = action.reason)
@@ -153,8 +157,7 @@ class BaseActions:
     # kick
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def kick(cls, targets : list[KickPayload]) -> list[tuple[Member, str]]:
+    async def kick(self, targets : list[KickPayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
@@ -162,7 +165,7 @@ class BaseActions:
 
             try:
                 if action.dm_user:
-                    await cls._dm_target("Kick", action)
+                    await self._dm_target("Kick", action)
 
                 await target.kick(reason = action.reason)
 
@@ -175,13 +178,12 @@ class BaseActions:
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def quarantine_add(cls, targets : list[QuarantineAddPayload]) -> list[tuple[Member, str]]:
+    async def quarantine_add(self, targets : list[QuarantineAddPayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
             target = action.target
-            guild  = bot.get_guild(MAIN_GUILD_ID)
+            guild  = self.bot.get_guild(MAIN_GUILD_ID)
 
             try:
                 if guild:
@@ -190,7 +192,7 @@ class BaseActions:
                         await target.add_roles(quarantine_role)
 
                 if action.dm_user:
-                    await cls._dm_target("Quarantine Add", action)
+                    await self._dm_target("Quarantine Add", action)
 
             except Exception as error:
                 errors.append((target, str(error)))
@@ -201,21 +203,19 @@ class BaseActions:
     # quarantine_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def quarantine_view(cls) -> None:
+    async def quarantine_view(self) -> None:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def quarantine_remove(cls, targets : list[QuarantineRemovePayload]) -> list[tuple[Member, str]]:
+    async def quarantine_remove(self, targets : list[QuarantineRemovePayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
             target = action.target
-            guild  = bot.get_guild(MAIN_GUILD_ID)
+            guild  = self.bot.get_guild(MAIN_GUILD_ID)
 
             try:
                 if guild:
@@ -224,7 +224,7 @@ class BaseActions:
                         await target.remove_roles(quarantine_role)
 
                 if action.dm_user:
-                    await cls._dm_target("Quarantine Remove", action)
+                    await self._dm_target("Quarantine Remove", action)
 
             except Exception as error:
                 errors.append((target, str(error)))
@@ -235,8 +235,7 @@ class BaseActions:
     # timeout_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def timeout_add(cls, targets : list[TimeoutAddPayload]) -> list[tuple[Member, str]]:
+    async def timeout_add(self, targets : list[TimeoutAddPayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
@@ -249,7 +248,7 @@ class BaseActions:
                 )
 
                 if action.dm_user:
-                    await cls._dm_target("Timeout Add", action)
+                    await self._dm_target("Timeout Add", action)
 
             except Exception as error:
                 errors.append((target, str(error)))
@@ -260,16 +259,14 @@ class BaseActions:
     # timeout_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def timeout_view(cls) -> None:
+    async def timeout_view(self) -> None:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def timeout_remove(cls, targets : list[TimeoutRemovePayload]) -> list[tuple[Member, str]]:
+    async def timeout_remove(self, targets : list[TimeoutRemovePayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
@@ -279,7 +276,7 @@ class BaseActions:
                 await target.edit(timed_out_until = None, reason = action.reason)
 
                 if action.dm_user:
-                    await cls._dm_target("Timeout Remove", action)
+                    await self._dm_target("Timeout Remove", action)
 
             except Exception as error:
                 errors.append((target, str(error)))
@@ -290,6 +287,5 @@ class BaseActions:
     # purge
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @classmethod
-    async def purge(cls) -> None:
+    async def purge(self) -> None:
         ...

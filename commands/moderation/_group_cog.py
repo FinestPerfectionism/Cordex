@@ -12,6 +12,9 @@ from core.permissions import (
 
 # senior_moderator_cmd,
 # staff_cmd,
+from core.utilities import unimplemented
+
+from .cases import run_mod_cases_query, run_mod_cases_view
 from .primary.ban import (
     run_mod_primary_ban_add,
     run_mod_primary_ban_remove,
@@ -79,6 +82,10 @@ class ModerationCommands(
         name        = "timeout",
         description = "Moderation timeout commands",
     )
+    cases      : Group = Group(
+        name        = "cases",
+        description = "Moderation case commands",
+    )
     tickets    : Group = Group(
         name        = "tickets",
         description = "Moderation ticket commands",
@@ -94,7 +101,7 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_lockdown_add(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_lockdown_add(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -107,7 +114,7 @@ class ModerationCommands(
     )
     # @director_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_lockdown_remove(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_lockdown_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -120,7 +127,7 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_ban_add(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_ban_add(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -133,7 +140,7 @@ class ModerationCommands(
     )
     # @staff_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_ban_view(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_ban_view(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -146,7 +153,7 @@ class ModerationCommands(
     )
     # @director_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_ban_remove(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_ban_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -159,7 +166,7 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_kick(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_kick(self, interaction : Interaction) -> None:
         await run_mod_primary_kick(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -172,7 +179,7 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_quarantine_add(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_quarantine_add(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -185,7 +192,7 @@ class ModerationCommands(
     )
     # @staff_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_quarantine_view(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_quarantine_view(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -198,7 +205,7 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_quarantine_remove(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_quarantine_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -211,7 +218,7 @@ class ModerationCommands(
     )
     # @moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_timeout_add(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_timeout_add(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -224,7 +231,7 @@ class ModerationCommands(
     )
     # @staff_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_timeout_view(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_timeout_view(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -237,7 +244,7 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_timeout_remove(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_timeout_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -250,7 +257,7 @@ class ModerationCommands(
     )
     # @senior_moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_purge(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_purge(self, interaction : Interaction) -> None:
         await run_mod_primary_purge(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -263,7 +270,7 @@ class ModerationCommands(
     )
     # @moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_note_add(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_note_add(self, interaction : Interaction) -> None:
         await run_mod_primary_note_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -276,7 +283,7 @@ class ModerationCommands(
     )
     # @staff_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_note_view(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_note_view(self, interaction : Interaction) -> None:
         await run_mod_primary_note_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -289,8 +296,34 @@ class ModerationCommands(
     )
     # @moderator_cmd()
     @bot_owner_cmd()
-    async def cmd_moderation_primary_note_remove(self, interaction : Interaction) -> None:
+    async def cmd_mod_primary_note_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_note_remove(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation cases query Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @cases.command(
+        name        = "query",
+        description = "Query moderation cases with various filters.",
+    )
+    # @moderator_cmd()
+    @unimplemented()
+    async def cmd_mod_cases_query(self, interaction : Interaction) -> None:
+        await run_mod_cases_query(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation cases view Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @cases.command(
+        name        = "view",
+        description = "View a moderation case by it's ID.",
+    )
+    # @moderator_cmd()
+    @unimplemented()
+    async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
+        await run_mod_cases_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation tickets open Command
@@ -301,7 +334,7 @@ class ModerationCommands(
         description = "Open a ticket thread.",
     )
     @moderator_cmd()
-    async def cmd_moderation_tickets_open(self, interaction : Interaction) -> None:
+    async def cmd_mod_tickets_open(self, interaction : Interaction) -> None:
         await run_mod_tickets_open(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -313,7 +346,7 @@ class ModerationCommands(
         description = "Escalate a ticket thread.",
     )
     @moderator_cmd()
-    async def cmd_moderation_tickets_escalate(self, interaction : Interaction) -> None:
+    async def cmd_mod_tickets_escalate(self, interaction : Interaction) -> None:
         await run_mod_tickets_escalate(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -325,7 +358,7 @@ class ModerationCommands(
         description = "Close a ticket thread.",
     )
     @moderator_cmd()
-    async def cmd_moderation_tickets_close(self, interaction : Interaction) -> None:
+    async def cmd_mod_tickets_close(self, interaction : Interaction) -> None:
         await run_mod_tickets_close(interaction)
 
 async def setup(bot : Cordex) -> None:

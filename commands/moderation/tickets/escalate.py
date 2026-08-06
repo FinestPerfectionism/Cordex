@@ -1,6 +1,6 @@
 from discord import Thread
 
-from bot import Interaction, bot
+from bot import Interaction
 from constants import DIRECTORS_ROLE_ID, MODERATORS_ROLE_ID, TICKETS_CHANNEL_ID
 from core.exceptions import send_bad_environment_channel, send_bad_request
 from core.responses import format_send
@@ -12,6 +12,7 @@ from core.state import get_ticket, set_ticket_team
 
 async def run_mod_tickets_escalate(interaction : Interaction) -> None:
     channel = interaction.channel
+    client  = interaction.client
 
     # ⸻ Ensure that the command is being run in a thread of tickets.
 
@@ -21,7 +22,7 @@ async def run_mod_tickets_escalate(interaction : Interaction) -> None:
 
     # ⸻ Ensure this is an open moderator ticket that hasn't already been escalated.
 
-    ticket = await get_ticket(bot.db, thread_id = channel.id)
+    ticket = await get_ticket(client.db, thread_id = channel.id)
 
     if ticket is None or ticket["team"] != "moderator":
         await send_bad_request(interaction, subtitle = "This ticket cannot be escalated to the director team.")
@@ -42,12 +43,12 @@ async def run_mod_tickets_escalate(interaction : Interaction) -> None:
         if any(role.id == MODERATORS_ROLE_ID for role in member.roles):
             await channel.remove_user(member)
 
-    # ⸻ Rename the thread and flip its team internally
+    # ⸻ Rename the thread and flip its team internally.
 
     new_name = channel.name.replace("Moderator Ticket", "Director Ticket", 1)
 
     await channel.edit(name = new_name)
-    await set_ticket_team(bot.db, thread_id = channel.id, team = "director")
+    await set_ticket_team(client.db, thread_id = channel.id, team = "director")
 
     # ⸻ Success!
 

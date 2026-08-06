@@ -1,5 +1,5 @@
 from asyncio import to_thread
-from collections.abc import Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from logging import getLogger as get_logger
 from pathlib import Path
 from typing import Self, TypedDict, Unpack, final, override
@@ -31,7 +31,7 @@ log = get_logger("Cordex")
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type _Inter = Callable[[Interaction], Coroutine[None, None, None]]
+type _Inter = Callable[[Interaction], Awaitable[None]]
 
 class _ContextKwargs(TypedDict, total = False):
     message : Message
@@ -91,7 +91,7 @@ class _ContextClass(BaseContext["Cordex"]):
 
 
 type Context              = _ContextClass
-type Interaction          = BaseInteraction[Cordex] | BaseInteraction
+type Interaction          = BaseInteraction[Cordex]
 type ContextOrInteraction = Interaction | Context
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

@@ -9,6 +9,7 @@ from bot import Cordex
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from commands.bot_owner.eval import eval_message_ids
 from constants import (
+    BOT_OWNER_ID,
     COLOR_GREY,
     MAIN_GUILD_ID,
     MESSAGE_EDIT_LOG_CHANNEL_ID,
@@ -87,6 +88,11 @@ class MessageEditHandler(commands.Cog):
             await after.delete()
             return
 
+        # ⸻ Block evaluations.
+
+        if after_content.startswith(".eval") and author.id == BOT_OWNER_ID:
+            return
+
         # ⸻ Block nessage logging of directorship channels.
 
         if is_directorship_channel(before_channel):
@@ -105,7 +111,7 @@ class MessageEditHandler(commands.Cog):
             return
 
         @final
-        class _EditView(LayoutView):
+        class EditView(LayoutView):
             container = Container[Self](
                 TextDisplay(f"# Message Edited | {format_dt(after.edited_at or utcnow(), style = "F")}"),
                 TextDisplay(
@@ -146,7 +152,7 @@ class MessageEditHandler(commands.Cog):
                 ),
             )
 
-        await log_channel.send(view = _EditView(), allowed_mentions = AllowedMentions.none())
+        await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
 
         await self.bot.process_commands(after)
 

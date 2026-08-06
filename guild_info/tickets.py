@@ -1,8 +1,8 @@
-from typing import Self, cast, override
+from typing import Self, override
 
 from discord import ChannelType, Member, SelectOption, TextChannel
 
-from bot import Cordex, Interaction
+from bot import Interaction
 from bot.ui import Button, Label, Modal, Select, blurple
 from constants import (
     DIRECTOR_EMOJI,
@@ -23,7 +23,7 @@ from ._base import InfoSupportSection
 
 class _TicketModal(Modal, title = "Open Ticket"):
     def __init__(self) -> None:
-        super().__init__(timeout = None)
+        super().__init__()
 
         self.select : Select[Self] = Select(
             placeholder = "Which team would you like to contact?",
@@ -32,7 +32,7 @@ class _TicketModal(Modal, title = "Open Ticket"):
                     label       = "Contact Directors",
                     value       = "director",
                     emoji       = DIRECTOR_EMOJI,
-                    description = "Contact directors for partnerships or moderation concerns about staff legitimacy.",
+                    description = "Contact directors for partnerships or moderation concerns about staff .",
                 ),
                 SelectOption(
                     label       = "Contact Moderators",
@@ -65,7 +65,6 @@ class _TicketModal(Modal, title = "Open Ticket"):
         ticket_type, team_mention, team_name = mapping[choice]
 
         if isinstance(channel, TextChannel):
-            client = cast(Cordex, interaction.client)
 
             # ⸻ Create thread and add the ticket opener
 
@@ -79,7 +78,7 @@ class _TicketModal(Modal, title = "Open Ticket"):
 
             # ⸻ Persist ticket state
 
-            await save_ticket(client.db, thread_id = ticket.id, team = choice)
+            await save_ticket(interaction.client.db, thread_id = ticket.id, team = choice)
             await format_send(
                 interaction,
                 msg_type  =  "success",
@@ -120,7 +119,6 @@ class _TicketButton(Button["TicketComponents"]):
 
             channel = interaction.channel
             if isinstance(channel, TextChannel):
-                client = cast(Cordex, interaction.client)
 
                 # ⸻ Create thread and add the staff member
 
@@ -134,7 +132,7 @@ class _TicketButton(Button["TicketComponents"]):
 
                 # ⸻ Persist ticket state
 
-                await save_ticket(client.db, thread_id = ticket.id, team = "director")
+                await save_ticket(interaction.client.db, thread_id = ticket.id, team = "director")
                 await format_send(
                     interaction,
                     msg_type  =  "success",

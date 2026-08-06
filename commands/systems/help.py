@@ -43,7 +43,7 @@ from core.help import (
     help_description,
     label_for_parameter,
 )
-from core.paginator import Paginator
+from core.paginator import UnnamedPaginator
 from core.utilities import format_command
 
 type CommandList = list[AnnotatedCommand]
@@ -145,7 +145,7 @@ class _QueryModal(Modal, title = "Query"):
             )
             return
 
-        paginator = Paginator(
+        paginator = UnnamedPaginator(
             f"# {SEARCH_EMOJI} Search Results",
             _build_sections(matches),
             data_name = "Commands",
@@ -163,7 +163,7 @@ class _QueryModal(Modal, title = "Query"):
             raise
 
 @final
-class _InfoButton(Button[Paginator]):
+class _InfoButton(Button[UnnamedPaginator]):
     def __init__(self, cmd : AnnotatedCommand) -> None:
         self._command = cmd
         super().__init__(emoji = SEARCH_EMOJI)
@@ -173,7 +173,7 @@ class _InfoButton(Button[Paginator]):
         await interaction.response.send_message(view = _InfoView(self._command), ephemeral = True)
 
 @final
-class _CategorySelect(Select[Paginator]):
+class _CategorySelect(Select[UnnamedPaginator]):
     def __init__(self, cmds : CommandList) -> None:
         self._commands = cmds
 
@@ -258,13 +258,13 @@ class _CategorySelect(Select[Paginator]):
         for option in self.options:
             option.default = (option.value == value)
 
-        paginator = cast(Paginator, self.view)
+        paginator = cast(UnnamedPaginator, self.view)
         paginator.update_data(title, _build_sections(filtered))
 
         await interaction.response.edit_message(view = paginator)
 
 @final
-class _QueryButton(Button[Paginator]):
+class _QueryButton(Button[UnnamedPaginator]):
     def __init__(self, cmds : CommandList) -> None:
         self._commands = cmds
         super().__init__(emoji = QUERY_EMOJI)
@@ -315,7 +315,7 @@ class HelpCommand(commands.Cog):
 
             # ⸻ Build the view,
 
-            view = Paginator(
+            view = UnnamedPaginator(
                 f"# {HORIZONTAL_SETTINGS} All Commands",
                 sections,
                 data_name = "Commands",

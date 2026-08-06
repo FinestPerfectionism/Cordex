@@ -7,7 +7,12 @@ from discord.utils import format_dt, utcnow
 
 from bot import Cordex
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
-from constants import COLOR_RED, MAIN_GUILD_ID, MESSAGE_DELETE_LOG_CHANNEL_ID
+from constants import (
+    BOT_OWNER_ID,
+    COLOR_RED,
+    MAIN_GUILD_ID,
+    MESSAGE_DELETE_LOG_CHANNEL_ID,
+)
 from core.utilities import format_table
 
 from . import (
@@ -45,6 +50,11 @@ class MessageDeleteHandler(commands.Cog):
         if guild is None or guild.id != MAIN_GUILD_ID:
             return
 
+        # ⸻ Block evaluations.
+
+        if content.startswith(".eval") and author.id == BOT_OWNER_ID:
+            return
+
         if is_directorship_channel(channel):
             return
 
@@ -53,7 +63,7 @@ class MessageDeleteHandler(commands.Cog):
             return
 
         @final
-        class _DeleteView(LayoutView):
+        class DeleteView(LayoutView):
             container = Container[Self](
                 TextDisplay(f"# Message Deleted | {format_dt(message.edited_at or utcnow(), style = "F")}"),
                 TextDisplay(
@@ -88,7 +98,7 @@ class MessageDeleteHandler(commands.Cog):
                 ),
             )
 
-        await log_channel.send(view = _DeleteView(), allowed_mentions = AllowedMentions.none())
+        await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
 
 async def setup(bot : Cordex) -> None:
     cog = MessageDeleteHandler(bot)

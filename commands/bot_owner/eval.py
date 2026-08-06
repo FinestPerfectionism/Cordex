@@ -42,8 +42,9 @@ from constants import (
     DENIED_EMOJI,
     STANDSTILL_EMOJI,
 )
-from core.exceptions import send_bad_permissions_command
-from core.paginator import Paginator
+from core.exceptions import send_bad_argument, send_bad_permissions_command
+from core.paginator import UnnamedPaginator
+from core.paginator.named import NamedPaginator
 from core.responses import format_message, format_send
 from core.utilities import (
     codeblock,
@@ -167,7 +168,8 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
 
         "AllowedMentions" : discord.AllowedMentions,
 
-        "Paginator" : Paginator,
+        "NamedPaginator"   : NamedPaginator,
+        "UnnamedPaginator" : UnnamedPaginator,
     }
 
     # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to really warrant it.
@@ -175,6 +177,9 @@ async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
     if ctx.author.id != BOT_OWNER_ID:
         await send_bad_permissions_command(ctx)
         return
+
+    if not body:
+        await send_bad_argument(ctx, subtitle = {"body" : "This is a required argument was ommitted."})
 
     message = ctx.message
 

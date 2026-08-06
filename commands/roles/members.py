@@ -2,7 +2,7 @@ from discord import AllowedMentions, Role
 
 from bot import Interaction
 from constants import COLOR_GREY
-from core.paginator import Paginator
+from core.paginator import UnnamedPaginator
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role members Logic
@@ -42,7 +42,7 @@ async def run_role_members(
     person_label = "Bots"   if person_filter      == "bots"          else ("Humans" if person_filter == "humans" else "Members")
     role_label   = "not in" if actual_role_filter == "whodoesnthave" else "in"
 
-    _view = Paginator(
+    _view = UnnamedPaginator(
         f"### {person_label} {role_label} {role.mention},",
         [f"- {member.mention} | {member.id}" for member in filtered] if filtered else ["No members found."],
         data_name = person_label.lower(),
