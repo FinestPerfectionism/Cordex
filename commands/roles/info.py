@@ -28,7 +28,7 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
     for p in range(role.position + 3, role.position - 4, -1):
         if 0 <= p < len(roles):
             prefix = ">" if roles[p] == role else " "
-            hierarchy_lines += f"{len(roles) - p : >4}.   {prefix} {roles[p].name}\n"
+            hierarchy_lines += f"{len(roles) - p:>4}.   {prefix} {roles[p].name}\n"
 
     top_role = interaction.user.top_role
     diff_string = "" if guild.default_role == top_role else (

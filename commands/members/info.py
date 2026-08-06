@@ -82,7 +82,7 @@ async def run_member_info(
         target_index = all_members.index(target)
 
         joined_lines = [
-            f"{i + 1 : > 4}. {"> " if i == target_index else "  "}{str(m) if m.discriminator != "0" else m.name}"
+            f"{i + 1:>4}. {"> " if i == target_index else "  "}{str(m) if m.discriminator != "0" else m.name}"
             for i in range(max(0, target_index - 3), min(len(all_members), target_index + 4))
             for m in [all_members[i]]
         ]
