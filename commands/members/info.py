@@ -46,7 +46,7 @@ async def run_member_info(
     target = member or interaction.user
 
     if not isinstance(target, Member):
-        target = guild.get_member(target.id) or await guild.fetch_member(target.id)
+        target = await guild.fetch_member(target.id)
 
     # ⸻ Sort the joined and roles lists.
 
@@ -89,12 +89,14 @@ async def run_member_info(
 
         join_list = codeblock("\n".join(joined_lines), language = None) or "Unknown"
 
-    global_user = interaction.client.get_user(target.id) or await interaction.client.fetch_user(target.id)
-
     # ⸻ Determine avatar and banner based on server parameter.
 
-    avatar = (target.guild_avatar or target.avatar) if server else (target.avatar or global_user.avatar)
-    banner = (getattr(target, "guild_banner", None) or global_user.banner) if server else global_user.banner
+    avatar = (target.guild_avatar or target.avatar) if server else target.avatar
+
+    banner = getattr(target, "guild_banner", None) if server else None
+    if banner is None:
+        global_user = await interaction.client.fetch_user(target.id)
+        banner = global_user.banner
 
     # ⸻ Build the view.
 
