@@ -110,13 +110,13 @@ async def run_leave_add(
                     subtitle = {("target", "leave-type") : "You cannot hard clean yourself."},
                 )
 
-            if target and is_director(target):
+            elif target and is_director(target):
                 await send_bad_argument(
                     interaction,
                     subtitle = {("target", "leave-type") : "You cannot hard clean a director."},
                 )
 
-            if target:
+            elif target:
                 await interaction.response.send_message(view = _HardCleanView(target), ephemeral = True)
         case _:
             pass
