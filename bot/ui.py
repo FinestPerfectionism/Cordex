@@ -17,7 +17,6 @@ from discord.ui import (
     Label,
     MediaGallery,
     MentionableSelect,
-    Modal,
     RadioGroup,
     RoleSelect,
     Section,
@@ -32,6 +31,7 @@ from discord.ui import (
 )
 from discord.ui import Container as BaseContainer
 from discord.ui import LayoutView as BaseLayoutView
+from discord.ui import Modal as BaseModal
 from discord.ui import TextDisplay as BaseTextDisplay
 
 __all__ = [
@@ -65,6 +65,18 @@ __all__ = [
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot UI
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Modal
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class Modal(BaseModal):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def add_items(self, *items : Item["Modal | Self"]) -> None:
+        for item in items:
+            self.add_item(item)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # TextDisplay

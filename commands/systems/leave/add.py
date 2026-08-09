@@ -1,17 +1,30 @@
 from typing import Self, final, override
+
 from discord import Member
+
 from bot import Interaction
-from bot.ui import LayoutView, Modal, TextInput, Label, TextDisplay, ActionRow, button, grey, red, Button
+from bot.ui import (
+    ActionRow,
+    Button,
+    Label,
+    LayoutView,
+    Modal,
+    TextInput,
+    button,
+    grey,
+    red,
+)
 from core.exceptions import send_bad_argument
 from core.permissions import is_director
-from core.responses import format_message
+
+from ._base import WarningView
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /leave add Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
-class _ChoiceRow(ActionRow["_HardCleanView"]):
+class _ChoiceRow(ActionRow[LayoutView]):
     def __init__(self) -> None:
         super().__init__()
 
@@ -24,20 +37,12 @@ class _ChoiceRow(ActionRow["_HardCleanView"]):
         ...
 
 @final
-class _HardCleanView(LayoutView):
+class _HardCleanView(WarningView):
     def __init__(self, target : Member) -> None:
-        super().__init__()
-        self.add_items(
-            TextDisplay[Self](
-                format_message(
-                    msg_type =  "warning",
-                    title    =  "Warning,", 
-                    subtitle = f"You are about to hard clean {target.mention}. This action is intended for demotion and will require manual intervention to restore. Proceed?",
-                    footer   =  "This action is __not reversable__!",
-                    override = True,
-                )
-            ),
-            _ChoiceRow(),
+        super().__init__(
+            subtitle = f"You are about to hard clean {target.mention}. This action is intended for demotion and will require manual intervention to restore. Proceed?",
+            footer   =  "This action is __not reversable__!",
+            row      = _ChoiceRow(),
         )
 
 @final
@@ -76,6 +81,7 @@ class _LeaveModal(Modal, title = "Leave"):
             description = f"Set an end date for {name} leave.",
             component   = self._end_date,
         )
+        self.add_items(self.timer, self.start_date, self.end_date)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
@@ -93,21 +99,21 @@ async def run_leave_add(
         return
 
     match leave_type:
-        case "none" | None:
+        case "none":
             await interaction.response.send_modal(_LeaveModal(target or interaction.user))
-        case "soft_clean":
+        case "soft_clean" | None:
             await interaction.response.send_modal(_LeaveModal(target or interaction.user))
         case "hard_clean":
             if not target or target.id == interaction.user.id:
                 await send_bad_argument(
                     interaction,
-                    subtitle = {("target", "leave-type") : "You cannot hard clean yourself."}
+                    subtitle = {("target", "leave-type") : "You cannot hard clean yourself."},
                 )
 
             if target and is_director(target):
                 await send_bad_argument(
                     interaction,
-                    subtitle = {("target", "leave-type") : "You cannot hard clean a director."}
+                    subtitle = {("target", "leave-type") : "You cannot hard clean a director."},
                 )
 
             if target:

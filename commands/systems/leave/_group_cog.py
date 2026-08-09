@@ -1,7 +1,7 @@
 from typing import final
 
 from discord import Member
-from discord.app_commands import Choice, choices, command, describe, guild_only
+from discord.app_commands import Choice, choices, command, describe, guild_only, rename
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -33,7 +33,15 @@ class LeaveCommands(
     @help_description(
         arguments = {
             "target" : "The staff member to vacate. Defaults to yourself.",
-            "type"   : 'The type of leave to apply. Defaults to "Soft Clean".',
+            "type"   : (
+                'The type of leave to apply. Defaults to "Soft Clean".\n'
+                '`None`\n'
+                'Keeps all roles during your leave. You might get pinged!\n'
+                '`Soft Clean (Default)`\n'
+                'Removes roles temporarily during your leave.\n'
+                '`Hard Clean`\n'
+                'Permanantly removes roles. This action is intended for demotion and will require manual intervention to restore.'
+            ),
         },
     )
     @command(
@@ -44,6 +52,7 @@ class LeaveCommands(
         target     = "The staff member to place on leave. Defaults to yourself.",
         leave_type = 'The type of leave to apply. Defaults to "Soft Clean".',
     )
+    @rename(leave_type = "type")
     @choices(
         leave_type = [
             Choice(
@@ -78,7 +87,7 @@ class LeaveCommands(
         name        = "remove",
         description = "Un-vacate a staff member.",
     )
-    @describe()
+    @describe(target = "The staff member to remove from leave. Defaults to yourself.")
     @staff_cmd()
     async def cmd_leave_remove(self, interaction : Interaction, target : Member | None = None) -> None:
         await run_leave_remove(interaction, target)
