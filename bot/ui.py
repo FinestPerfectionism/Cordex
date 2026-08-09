@@ -71,9 +71,6 @@ __all__ = [
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class Modal(BaseModal):
-    def __init__(self) -> None:
-        super().__init__()
-
     def add_items(self, *items : Item["Modal | Self"]) -> None:
         for item in items:
             self.add_item(item)

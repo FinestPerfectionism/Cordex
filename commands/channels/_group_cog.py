@@ -5,7 +5,7 @@ from discord.app_commands import Choice, choices, command, describe, guild_only,
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.help import help_description
+from core.help import HelpArgument, help_description
 from core.permissions import administrator_cmd
 from core.utilities import unimplemented
 
@@ -34,7 +34,6 @@ class ChannelCommands(
     # /channel info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"channel" : "The channel to view information for. Defaults to the current one."})
     @command(
         name        = "info",
         description = "View information for a channel.",
@@ -51,7 +50,6 @@ class ChannelCommands(
     # /channel sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"channel" : "The channel to sync permissions for. Defaults to the current one."})
     @command(
         name        = "sync",
         description = "Sync a channel's permissions to it's category. Defaults to the current one.",
@@ -69,7 +67,6 @@ class ChannelCommands(
     # /channel duplicate Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"channel" : "The channel to duplicate. Defaults to the current one."})
     @command(
         name        = "duplicate",
         description = "Duplicate a channel or category.",
@@ -90,8 +87,12 @@ class ChannelCommands(
 
     @help_description(
         arguments = {
-            "channel-1" : "The first channel to compare.",
-            "channel-2" : "The second channel to compare.",
+            "channel-1" : HelpArgument(
+                description = "The first channel to compare.",
+            ),
+            "channel-2" : HelpArgument(
+                description = "The second channel to compare.",
+            ),
         },
     )
     @command(
@@ -122,21 +123,25 @@ class ChannelCommands(
 
     @help_description(
         arguments = {
-            "channel"     : "The channel to list permissions for.",
-            "perm-filter" : "Whether to show enabled or disabled permissions. Defaults to both.",
+            "channel"            : HelpArgument(
+                description = "The channel to list permissions for.",
+            ),
+            "permissions-filter" : HelpArgument(
+                description = "Whether to show enabled or disabled permissions. Defaults to both.",
+            ),
         },
     )
     @command(
         name        = "permissions",
         description = "List permissions for a selected channel.",
     )
-    @rename(perm_filter = "filter")
+    @rename(permissions_filter = "filter")
     @describe(
         channel     = "The channel to list permissions for.",
-        perm_filter = "Whether to show enabled or disabled permissions. Defaults to both.",
+        permissions_filter = "Whether to show enabled or disabled permissions. Defaults to both.",
     )
     @choices(
-        perm_filter = [
+        permissions_filter = [
             Choice(name = "Enabled",  value = "enabled"),
             Choice(name = "Disabled", value = "disabled"),
         ],
@@ -145,11 +150,11 @@ class ChannelCommands(
     @unimplemented()
     async def cmd_channel_permissions(
         self,
-        interaction : Interaction,
-        channel     : GuildChannel | None = None,
-        perm_filter : str          | None = None,
+        interaction        : Interaction,
+        channel            : GuildChannel | None = None,
+        permissions_filter : str          | None = None,
     ) -> None:
-        await run_channel_permissions(interaction, channel, perm_filter)
+        await run_channel_permissions(interaction, channel, permissions_filter)
 
 async def setup(bot : Cordex) -> None:
     cog = ChannelCommands(bot)

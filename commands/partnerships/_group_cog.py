@@ -12,7 +12,7 @@ from discord.app_commands import (
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.help import help_description
+from core.help import HelpArgument, help_description
 from core.permissions import director_cmd
 from core.state import load_partnership_data
 
@@ -52,11 +52,21 @@ class PartnershipCommands(
 
     @help_description(
         arguments = {
-            "server_picture"     : "The server's picture.",
-            "server_name"        : "The server's name.",
-            "server_description" : "The server's description.",
-            "server_owner"       : "The server's owner.",
-            "server_link"        : "The server's invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+            "server-picture"     : HelpArgument(
+                description = "The server's picture.",
+            ),
+            "server-name"        : HelpArgument(
+                description = "The server's name.",
+            ),
+            "server-description" : HelpArgument(
+                description = "The server's description.",
+            ),
+            "server-owner"       : HelpArgument(
+                description = "The server's owner.",
+            ),
+            "server-link"        : HelpArgument(
+                description = "The server's invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+            ),
         },
     )
     @command(
@@ -103,12 +113,24 @@ class PartnershipCommands(
 
     @help_description(
         arguments = {
-            "server-name"        : "The name of the server to update.",
-            "server-picture"     : "The server's new picture.",
-            "new-server-name"    : "The server's new name.",
-            "server-description" : "The server's new description.",
-            "server-owner"       : "The server's new owner.",
-            "server-link"        : "The server's new invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+            "server-name"        : HelpArgument(
+                description = "The name of the server to update.",
+            ),
+            "server-picture"     : HelpArgument(
+                description = "The server's new picture.",
+            ),
+            "new-server-name"    : HelpArgument(
+                description = "The server's new name.",
+            ),
+            "server-description" : HelpArgument(
+                description = "The server's new description.",
+            ),
+            "server-owner"       : HelpArgument(
+                description = "The server's new owner.",
+            ),
+            "server-link"        : HelpArgument(
+                description = "The server's new invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
+            ),
         },
     )
     @command(
@@ -158,7 +180,13 @@ class PartnershipCommands(
     # /partnership remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"server_name" : "The name of the server to remove."})
+    @help_description(
+        arguments = {
+            "server-name" : HelpArgument(
+                description = "The name of the server to remove.",
+            ),
+        },
+    )
     @command(
         name        = "remove",
         description = "Remove a server partnership.",

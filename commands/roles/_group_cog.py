@@ -5,7 +5,7 @@ from discord.app_commands import Choice, choices, command, describe, guild_only,
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.help import help_description
+from core.help import HelpArgument, help_description
 from core.permissions import administrator_cmd
 from core.utilities import unimplemented
 
@@ -34,7 +34,6 @@ class RoleCommands(
     # /role duplicate Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"role" : "The role to duplicate."})
     @command(
         name        = "duplicate",
         description = "Duplicate a role.",
@@ -53,7 +52,6 @@ class RoleCommands(
     # /role info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"role" : "The role to view information for."})
     @command(
         name        = "info",
         description = "View information for a role.",
@@ -72,9 +70,15 @@ class RoleCommands(
 
     @help_description(
         arguments = {
-            "role"          : "The role to view members or the lack thereof for.",
-            "role-filter"   : "Whether to check who has or who doesn't have the role selected. Defaults to \"member of\".",
-            "person-filter" : "Whether to show humans or bots. Defaults to both.",
+            "role"          : HelpArgument(
+                description = "The role to view members or the lack thereof for.",
+            ),
+            "role-filter"   : HelpArgument(
+                description = "Whether to check who has or who doesn't have the role selected. Defaults to \"member of\".",
+            ),
+            "person-filter" : HelpArgument(
+                description = "Whether to show humans or bots. Defaults to both.",
+            ),
         },
     )
     @command(
@@ -115,21 +119,25 @@ class RoleCommands(
 
     @help_description(
         arguments = {
-            "role"        : "The role to list permissions for.",
-            "perm-filter" : "Whether to show enabled or disabled permissions. Defaults to both.",
+            "role"               : HelpArgument(
+                description = "The role to list permissions for.",
+            ),
+            "permissions-filter" : HelpArgument(
+                description = "Whether to show enabled or disabled permissions. Defaults to both.",
+            ),
         },
     )
     @command(
         name        = "permissions",
         description = "List permissions for a selected role.",
     )
-    @rename(perm_filter = "filter")
+    @rename(permissons_filter = "filter")
     @describe(
-        role        = "The role to list permissions for.",
-        perm_filter = "Whether to show enabled or disabled permissions. Defaults to both.",
+        role               = "The role to list permissions for.",
+        permissions_filter = "Whether to show enabled or disabled permissions. Defaults to both.",
     )
     @choices(
-        perm_filter = [
+        permissions_filter = [
             Choice(name = "Enabled",  value = "enabled"),
             Choice(name = "Disabled", value = "disabled"),
         ],
@@ -137,11 +145,11 @@ class RoleCommands(
     @administrator_cmd()
     async def cmd_role_permissions(
         self,
-        interaction : Interaction,
-        role        : Role,
-        perm_filter : str | None = None,
+        interaction        : Interaction,
+        role               : Role,
+        permissions_filter : str | None = None,
     ) -> None:
-        await run_role_permissions(interaction, role, perm_filter)
+        await run_role_permissions(interaction, role, permissions_filter)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role compare Command
@@ -149,8 +157,12 @@ class RoleCommands(
 
     @help_description(
         arguments = {
-            "role-1" : "The first role to compare.",
-            "role-2" : "The second role to compare.",
+            "role-1" : HelpArgument(
+                description = "The first role to compare.",
+            ),
+            "role-2" : HelpArgument(
+                description = "The second role to compare.",
+            ),
         },
     )
     @command(

@@ -57,8 +57,8 @@ class _LeaveModal(Modal, title = "Leave"):
             required    = False,
         )
         self.timer  = Label[Self](
-            text        = "Timer",
-            description = "Set a timer for leave.",
+            text        =  "Timer",
+            description = f"Set a timer for {name} leave.",
             component   = self._timer,
         )
 
@@ -100,23 +100,39 @@ async def run_leave_add(
 
     match leave_type:
         case "none":
-            await interaction.response.send_modal(_LeaveModal(target or interaction.user))
+            if target and is_director(target):
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {("target", "type") : "You cannot vacate other directors."},
+                )
+                return
+
+            await interaction.response.send_modal(_LeaveModal(target))
         case "soft_clean" | None:
-            await interaction.response.send_modal(_LeaveModal(target or interaction.user))
+            if target and is_director(target):
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {("target", "type") : "You cannot vacate other directors."},
+                )
+                return
+
+            await interaction.response.send_modal(_LeaveModal(target))
         case "hard_clean":
+            if target and is_director(target):
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {("target", "type") : "You cannot vacate other directors."},
+                )
+                return
+
             if not target or target.id == interaction.user.id:
                 await send_bad_argument(
                     interaction,
-                    subtitle = {("target", "leave-type") : "You cannot hard clean yourself."},
+                    subtitle = {("target", "type") : "You cannot hard clean yourself."},
                 )
+                return
 
-            elif target and is_director(target):
-                await send_bad_argument(
-                    interaction,
-                    subtitle = {("target", "leave-type") : "You cannot hard clean a director."},
-                )
-
-            elif target:
+            if target:
                 await interaction.response.send_message(view = _HardCleanView(target), ephemeral = True)
         case _:
             pass

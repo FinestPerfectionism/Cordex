@@ -21,6 +21,7 @@ from bot.ui import (
     VisibleLargeSeparator,
 )
 from constants import (
+    ARROW_EMOJI,
     BOT_OWNER_ID,
     COMMAND_EMOJI,
     CONTESTED_EMOJI,
@@ -39,8 +40,8 @@ from constants import (
 from core.exceptions import send_bad_operation, send_bad_request
 from core.help import (
     AnnotatedCommand,
+    HelpArgument,
     get_help_metadata,
-    help_description,
     label_for_parameter,
 )
 from core.paginator import UnnamedPaginator
@@ -91,13 +92,12 @@ def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
 
 def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
     metadata = get_help_metadata(cmd)
-    summary  = metadata.summary or cmd.description or "*No description provided.*"
 
     items : list[Item[LayoutView]] = [
         TextDisplay(
             (
                 f"# {format_command(cmd.qualified_name)} Command\n"
-                f"*{summary}*"
+                f"*{cmd.description or "*No description provided.*"}*"
             ),
         ),
     ]
@@ -108,7 +108,9 @@ def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
                 VisibleLargeSeparator(),
                 TextDisplay("## Arguments"),
                 *(
-                    TextDisplay(f"`{param.name} | {label_for_parameter(param)}:` {metadata.arguments.get(param.name, param.description) or "*No description provided.*"}")
+                    TextDisplay(
+                        f"`{(argument := metadata.arguments.get(param.name, HelpArgument())).name or param.name} | {label_for_parameter(param)}:` {argument.description or param.description or "*No description provided.*"}",
+                    )
                     for param in cmd.parameters
                 ),
             ],
@@ -183,14 +185,14 @@ class _CategorySelect(Select[UnnamedPaginator]):
                 SelectOption(
                     label       = "All Commands",
                     value       = "all",
-                    description = "All bot commands. Children: moderation, server, bot-owner, help",
+                    description = "All bot commands.",
                     emoji       = HORIZONTAL_SETTINGS,
                     default     = True,
                 ),
                 SelectOption(
                     label       = "Moderation Commands",
                     value       = "moderation",
-                    description = "Moderation commands. Children: ban, lockdown, note, quarantine, timeout, tickets, kick, purge",
+                    description = "Moderation commands. Numerous children.",
                     emoji       = MODERATION_EMOJI,
                 ),
                 SelectOption(
@@ -202,13 +204,13 @@ class _CategorySelect(Select[UnnamedPaginator]):
                 SelectOption(
                     label       = "Role Commands",
                     value       = "role",
-                    description = "Role commands. Children: info, members, permissions, compare",
+                    description = "Role commands. Children: compare, duplicate, info, members, permissions",
                     emoji       = PENCIL_EMOJI,
                 ),
                 SelectOption(
                     label       = "Channel Commands",
                     value       = "channel",
-                    description = "Channel commands. Children: info, sync, duplicate",
+                    description = "Channel commands. Children: compare, duplicate, info, permissions, sync",
                     emoji       = TEXT_EMOJI,
                 ),
                 SelectOption(
@@ -222,6 +224,12 @@ class _CategorySelect(Select[UnnamedPaginator]):
                     value       = "partnership",
                     description = "Partnership commands. Children: add, update, remove",
                     emoji       = PARTNERSHIP_EMOJI,
+                ),
+                SelectOption(
+                    label       = "Leave Commands",
+                    value       = "leave",
+                    description = "Leave commands. Children: add, remove",
+                    emoji       = ARROW_EMOJI,
                 ),
             ],
         )
@@ -251,6 +259,9 @@ class _CategorySelect(Select[UnnamedPaginator]):
             case "partnership":
                 filtered = [c for c in self._commands if c.qualified_name.startswith("partnership")]
                 title    = f"# {PARTNERSHIP_EMOJI} Partnership Commands"
+            case "leave":
+                filtered = [c for c in self._commands if c.qualified_name.startswith("leave")]
+                title    = f"# {ARROW_EMOJI} Leave Commands"
             case _:
                 filtered = self._commands
                 title    = f"# {HORIZONTAL_SETTINGS} All Commands"
@@ -282,7 +293,6 @@ class HelpCommand(commands.Cog):
     # /help Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"name" : "The name of the command to view information for."})
     @command(
         name        = "help",
         description = "Provides assistance into a command. Defaults to information about the bot and a list of commands.",

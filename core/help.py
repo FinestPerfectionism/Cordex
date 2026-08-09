@@ -12,9 +12,14 @@ type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @dataclass(frozen = True, slots = True)
+class HelpArgument:
+    name        : str | None = None
+    description : str | None = None
+
+
+@dataclass(frozen = True, slots = True)
 class HelpMetadata:
-    summary   : str | None     = None
-    arguments : dict[str, str] = field(default_factory = dict)
+    arguments : dict[str, HelpArgument] = field(default_factory = dict)
 
 
 _TYPE_LABELS : dict[AppCommandOptionType, str] = {
@@ -33,10 +38,9 @@ _registry : dict[str, HelpMetadata] = {}
 
 def help_description[GroupT : Group | commands.Cog, **P, T](
     *,
-    summary   : str            | None = None,
-    arguments : dict[str, str] | None = None,
+    arguments : dict[str, HelpArgument] | None = None,
 ) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
-    metadata = HelpMetadata(summary = summary, arguments = arguments or {})
+    metadata = HelpMetadata(arguments = arguments or {})
 
     def decorator(cmd : Command[GroupT, P, T]) -> Command[GroupT, P, T]:
         _registry[cmd.qualified_name] = metadata
@@ -49,6 +53,7 @@ def get_help_metadata[GroupT : Group | commands.Cog, **P, T](cmd : Command[Group
 
 def label_for_parameter(param : Parameter) -> str:
     if param.choices:
-        return "Choice"
+        choices = ", ".join(choice.name for choice in param.choices)
+        return f"Choice[{choices}]"
 
     return _TYPE_LABELS.get(param.type, "Text Input")

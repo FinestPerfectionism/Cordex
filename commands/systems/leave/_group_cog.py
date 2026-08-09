@@ -5,7 +5,7 @@ from discord.app_commands import Choice, choices, command, describe, guild_only,
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.help import help_description
+from core.help import HelpArgument, help_description
 from core.permissions import director_cmd, staff_cmd
 
 from .add import run_leave_add
@@ -32,15 +32,16 @@ class LeaveCommands(
 
     @help_description(
         arguments = {
-            "target" : "The staff member to vacate. Defaults to yourself.",
-            "type"   : (
-                'The type of leave to apply. Defaults to "Soft Clean".\n'
-                '`None`\n'
-                'Keeps all roles during your leave. You might get pinged!\n'
-                '`Soft Clean (Default)`\n'
-                'Removes roles temporarily during your leave.\n'
-                '`Hard Clean`\n'
-                'Permanantly removes roles. This action is intended for demotion and will require manual intervention to restore.'
+            "type" : HelpArgument(
+                description = (
+                    'The type of leave to apply. Defaults to "Soft Clean".\n'
+                    '> **None**\n'
+                    '> Keeps all roles during your leave. You might get pinged!\n'
+                    '> **Soft Clean (Default)**\n'
+                    '> Removes roles temporarily during your leave.\n'
+                    '> **Hard Clean**\n'
+                    '> Permanantly removes roles. This action is intended for demotion and will require manual intervention to restore.'
+                ),
             ),
         },
     )
@@ -82,7 +83,6 @@ class LeaveCommands(
     # /leave remove Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"target" : "The staff member to remove from leave. Defaults to yourself."})
     @command(
         name        = "remove",
         description = "Un-vacate a staff member.",
