@@ -67,9 +67,9 @@ def channel_display(channel : Messageable | GuildChannel) -> str:
         parent = channel.parent
 
         if isinstance(parent, ForumChannel):
-            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.mention}"
+            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.id}"
         if parent is not None:
-            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.mention}"
+            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.id}"
 
         return channel.mention
 

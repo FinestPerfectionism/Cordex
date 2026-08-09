@@ -65,7 +65,7 @@ class MessageDeleteHandler(commands.Cog):
         @final
         class DeleteView(LayoutView):
             container = Container[Self](
-                TextDisplay(f"# Message Deleted | {format_dt(message.edited_at or utcnow(), style = "F")}"),
+                TextDisplay(f"# Message Deleted | {format_dt(utcnow(), style = "F")}"),
                 TextDisplay(
                     format_table(
                         {

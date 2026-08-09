@@ -6,7 +6,7 @@ from discord import Member, Message
 from discord.ext import commands
 
 from bot import Cordex
-from constants import STAFF_ROLES
+from core.permissions import is_staff
 
 BANNED_GIF = "https://tenor.com/view/dog-funny-video-funny-funny-dog-dog-peeing-gif-4718562751207105873"
 
@@ -55,9 +55,9 @@ class AutomoderationSystem(commands.Cog):
         )
 
         if has_image and isinstance(author, Member):
-            # 1 ~~~ Switch from a raw STAFF_ROLES to check to a legitimate function.
-            if any(role.id in STAFF_ROLES for role in author.roles):
+            if is_staff(author):
                 return
+
             current_time = time()
             user_heat = self.heat[author.id]
 

@@ -18,7 +18,8 @@ if TYPE_CHECKING:
 @final
 class QuarantineEnforcerSystem(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
-        self.bot                   = bot
+        self.bot = bot
+
         self.semaphore             = Semaphore(3)
         self.processing : set[int] = set()
 

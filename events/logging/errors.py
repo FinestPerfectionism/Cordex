@@ -26,7 +26,7 @@ from discord.app_commands import AppCommandError
 from discord.ext import commands
 from discord.utils import utcnow
 
-from bot import Context, Cordex, Interaction, tree
+from bot import Context, Cordex, Interaction
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
     BOT_OWNER_ID,
@@ -57,9 +57,10 @@ from core.utilities import codeblock, format_command
 @final
 class ErrorLogger(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
-        self.bot                       = bot
+        self.bot = bot
+        self.bot.tree.error(self.command_error_handler)
+
         self.tasks : set[Task[object]] = set()
-        tree.error(self.command_error_handler)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Central Error Sender

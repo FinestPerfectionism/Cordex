@@ -6,7 +6,15 @@ from discord.ext import commands
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex
-from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
+from bot.ui import (
+    Button,
+    ButtonSection,
+    Container,
+    LayoutView,
+    TextDisplay,
+    VisibleLargeSeparator,
+    link,
+)
 from commands.bot_owner.eval import eval_message_ids
 from constants import (
     BOT_OWNER_ID,
@@ -114,13 +122,14 @@ class MessageEditHandler(commands.Cog):
         class EditView(LayoutView):
             container = Container[Self](
                 TextDisplay(f"# Message Edited | {format_dt(after.edited_at or utcnow(), style = "F")}"),
-                TextDisplay(
+                ButtonSection(
                     format_table(
                         {
                             "Author"  : f"{author.mention} | {author.id}",
                             "Channel" : channel_display(after.channel),
                         },
                     ),
+                    button = Button(label = "Jump to Message", style = link, url = after.jump_url),
                 ),
                 color = COLOR_GREY,
             )

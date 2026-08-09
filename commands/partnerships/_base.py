@@ -2,7 +2,7 @@ from re import compile
 
 from discord import TextChannel
 
-from bot import Interaction, bot
+from bot import Interaction
 from constants import PARTNERSHIPS_CHANNEL_ID
 from core.responses import format_send
 
@@ -21,7 +21,7 @@ INVITE_REGEX = compile(r"^(https?://)?(www\.)?(discord\.gg|discord\.com/invite)/
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def get_channel(interaction : Interaction) -> TextChannel | None:
-    channel = bot.get_channel(PARTNERSHIPS_CHANNEL_ID)
+    channel = interaction.client.get_channel(PARTNERSHIPS_CHANNEL_ID)
     if not isinstance(channel, TextChannel):
         await format_send(
             interaction,

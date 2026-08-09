@@ -6,7 +6,7 @@ from typing import Literal, Self, TypedDict, cast, final, override
 from discord import AllowedMentions, ButtonStyle, Member
 from discord.utils import escape_markdown
 
-from bot import Interaction, bot
+from bot import Interaction
 from bot.ui import (
     ActionRow,
     Button,
@@ -357,7 +357,7 @@ class _EditorView(LayoutView):
                 return
 
             action_errors : list[tuple[Member, str]] = []
-            actions = BaseActions(bot)
+            actions = BaseActions(interaction.client)
 
             try:
                 if self.action_type == "Ban Add":

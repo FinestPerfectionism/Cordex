@@ -98,7 +98,7 @@ class BotOwnerCommands(
     )
     @bot_owner_cmd()
     async def cmd_bo_cog_pullreload(self, interaction : Interaction) -> None:
-        await run_bo_cog_pullreload(self.bot, interaction)
+        await run_bo_cog_pullreload(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner cog reload Command
@@ -112,7 +112,7 @@ class BotOwnerCommands(
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
     async def cmd_bo_cog_reload(self, interaction : Interaction, cog : str | None) -> None:
-        await run_bo_cog_reload(self.bot, interaction, cog)
+        await run_bo_cog_reload(interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner cog load Command
@@ -126,7 +126,7 @@ class BotOwnerCommands(
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
     async def cmd_bo_cog_load(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cog_load(self.bot, interaction, cog)
+        await run_bo_cog_load(interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner cog unload Command
@@ -140,7 +140,7 @@ class BotOwnerCommands(
     @autocomplete(cog = cog_autocomplete)
     @bot_owner_cmd()
     async def cmd_bo_cog_unload(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cog_unload(self.bot, interaction, cog)
+        await run_bo_cog_unload(interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner state shutdown Command
@@ -152,7 +152,7 @@ class BotOwnerCommands(
     )
     @bot_owner_cmd()
     async def cmd_bo_state_shutdown(self, interaction : Interaction) -> None:
-        await run_bo_state_shutdown(self.bot, interaction)
+        await run_bo_state_shutdown(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner state restart Command
@@ -164,7 +164,7 @@ class BotOwnerCommands(
     )
     @bot_owner_cmd()
     async def cmd_bo_state_restart(self, interaction : Interaction) -> None:
-        await run_bo_state_restart(self.bot, interaction)
+        await run_bo_state_restart(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner state sync Command
@@ -176,7 +176,7 @@ class BotOwnerCommands(
     )
     @bot_owner_cmd()
     async def cmd_bo_state_sync(self, interaction : Interaction) -> None:
-        await run_bo_state_sync(self.bot, interaction)
+        await run_bo_state_sync(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command
@@ -184,7 +184,7 @@ class BotOwnerCommands(
 
     @prefix_command(name = "eval")
     async def cmd_bo_eval(self, ctx : Context, *, body : str) -> None:
-        await run_bo_eval(self.bot, ctx, body)
+        await run_bo_eval(ctx, body)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner message send Command
@@ -289,7 +289,6 @@ class BotOwnerCommands(
     async def cmd_bo_style_reset(self, interaction : Interaction, *, branded : bool | None = None) -> None:
         await run_bo_style_reset(
             interaction = interaction,
-            bot         = self.bot,
             branded     = branded,
         )
 
@@ -340,7 +339,7 @@ class BotOwnerCommands(
         effect      : str,
         colors      : str,
     ) -> None:
-        await run_bo_style_set(interaction, self.bot, font, effect, colors)
+        await run_bo_style_set(interaction, font, effect, colors)
 
 async def setup(bot : Cordex) -> None:
     cog = BotOwnerCommands(bot)

@@ -1,6 +1,6 @@
 from asyncio import create_subprocess_exec, subprocess
 
-from bot import Cordex, Interaction, log, tree
+from bot import Interaction, log
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_operation
 from core.responses import format_send
@@ -10,10 +10,12 @@ from core.utilities import codeblock
 # /bot-owner cog pull-reload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_cog_pullreload(bot : Cordex, interaction : Interaction) -> None:
+async def run_bo_cog_pullreload(interaction : Interaction) -> None:
+    client = interaction.client
+
     await interaction.response.defer(ephemeral = True)
 
-    cogs : list[str] = get_cogs()
+    cogs = get_cogs()
 
     proc = await create_subprocess_exec(
         "git", "pull", "origin", "main",
@@ -38,9 +40,9 @@ async def run_bo_cog_pullreload(bot : Cordex, interaction : Interaction) -> None
     failed : list[tuple[str, Exception]] = []
     for c in cogs:
         try:
-            await bot.reload_extension(c)
-            await tree.sync()
-            await bot.rebuild_commands_cache()
+            await client.reload_extension(c)
+            await client.tree.sync()
+            await client.rebuild_commands_cache()
             log.info("Reloaded cog %s", c)
         except Exception as e:
             failed.append((c, e))

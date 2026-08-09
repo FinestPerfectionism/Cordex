@@ -1,4 +1,4 @@
-from bot import Cordex, Interaction, log, tree
+from bot import Interaction, log
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
@@ -8,14 +8,12 @@ from core.utilities import codeblock
 # /bot-owner cog unload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_cog_unload(
-    bot         : Cordex,
-    interaction : Interaction,
-    cog         : str,
-) -> None:
+async def run_bo_cog_unload(interaction : Interaction, cog : str) -> None:
+    client = interaction.client
+
     await interaction.response.defer(ephemeral = True)
 
-    cogs : list[str] = get_cogs()
+    cogs = get_cogs()
 
     if cog == "commands.bot_owner._group_cog":
         await send_bad_argument(interaction, subtitle = {"cog": "You may not explicitly unload the bot-owner cog."})
@@ -25,14 +23,14 @@ async def run_bo_cog_unload(
         await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` not found."})
         return
 
-    if cog not in bot.extensions:
+    if cog not in client.extensions:
         await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` is not currently loaded."})
         return
 
     try:
-        await bot.unload_extension(cog)
-        await tree.sync()
-        await bot.rebuild_commands_cache()
+        await client.unload_extension(cog)
+        await client.tree.sync()
+        await client.rebuild_commands_cache()
         await format_send(
             interaction,
             msg_type =  "success",

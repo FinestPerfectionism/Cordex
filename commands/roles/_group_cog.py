@@ -34,12 +34,12 @@ class RoleCommands(
     # /role duplicate Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(arguments = {"role" : "The role to duplicate. Defaults to the current one."})
+    @help_description(arguments = {"role" : "The role to duplicate."})
     @command(
         name        = "duplicate",
         description = "Duplicate a role.",
     )
-    @describe(role = "The role to duplicate. Defaults to the current one.")
+    @describe(role = "The role to duplicate.")
     @administrator_cmd()
     @unimplemented()
     async def cmd_role_duplicate(

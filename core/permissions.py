@@ -142,3 +142,13 @@ def staff_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
         context       = "Main Guild",
         allowed_roles = [STAFF_ROLE_ID],
     )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Raw Checks
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def is_director(user : Member) -> bool:
+    return any(role.id == DIRECTORS_ROLE_ID for role in user.roles)
+
+def is_staff(user : Member) -> bool:
+    return any(role.id == STAFF_ROLE_ID for role in user.roles)

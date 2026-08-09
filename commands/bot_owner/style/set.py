@@ -1,6 +1,6 @@
 from re import compile
 
-from bot import Cordex, Interaction
+from bot import Interaction
 from constants import DisplayNameEffect, DisplayNameFont
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
@@ -14,7 +14,6 @@ COLOR_PATTERN = compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
 
 async def run_bo_style_set(
     interaction : Interaction,
-    bot         : Cordex,
     font        : str,
     effect      : str,
     colors      : str,
@@ -45,7 +44,7 @@ async def run_bo_style_set(
     color_list = colors.split("-")
 
     try:
-        await bot.set_name_style(
+        await interaction.client.set_name_style(
             guild     = interaction.guild,
             font_id   = DisplayNameFont[font],
             effect_id = DisplayNameEffect[effect],

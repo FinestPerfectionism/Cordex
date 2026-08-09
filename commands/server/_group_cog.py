@@ -18,7 +18,7 @@ from .info import run_server_info
 class ServerCommands(
     commands.GroupCog,
     name        = "server",
-    description = "Staff only — server commands.",
+    description = "Server commands.",
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()

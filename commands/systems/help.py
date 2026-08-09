@@ -6,7 +6,7 @@ from discord import SelectOption
 from discord.app_commands import Command, command, describe
 from discord.ext import commands
 
-from bot import Cordex, Interaction, bot
+from bot import Cordex, Interaction
 from bot.ui import (
     ActionRow,
     Button,
@@ -69,7 +69,7 @@ def _build_sections(cmds : CommandList) -> list[str | Item[LayoutView]]:
 def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
     query_lower = query.strip().lower()
 
-    scored : list[tuple[float, AnnotatedCommand]] = [
+    scored = [
         (
             SequenceMatcher(
                 None,
@@ -294,7 +294,7 @@ class HelpCommand(commands.Cog):
         # ⸻ Grab the commands from the cache and then sort them.
 
         cmds = [
-            c for c in bot.get_commands_cache()
+            c for c in interaction.client.get_commands_cache()
             if isinstance(c, Command)
             and not c.qualified_name.startswith("bot-owner")
         ]

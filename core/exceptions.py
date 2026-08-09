@@ -27,6 +27,7 @@ async def send_unknown_error(target : ContextOrInteraction) -> None:
 
 async def send_bad_operation(
     target   : ContextOrInteraction,
+    /,
     *,
     title    : str = "run command",
     subtitle : str = "An exception occurred during this interaction.",
@@ -45,6 +46,7 @@ async def send_bad_operation(
 
 async def send_bad_request(
     target   : ContextOrInteraction,
+    /,
     *,
     title    : str = "run command",
     subtitle : str = "The requested operation is invalid.",
@@ -63,6 +65,7 @@ async def send_bad_request(
 
 async def send_bad_argument(
     target   : ContextOrInteraction,
+    /,
     *,
     title    : str = "run command",
     subtitle : dict[str | tuple[str, ...] | None, str],
@@ -124,20 +127,23 @@ async def send_bad_permissions_command(target : ContextOrInteraction) -> None:
 # Bad Permissions Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_permissions_argument(target : ContextOrInteraction, *args : str) -> None:
-    arguments : tuple[str, ...] = args
-    formatted_args = [f"`{arg}`" for arg in arguments]
+async def send_bad_permissions_argument(
+    target   : ContextOrInteraction,
+    subtitle : list[str],
+    /,
+) -> None:
+    args = [f"`{arg}`" for arg in subtitle]
 
-    subtitle = f"You are not authorized to use these arguments: {", ".join(formatted_args)}"
+    text = f"You are not authorized to use the following arguments: {", ".join(args)}"
 
-    if len(formatted_args) == 1:
-        subtitle = f"You are not authorized to use the {formatted_args[0]} argument."
+    if len(args) == 1:
+        text = f"You are not authorized to use the {args[0]} argument."
 
     await format_send(
         target,
         msg_type = "error",
         title    = "run command",
-        subtitle = subtitle,
+        subtitle = text,
         footer   = "Bad request",
     )
 

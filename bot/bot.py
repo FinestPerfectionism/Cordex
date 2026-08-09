@@ -111,9 +111,12 @@ class Cordex(commands.Bot):
             help_command   = None,
             status         = status,
         )
-        self.db                  : Connection
+        self.db : Connection
+
         self._commands_cache     : list[Command[Group | Cog, ..., object] | Group] = []
         self._app_commands_cache : list[AppCommand] = []
+
+        self.restarting : bool = False
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Name Styles
@@ -187,20 +190,30 @@ class Cordex(commands.Bot):
                 guild_info_sql = f4.read()
             with Path("schemas/tickets.sql").open(encoding = "utf-8") as f5:
                 tickets_sql = f5.read()
-            return log_sql, cases_sql, partnerships_sql, guild_info_sql, tickets_sql
+            return (
+                log_sql,
+                cases_sql,
+                partnerships_sql,
+                guild_info_sql,
+                tickets_sql,
+            )
 
-        logging_schema, cases_schema, partnerships_schema, guild_info_schema, tickets_schema = await to_thread(read_schemas)
+        (
+            logging_schema,
+            cases_schema,
+            partnerships_schema,
+            guild_info_schema,
+            tickets_schema,
+        ) = await to_thread(read_schemas)
 
-        await self.db.executescript(logging_schema)
-        await self.db.executescript(cases_schema)
-        await self.db.executescript(partnerships_schema)
-        await self.db.executescript(guild_info_schema)
-        await self.db.executescript(tickets_schema)
+        for schema in [logging_schema, cases_schema, partnerships_schema, guild_info_schema, tickets_schema]:
+            await self.db.executescript(schema)
+
         await self.db.commit()
 
         # ⸻ Cogs
 
-        cogs  : list[str] = await to_thread(
+        cogs = await to_thread(
             discover_cogs,
             "commands",
             "events",

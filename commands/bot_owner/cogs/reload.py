@@ -1,4 +1,4 @@
-from bot import Cordex, Interaction, log, tree
+from bot import Interaction, log
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
@@ -8,23 +8,21 @@ from core.utilities import codeblock
 # /bot-owner cog reload Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_cog_reload(
-    bot         : Cordex,
-    interaction : Interaction,
-    cog         : str | None,
-) -> None:
+async def run_bo_cog_reload(interaction : Interaction, cog : str | None = None) -> None:
+    client = interaction.client
+
     await interaction.response.defer(ephemeral = True)
 
-    cogs : list[str] = get_cogs()
+    cogs = get_cogs()
 
     if cog:
         if cog not in cogs:
             await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` not found."})
             return
         try:
-            await bot.reload_extension(cog)
-            await tree.sync()
-            await bot.rebuild_commands_cache()
+            await client.reload_extension(cog)
+            await client.tree.sync()
+            await client.rebuild_commands_cache()
             await format_send(
                 interaction,
                 msg_type =  "success",
@@ -48,7 +46,7 @@ async def run_bo_cog_reload(
     failed : list[tuple[str, Exception]] = []
     for c in cogs:
         try:
-            await bot.reload_extension(c)
+            await client.reload_extension(c)
             log.info("Reloaded cog %s", c)
         except Exception as e:
             failed.append((c, e))

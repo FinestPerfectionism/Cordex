@@ -1,4 +1,4 @@
-from bot import Cordex, Interaction, log, tree
+from bot import Interaction, log
 from commands.bot_owner import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
@@ -8,25 +8,23 @@ from core.utilities import codeblock
 # /bot-owner cog load Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_cog_load(
-    bot         : Cordex,
-    interaction : Interaction,
-    cog         : str,
-) -> None:
+async def run_bo_cog_load(interaction : Interaction, cog : str) -> None:
+    client = interaction.client
+
     await interaction.response.defer(ephemeral = True)
 
-    cogs : list[str] = get_cogs()
+    cogs = get_cogs()
 
     if cog not in cogs:
         await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` not found."})
         return
-    if cog in bot.extensions:
+    if cog in client.extensions:
         await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` is already loaded."})
         return
     try:
-        await bot.load_extension(cog)
-        await tree.sync()
-        await bot.rebuild_commands_cache()
+        await client.load_extension(cog)
+        await client.tree.sync()
+        await client.rebuild_commands_cache()
         await format_send(
             interaction,
             msg_type =  "success",

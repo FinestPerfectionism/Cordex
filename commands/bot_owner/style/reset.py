@@ -1,4 +1,4 @@
-from bot import Cordex, Interaction
+from bot import Interaction
 from core.exceptions import send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock
@@ -9,7 +9,6 @@ from core.utilities import codeblock
 
 async def run_bo_style_reset(
     interaction : Interaction,
-    bot         : Cordex,
     *,
     branded     : bool | None = True,
 ) -> None:
@@ -22,7 +21,7 @@ async def run_bo_style_reset(
         return
 
     try:
-        await bot.reset_name_style(guild = interaction.guild, branded = branded)
+        await interaction.client.reset_name_style(guild = interaction.guild, branded = branded)
         await format_send(
             interaction,
             msg_type = "success",

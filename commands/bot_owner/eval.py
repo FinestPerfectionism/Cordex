@@ -13,7 +13,7 @@ from discord.ext import commands
 from discord.utils import format_dt, get, utcnow
 
 import constants
-from bot import Context, ContextOrInteraction, Cordex, Interaction, tree, ui
+from bot import Context, ContextOrInteraction, Interaction, ui
 from bot.ui import (
     BaseContainer,
     BaseLayoutView,
@@ -59,11 +59,11 @@ from core.utilities import (
 
 eval_message_ids : dict[int, int] = {}
 
-async def run_bo_eval(bot : Cordex, ctx : Context, body : str) -> None:
+async def run_bo_eval(ctx : Context, body : str) -> None:
     env : dict[str, object] = {
-        "bot"  : bot,
+        "bot"  : ctx.bot,
         "ctx"  : ctx,
-        "tree" : tree,
+        "tree" : ctx.bot.tree,
 
         "channel" : ctx.channel,
         "author"  : ctx.author,

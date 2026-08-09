@@ -100,6 +100,8 @@ class NamedPaginator(LayoutView):
         ] if len(self.pages) >= 2 else []
 
         self._above_items : _ItemsList = []
+        self._over_items  : _ItemsList = []
+        self._under_items : _ItemsList = []
         self._below_items : _ItemsList = []
 
         # ⸻ color is dependent on container.
@@ -118,6 +120,22 @@ class NamedPaginator(LayoutView):
 
     def add_above(self, *items : Item[LayoutView]) -> None:
         self._above_items.extend(items)
+        self._render()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # add_over
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def add_over(self, *items : Item[LayoutView]) -> None:
+        self._over_items.extend(items)
+        self._render()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # add_under
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def add_under(self, *items : Item[LayoutView]) -> None:
+        self._under_items.extend(items)
         self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -165,11 +183,13 @@ class NamedPaginator(LayoutView):
             if accumulated:
                 page_items.append(TextDisplay("\n".join(accumulated)))
 
-        items : _ItemsList = [*page_items, VisibleLargeSeparator()]
+        items : _ItemsList = [*self._over_items, *page_items, VisibleLargeSeparator()]
 
         for name_row in self._name_rows:
             name_row.update_states()
             items.append(name_row)
+
+        items.extend(self._under_items)
 
         # ⸻ Add all items to the container if chosen or directly to the view if not.
 

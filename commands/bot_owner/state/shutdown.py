@@ -1,15 +1,15 @@
-from bot import Cordex, Interaction
+from bot import Interaction
 from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner state shutdown Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_state_shutdown(bot : Cordex, interaction : Interaction) -> None:
+async def run_bo_state_shutdown(interaction : Interaction) -> None:
     await format_send(
         interaction,
         msg_type = "information",
         title    = "Shutting down bot",
         subtitle = "Shutting down bot...",
     )
-    await bot.close()
+    await interaction.client.close()

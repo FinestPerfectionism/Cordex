@@ -1,4 +1,4 @@
-from bot import Cordex, Interaction, log, tree
+from bot import Interaction, log
 from core.exceptions import send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock
@@ -7,11 +7,13 @@ from core.utilities import codeblock
 # /bot-owner state sync Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_bo_state_sync(bot : Cordex, interaction : Interaction) -> None:
+async def run_bo_state_sync(interaction : Interaction) -> None:
+    client = interaction.client
+
     try:
         log.info("Starting a tree sync.")
-        synced = await tree.sync()
-        await bot.rebuild_commands_cache()
+        synced = await client.tree.sync()
+        await client.rebuild_commands_cache()
         await format_send(
             interaction,
             msg_type = "success",

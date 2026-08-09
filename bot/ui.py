@@ -85,7 +85,7 @@ class LayoutView(BaseLayoutView):
     def add_text(self, text : str, /) -> None:
         self.add_item(TextDisplay(text))
 
-    def add_items(self, *items : Item[Self]) -> None:
+    def add_items(self, *items : Item[BaseLayoutView | Self]) -> None:
         for item in items:
             self.add_item(item)
 
