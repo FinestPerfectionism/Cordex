@@ -108,7 +108,7 @@ def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
                 TextDisplay("## Arguments"),
                 *(
                     TextDisplay(
-                        f"`{(argument := metadata.arguments.get(param.name, HelpArgument())).name or param.name} | {label_for_parameter(param)}:` {argument.description or param.description or "*No description provided.*"}",
+                        f"`{(argument := metadata.arguments.get(param.name, HelpArgument())).name or param.display_name or param.name} | {label_for_parameter(param)}:` {argument.description or param.description or "*No description provided.*"}",
                     )
                     for param in cmd.parameters
                 ),

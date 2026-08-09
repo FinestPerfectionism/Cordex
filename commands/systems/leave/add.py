@@ -16,7 +16,7 @@ from bot.ui import (
 )
 from constants import STAFF_ROLES
 from core.exceptions import send_bad_argument, send_bad_operation
-from core.permissions import is_director
+from core.permissions import is_director, is_staff
 
 from ._base import WarningView
 
@@ -57,8 +57,7 @@ class _ChoiceRow(ActionRow["_HardCleanView"]):
                 )
             else:
                 self.view.text = f"Hard Clean successful. Removed {len(roles_to_remove)} roles from {target.mention}."
-
-                await interaction.edit_original_response(view = self.view)
+                await interaction.response.edit_message(view = self.view)
 
     @button(label = "No", style = grey)
     async def btn_no(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
@@ -122,7 +121,58 @@ class _LeaveModal(Modal, title = "Leave"):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        ...
+        timer = bool(self._timer.value)
+        start = bool(self._start_date.value)
+        end   = bool(self._end_date.value)
+
+        # ⸻ At least one field is required.
+
+        if not (timer or start or end):
+            await send_bad_argument(
+                interaction,
+                subtitle = {("Timer", "Start Date", "End Date") : "At least 1 argument must be chosen."},
+            )
+            return
+
+        # ⸻ Timer cannot be combined with Start or End dates.
+
+        if timer and (start or end):
+            fields = tuple(name for name, active in [("Timer", timer), ("Start Date", start), ("End Date", end)] if active)
+
+            await send_bad_argument(
+                interaction,
+                subtitle = {fields : "These arguments are incompatible."},
+            )
+            return
+
+        # ⸻ Start Date and End Date must be provided together.
+
+        if start != end:
+            error = "`Start Date` is dependent on `End Date`." if start else "`End Date` is dependent on `Start Date`."
+
+            await send_bad_argument(
+                interaction,
+                subtitle = {("Start Date", "End Date") : error},
+            )
+            return
+
+
+async def _validate_target(interaction : Interaction, target : Member) -> bool:
+    if is_director(target):
+        await send_bad_argument(
+            interaction,
+            subtitle = {("target", "type") : "You cannot vacate other directors."},
+        )
+        return False
+
+    if not is_staff(target):
+        await send_bad_argument(
+            interaction,
+            subtitle = {("target", "type") : "You cannot vacate those who are not staff."},
+        )
+        return False
+
+    return True
 
 async def run_leave_add(
     interaction : Interaction,
@@ -135,33 +185,14 @@ async def run_leave_add(
     if not isinstance(interaction.user, Member):
         return
 
+    if target and not await _validate_target(interaction, target):
+        return
+
     match leave_type:
-        case "standard":
-            if target and is_director(target):
-                await send_bad_argument(
-                    interaction,
-                    subtitle = {("target", "type") : "You cannot vacate other directors."},
-                )
-                return
-
+        case "standard" | "soft_clean" | None:
             await interaction.response.send_modal(_LeaveModal(target))
-        case "soft_clean" | None:
-            if target and is_director(target):
-                await send_bad_argument(
-                    interaction,
-                    subtitle = {("target", "type") : "You cannot vacate other directors."},
-                )
-                return
-
-            await interaction.response.send_modal(_LeaveModal(target))
+            return
         case "hard_clean":
-            if target and is_director(target):
-                await send_bad_argument(
-                    interaction,
-                    subtitle = {("target", "type") : "You cannot vacate other directors."},
-                )
-                return
-
             if not target or target.id == interaction.user.id:
                 await send_bad_argument(
                     interaction,
@@ -169,7 +200,6 @@ async def run_leave_add(
                 )
                 return
 
-            if target:
-                await interaction.response.send_message(view = _HardCleanView(target), ephemeral = True)
+            await interaction.response.send_message(view = _HardCleanView(target), ephemeral = True)
         case _:
             pass

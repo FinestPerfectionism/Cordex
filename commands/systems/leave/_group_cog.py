@@ -32,7 +32,8 @@ class LeaveCommands(
 
     @help_description(
         arguments = {
-            "type" : HelpArgument(
+            "leave_type" : HelpArgument(
+                name        = "type",
                 description = (
                     'The type of leave to apply. Defaults to "Soft Clean".\n'
                     '> **Standard**\n'

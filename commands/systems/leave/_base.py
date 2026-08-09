@@ -10,18 +10,33 @@ from core.responses import format_message
 class WarningView(LayoutView):
     def __init__(self, *, subtitle : str, footer : str, row : ActionRow[LayoutView | Self]) -> None:
         super().__init__()
-        self.text : str = subtitle
+        self._footer  : str               = footer
+        self._display : TextDisplay[Self] = TextDisplay[Self](
+            format_message(
+                msg_type = "warning",
+                title    = "Warning,",
+                subtitle = subtitle,
+                footer   = footer,
+                override = True,
+            ),
+        )
 
         self.add_items(
-            TextDisplay[Self](
-                format_message(
-                    msg_type = "warning",
-                    title    = "Warning,",
-                    subtitle = subtitle,
-                    footer   = footer,
-                    override = True,
-                ),
-            ),
+            self._display,
             VisibleLargeSeparator[Self](),
             row,
+        )
+
+    @property
+    def text(self) -> str:
+        return self._display.content
+
+    @text.setter
+    def text(self, value : str) -> None:
+        self._display.content = format_message(
+            msg_type = "warning",
+            title    = "Warning,",
+            subtitle = value,
+            footer   = self._footer,
+            override = True,
         )

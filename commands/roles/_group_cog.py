@@ -121,7 +121,7 @@ class RoleCommands(
         arguments = {
             "role"               : HelpArgument(description = "The role to list permissions for."),
             "permissions_filter" : HelpArgument(
-                name        = "permissions-filter",
+                name        = "filter",
                 description = "Whether to show enabled or disabled permissions. Defaults to both.",
             ),
         },

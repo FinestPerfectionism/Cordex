@@ -34,7 +34,7 @@ _TYPE_LABELS : dict[AppCommandOptionType, str] = {
     AppCommandOptionType.attachment  : "Attachment",
 }
 
-_registry : dict[str, HelpMetadata] = {}
+_registry : dict[object, HelpMetadata] = {}
 
 def help_description[GroupT : Group | commands.Cog, **P, T](
     *,
@@ -43,13 +43,13 @@ def help_description[GroupT : Group | commands.Cog, **P, T](
     metadata = HelpMetadata(arguments = arguments or {})
 
     def decorator(cmd : Command[GroupT, P, T]) -> Command[GroupT, P, T]:
-        _registry[cmd.qualified_name] = metadata
+        _registry[cmd] = metadata
         return cmd
 
     return decorator
 
 def get_help_metadata[GroupT : Group | commands.Cog, **P, T](cmd : Command[GroupT, P, T]) -> HelpMetadata:
-    return _registry.get(cmd.qualified_name, HelpMetadata())
+    return _registry.get(cmd, HelpMetadata())
 
 def label_for_parameter(param : Parameter) -> str:
     if param.choices:
