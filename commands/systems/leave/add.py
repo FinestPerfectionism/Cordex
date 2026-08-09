@@ -2,7 +2,7 @@ from typing import Self, final, override
 
 from discord import Member
 
-from bot import Interaction
+from bot import Interaction, log
 from bot.ui import (
     ActionRow,
     Button,
@@ -14,7 +14,8 @@ from bot.ui import (
     grey,
     red,
 )
-from core.exceptions import send_bad_argument
+from constants import STAFF_ROLES
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.permissions import is_director
 
 from ._base import WarningView
@@ -24,17 +25,53 @@ from ._base import WarningView
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
-class _ChoiceRow(ActionRow[LayoutView]):
-    def __init__(self) -> None:
+class _ChoiceRow(ActionRow["_HardCleanView"]):
+    def __init__(self, target : Member) -> None:
         super().__init__()
+        self.target = target
 
     @button(label = "Yes", style = red)
-    async def btn_yes(self, _interaction : Interaction, _button : Button[LayoutView]) -> None:
-        ...
+    async def btn_yes(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+        target = self.target
+
+        if not self.view:
+            return
+
+        for child in self.walk_children():
+            if isinstance(child, Button):
+                child.disabled = True
+
+        await interaction.response.edit_message(view = self.view)
+
+        roles_to_remove = [role for role in target.roles if role.id in STAFF_ROLES]
+
+        if roles_to_remove:
+            try:
+                await target.remove_roles(*roles_to_remove)
+            except Exception:
+                log.exception("Failed to remove hard clean %s", target.name)
+                await send_bad_operation(
+                    interaction,
+                    title    = f"Hard Clean {target.mention}",
+                    subtitle = f"An exception occured while removing {target.mention}'s staff roles. Aborting.",
+                )
+            else:
+                self.view.text = f"Hard Clean successful. Removed {len(roles_to_remove)} roles from {target.mention}."
+
+                await interaction.edit_original_response(view = self.view)
 
     @button(label = "No", style = grey)
-    async def btn_no(self, _interaction : Interaction, _button : Button[LayoutView]) -> None:
-        ...
+    async def btn_no(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+        if not self.view:
+            return
+
+        for child in self.walk_children():
+            if isinstance(child, Button):
+                child.disabled = True
+
+        self.view.text = "Hard Clean aborted."
+
+        await interaction.response.edit_message(view = self.view)
 
 @final
 class _HardCleanView(WarningView):
@@ -42,7 +79,7 @@ class _HardCleanView(WarningView):
         super().__init__(
             subtitle = f"You are about to hard clean {target.mention}. This action is intended for demotion and will require manual intervention to restore. Proceed?",
             footer   =  "This action is __not reversable__!",
-            row      = _ChoiceRow(),
+            row      = _ChoiceRow(target),
         )
 
 @final
@@ -99,7 +136,7 @@ async def run_leave_add(
         return
 
     match leave_type:
-        case "none":
+        case "standard":
             if target and is_director(target):
                 await send_bad_argument(
                     interaction,

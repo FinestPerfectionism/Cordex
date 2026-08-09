@@ -10,6 +10,8 @@ from core.responses import format_message
 class WarningView(LayoutView):
     def __init__(self, *, subtitle : str, footer : str, row : ActionRow[LayoutView | Self]) -> None:
         super().__init__()
+        self.text : str = subtitle
+
         self.add_items(
             TextDisplay[Self](
                 format_message(

@@ -1,8 +1,9 @@
 from discord import Thread
 
 from bot import Interaction
-from constants import DIRECTORS_ROLE_ID, MODERATORS_ROLE_ID, TICKETS_CHANNEL_ID
+from constants import DIRECTORS_MENTION, TICKETS_CHANNEL_ID
 from core.exceptions import send_bad_environment_channel, send_bad_request
+from core.permissions import is_moderator
 from core.responses import format_send
 from core.state import get_ticket, set_ticket_team
 
@@ -40,7 +41,7 @@ async def run_mod_tickets_escalate(interaction : Interaction) -> None:
         if member is None:
             continue
 
-        if any(role.id == MODERATORS_ROLE_ID for role in member.roles):
+        if is_moderator(member):
             await channel.remove_user(member)
 
     # ⸻ Rename the thread and flip its team internally.
@@ -59,4 +60,4 @@ async def run_mod_tickets_escalate(interaction : Interaction) -> None:
         subtitle  = "This ticket has been escalated to directors.",
         ephemeral = False,
     )
-    await channel.send(f"<@&{DIRECTORS_ROLE_ID}>")
+    await channel.send(DIRECTORS_MENTION)

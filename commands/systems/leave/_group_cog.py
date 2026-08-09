@@ -35,12 +35,12 @@ class LeaveCommands(
             "type" : HelpArgument(
                 description = (
                     'The type of leave to apply. Defaults to "Soft Clean".\n'
-                    '> **None**\n'
+                    '> **Standard**\n'
                     '> Keeps all roles during your leave. You might get pinged!\n'
                     '> **Soft Clean (Default)**\n'
                     '> Removes roles temporarily during your leave.\n'
                     '> **Hard Clean**\n'
-                    '> Permanantly removes roles. This action is intended for demotion and will require manual intervention to restore.'
+                    '> Permanantly removes roles. This action is intended for demotion and will require manual intervention to restore. Not an available option for regular staff.'
                 ),
             ),
         },
@@ -57,8 +57,8 @@ class LeaveCommands(
     @choices(
         leave_type = [
             Choice(
-                name  = "None",
-                value = "none",
+                name  = "Standard",
+                value = "standard",
             ),
             Choice(
                 name  = "Soft Clean",

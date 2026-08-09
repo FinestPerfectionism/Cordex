@@ -29,7 +29,7 @@ from discord.utils import utcnow
 from bot import Context, Cordex, Interaction
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
-    BOT_OWNER_ID,
+    BOT_OWNER_MENTION,
     COLOR_RED,
 )
 from core.exceptions import (
@@ -129,7 +129,7 @@ class ErrorLogger(commands.Cog):
         else:
             embed.description = None
 
-        await channel.send(f"<@{BOT_OWNER_ID}>", embed = embed)
+        await channel.send(BOT_OWNER_MENTION, embed = embed)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Discord Event Errors

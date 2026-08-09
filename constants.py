@@ -100,10 +100,24 @@ STAFF_ROLES = [
 ]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Role Mentions
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+DIRECTORS_MENTION = f"<@&{DIRECTORS_ROLE_ID}>"
+
+MODERATORS_MENTION = f"<@&{MODERATORS_ROLE_ID}>"
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Member IDs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 BOT_OWNER_ID = 1311394031640776716
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Member Mentions
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+BOT_OWNER_MENTION = f"<@{BOT_OWNER_ID}>"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Category IDs

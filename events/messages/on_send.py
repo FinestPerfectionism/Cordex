@@ -15,7 +15,7 @@ from bot.ui import (
 )
 from constants import (
     DIRECTOR_TASKS_CHANNEL_ID,
-    DIRECTORS_ROLE_ID,
+    DIRECTORS_MENTION,
     MAIN_GUILD_ID,
     WAPPLE_CHAIN_CHANNEL_ID,
 )
@@ -127,7 +127,7 @@ class MessageSendHandler(commands.Cog):
         if isinstance(channel, Thread):
             thread = channel
             if message.id == thread.id and thread.parent_id == DIRECTOR_TASKS_CHANNEL_ID:
-                await thread.send(f"<@&{DIRECTORS_ROLE_ID}>")
+                await thread.send(DIRECTORS_MENTION)
 
 async def setup(bot : Cordex) -> None:
     cog = MessageSendHandler(bot)

@@ -7,6 +7,7 @@ from bot import Cordex, Interaction
 from core.permissions import director_cmd
 
 from .configure import run_server_configure
+from .health import run_server_health
 from .info import run_server_info
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -46,6 +47,17 @@ class ServerCommands(
     )
     async def cmd_server_info(self, interaction : Interaction) -> None:
         await run_server_info(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /server health Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @command(
+        name        = "health",
+        description = "Run a health check on this guild.",
+    )
+    async def cmd_server_health(self, interaction : Interaction) -> None:
+        await run_server_health(interaction)
 
 async def setup(bot : Cordex) -> None:
     cog = ServerCommands(bot)

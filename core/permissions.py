@@ -147,8 +147,14 @@ def staff_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
 # Raw Checks
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def is_director(user : Member) -> bool:
-    return any(role.id == DIRECTORS_ROLE_ID for role in user.roles)
+def _is_check(member : Member, role_id : int, /) -> bool:
+    return any(role.id == role_id for role in member.roles)
 
-def is_staff(user : Member) -> bool:
-    return any(role.id == STAFF_ROLE_ID for role in user.roles)
+def is_director(member : Member, /) -> bool:
+    return _is_check(member, DIRECTORS_ROLE_ID)
+
+def is_moderator(member : Member, /) -> bool:
+    return _is_check(member, MODERATORS_ROLE_ID)
+
+def is_staff(member : Member, /) -> bool:
+    return _is_check(member, STAFF_ROLE_ID)

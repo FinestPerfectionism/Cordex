@@ -1,4 +1,6 @@
 
+from constants import BOT_OWNER_MENTION
+
 from ._base import InfoHeaderSection, InfoPrimarySection, TOSButton
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -17,15 +19,19 @@ class RuleComponents2(InfoPrimarySection):
     def __init__(self) -> None:
         text = (
             "## §1 Behavior\n"
-            "### §1.1 Harassment\n"
+            "### §1.1 Advertisement\n"
+            "You may not advertise anywhere throughout the guild.\n"
+            "**Example:**\n"
+            '> "plz join my serverrrrr and boooosttt plz plz plz"\n\n'
+            "### §1.2 Harassment\n"
             "Any form of harassment, threats, or intimidation is forbidden.\n"
             "**Example:**\n"
             "> \"imma kill you if you don't give tell me\"\n\n"
-            "### §1.2 Discrimination\n"
+            "### §1.3 Discrimination\n"
             "Racism, sexism, ableism, or other discriminatory behavior is prohibited.\n"
             "**Example:**\n"
             "> \"you're so acoustic\"\n\n"
-            "### §1.3 NSFW Content\n"
+            "### §1.4 NSFW Content\n"
             "Sharing explicit content is strictly prohibited in all channels unless explicitly marked NSFW. (Looks like we have none, so no NSFW :])\n"
             "**Example:**\n"
             "> \"Here's the link to my special cam 😘🥵: …\"\n\n"
@@ -57,6 +63,6 @@ class RuleComponents2(InfoPrimarySection):
         super().__init__(
             title     = "Rules",
             text      = text,
-            authors   = ["<@1311394031640776716>"],
+            authors   = [BOT_OWNER_MENTION],
             button    = TOSButton(),
         )

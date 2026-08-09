@@ -93,6 +93,9 @@ class CoreEnsurementHandler(commands.Cog):
             views      = PartnershipViewsList,
         )
 
+        # ⸻ Suggestions
+
+
 async def setup(bot : Cordex) -> None:
     cog = CoreEnsurementHandler(bot)
     await bot.add_cog(cog)

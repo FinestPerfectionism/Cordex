@@ -1,5 +1,3 @@
-from bot.ui import LayoutView
-
 from ._base import ensure_views
 from .hierarchy import (
     HierarchyComponents1,
@@ -16,17 +14,19 @@ from .partnerships import (
     rebuild_partnership_view,
 )
 from .rules import RuleComponents1, RuleComponents2
+from .suggestions import SuggestionComponents1, SuggestionComponents2
 from .tickets import TicketComponents
 
-HierarchyViewsList   : list[LayoutView] = [
+HierarchyViewsList   = [
     HierarchyComponents1(),
     HierarchyComponents2(),
     HierarchyComponents3(),
     HierarchyComponents4(),
     HierarchyComponents5(),
 ]
-PartnershipViewsList : list[LayoutView] = [PartnershipComponents1(), PartnershipComponents2()]
-RuleViewsList        : list[LayoutView] = [RuleComponents1(), RuleComponents2()]
+PartnershipViewsList = [PartnershipComponents1(), PartnershipComponents2()]
+RuleViewsList        = [RuleComponents1(), RuleComponents2()]
+SuggestionViewsList  = [SuggestionComponents1(), SuggestionComponents2()]
 
 __all__ = [
     "HierarchyViewsList",

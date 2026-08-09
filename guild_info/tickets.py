@@ -6,12 +6,12 @@ from bot import Interaction
 from bot.ui import Button, Label, Modal, Select, blurple
 from constants import (
     DIRECTOR_EMOJI,
-    DIRECTORS_ROLE_ID,
+    DIRECTORS_MENTION,
     MODERATOR_EMOJI,
-    MODERATORS_ROLE_ID,
-    STAFF_ROLE_ID,
+    MODERATORS_MENTION,
 )
 from core.exceptions import send_bad_request
+from core.permissions import is_director, is_staff
 from core.responses import format_send
 from core.state import save_ticket
 
@@ -59,8 +59,8 @@ class _TicketModal(Modal, title = "Open Ticket"):
         choice  = self.select.values[0]
 
         mapping : dict[str, tuple[str, str, str]] = {
-            "director"  : ("Director Ticket",  f"<@&{DIRECTORS_ROLE_ID}>",  "Director"),
-            "moderator" : ("Moderator Ticket", f"<@&{MODERATORS_ROLE_ID}>", "Moderator"),
+            "director"  : ("Director Ticket",  DIRECTORS_MENTION,  "Director"),
+            "moderator" : ("Moderator Ticket", MODERATORS_MENTION, "Moderator"),
         }
         ticket_type, team_mention, team_name = mapping[choice]
 
@@ -94,17 +94,16 @@ class _TicketButton(Button["TicketComponents"]):
 
     @override
     async def callback(self, interaction : Interaction) -> None:
+        user = interaction.user
 
         # ⸻ We know that the button will run in a guild but the type checker doesn't...
 
-        if not isinstance(interaction.user, Member):
+        if not isinstance(user, Member):
             return
-
-        user_roles = {role.id for role in interaction.user.roles}
 
         # ⸻ Directors may not open tickets.
 
-        if DIRECTORS_ROLE_ID in user_roles:
+        if is_director(user):
             await send_bad_request(
                 interaction,
                 title    = "open ticket",
@@ -114,7 +113,7 @@ class _TicketButton(Button["TicketComponents"]):
 
         # ⸻ Staff may only open Director tickets.
 
-        if STAFF_ROLE_ID in user_roles:
+        if is_staff(user):
             await interaction.response.defer(ephemeral = True)
 
             channel = interaction.channel
@@ -140,7 +139,7 @@ class _TicketButton(Button["TicketComponents"]):
                     subtitle  = f"Director ticket created: {ticket.mention}",
                     ephemeral = True,
                 )
-                await ticket.send(f"<@&{DIRECTORS_ROLE_ID}>")
+                await ticket.send(DIRECTORS_MENTION)
             return
 
         # ⸻ Members users may open any ticket.

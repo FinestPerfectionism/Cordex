@@ -3,10 +3,9 @@ from operator import itemgetter
 from typing import Self, cast, final, override
 
 from discord import SelectOption
-from discord.app_commands import Command, command, describe
-from discord.ext import commands
+from discord.app_commands import Command
 
-from bot import Cordex, Interaction
+from bot import Interaction
 from bot.ui import (
     ActionRow,
     Button,
@@ -22,7 +21,7 @@ from bot.ui import (
 )
 from constants import (
     ARROW_EMOJI,
-    BOT_OWNER_ID,
+    BOT_OWNER_MENTION,
     COMMAND_EMOJI,
     CONTESTED_EMOJI,
     DEVELOPER_EMOJI,
@@ -50,7 +49,7 @@ from core.utilities import format_command
 type CommandList = list[AnnotatedCommand]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Help Command
+# /help Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def _build_sections(cmds : CommandList) -> list[str | Item[LayoutView]]:
@@ -284,88 +283,70 @@ class _QueryButton(Button[UnnamedPaginator]):
     async def callback(self, interaction : Interaction) -> None:
         await interaction.response.send_modal(_QueryModal(self._commands))
 
-@final
-class HelpCommand(commands.Cog):
-    def __init__(self, bot : Cordex) -> None:
-        self.bot = bot
+async def run_help(interaction : Interaction, name : str | None = None) -> None:
+    await interaction.response.defer(ephemeral = True)
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /help Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # ⸻ Grab the commands from the cache and then sort them.
 
-    @command(
-        name        = "help",
-        description = "Provides assistance into a command. Defaults to information about the bot and a list of commands.",
-    )
-    @describe(name = "The name of the command to view information for.")
-    async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
-        await interaction.response.defer(ephemeral = True)
+    cmds = [
+        c for c in interaction.client.get_commands_cache()
+        if isinstance(c, Command)
+        and not c.qualified_name.startswith("bot-owner")
+    ]
+    cmds.sort(key = lambda c : c.qualified_name)
 
-        # ⸻ Grab the commands from the cache and then sort them.
+    if name:
+        matches = _fuzzy_search(name, cmds)
 
-        cmds = [
-            c for c in interaction.client.get_commands_cache()
-            if isinstance(c, Command)
-            and not c.qualified_name.startswith("bot-owner")
-        ]
-        cmds.sort(key = lambda c : c.qualified_name)
+        # ⸻ No commands matched closely enough to the query...
 
-        if name:
-            matches = _fuzzy_search(name, cmds)
+        if not matches:
+            await send_bad_request(interaction, subtitle = f'No commands found matching "{name}".')
+            return
 
-            # ⸻ No commands matched closely enough to the query...
+        await interaction.followup.send(view = _InfoView(matches[0]), ephemeral = True)
+    else:
+        sections = _build_sections(cmds)
 
-            if not matches:
-                await send_bad_request(interaction, subtitle = f'No commands found matching "{name}".')
-                return
+        # ⸻ Build the view,
 
-            await interaction.followup.send(view = _InfoView(matches[0]), ephemeral = True)
-        else:
-            sections = _build_sections(cmds)
-
-            # ⸻ Build the view,
-
-            view = UnnamedPaginator(
-                f"# {HORIZONTAL_SETTINGS} All Commands",
-                sections,
-                data_name = "Commands",
-                container = True,
-            )
-            view.add_above(
-                Container(
-                    ButtonSection(
-                        (
-                           f"# {COMMAND_EMOJI} Command Browser\n"
-                            "-# Select a category to view commands."
-                        ),
-                        button = _QueryButton(cmds),
+        view = UnnamedPaginator(
+            f"# {HORIZONTAL_SETTINGS} All Commands",
+            sections,
+            data_name = "Commands",
+            container = True,
+        )
+        view.add_above(
+            Container(
+                ButtonSection(
+                    (
+                       f"# {COMMAND_EMOJI} Command Browser\n"
+                        "-# Select a category to view commands."
                     ),
-                    ActionRow(_CategorySelect(cmds)),
+                    button = _QueryButton(cmds),
                 ),
-            )
-            view.add_below(
-                Container(
-                    TextDisplay(
-                        (
-                            "# About me,\n"
-                            "I am a bot designed exclusively to serve the server *goobers*. You won't see me anywhere else! (probably)\n"
-                           f"## {DEVELOPER_EMOJI} My Developer\n"
-                           f"My developer is <@{BOT_OWNER_ID}>. I was created and am actively maintained by him.\n"
-                           f"## {STANDSTILL_EMOJI} What I Do\n"
-                            "- **Advanced Moderation:** Staff can moderate multiple users at once with advanced logging and state. I also have a ticket system for user support.\n"
-                            "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
-                            "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
-                           f"## {CONTESTED_EMOJI} Issues?\n"
-                           f"Should you have feedback or any issues with me, please speak to my developer."
-                        ),
+                ActionRow(_CategorySelect(cmds)),
+            ),
+        )
+        view.add_below(
+            Container(
+                TextDisplay(
+                    (
+                        "# About me,\n"
+                        "I am a bot designed exclusively to serve the server *goobers*. You won't see me anywhere else! (probably)\n"
+                       f"## {DEVELOPER_EMOJI} My Developer\n"
+                       f"My developer is {BOT_OWNER_MENTION}. I was created and am actively maintained by him.\n"
+                       f"## {STANDSTILL_EMOJI} What I Do\n"
+                        "- **Advanced Moderation:** Staff can moderate multiple users at once with advanced logging and state. I also have a ticket system for user support.\n"
+                        "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
+                        "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
+                       f"## {CONTESTED_EMOJI} Issues?\n"
+                       f"Should you have feedback or any issues with me, please speak to my developer."
                     ),
                 ),
-            )
+            ),
+        )
 
-            # ⸻ and then send it
+        # ⸻ and then send it
 
-            await interaction.followup.send(view = view, ephemeral = True)
-
-async def setup(bot : Cordex) -> None:
-    cog = HelpCommand(bot)
-    await bot.add_cog(cog)
+        await interaction.followup.send(view = view, ephemeral = True)
