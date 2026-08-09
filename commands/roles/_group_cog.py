@@ -131,7 +131,7 @@ class RoleCommands(
         name        = "permissions",
         description = "List permissions for a selected role.",
     )
-    @rename(permissons_filter = "filter")
+    @rename(permissions_filter = "filter")
     @describe(
         role               = "The role to list permissions for.",
         permissions_filter = "Whether to show enabled or disabled permissions. Defaults to both.",
