@@ -52,19 +52,24 @@ class PartnershipCommands(
 
     @help_description(
         arguments = {
-            "server-picture"     : HelpArgument(
+            "server_picture": HelpArgument(
+                name        = "server-picture",
                 description = "The server's picture.",
             ),
-            "server-name"        : HelpArgument(
+            "server_name": HelpArgument(
+                name        = "server-name",
                 description = "The server's name.",
             ),
-            "server-description" : HelpArgument(
+            "server_description": HelpArgument(
+                name        = "server-description",
                 description = "The server's description.",
             ),
-            "server-owner"       : HelpArgument(
+            "server_owner": HelpArgument(
+                name        = "server-owner",
                 description = "The server's owner.",
             ),
-            "server-link"        : HelpArgument(
+            "server_link": HelpArgument(
+                name        = "server-link",
                 description = "The server's invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
             ),
         },
@@ -113,22 +118,28 @@ class PartnershipCommands(
 
     @help_description(
         arguments = {
-            "server-name"        : HelpArgument(
+            "server_name"        : HelpArgument(
+                name        = "server-name",
                 description = "The name of the server to update.",
             ),
-            "server-picture"     : HelpArgument(
+            "server_picture"     : HelpArgument(
+                name        = "server-picture",
                 description = "The server's new picture.",
             ),
-            "new-server-name"    : HelpArgument(
+            "new_server_name"    : HelpArgument(
+                name        = "new-server-name",
                 description = "The server's new name.",
             ),
-            "server-description" : HelpArgument(
+            "server_description" : HelpArgument(
+                name        = "server-description",
                 description = "The server's new description.",
             ),
-            "server-owner"       : HelpArgument(
+            "server_owner"       : HelpArgument(
+                name        = "server-owner",
                 description = "The server's new owner.",
             ),
-            "server-link"        : HelpArgument(
+            "server_link"        : HelpArgument(
+                name        = "server-link",
                 description = "The server's new invite link. Must be a valid Discord invite of the form `https://discord.gg/example`.",
             ),
         },
@@ -182,7 +193,8 @@ class PartnershipCommands(
 
     @help_description(
         arguments = {
-            "server-name" : HelpArgument(
+            "server_name" : HelpArgument(
+                name        = "server-name",
                 description = "The name of the server to remove.",
             ),
         },

@@ -87,10 +87,12 @@ class ChannelCommands(
 
     @help_description(
         arguments = {
-            "channel-1" : HelpArgument(
+            "channel_1" : HelpArgument(
+                name        = "channel-1",
                 description = "The first channel to compare.",
             ),
-            "channel-2" : HelpArgument(
+            "channel_2" : HelpArgument(
+                name        = "channel-2",
                 description = "The second channel to compare.",
             ),
         },
@@ -126,7 +128,8 @@ class ChannelCommands(
             "channel"            : HelpArgument(
                 description = "The channel to list permissions for.",
             ),
-            "permissions-filter" : HelpArgument(
+            "permissions_filter" : HelpArgument(
+                name        = "permissions-filter",
                 description = "Whether to show enabled or disabled permissions. Defaults to both.",
             ),
         },

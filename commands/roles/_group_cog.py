@@ -70,13 +70,13 @@ class RoleCommands(
 
     @help_description(
         arguments = {
-            "role"          : HelpArgument(
-                description = "The role to view members or the lack thereof for.",
-            ),
-            "role-filter"   : HelpArgument(
+            "role"          : HelpArgument(description = "The role to view members or the lack thereof for."),
+            "role_filter"   : HelpArgument(
+                name        = "role-filter",
                 description = "Whether to check who has or who doesn't have the role selected. Defaults to \"member of\".",
             ),
-            "person-filter" : HelpArgument(
+            "person_filter" : HelpArgument(
+                name        = "person-filter",
                 description = "Whether to show humans or bots. Defaults to both.",
             ),
         },
@@ -119,10 +119,9 @@ class RoleCommands(
 
     @help_description(
         arguments = {
-            "role"               : HelpArgument(
-                description = "The role to list permissions for.",
-            ),
-            "permissions-filter" : HelpArgument(
+            "role"               : HelpArgument(description = "The role to list permissions for."),
+            "permissions_filter" : HelpArgument(
+                name        = "permissions-filter",
                 description = "Whether to show enabled or disabled permissions. Defaults to both.",
             ),
         },
@@ -157,10 +156,12 @@ class RoleCommands(
 
     @help_description(
         arguments = {
-            "role-1" : HelpArgument(
+            "role_1" : HelpArgument(
+                name        = "role-1",
                 description = "The first role to compare.",
             ),
-            "role-2" : HelpArgument(
+            "role_2" : HelpArgument(
+                name        = "role-2",
                 description = "The second role to compare.",
             ),
         },
