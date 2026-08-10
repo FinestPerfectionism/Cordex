@@ -5,6 +5,7 @@ from discord import Member
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex
+from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_BLACK, CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
 from core.cases import (
     BanAddPayload,
@@ -16,7 +17,7 @@ from core.cases import (
     TimeoutRemovePayload,
 )
 from core.paginator import UnnamedPaginator
-from core.utilities import format_table
+from core.utilities import format_now, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
@@ -65,26 +66,36 @@ class BaseActions:
         title  = type_map[action_type]
         length = getattr(action, "length", None)
 
-        content = [
-            (
-                f"{title}\n"
-                f"-# You were moderated in the goobers by at {format_dt(utcnow())}!\n"
-                f"{
-                    format_table(
-                        {
-                            "Moderator" : f"{moderator.mention} | {moderator.id}",
-                            "Reason"    : action.reason,
-                        }
-                    )
-                }"
-            ),
-        ]
-
+        line = ""
         if isinstance(length, int):
             end_time = utcnow() + timedelta(seconds = length)
-            content.append(f"\nThis action will be undone {format_dt(end_time, style = "F")} | {format_dt(end_time, style = "R")}.")
+            line = f"-# This action will be undone {format_dt(end_time, style = "F")} | {format_dt(end_time, style = "R")}."
 
-        await target.send("".join(content))
+        view = LayoutView()
+        view.add_items(
+            TextDisplay[LayoutView](
+                (
+                    f"{title}\n"
+                    f"-# You were moderated in the goobers by at {format_now()}!\n"
+                ),
+            ),
+            VisibleLargeSeparator[LayoutView](),
+            TextDisplay[LayoutView](
+                (
+                    f"{
+                        format_table(
+                            {
+                                "Moderator" : f"{moderator.mention} | {moderator.id}",
+                                "Reason"    : action.reason,
+                            }
+                        )
+                    }\n\n"
+                    f"{line}"
+                ),
+            ),
+        )
+
+        await target.send(view = view)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_add
@@ -115,7 +126,7 @@ class BaseActions:
                     await self._dm_target("Ban Add", action)
 
                 await target.ban(
-                    reason                 = action.reason,
+                    reason                 = f"Banned by {action.moderator.name}: {action.reason}",
                     delete_message_seconds = 86400,
                 )
 
@@ -158,7 +169,7 @@ class BaseActions:
                     await self._dm_target("Ban Remove", action)
 
                 if guild is not None:
-                    await guild.unban(target, reason = action.reason)
+                    await guild.unban(target, reason = f"Unbanned by {action.moderator.name}: {action.reason}")
 
             except Exception as error:
                 errors.append((target, str(error)))
@@ -179,7 +190,7 @@ class BaseActions:
                 if action.dm_user:
                     await self._dm_target("Kick", action)
 
-                await target.kick(reason = action.reason)
+                await target.kick(reason = f"Kicked by {action.moderator.name}: {action.reason}")
 
             except Exception as error:
                 errors.append((target, str(error)))
@@ -267,7 +278,7 @@ class BaseActions:
             try:
                 await target.edit(
                     timed_out_until = utcnow() + timedelta(seconds = action.length),
-                    reason          = action.reason,
+                    reason          = f"Timed out by {action.moderator.name}: {action.reason}",
                 )
 
                 if action.dm_user:
@@ -307,7 +318,7 @@ class BaseActions:
             target = action.target
 
             try:
-                await target.edit(timed_out_until = None, reason = action.reason)
+                await target.edit(timed_out_until = None, reason = f"Untimed out by {action.moderator.name}: {action.reason}")
 
                 if action.dm_user:
                     await self._dm_target("Timeout Remove", action)
@@ -322,4 +333,7 @@ class BaseActions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def purge(self) -> None:
+
+        # ~~~ TODO: Switch from raw /purge command logic to a proper BaseActions.purge call
+
         ...

@@ -3,7 +3,6 @@ from typing import Self, final
 from discord import AllowedMentions, Message
 from discord.abc import Messageable
 from discord.ext import commands
-from discord.utils import format_dt, utcnow
 
 from bot import Cordex
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
@@ -13,7 +12,7 @@ from constants import (
     MAIN_GUILD_ID,
     MESSAGE_DELETE_LOG_CHANNEL_ID,
 )
-from core.utilities import format_table
+from core.utilities import format_now, format_table
 
 from . import (
     channel_display,
@@ -65,7 +64,7 @@ class MessageDeleteHandler(commands.Cog):
         @final
         class DeleteView(LayoutView):
             container = Container[Self](
-                TextDisplay(f"# Message Deleted | {format_dt(utcnow(), style = "F")}"),
+                TextDisplay(f"# Message Deleted | {format_now("F")}"),
                 TextDisplay(
                     format_table(
                         {

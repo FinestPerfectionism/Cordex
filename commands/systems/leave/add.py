@@ -104,10 +104,13 @@ class _HardCleanView(WarningView):
 class _LeaveModal(Modal, title = "Leave"):
     def __init__(self, target : Member | None = None) -> None:
         super().__init__()
+
         name = f"{target.name}'s" if target else "your"
 
         self.start_dt : datetime | None = None
         self.end_dt   : datetime | None = None
+
+        self.text = TextDisplay[Self](f"{CONTESTED_EMOJI} **Use `Timer` alone, `Start Date` + `Timer`, or `Start Date` + `End Date`.**")
 
         self._timer = TextInput[Self](
             placeholder = 'ex: "30m, 2d"',
@@ -139,12 +142,8 @@ class _LeaveModal(Modal, title = "Leave"):
             description = f"Set an end date for {name} leave.",
             component   = self._end_date,
         )
-        self.add_items(
-            TextDisplay[Self](f"{CONTESTED_EMOJI} **Use `Timer` alone, `Start Date` + `Timer`, or `Start Date` + `End Date`.**"),
-            self.timer,
-            self.start_date,
-            self.end_date,
-        )
+
+        self.add_items(self.text, self.timer, self.start_date, self.end_date)
 
     # ⸻ Parsing methods.
 
@@ -195,6 +194,8 @@ class _LeaveModal(Modal, title = "Leave"):
         timer = bool(self._timer.value)
         start = bool(self._start_date.value)
         end   = bool(self._end_date.value)
+
+        await interaction.response.defer(ephemeral = True)
 
         # ⸻ At least one field is required.
 
@@ -287,6 +288,12 @@ class _LeaveModal(Modal, title = "Leave"):
 
             self.start_dt = start_dt
             self.end_dt   = parsed_end
+
+    @override
+    async def on_error(self, interaction : Interaction, error : Exception) -> None:
+        await send_bad_operation(interaction, title = "process leave")
+
+        raise error
 
 def _validate_staff_name(target : Member) -> bool:
     return bool(STAFF_NAME_PATTERN.match(target.display_name))

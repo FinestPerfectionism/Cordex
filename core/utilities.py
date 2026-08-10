@@ -4,6 +4,7 @@ from typing import Literal
 
 from discord import Member, Role
 from discord.app_commands import check
+from discord.utils import format_dt, utcnow
 
 from bot import Interaction, bot
 
@@ -26,6 +27,16 @@ def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
         return func
 
     return decorator
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# format_now
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
+
+def format_now(style : Styles = "F", /) -> str:
+    return format_dt(utcnow(), style)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_command

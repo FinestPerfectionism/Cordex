@@ -12,7 +12,6 @@ dependencies    = [
 package = false
 
 [tool.basedpyright]
-stubPath         = "./typings"
 typeCheckingMode = "all"
 venvPath         = "."
 venv             = ".venv"

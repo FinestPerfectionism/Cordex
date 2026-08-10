@@ -2,7 +2,6 @@ from collections.abc import Sequence
 from typing import Self, cast, override
 
 from discord import AllowedMentions, File, HTTPException, TextChannel, Thread
-from discord.utils import format_dt, utcnow
 
 from bot import Cordex, log
 from bot.ui import (
@@ -18,7 +17,7 @@ from bot.ui import (
     link,
 )
 from constants import STANDSTILL_EMOJI
-from core.utilities import format_values
+from core.utilities import format_now, format_values
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Guild Information Base
@@ -197,7 +196,7 @@ class InfoPrimarySection(LayoutView):
         self.container.add_text(
             (
                 f"{header_text}"
-                f"{title} last updated {format_dt(utcnow(), style = "F")}.\n"
+                f"{title} last updated {format_now("F")}.\n"
                 f"{note}"
             ),
         )

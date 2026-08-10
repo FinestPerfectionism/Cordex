@@ -22,9 +22,9 @@ class HelpCommand(commands.Cog):
 
     @command(
         name        = "help",
-        description = "Provides assistance into a command. Defaults to information about the bot and a list of commands.",
+        description = "Provides assistance into a command.",
     )
-    @describe(name = "The name of the command to view information for.")
+    @describe(name = "The name of the command to view information for. Defaults to information about the bot and a list of commands.")
     async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
         await run_help(interaction, name)
 
