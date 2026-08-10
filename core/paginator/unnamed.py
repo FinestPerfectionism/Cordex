@@ -157,7 +157,6 @@ class _PageRow(ActionRow["UnnamedPaginator"]):
     async def btn_last(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, len(self.paginator.pages) - 1)
 
-@final
 class UnnamedPaginator(LayoutView):
     def __init__(
         self,
@@ -172,20 +171,20 @@ class UnnamedPaginator(LayoutView):
         force     : bool         = False,
     ) -> None:
         super().__init__()
-        self._title     = title
-        self._data      = data
-        self._data_name = data_name
-        self._per_page  = per_page
-        self._color     = color
-        self._container = container
-        self._force     = force
+        self._title     : str             = title
+        self._data      : _ItemsOrStrList = data
+        self._data_name : str   | None    = data_name
+        self._per_page  : int             = per_page
+        self._color     : Color | None    = color
+        self._container : bool            = container
+        self._force     : bool            = force
 
-        self.pages        = [
+        self.pages        : list[_ItemsOrStrList] = [
             data[i : i + per_page]
             for i in range(0, len(data), per_page)
         ] or [["No content available."]]
-        self.current_page = 0
-        self._page_row    = _PageRow(self) if len(self.pages) >= 2 else None
+        self.current_page : int                   = 0
+        self._page_row    : _PageRow | None       = _PageRow(self) if len(self.pages) >= 2 else None
 
         self._above_items : _ItemsList = []
         self._over_items  : _ItemsList = []

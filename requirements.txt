@@ -1,12 +1,4 @@
 discord.py[voice]
 aiosqlite
 python-dotenv
-pytz
-numpy
-pillow
-anyio
-asyncpg
-asyncpg-stubs
-aiosqlite
-path
-psutil
+dateparser

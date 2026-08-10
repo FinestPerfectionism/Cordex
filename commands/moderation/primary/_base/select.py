@@ -251,7 +251,7 @@ class _ReasonModal(Modal):
                     interaction,
                     msg_type =  "warning",
                     title    =  "compile window",
-                    subtitle = f"The time signature `{self.length_input.value if self.length_input is not None else ""}` is not valid. Use formats like 10m, 2h, 1d.",
+                    subtitle = f"The time signature `{self.length_input.value if self.length_input is not None else ""}` is invalid. Use formats like 10m, 2h, 1d.",
                 )
                 return
 

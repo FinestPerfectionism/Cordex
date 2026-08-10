@@ -1,5 +1,8 @@
+from datetime import UTC, datetime, timedelta
+from re import sub
 from typing import Self, final, override
 
+from dateparser import parse
 from discord import Member
 
 from bot import Interaction, log
@@ -20,6 +23,21 @@ from core.exceptions import send_bad_argument, send_bad_operation
 from core.permissions import is_director, is_staff
 
 from ._base import STAFF_NAME_PATTERN, WarningView
+
+_WORD_NUMBERS : dict[str, str] = {
+    "a"     : "1",
+    "an"    : "1",
+    "one"   : "1",
+    "two"   : "2",
+    "three" : "3",
+    "four"  : "4",
+    "five"  : "5",
+    "six"   : "6",
+    "seven" : "7",
+    "eight" : "8",
+    "nine"  : "9",
+    "ten"   : "10",
+}
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /leave add Logic
@@ -88,6 +106,9 @@ class _LeaveModal(Modal, title = "Leave"):
         super().__init__()
         name = f"{target.name}'s" if target else "your"
 
+        self.start_dt : datetime | None = None
+        self.end_dt   : datetime | None = None
+
         self._timer = TextInput[Self](
             placeholder = 'ex: "30m, 2d"',
             default     = "1 Day",
@@ -95,7 +116,7 @@ class _LeaveModal(Modal, title = "Leave"):
         )
         self.timer  = Label[Self](
             text        =  "Timer",
-            description = f"Set a timer for {name} leave.",
+            description = f"Set a duration for {name} leave.",
             component   = self._timer,
         )
 
@@ -104,7 +125,7 @@ class _LeaveModal(Modal, title = "Leave"):
             required    = False,
         )
         self.start_date  = Label[Self](
-            text        =  "Start Date (Requires 'End Date')",
+            text        =  "Start Date",
             description = f"Set a start date for {name} leave.",
             component   = self._start_date,
         )
@@ -119,10 +140,54 @@ class _LeaveModal(Modal, title = "Leave"):
             component   = self._end_date,
         )
         self.add_items(
-            TextDisplay[Self](f"{CONTESTED_EMOJI} **`Timer` is incompatible with `Start Date` and `End Date`.**"),
+            TextDisplay[Self](f"{CONTESTED_EMOJI} **Use `Timer` alone, `Start Date` + `Timer`, or `Start Date` + `End Date`.**"),
             self.timer,
             self.start_date,
             self.end_date,
+        )
+
+    # ⸻ Parsing methods.
+
+    @staticmethod
+    def _normalize_text(value : str) -> str:
+        text  = sub(r"\band\b", "", value.lower().strip())
+        words = text.split()
+        return " ".join(_WORD_NUMBERS.get(word, word) for word in words)
+
+    @classmethod
+    def _parse_timer(cls, value : str) -> timedelta | None:
+        cleaned = cls._normalize_text(value)
+        now     = datetime.now(UTC)
+        expr    = cleaned if cleaned.startswith("in ") else f"in {cleaned}"
+
+        parsed = parse(
+            expr,
+            settings = {
+                "RELATIVE_BASE"            : now,
+                "PREFER_DATES_FROM"        : "future",
+                "RETURN_AS_TIMEZONE_AWARE" : True,
+            },
+        )
+        if parsed is None or parsed <= now:
+            return None
+
+        return parsed - now
+
+    @classmethod
+    def _parse_datetime(cls, value : str) -> datetime | None:
+        cleaned = cls._normalize_text(value)
+        now     = datetime.now(UTC)
+
+        if cleaned == "now":
+            return now
+
+        return parse(
+            cleaned,
+            settings = {
+                "RELATIVE_BASE"            : now,
+                "PREFER_DATES_FROM"        : "future",
+                "RETURN_AS_TIMEZONE_AWARE" : True,
+            },
         )
 
     @override
@@ -136,31 +201,92 @@ class _LeaveModal(Modal, title = "Leave"):
         if not (timer or start or end):
             await send_bad_argument(
                 interaction,
-                subtitle = {("Timer", "Start Date", "End Date") : "At least 1 argument must be chosen."},
+                subtitle = {None : "At least 1 argument must be chosen."},
             )
             return
 
-        # ⸻ Timer cannot be combined with Start or End dates.
+        # ⸻ All three fields cannot be provided together.
 
-        if timer and (start or end):
-            fields = tuple(name for name, active in [("Timer", timer), ("Start Date", start), ("End Date", end)] if active)
-
+        if timer and start and end:
             await send_bad_argument(
                 interaction,
-                subtitle = {fields : "These arguments are incompatible."},
+                subtitle = {("Timer", "Start Date", "End Date") : "Cannot specify all three fields. Use either `Start Date` + `End Date`, or `Start Date` + `Timer`, or `Timer`)."},
             )
             return
 
-        # ⸻ Start Date and End Date must be provided together.
+        # ⸻ End Date and Timer are incompatible.
 
-        if start != end:
-            error = "`Start Date` is dependent on `End Date`." if start else "`End Date` is dependent on `Start Date`."
-
+        if end and timer:
             await send_bad_argument(
                 interaction,
-                subtitle = {("Start Date", "End Date") : error},
+                subtitle = {("Timer", "End Date") : "`Timer` is incompatible with `End Date`."},
             )
             return
+
+        # ⸻ End Date requires Start Date.
+
+        if end and not start:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"End Date" : "`End Date` is dependent on `Start Date`."},
+            )
+            return
+
+        # ⸻ Start Date requires Timer or End Date.
+
+        if start and not (timer or end):
+            await send_bad_argument(
+                interaction,
+                subtitle = {"Start Date" : "`Start Date` is dependent on either `Timer` or `End Date`."},
+            )
+            return
+
+        # ⸻ Parse and validate Start Date.
+
+        now      = datetime.now(UTC)
+        start_dt = now
+
+        if start:
+            parsed_start = self._parse_datetime(self._start_date.value)
+            if parsed_start is None:
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {"Start Date" : "Invalid start date. (ex: 'now', 'tomorrow', 'in 3 minutes')"},
+                )
+                return
+            start_dt = parsed_start
+
+        # ⸻ Parse and validate Timer or End Date.
+
+        if timer:
+            duration = self._parse_timer(self._timer.value)
+            if duration is None:
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {"Timer" : "Invalid timer format. (ex: '3 days', '3d', 'three days 5m')"},
+                )
+                return
+            self.start_dt = start_dt
+            self.end_dt   = start_dt + duration
+
+        elif end:
+            parsed_end = self._parse_datetime(self._end_date.value)
+            if parsed_end is None:
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {"End Date" : "Invalid end date. (ex: 'tomorrow', 'in an hour', 'in a week')"},
+                )
+                return
+
+            if parsed_end <= start_dt:
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {"End Date" : "`End Date` must be strictly after `Start Date`."},
+                )
+                return
+
+            self.start_dt = start_dt
+            self.end_dt   = parsed_end
 
 def _validate_staff_name(target : Member) -> bool:
     return bool(STAFF_NAME_PATTERN.match(target.display_name))

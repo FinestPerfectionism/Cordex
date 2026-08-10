@@ -5,7 +5,7 @@ from discord import Member
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex
-from constants import CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
+from constants import COLOR_BLACK, CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
 from core.cases import (
     BanAddPayload,
     BanRemovePayload,
@@ -15,6 +15,7 @@ from core.cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
+from core.paginator import UnnamedPaginator
 from core.utilities import format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -127,8 +128,19 @@ class BaseActions:
     # ban_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_view(self) -> None:
-        ...
+    async def ban_view(self) -> UnnamedPaginator:
+        class BanPaginator(UnnamedPaginator):
+            def __init__(self) -> None:
+                super().__init__(
+                    "# Server Bans",
+                    [],
+                    data_name = "Bans",
+                    per_page  = 10,
+                    color     = COLOR_BLACK,
+                    container = True,
+                )
+
+        return BanPaginator()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_remove
@@ -203,8 +215,19 @@ class BaseActions:
     # quarantine_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_view(self) -> None:
-        ...
+    async def quarantine_view(self) -> UnnamedPaginator:
+        class QuarantinePaginator(UnnamedPaginator):
+            def __init__(self) -> None:
+                super().__init__(
+                    "# Server Quarantines",
+                    [],
+                    data_name = "Quarantines",
+                    per_page  = 10,
+                    color     = COLOR_BLACK,
+                    container = True,
+                )
+
+        return QuarantinePaginator()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_remove
@@ -259,8 +282,19 @@ class BaseActions:
     # timeout_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_view(self) -> None:
-        ...
+    async def timeout_view(self) -> UnnamedPaginator:
+        class TimeoutPaginator(UnnamedPaginator):
+            def __init__(self) -> None:
+                super().__init__(
+                    "# Server Timeouts",
+                    [],
+                    data_name = "Timeouts",
+                    per_page  = 10,
+                    color     = COLOR_BLACK,
+                    container = True,
+                )
+
+        return TimeoutPaginator()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_remove

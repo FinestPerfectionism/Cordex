@@ -69,7 +69,6 @@ class _NameRow(ActionRow["NamedPaginator"]):
             await self.paginator.turn(interaction, index)
         return callback
 
-@final
 class NamedPaginator(LayoutView):
     def __init__(
         self,
@@ -81,10 +80,10 @@ class NamedPaginator(LayoutView):
         force     : bool         = False,
     ) -> None:
         super().__init__()
-        self._data      = data
-        self._color     = color
-        self._container = container
-        self._force     = force
+        self._data      : list[PageData] = data
+        self._color     : Color | None   = color
+        self._container : bool           = container
+        self._force     : bool           = force
 
         # ⸻ data must contain more than one page.
 
@@ -92,9 +91,9 @@ class NamedPaginator(LayoutView):
             error = "data must contain more than one page"
             raise ValueError(error)
 
-        self.pages        = data or [PageData("No content available.", ["No content available."])]
-        self.current_page = 0
-        self._name_rows   = [
+        self.pages        : list[PageData] = data or [PageData("No content available.", ["No content available."])]
+        self.current_page : int            = 0
+        self._name_rows   : list[_NameRow] = [
             _NameRow(self, range(i, min(i + 5, len(self.pages))))
             for i in range(0, len(self.pages), 5)
         ] if len(self.pages) >= 2 else []
