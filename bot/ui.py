@@ -79,7 +79,7 @@ class Modal(BaseModal):
 # TextDisplay
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class TextDisplay[V : LayoutView](BaseTextDisplay[V]):
+class TextDisplay[V : LayoutView | Modal](BaseTextDisplay[V]):
     def __init__(self, content : str, /) -> None:
         super().__init__(content)
 

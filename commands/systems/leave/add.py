@@ -9,16 +9,17 @@ from bot.ui import (
     Label,
     LayoutView,
     Modal,
+    TextDisplay,
     TextInput,
     button,
     grey,
     red,
 )
-from constants import STAFF_ROLES
+from constants import CONTESTED_EMOJI, STAFF_ROLES
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.permissions import is_director, is_staff
 
-from ._base import WarningView
+from ._base import STAFF_NAME_PATTERN, WarningView
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /leave add Logic
@@ -41,23 +42,22 @@ class _ChoiceRow(ActionRow["_HardCleanView"]):
             if isinstance(child, Button):
                 child.disabled = True
 
-        await interaction.response.edit_message(view = self.view)
-
         roles_to_remove = [role for role in target.roles if role.id in STAFF_ROLES]
 
-        if roles_to_remove:
-            try:
-                await target.remove_roles(*roles_to_remove)
-            except Exception:
-                log.exception("Failed to remove hard clean %s", target.name)
-                await send_bad_operation(
-                    interaction,
-                    title    = f"Hard Clean {target.mention}",
-                    subtitle = f"An exception occured while removing {target.mention}'s staff roles. Aborting.",
-                )
-            else:
-                self.view.text = f"Hard Clean successful. Removed {len(roles_to_remove)} roles from {target.mention}."
-                await interaction.response.edit_message(view = self.view)
+        try:
+            await target.remove_roles(*roles_to_remove)
+        except Exception:
+            log.exception("Failed to remove hard clean %s", target.name)
+            await send_bad_operation(
+                interaction,
+                title    = f"hard clean {target.mention}",
+                subtitle = f"An exception occurred while removing {target.mention}'s staff roles. Aborting.",
+            )
+        else:
+            self.view.text   = "Hard clean successful."
+            self.view.footer = f"Removed {len(roles_to_remove)} roles from {target.mention}"
+        finally:
+            await interaction.response.edit_message(view = self.view)
 
     @button(label = "No", style = grey)
     async def btn_no(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
@@ -68,7 +68,8 @@ class _ChoiceRow(ActionRow["_HardCleanView"]):
             if isinstance(child, Button):
                 child.disabled = True
 
-        self.view.text = "Hard Clean aborted."
+        self.view.text   = "Hard clean aborted."
+        self.view.footer = "No action was taken."
 
         await interaction.response.edit_message(view = self.view)
 
@@ -77,7 +78,7 @@ class _HardCleanView(WarningView):
     def __init__(self, target : Member) -> None:
         super().__init__(
             subtitle = f"You are about to hard clean {target.mention}. This action is intended for demotion and will require manual intervention to restore. Proceed?",
-            footer   =  "This action is __not reversable__!",
+            footer   =  "This action is __not reversable__",
             row      = _ChoiceRow(target),
         )
 
@@ -117,7 +118,12 @@ class _LeaveModal(Modal, title = "Leave"):
             description = f"Set an end date for {name} leave.",
             component   = self._end_date,
         )
-        self.add_items(self.timer, self.start_date, self.end_date)
+        self.add_items(
+            TextDisplay[Self](f"{CONTESTED_EMOJI} **`Timer` is incompatible with `Start Date` and `End Date`.**"),
+            self.timer,
+            self.start_date,
+            self.end_date,
+        )
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
@@ -156,19 +162,34 @@ class _LeaveModal(Modal, title = "Leave"):
             )
             return
 
+def _validate_staff_name(target : Member) -> bool:
+    return bool(STAFF_NAME_PATTERN.match(target.display_name))
 
 async def _validate_target(interaction : Interaction, target : Member) -> bool:
-    if is_director(target):
+    is_self = (target.id == interaction.user.id)
+
+    if is_director(target) and not is_self:
         await send_bad_argument(
             interaction,
-            subtitle = {("target", "type") : "You cannot vacate other directors."},
+            subtitle = {"target" : "You cannot vacate other directors."},
         )
         return False
 
     if not is_staff(target):
+        error = "You are not staff." if is_self else "You cannot vacate those who are not staff."
+
         await send_bad_argument(
             interaction,
-            subtitle = {("target", "type") : "You cannot vacate those who are not staff."},
+            subtitle = {"target" : error},
+        )
+        return False
+
+    if not _validate_staff_name(target):
+        error = "You do not have a valid staff name format." if is_self else f"{target.mention} does not have a valid staff name format."
+
+        await send_bad_argument(
+            interaction,
+            subtitle = {"target" : error},
         )
         return False
 
@@ -185,21 +206,24 @@ async def run_leave_add(
     if not isinstance(interaction.user, Member):
         return
 
-    if target and not await _validate_target(interaction, target):
+    effective_target = target or interaction.user
+    is_self          = (effective_target.id == interaction.user.id)
+
+    if not await _validate_target(interaction, effective_target):
         return
 
     match leave_type:
         case "standard" | "soft_clean" | None:
-            await interaction.response.send_modal(_LeaveModal(target))
+            await interaction.response.send_modal(_LeaveModal(None if is_self else effective_target))
             return
         case "hard_clean":
-            if not target or target.id == interaction.user.id:
+            if is_self:
                 await send_bad_argument(
                     interaction,
-                    subtitle = {("target", "type") : "You cannot hard clean yourself."},
+                    subtitle = {"target" : "You cannot hard clean yourself."},
                 )
                 return
 
-            await interaction.response.send_message(view = _HardCleanView(target), ephemeral = True)
+            await interaction.response.send_message(view = _HardCleanView(effective_target), ephemeral = True)
         case _:
             pass
