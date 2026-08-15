@@ -187,6 +187,6 @@ class RoleCommands(
     ) -> None:
         await run_role_compare(interaction, role_1, role_2)
 
-async def setup(bot : Cordex) -> None:
-    cog = RoleCommands(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = RoleCommands(bot)
+#     await bot.add_cog(cog)

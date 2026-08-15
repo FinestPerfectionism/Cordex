@@ -361,6 +361,6 @@ class ModerationCommands(
     async def cmd_mod_tickets_close(self, interaction : Interaction) -> None:
         await run_mod_tickets_close(interaction)
 
-async def setup(bot : Cordex) -> None:
-    cog = ModerationCommands(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = ModerationCommands(bot)
+#     await bot.add_cog(cog)

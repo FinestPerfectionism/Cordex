@@ -165,6 +165,6 @@ class MessageEditHandler(commands.Cog):
 
         await self.bot.process_commands(after)
 
-async def setup(bot : Cordex) -> None:
-    cog = MessageEditHandler(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = MessageEditHandler(bot)
+#     await bot.add_cog(cog)

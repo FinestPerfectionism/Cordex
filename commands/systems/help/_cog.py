@@ -28,6 +28,6 @@ class HelpCommand(commands.Cog):
     async def cmd_help(self, interaction : Interaction, name : str | None = None) -> None:
         await run_help(interaction, name)
 
-async def setup(bot : Cordex) -> None:
-    cog = HelpCommand(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = HelpCommand(bot)
+#     await bot.add_cog(cog)

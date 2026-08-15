@@ -59,6 +59,6 @@ class ServerCommands(
     async def cmd_server_health(self, interaction : Interaction) -> None:
         await run_server_health(interaction)
 
-async def setup(bot : Cordex) -> None:
-    cog = ServerCommands(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = ServerCommands(bot)
+#     await bot.add_cog(cog)

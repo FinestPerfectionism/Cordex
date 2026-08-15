@@ -44,6 +44,6 @@ class MemberCommands(
     ) -> None:
         await run_member_info(interaction = interaction, member = member, server = server)
 
-async def setup(bot : Cordex) -> None:
-    cog = MemberCommands(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = MemberCommands(bot)
+#     await bot.add_cog(cog)

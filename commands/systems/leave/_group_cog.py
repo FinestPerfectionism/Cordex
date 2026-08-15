@@ -93,6 +93,6 @@ class LeaveCommands(
     async def cmd_leave_remove(self, interaction : Interaction, target : Member | None = None) -> None:
         await run_leave_remove(interaction, target)
 
-async def setup(bot : Cordex) -> None:
-    cog = LeaveCommands(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = LeaveCommands(bot)
+#     await bot.add_cog(cog)

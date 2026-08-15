@@ -218,6 +218,6 @@ class PartnershipCommands(
             server_name,
         )
 
-async def setup(bot : Cordex) -> None:
-    cog = PartnershipCommands(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = PartnershipCommands(bot)
+#     await bot.add_cog(cog)

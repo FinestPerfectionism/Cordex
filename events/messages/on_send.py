@@ -129,6 +129,6 @@ class MessageSendHandler(commands.Cog):
             if message.id == thread.id and thread.parent_id == DIRECTOR_TASKS_CHANNEL_ID:
                 await thread.send(DIRECTORS_MENTION)
 
-async def setup(bot : Cordex) -> None:
-    cog = MessageSendHandler(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = MessageSendHandler(bot)
+#     await bot.add_cog(cog)
