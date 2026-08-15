@@ -96,6 +96,6 @@ class CoreEnsurementHandler(commands.Cog):
         # ⸻ Suggestions
 
 
-async def setup(bot : Cordex) -> None:
-    cog = CoreEnsurementHandler(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = CoreEnsurementHandler(bot)
+#     await bot.add_cog(cog)

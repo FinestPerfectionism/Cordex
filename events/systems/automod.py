@@ -68,6 +68,6 @@ class AutomoderationSystem(commands.Cog):
                 await author.ban(reason = "Cordex Auto-Moderation: image spam")
                 del self.heat[author.id]
 
-async def setup(bot : Cordex) -> None:
-    cog = AutomoderationSystem(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = AutomoderationSystem(bot)
+#     await bot.add_cog(cog)

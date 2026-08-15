@@ -136,6 +136,6 @@ class QuarantineEnforcerSystem(commands.Cog):
     async def waitloop_quarantine_enforce(self) -> None:
         await self.bot.wait_until_ready()
 
-async def setup(bot : Cordex) -> None:
-    cog = QuarantineEnforcerSystem(bot)
-    await bot.add_cog(cog)
+# async def setup(bot : Cordex) -> None:
+#     cog = QuarantineEnforcerSystem(bot)
+#     await bot.add_cog(cog)
