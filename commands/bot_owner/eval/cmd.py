@@ -53,6 +53,8 @@ from core.utilities import (
     truncate,
 )
 
+from .tools import catch, show_def
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -95,6 +97,9 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "COLOR_GREY"    : COLOR_GREY,
         "COLOR_BLACK"   : COLOR_BLACK,
         "COLOR_WHITE"   : COLOR_WHITE,
+
+        "catch"    : catch,
+        "show_def" : show_def,
 
         "utcnow"         : utcnow,
         "get"            : get,
@@ -180,6 +185,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
 
     if not body:
         await send_bad_argument(ctx, subtitle = {"body" : "This is a required argument was ommitted."})
+        return
 
     message = ctx.message
 

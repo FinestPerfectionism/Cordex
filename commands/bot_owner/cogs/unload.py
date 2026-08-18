@@ -1,5 +1,5 @@
 from bot import Interaction, log
-from commands.bot_owner import get_cogs
+from commands.bot_owner._base import get_cogs
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock

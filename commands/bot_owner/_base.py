@@ -3,7 +3,6 @@ from re import compile
 from typing import Self, final
 
 from discord import DMChannel, TextChannel, Thread, VoiceChannel
-from discord.app_commands import Choice
 
 from bot import Interaction, bot
 from bot.ui import Button, View, button, green, red
@@ -23,7 +22,7 @@ type _Inter = Callable[[Interaction], Awaitable[None]]
 # TextChannelTypes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-TextChannelTypes = (TextChannel, Thread, DMChannel, VoiceChannel)
+TextChannelTypes = TextChannel | Thread | DMChannel | VoiceChannel
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Emoji Stuff
@@ -93,16 +92,6 @@ async def emoji_inaccessible(
 
 def get_cogs() -> list[str]:
     return discover_cogs("commands", "events", "core")
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# cog_autocomplete
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-async def cog_autocomplete(_interaction : Interaction, current : str) -> list[Choice[str]]:  # noqa: RUF029
-    return [
-        Choice(name = cog, value = cog)
-        for cog in get_cogs() if current.lower() in cog.lower()
-    ][:25]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Raw Bot-Owner Check
