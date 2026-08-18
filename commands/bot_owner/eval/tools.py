@@ -1,9 +1,6 @@
-from collections.abc import Awaitable, Callable
 from inspect import isclass, iscoroutinefunction, signature
 from typing import Protocol, runtime_checkable
 
-from bot import ContextOrInteraction
-from core.responses import format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -40,20 +37,31 @@ def show_def(target : object, /) -> str:
             base.__name__
             for base in class_object.__bases__
             if base is not object
-            and base.__name__ != "Generic"
         ]
         parent_str = f"({', '.join(bases)})" if bases else ""
 
-        sig = signature(class_object, eval_str = True)
+        sig    = signature(class_object, eval_str = True)
         params = list(sig.parameters.values())
 
         if params and params[0].name in {"self", "cls"}:
             sig = sig.replace(parameters = params[1:])
 
+        standard_sig = str(sig)
+        init_prefix  = "    def __init__"
+
+        if len(init_prefix) + len(standard_sig) <= 80:
+            formatted_sig = standard_sig
+        else:
+            parameter_lines = [
+                f"        {parameter},"
+                for parameter in sig.parameters.values()
+            ]
+            formatted_sig = f"(\n{'\n'.join(parameter_lines)}\n    )"
+
         return codeblock(
             (
                f"{prefix} {name}{brackets}{parent_str}:\n"
-               f"    def __init__{sig}:\n"
+               f"{init_prefix}{formatted_sig}:\n"
                 "        ..."
             ),
         )
@@ -79,9 +87,21 @@ def show_def(target : object, /) -> str:
                 brackets = f"[{", ".join(function_parameter_names)}]"
 
         target_signature = signature(function_object, eval_str = True)
+        standard_sig     = str(target_signature)
+        func_prefix      = f"{prefix} {name}{brackets}"
+
+        if len(func_prefix) + len(standard_sig) <= 80:
+            formatted_sig = standard_sig
+        else:
+            parameter_lines = [
+                f"    {parameter},"
+                for parameter in target_signature.parameters.values()
+            ]
+            formatted_sig = f"(\n{'\n'.join(parameter_lines)}\n)"
+
         return codeblock(
             (
-               f"{prefix} {name}{brackets}{target_signature}:\n"
+               f"{func_prefix}{formatted_sig}:\n"
                 "    ..."
             ),
         )
@@ -90,22 +110,15 @@ def show_def(target : object, /) -> str:
     raise TypeError(error)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# catch
+# show_attrs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def catch[R](
-    target : ContextOrInteraction,
-    func   : Callable[[ContextOrInteraction], Awaitable[R]],
-    /,
-) -> R | None:
-    try:
-        return await func(target)
-    except Exception as e:
-        await format_send(
-            target,
-            msg_type = "error",
-            title    = "Error! :[",
-            subtitle = codeblock(f"{e}"),
-            override = True,
-        )
-        return None
+def show_attrs(target : object, /, *, tall : bool = False, dunders : bool = False) -> str:
+    attrs = dir(target)
+
+    if not dunders:
+        attrs = [attr for attr in attrs if not attr.startswith("__")]
+
+    joiner = "\n" if tall else ", "
+
+    return codeblock(joiner.join(attrs))

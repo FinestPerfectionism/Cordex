@@ -53,7 +53,7 @@ from core.utilities import (
     truncate,
 )
 
-from .tools import catch, show_def
+from .tools import show_attrs, show_def
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
@@ -98,8 +98,8 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "COLOR_BLACK"   : COLOR_BLACK,
         "COLOR_WHITE"   : COLOR_WHITE,
 
-        "catch"    : catch,
-        "show_def" : show_def,
+        "show_def"   : show_def,
+        "show_attrs" : show_attrs,
 
         "utcnow"         : utcnow,
         "get"            : get,
