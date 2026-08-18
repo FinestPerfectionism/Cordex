@@ -40,18 +40,22 @@ def show_def(target : object, /) -> str:
             base.__name__
             for base in class_object.__bases__
             if base is not object
+            and base.__name__ != "Generic"
         ]
         parent_str = f"({', '.join(bases)})" if bases else ""
 
-        sig = signature(class_object)
+        sig = signature(class_object, eval_str = True)
         params = list(sig.parameters.values())
 
         if params and params[0].name in {"self", "cls"}:
             sig = sig.replace(parameters = params[1:])
 
-        return (
-            f"{prefix} {name}{brackets}{parent_str}:\n"
-            f"    def __init__{sig}"
+        return codeblock(
+            (
+               f"{prefix} {name}{brackets}{parent_str}:\n"
+               f"    def __init__{sig}:\n"
+                "        ..."
+            ),
         )
 
     if callable(target):
@@ -74,8 +78,13 @@ def show_def(target : object, /) -> str:
                 ]
                 brackets = f"[{", ".join(function_parameter_names)}]"
 
-        target_signature = signature(function_object)
-        return f"{prefix} {name}{brackets}{target_signature}"
+        target_signature = signature(function_object, eval_str = True)
+        return codeblock(
+            (
+               f"{prefix} {name}{brackets}{target_signature}:\n"
+                "    ..."
+            ),
+        )
 
     error = f"Expected class or callable, got {type(target).__name__}"
     raise TypeError(error)
