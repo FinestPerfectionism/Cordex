@@ -70,10 +70,12 @@ def show_def(target : object, /) -> str:
         function_object = target
 
         prefix = "async def" if iscoroutinefunction(function_object) else "def"
-        name   = "unknown"
 
-        if isinstance(function_object, HasName):
-            name = function_object.__name__
+        name = getattr(
+            function_object, 
+            "__name__", 
+            getattr(getattr(function_object, "__func__", None), "__name__", "unknown")
+        )
 
         brackets = ""
 
@@ -86,7 +88,11 @@ def show_def(target : object, /) -> str:
                 ]
                 brackets = f"[{", ".join(function_parameter_names)}]"
 
-        target_signature = signature(function_object, eval_str = True)
+        try:
+            target_signature = signature(function_object, eval_str = True)
+        except NameError:
+            target_signature = signature(function_object, eval_str = False)
+
         standard_sig     = str(target_signature)
         func_prefix      = f"{prefix} {name}{brackets}"
 
