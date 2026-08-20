@@ -33,11 +33,6 @@ from .moderation import (
     run_mod_tickets_escalate,
     run_mod_tickets_open,
 )
-from .partnerships import (
-    run_partnership_add,
-    run_partnership_remove,
-    run_partnership_update,
-)
 from .roles import (
     run_role_compare,
     run_role_duplicate,
@@ -80,9 +75,6 @@ __all__ = [
     "run_mod_tickets_close",
     "run_mod_tickets_escalate",
     "run_mod_tickets_open",
-    "run_partnership_add",
-    "run_partnership_remove",
-    "run_partnership_update",
     "run_role_compare",
     "run_role_duplicate",
     "run_role_info",

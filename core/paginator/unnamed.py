@@ -164,7 +164,7 @@ class UnnamedPaginator(LayoutView):
         data      : _ItemsOrStrList,
         /,
         *,
-        data_name : str   | None = None,
+        data_name : str,
         per_page  : int          = 5,
         color     : Color | None = None,
         container : bool         = False,

@@ -1,4 +1,4 @@
-from inspect import isclass, iscoroutinefunction, signature
+from inspect import cleandoc, isclass, iscoroutinefunction, signature
 from typing import Protocol, runtime_checkable
 
 from core.utilities import codeblock
@@ -58,10 +58,19 @@ def show_def(target : object, /) -> str:
             ]
             formatted_sig = f"(\n{'\n'.join(parameter_lines)}\n    )"
 
+        docstring = getattr(class_object, "__doc__", None)
+        if isinstance(docstring, str) and docstring.strip():
+            cleaned        = cleandoc(docstring)
+            indented_lines = [f"        {line}" if line else "" for line in cleaned.splitlines()]
+            body           = f'        """\n{'\n'.join(indented_lines)}\n        """\n'
+        else:
+            body = ""
+
         return codeblock(
             (
                f"{prefix} {name}{brackets}{parent_str}:\n"
                f"{init_prefix}{formatted_sig}:\n"
+               f"{body}"
                 "        ..."
             ),
         )
@@ -72,9 +81,9 @@ def show_def(target : object, /) -> str:
         prefix = "async def" if iscoroutinefunction(function_object) else "def"
 
         name = getattr(
-            function_object, 
-            "__name__", 
-            getattr(getattr(function_object, "__func__", None), "__name__", "unknown")
+            function_object,
+            "__name__",
+            getattr(getattr(function_object, "__func__", None), "__name__", "unknown"),
         )
 
         brackets = ""
@@ -86,12 +95,9 @@ def show_def(target : object, /) -> str:
                     parameter.__name__ if isinstance(parameter, HasName) else str(parameter)
                     for parameter in function_type_parameters
                 ]
-                brackets = f"[{", ".join(function_parameter_names)}]"
+                brackets = f"[{', '.join(function_parameter_names)}]"
 
-        try:
-            target_signature = signature(function_object, eval_str = True)
-        except NameError:
-            target_signature = signature(function_object, eval_str = False)
+        target_signature = signature(function_object)
 
         standard_sig     = str(target_signature)
         func_prefix      = f"{prefix} {name}{brackets}"
@@ -105,9 +111,18 @@ def show_def(target : object, /) -> str:
             ]
             formatted_sig = f"(\n{'\n'.join(parameter_lines)}\n)"
 
+        docstring = getattr(function_object, "__doc__", None)
+        if isinstance(docstring, str) and docstring.strip():
+            cleaned        = cleandoc(docstring)
+            indented_lines = [f"    {line}" if line else "" for line in cleaned.splitlines()]
+            body           = f'    """\n{'\n'.join(indented_lines)}\n    """\n'
+        else:
+            body = ""
+
         return codeblock(
             (
                f"{func_prefix}{formatted_sig}:\n"
+               f"{body}"
                 "    ..."
             ),
         )

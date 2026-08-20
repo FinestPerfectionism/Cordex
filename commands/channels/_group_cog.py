@@ -5,8 +5,6 @@ from discord.app_commands import Choice, choices, command, describe, guild_only,
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.help import HelpArgument, help_description
-from core.permissions import administrator_cmd
 from core.utilities import unimplemented
 
 from .compare import run_channel_compare
@@ -55,7 +53,6 @@ class ChannelCommands(
         description = "Sync a channel's permissions to it's category. Defaults to the current one.",
     )
     @describe(channel = "The channel to sync permissions for. Defaults to the current one.")
-    @administrator_cmd()
     async def cmd_channel_sync(
         self,
         interaction : Interaction,
@@ -72,7 +69,6 @@ class ChannelCommands(
         description = "Duplicate a channel or category.",
     )
     @describe(channel = "The channel to duplicate. Defaults to the current one.")
-    @administrator_cmd()
     @unimplemented()
     async def cmd_channel_duplicate(
         self,
@@ -85,18 +81,6 @@ class ChannelCommands(
     # /channel compare Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(
-        arguments = {
-            "channel_1" : HelpArgument(
-                name        = "channel-1",
-                description = "The first channel to compare.",
-            ),
-            "channel_2" : HelpArgument(
-                name        = "channel-2",
-                description = "The second channel to compare.",
-            ),
-        },
-    )
     @command(
         name        = "compare",
         description = "List all differing permissions for two selected channels.",
@@ -109,7 +93,6 @@ class ChannelCommands(
         channel_1 = "The first channel to compare.",
         channel_2 = "The second channel to compare.",
     )
-    @administrator_cmd()
     @unimplemented()
     async def cmd_channel_compare(
         self,
@@ -123,17 +106,6 @@ class ChannelCommands(
     # /channel permissions Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(
-        arguments = {
-            "channel"            : HelpArgument(
-                description = "The channel to list permissions for.",
-            ),
-            "permissions_filter" : HelpArgument(
-                name        = "permissions-filter",
-                description = "Whether to show enabled or disabled permissions. Defaults to both.",
-            ),
-        },
-    )
     @command(
         name        = "permissions",
         description = "List permissions for a selected channel.",
@@ -149,7 +121,6 @@ class ChannelCommands(
             Choice(name = "Disabled", value = "disabled"),
         ],
     )
-    @administrator_cmd()
     @unimplemented()
     async def cmd_channel_permissions(
         self,

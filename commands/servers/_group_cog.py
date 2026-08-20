@@ -4,7 +4,6 @@ from discord.app_commands import command, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.permissions import director_cmd
 
 from .configure import run_server_configure
 from .health import run_server_health
@@ -33,7 +32,6 @@ class ServerCommands(
         name        = "configure",
         description = "Configure guild settings.",
     )
-    @director_cmd()
     async def cmd_server_configure(self, interaction : Interaction) -> None:
         await run_server_configure(interaction, self.bot)
 

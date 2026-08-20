@@ -4,11 +4,7 @@ from discord.app_commands import Group, command, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.permissions import (
-    bot_owner_cmd,
-    # director_cmd,
-    moderator_cmd,
-)
+from core.permissions import bot_owner_cmd
 
 # senior_moderator_cmd,
 # staff_cmd,
@@ -40,11 +36,6 @@ from .primary.timeout import (
     run_mod_primary_timeout_add,
     run_mod_primary_timeout_remove,
     run_mod_primary_timeout_view,
-)
-from .tickets import (
-    run_mod_tickets_close,
-    run_mod_tickets_escalate,
-    run_mod_tickets_open,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -85,10 +76,6 @@ class ModerationCommands(
     cases      : Group = Group(
         name        = "cases",
         description = "Moderation case commands",
-    )
-    tickets    : Group = Group(
-        name        = "tickets",
-        description = "Moderation ticket commands",
     )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -216,7 +203,6 @@ class ModerationCommands(
         name        = "add",
         description = "Add member(s) to timeout.",
     )
-    # @moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_timeout_add(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_add(interaction)
@@ -229,7 +215,6 @@ class ModerationCommands(
         name        = "view",
         description = "View all timed out members.",
     )
-    # @staff_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_timeout_view(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_view(interaction)
@@ -242,7 +227,6 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove member(s) from timeout.",
     )
-    # @senior_moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_timeout_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_remove(interaction)
@@ -255,7 +239,6 @@ class ModerationCommands(
         name        = "purge",
         description = "Purge messages from member(s) or channel(s).",
     )
-    # @senior_moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_purge(self, interaction : Interaction) -> None:
         await run_mod_primary_purge(interaction)
@@ -268,7 +251,6 @@ class ModerationCommands(
         name        = "add",
         description = "Add a note to a member.",
     )
-    # @moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_note_add(self, interaction : Interaction) -> None:
         await run_mod_primary_note_add(interaction)
@@ -281,7 +263,6 @@ class ModerationCommands(
         name        = "view",
         description = "View a member's notes.",
     )
-    # @staff_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_note_view(self, interaction : Interaction) -> None:
         await run_mod_primary_note_view(interaction)
@@ -294,7 +275,6 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove a note from a member.",
     )
-    # @moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_note_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_note_remove(interaction)
@@ -307,7 +287,6 @@ class ModerationCommands(
         name        = "query",
         description = "Query moderation cases with various filters.",
     )
-    # @moderator_cmd()
     @unimplemented()
     async def cmd_mod_cases_query(self, interaction : Interaction) -> None:
         await run_mod_cases_query(interaction)
@@ -320,46 +299,9 @@ class ModerationCommands(
         name        = "view",
         description = "View a moderation case by it's ID.",
     )
-    # @moderator_cmd()
     @unimplemented()
     async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
         await run_mod_cases_view(interaction)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation tickets open Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @tickets.command(
-        name        = "open",
-        description = "Open a ticket thread.",
-    )
-    @moderator_cmd()
-    async def cmd_mod_tickets_open(self, interaction : Interaction) -> None:
-        await run_mod_tickets_open(interaction)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation tickets escalate Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @tickets.command(
-        name        = "escalate",
-        description = "Escalate a ticket thread.",
-    )
-    @moderator_cmd()
-    async def cmd_mod_tickets_escalate(self, interaction : Interaction) -> None:
-        await run_mod_tickets_escalate(interaction)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation tickets close Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @tickets.command(
-        name        = "close",
-        description = "Close a ticket thread.",
-    )
-    @moderator_cmd()
-    async def cmd_mod_tickets_close(self, interaction : Interaction) -> None:
-        await run_mod_tickets_close(interaction)
 
 # async def setup(bot : Cordex) -> None:
 #     cog = ModerationCommands(bot)
