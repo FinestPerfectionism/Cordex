@@ -63,7 +63,7 @@ def show_def(target : object, /) -> str:
 
                 elif param.kind == param.KEYWORD_ONLY:
                     prev_param = parameters[i - 1] if i > 0 else None
-                    if prev_param and prev_param.kind not in (param.KEYWORD_ONLY, param.VAR_POSITIONAL):
+                    if prev_param and prev_param.kind not in {param.KEYWORD_ONLY, param.VAR_POSITIONAL}:
                         lines.insert(-1, "        *,")
 
             formatted_sig = f"(\n{"\n".join(lines)}\n    )"
@@ -126,7 +126,7 @@ def show_def(target : object, /) -> str:
 
                 elif param.kind == param.KEYWORD_ONLY:
                     prev_param = parameters[i - 1] if i > 0 else None
-                    if prev_param and prev_param.kind not in (param.KEYWORD_ONLY, param.VAR_POSITIONAL):
+                    if prev_param and prev_param.kind not in {param.KEYWORD_ONLY, param.VAR_POSITIONAL}:
                         lines.insert(-1, "    *,")
 
             formatted_sig = f"(\n{"\n".join(lines)}\n)"
