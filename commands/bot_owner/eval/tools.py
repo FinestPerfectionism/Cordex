@@ -31,14 +31,14 @@ def show_def(target : object, /) -> str:
 
         if type_parameters:
             class_parameter_names = [parameter.__name__ for parameter in type_parameters]
-            brackets              = f"[{', '.join(class_parameter_names)}]"
+            brackets              = f"[{", ".join(class_parameter_names)}]"
 
         bases      = [
             base.__name__
             for base in class_object.__bases__
             if base is not object
         ]
-        parent_str = f"({', '.join(bases)})" if bases else ""
+        parent_str = f"({", ".join(bases)})" if bases else ""
 
         sig    = signature(class_object, eval_str = True)
         params = list(sig.parameters.values())
@@ -52,17 +52,27 @@ def show_def(target : object, /) -> str:
         if len(init_prefix) + len(standard_sig) <= 80:
             formatted_sig = standard_sig
         else:
-            parameter_lines = [
-                f"        {parameter},"
-                for parameter in sig.parameters.values()
-            ]
-            formatted_sig = f"(\n{'\n'.join(parameter_lines)}\n    )"
+            lines = []
+            parameters = list(sig.parameters.values())
+            for i, param in enumerate(parameters):
+                lines.append(f"        {param},")
+                if param.kind == param.POSITIONAL_ONLY:
+                    next_param = parameters[i + 1] if i + 1 < len(parameters) else None
+                    if next_param is None or next_param.kind != param.POSITIONAL_ONLY:
+                        lines.append("        /,")
+
+                elif param.kind == param.KEYWORD_ONLY:
+                    prev_param = parameters[i - 1] if i > 0 else None
+                    if prev_param and prev_param.kind not in (param.KEYWORD_ONLY, param.VAR_POSITIONAL):
+                        lines.insert(-1, "        *,")
+
+            formatted_sig = f"(\n{"\n".join(lines)}\n    )"
 
         docstring = getattr(class_object, "__doc__", None)
         if isinstance(docstring, str) and docstring.strip():
             cleaned        = cleandoc(docstring)
             indented_lines = [f"        {line}" if line else "" for line in cleaned.splitlines()]
-            body           = f'        """\n{'\n'.join(indented_lines)}\n        """\n'
+            body           = f'        """\n{"\n".join(indented_lines)}\n        """\n'
         else:
             body = ""
 
@@ -95,7 +105,7 @@ def show_def(target : object, /) -> str:
                     parameter.__name__ if isinstance(parameter, HasName) else str(parameter)
                     for parameter in function_type_parameters
                 ]
-                brackets = f"[{', '.join(function_parameter_names)}]"
+                brackets = f"[{", ".join(function_parameter_names)}]"
 
         target_signature = signature(function_object)
 
@@ -105,17 +115,27 @@ def show_def(target : object, /) -> str:
         if len(func_prefix) + len(standard_sig) <= 80:
             formatted_sig = standard_sig
         else:
-            parameter_lines = [
-                f"    {parameter},"
-                for parameter in target_signature.parameters.values()
-            ]
-            formatted_sig = f"(\n{'\n'.join(parameter_lines)}\n)"
+            lines : list[str] = []
+            parameters = list(target_signature.parameters.values())
+            for i, param in enumerate(parameters):
+                lines.append(f"    {param},")
+                if param.kind == param.POSITIONAL_ONLY:
+                    next_param = parameters[i + 1] if i + 1 < len(parameters) else None
+                    if next_param is None or next_param.kind != param.POSITIONAL_ONLY:
+                        lines.append("    /,")
+
+                elif param.kind == param.KEYWORD_ONLY:
+                    prev_param = parameters[i - 1] if i > 0 else None
+                    if prev_param and prev_param.kind not in (param.KEYWORD_ONLY, param.VAR_POSITIONAL):
+                        lines.insert(-1, "    *,")
+
+            formatted_sig = f"(\n{"\n".join(lines)}\n)"
 
         docstring = getattr(function_object, "__doc__", None)
         if isinstance(docstring, str) and docstring.strip():
             cleaned        = cleandoc(docstring)
             indented_lines = [f"    {line}" if line else "" for line in cleaned.splitlines()]
-            body           = f'    """\n{'\n'.join(indented_lines)}\n    """\n'
+            body           = f'    """\n{"\n".join(indented_lines)}\n    """\n'
         else:
             body = ""
 
@@ -134,12 +154,27 @@ def show_def(target : object, /) -> str:
 # show_attrs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def show_attrs(target : object, /, *, tall : bool = False, dunders : bool = False) -> str:
-    attrs = dir(target)
+def show_attrs(
+    target   : object,
+    /,
+    *,
+    tall     : bool | None = None,
+    dunders  : bool        = False,
+    privates : bool        = False,
+) -> str:
+    def _filter(attr : str) -> bool:
+        if attr.startswith("__") and attr.endswith("__"):
+            return dunders
+        if attr.startswith("_"):
+            return privates
+        return True
 
-    if not dunders:
-        attrs = [attr for attr in attrs if not attr.startswith("__")]
+    attrs = [attr for attr in dir(target) if _filter(attr)]
 
-    joiner = "\n" if tall else ", "
+    if tall is None:
+        estimated_length = sum(len(a) for a in attrs) + (2 * (len(attrs) - 1))
+        tall = estimated_length > 80
+
+    joiner = ",\n" if tall else ", "
 
     return codeblock(joiner.join(attrs))
