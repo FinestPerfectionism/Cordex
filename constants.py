@@ -49,10 +49,16 @@ COLOR_GREY    = Color(0xABABAB)
 COLOR_WHITE   = Color(0xFFFFFF)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Member IDs
+# User IDs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 BOT_OWNER_ID = 1311394031640776716
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# User Mentions
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+BOT_OWNER_MENTION = "<@1311394031640776716>"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Server IDs
