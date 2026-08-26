@@ -67,6 +67,12 @@ BOT_OWNER_MENTION = "<@1311394031640776716>"
 SUPPORT_GUILD_ID = 1537571856964386971
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Channel IDs
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+BOT_ERRORS_LOG_CHANNEL_ID = 1537572340228038740
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Emoji Strings
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 

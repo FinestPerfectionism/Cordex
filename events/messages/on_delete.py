@@ -1,25 +1,14 @@
 from typing import Self, final
 
-from discord import AllowedMentions, Message
-from discord.abc import Messageable
+from discord import Message
 from discord.ext import commands
 
 from bot import Cordex
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
-from constants import (
-    BOT_OWNER_ID,
-    COLOR_RED,
-    MAIN_GUILD_ID,
-    MESSAGE_DELETE_LOG_CHANNEL_ID,
-)
+from constants import BOT_OWNER_ID, COLOR_RED
 from core.utilities import format_now, format_table
 
-from . import (
-    channel_display,
-    clean_and_truncate,
-    format_attachments,
-    is_directorship_channel,
-)
+from . import channel_display, clean_and_truncate, format_attachments
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Delete Handling
@@ -44,21 +33,14 @@ class MessageDeleteHandler(commands.Cog):
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Block non-guild messages or messages not in the main guild
+        # ⸻ Block non-guild messages.
 
-        if guild is None or guild.id != MAIN_GUILD_ID:
+        if guild is None:
             return
 
         # ⸻ Block evaluations.
 
         if content.startswith(".eval") and author.id == BOT_OWNER_ID:
-            return
-
-        if is_directorship_channel(channel):
-            return
-
-        log_channel = guild.get_channel(MESSAGE_DELETE_LOG_CHANNEL_ID)
-        if not isinstance(log_channel, Messageable):
             return
 
         @final
@@ -97,7 +79,7 @@ class MessageDeleteHandler(commands.Cog):
                 ),
             )
 
-        await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
+        # await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
 
 # async def setup(bot : Cordex) -> None:
 #     cog = MessageDeleteHandler(bot)

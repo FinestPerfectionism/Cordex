@@ -1,7 +1,7 @@
 from re import compile
 from typing import Self, final
 
-from discord import AllowedMentions, MediaGalleryItem, Message, Thread
+from discord import AllowedMentions, MediaGalleryItem, Message
 from discord.abc import Messageable
 from discord.ext import commands
 
@@ -13,25 +13,8 @@ from bot.ui import (
     TextDisplay,
     VisibleLargeSeparator,
 )
-from constants import (
-    DIRECTOR_TASKS_CHANNEL_ID,
-    DIRECTORS_MENTION,
-    MAIN_GUILD_ID,
-    WAPPLE_CHAIN_CHANNEL_ID,
-)
-
-from . import WAPPLE_PATTERN
 
 MESSAGE_LINK_PATTERN = compile(r"https://discord(?:app)?\.com/channels/(\d+|@me)/(\d+)/(\d+)")
-
-FACTOIDS = {
-    "bump" : (
-        "# Please bump __both__ bots.\n"
-        "We really appreciate bumping! If you are going to bump, please bump **both** <@735147814878969968> and <@1159147139960676422> (and <@1222548162741538938> too if it's available).\n"
-        "### Why?\n"
-        "The bots have a cooldown of one bump per 2 (24 for Discadia) hours. We try to sync the timer on each. Bumping both at once ensures that this happens *and* gets our server more recognition."
-    ),
-}
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Send Handling
@@ -47,7 +30,6 @@ class MessageSendHandler(commands.Cog):
     async def message_send_handler(self, message : Message) -> None:
         content = message.content
         author  = message.author
-        channel = message.channel
         guild   = message.guild
 
         # ⸻ Block bots and the bot itself.
@@ -55,9 +37,9 @@ class MessageSendHandler(commands.Cog):
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Block non-guild messages or messages not in the main guild.
+        # ⸻ Block non-guild messages.
 
-        if guild is None or guild.id != MAIN_GUILD_ID:
+        if guild is None:
             return
 
         # ⸻ Provide a preview for message links.
@@ -105,29 +87,6 @@ class MessageSendHandler(commands.Cog):
                 mention_author   = False,
                 allowed_mentions = AllowedMentions.none(),
             )
-
-        # ⸻ Block non-wapple text in wapple channel.
-
-        if channel.id == WAPPLE_CHAIN_CHANNEL_ID and not WAPPLE_PATTERN.fullmatch(content.strip()):
-            await message.delete()
-            return
-
-        # ⸻ Factoids.
-
-        if content.startswith("?") and " " not in content[1:] and guild.id == MAIN_GUILD_ID:
-            key = content[1:].lower()
-
-            if key in FACTOIDS:
-                async with channel.typing():
-                    await channel.send(FACTOIDS[key])
-                    return
-
-        # ⸻ Mention directors upon thread creation.
-
-        if isinstance(channel, Thread):
-            thread = channel
-            if message.id == thread.id and thread.parent_id == DIRECTOR_TASKS_CHANNEL_ID:
-                await thread.send(DIRECTORS_MENTION)
 
 # async def setup(bot : Cordex) -> None:
 #     cog = MessageSendHandler(bot)

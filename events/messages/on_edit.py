@@ -1,7 +1,6 @@
 from typing import Self, final
 
-from discord import AllowedMentions, Message
-from discord.abc import Messageable
+from discord import Message
 from discord.ext import commands
 from discord.utils import format_dt, utcnow
 
@@ -16,21 +15,13 @@ from bot.ui import (
     link,
 )
 from commands.bot_owner.eval import eval_message_ids
-from constants import (
-    BOT_OWNER_ID,
-    COLOR_GREY,
-    MAIN_GUILD_ID,
-    MESSAGE_EDIT_LOG_CHANNEL_ID,
-    WAPPLE_CHAIN_CHANNEL_ID,
-)
+from constants import BOT_OWNER_ID, COLOR_GREY
 from core.utilities import format_table
 
 from . import (
-    WAPPLE_PATTERN,
     channel_display,
     clean_and_truncate,
     format_attachments,
-    is_directorship_channel,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -60,9 +51,9 @@ class MessageEditHandler(commands.Cog):
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Block non-guild messages or messages not in the main guild.
+        # ⸻ Block non-guild messages.
 
-        if before_guild is None or before_guild.id != MAIN_GUILD_ID:
+        if before_guild is None:
             return
 
         # ⸻ Eval command editing.
@@ -90,20 +81,9 @@ class MessageEditHandler(commands.Cog):
 
             return
 
-        # ⸻ Block non-wapple text in wapple channel
-
-        if before_channel.id == WAPPLE_CHAIN_CHANNEL_ID and not WAPPLE_PATTERN.fullmatch((after_content or "").strip()):
-            await after.delete()
-            return
-
         # ⸻ Block evaluations.
 
         if after_content.startswith(".eval") and author.id == BOT_OWNER_ID:
-            return
-
-        # ⸻ Block nessage logging of directorship channels.
-
-        if is_directorship_channel(before_channel):
             return
 
         # ⸻ Edit message logging.
@@ -112,10 +92,6 @@ class MessageEditHandler(commands.Cog):
         after_files  = [a.url for a in after.attachments]
 
         if before_content == after_content and before_files == after_files:
-            return
-
-        log_channel = before_guild.get_channel(MESSAGE_EDIT_LOG_CHANNEL_ID)
-        if not isinstance(log_channel, Messageable):
             return
 
         @final
@@ -161,7 +137,7 @@ class MessageEditHandler(commands.Cog):
                 ),
             )
 
-        await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
+        # await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
 
         await self.bot.process_commands(after)
 

@@ -1,4 +1,5 @@
 from inspect import cleandoc, isclass, iscoroutinefunction, signature
+from json import dumps
 from typing import Protocol, runtime_checkable
 
 from core.utilities import codeblock
@@ -40,7 +41,7 @@ def show_def(target : object, /) -> str:
         ]
         parent_str = f"({", ".join(bases)})" if bases else ""
 
-        sig    = signature(class_object, eval_str = True)
+        sig    = signature(class_object)
         params = list(sig.parameters.values())
 
         if params and params[0].name in {"self", "cls"}:
@@ -178,3 +179,10 @@ def show_attrs(
     joiner = ",\n" if tall else ", "
 
     return codeblock(joiner.join(attrs))
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# format_dict
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def format_dict(dictionary : dict[str, object], /, *, indent : int = 4) -> str:
+    return codeblock(dumps(dictionary, indent = indent))

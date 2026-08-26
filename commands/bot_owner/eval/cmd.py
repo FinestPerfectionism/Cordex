@@ -53,7 +53,7 @@ from core.utilities import (
     truncate,
 )
 
-from .tools import show_attrs, show_def
+from .tools import format_dict, show_attrs, show_def
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
@@ -111,6 +111,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "format_message" : format_message,
         "format_send"    : format_send,
         "format_table"   : format_table,
+        "format_dict"    : format_dict,
 
         "select" : ui.select,
         "button" : ui.button,

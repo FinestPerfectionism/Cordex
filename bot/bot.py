@@ -2,7 +2,7 @@ from asyncio import to_thread
 from collections.abc import Awaitable, Callable
 from logging import getLogger as get_logger
 from pathlib import Path
-from typing import Self, TypedDict, Unpack, final, override
+from typing import Self, TypedDict, Unpack, cast, final, override
 
 from aiosqlite import Connection, connect
 from discord import Embed, Guild, Intents, Message, Status
@@ -21,9 +21,24 @@ from core.cog_loader import discover_cogs
 
 from .ui import Button, LayoutView, Modal, View, button
 
+
+class DisplayNameStylesPayload(TypedDict):
+    font_id   : int
+    effect_id : int
+    colors    : list[int]
+
+class GuildMemberPayload(TypedDict):
+    display_name_styles : DisplayNameStylesPayload
+
+class NameStyleResult(TypedDict):
+    font_id   : DisplayNameFont
+    effect_id : DisplayNameEffect
+    colors    : list[str]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 log = get_logger("Cordex")
 
@@ -140,6 +155,31 @@ class Cordex(commands.Bot):
               "display_name_colors"    : color_integers,
             },
         )
+
+    async def get_name_style(self, guild : Guild, /) -> NameStyleResult:
+        if self.user is None:
+            error = "Client user is not logged in."
+            raise ValueError(error)
+
+        response = cast(
+            GuildMemberPayload,
+            await self.http.request(
+                route = Route(
+                    "GET", "/guilds/{guild_id}/members/{user_id}",
+                    guild_id = guild.id,
+                    user_id  = self.user.id,
+                ),
+            ),
+        )
+
+        styles = response["display_name_styles"]
+        colors = styles["colors"]
+
+        return {
+            "font_id"   : DisplayNameFont(styles["font_id"]),
+            "effect_id" : DisplayNameEffect(styles["effect_id"]),
+            "colors"    : [f"{color:06x}" for color in colors],
+        }
 
     async def reset_name_style(self, *, guild : Guild, branded : bool = True) -> None:
 
@@ -263,7 +303,7 @@ class Cordex(commands.Bot):
 
     @override
     async def close(self) -> None:
-        if hasattr(self, "db"):
+        if self.db:
             await self.db.close()
 
         await super().close()

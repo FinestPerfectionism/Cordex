@@ -6,7 +6,6 @@ from discord.app_commands import (
     ContextMenu,
     Group,
     autocomplete,
-    choices,
     describe,
     rename,
 )
@@ -310,46 +309,9 @@ class BotOwnerCommands(
         name        = "set",
         description = "Set the bot's server specfiic display name style.",
     )
-    @describe(
-        font   = "The display name's font.",
-        effect = "The display name's effect.",
-        colors = "The display name's colors.",
-    )
-    @choices(
-        font   = [
-            # Choice(name = "Bangers",       value = "bangers"),
-            # Choice(name = "Bio Rhyme",     value = "bio_rhyme"),
-            Choice(name = "Cherry Bomb",   value = "cherry_bomb"),
-            Choice(name = "Chicle",        value = "chicle"),
-            # Choice(name = "Compagnon",     value = "compagnon"),
-            Choice(name = "Museo Moderno", value = "museo_moderno"),
-            Choice(name = "Neo Castel",    value = "neo_castel"),
-            Choice(name = "Pixelify",      value = "pixelify"),
-            # Choice(name = "Ribes",         value = "ribes"),
-            Choice(name = "Sinistre",      value = "sinistre"),
-            Choice(name = "Default",       value = "default"),
-            Choice(name = "Zilla Slab",    value = "zilla_slab"),
-            # Choice(name = "???",           value = "thirteen"),
-        ],
-        effect = [
-            Choice(name = "Solid",    value = "solid"),
-            Choice(name = "Gradient", value = "gradient"),
-            Choice(name = "Neon",     value = "neon"),
-            Choice(name = "Toon",     value = "toon"),
-            Choice(name = "Pop",      value = "pop"),
-            # Choice(name = "Glow",     value = "glow"),
-            # Choice(name = "???",      value = "seven"),
-        ],
-    )
     @bot_owner_cmd()
-    async def cmd_bo_style_set(
-        self,
-        interaction : Interaction,
-        font        : str,
-        effect      : str,
-        colors      : str,
-    ) -> None:
-        await run_bo_style_set(interaction, font, effect, colors)
+    async def cmd_bo_style_set(self, interaction : Interaction) -> None:
+        await run_bo_style_set(interaction)
 
 async def setup(bot : Cordex) -> None:
     cog = BotOwnerCommands(bot)
