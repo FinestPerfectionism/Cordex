@@ -2,10 +2,11 @@ from asyncio import sleep
 from typing import Self, final, override
 
 from discord import Forbidden, HTTPException, Message, NotFound, TextStyle
+from discord.abc import Messageable
 
 from bot import Interaction
 from bot.ui import Checkbox, Label, Modal, TextInput
-from commands.bot_owner._base import TextChannelTypes, check_if_bo, emoji_inaccessible
+from commands.bot_owner._base import check_if_bo, emoji_inaccessible
 from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import codeblock
 
@@ -27,7 +28,7 @@ async def run_bo_messages_send(
 
     channel = interaction.channel
 
-    if not isinstance(channel, TextChannelTypes):
+    if not isinstance(channel, Messageable):
         await send_bad_argument(
             interaction,
             subtitle = {"channel" : "The current channel does not support text messages."},
@@ -70,7 +71,7 @@ async def run_bo_messages_send(
     await do_send(interaction)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Reply to Message — Message Menu Logic
+# 'Reply to Message' Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_messages_reply_menu(interaction : Interaction, message : Message) -> None:
@@ -99,8 +100,7 @@ async def run_bo_messages_reply_menu(interaction : Interaction, message : Messag
                 component   = self._text,
             )
 
-            self.add_item(self.ping)
-            self.add_item(self.text)
+            self.add_items(self.ping, self.text)
 
         @override
         async def on_submit(self, interaction : Interaction) -> None:

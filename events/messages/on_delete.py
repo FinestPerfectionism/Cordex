@@ -1,14 +1,16 @@
-from typing import Self, final
+from typing import Self, cast, final
 
-from discord import Message
+from discord import Guild, Message
 from discord.ext import commands
+from discord.mentions import AllowedMentions
 
 from bot import Cordex
+from bot.types import GuildMessagable
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import BOT_OWNER_ID, COLOR_RED
 from core.utilities import format_now, format_table
 
-from . import channel_display, clean_and_truncate, format_attachments
+from ._base import attachments_display, channel_display, clean_and_truncate
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Delete Handling
@@ -19,6 +21,28 @@ class MessageDeleteHandler(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
+
+    async def _get_log_channel(self, guild : Guild) -> GuildMessagable | None:
+        async with self.bot.db.execute(
+            "SELECT config_value FROM GuildConfig WHERE guild_id = ? AND config_key = ?",
+            (guild.id, "messages_delete_channel"),
+        ) as cursor:
+            res = await cursor.fetchone()
+
+        if not res:
+            return None
+
+        channel_id = cast(int | None, res[0])
+
+        if channel_id is None:
+            return None
+
+        log_channel = guild.get_channel(channel_id)
+
+        if not isinstance(log_channel, GuildMessagable):
+            return None
+
+        return log_channel
 
     @commands.Cog.listener("on_message_delete")
     async def message_delete_handler(self, message : Message) -> None:
@@ -35,7 +59,7 @@ class MessageDeleteHandler(commands.Cog):
 
         # ⸻ Block non-guild messages.
 
-        if guild is None:
+        if guild is None or not isinstance(channel, GuildMessagable):
             return
 
         # ⸻ Block evaluations.
@@ -64,7 +88,7 @@ class MessageDeleteHandler(commands.Cog):
                     TextDisplay(
                         (
                             "### Attachments\n"
-                           f"{format_attachments(attachments)}"
+                           f"{attachments_display(attachments)}"
                         ),
                     ),
                 )
@@ -79,8 +103,13 @@ class MessageDeleteHandler(commands.Cog):
                 ),
             )
 
-        # await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
+        log_channel = await self._get_log_channel(guild)
 
-# async def setup(bot : Cordex) -> None:
-#     cog = MessageDeleteHandler(bot)
-#     await bot.add_cog(cog)
+        if log_channel:
+            await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
+        else:
+            return
+
+async def setup(bot : Cordex) -> None:
+    cog = MessageDeleteHandler(bot)
+    await bot.add_cog(cog)

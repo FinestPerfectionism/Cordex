@@ -88,6 +88,6 @@ class MessageSendHandler(commands.Cog):
                 allowed_mentions = AllowedMentions.none(),
             )
 
-# async def setup(bot : Cordex) -> None:
-#     cog = MessageSendHandler(bot)
-#     await bot.add_cog(cog)
+async def setup(bot : Cordex) -> None:
+    cog = MessageSendHandler(bot)
+    await bot.add_cog(cog)

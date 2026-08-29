@@ -1,7 +1,7 @@
-from discord import Attachment, ForumChannel, TextChannel, Thread
-from discord.abc import GuildChannel, Messageable
+from discord import Attachment, Thread
 from discord.utils import escape_markdown
 
+from bot.types import GuildMessagable
 from constants import ARROW_EMOJI
 from core.utilities import truncate
 
@@ -20,25 +20,18 @@ def clean_and_truncate(text : str) -> str:
 # channel_display
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def channel_display(channel : Messageable | GuildChannel) -> str:
+def channel_display(channel : GuildMessagable) -> str:
     if isinstance(channel, Thread):
         parent = channel.parent
 
-        if isinstance(parent, ForumChannel):
-            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.id}"
         if parent is not None:
             return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.id}"
 
-        return channel.mention
-
-    if isinstance(channel, TextChannel):
-        return f"{channel.mention} | {channel.id}"
-
-    return "Unknown Channel"
+    return f"{channel.mention} | {channel.id}"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# format_attachments
+# attachments_display
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_attachments(attachments : list[Attachment]) -> str:
+def attachments_display(attachments : list[Attachment]) -> str:
     return "\n".join(f"- {escape_markdown(f"{attachment.filename} | {attachment.url}")}" for attachment in attachments)

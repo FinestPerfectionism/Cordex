@@ -2,8 +2,6 @@ from collections.abc import Awaitable, Callable
 from re import compile
 from typing import Self, final
 
-from discord import DMChannel, TextChannel, Thread, VoiceChannel
-
 from bot import Interaction, bot
 from bot.ui import Button, View, button, green, red
 from constants import BOT_OWNER_ID
@@ -17,12 +15,6 @@ type _Inter = Callable[[Interaction], Awaitable[None]]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Commands Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# TextChannelTypes
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-TextChannelTypes = TextChannel | Thread | DMChannel | VoiceChannel
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Emoji Stuff
@@ -73,13 +65,13 @@ async def emoji_inaccessible(
     if not inaccessible_ids:
         return False
 
-    plural = "" if len(inaccessible_ids) == 1 else "s"
+    s = "" if len(inaccessible_ids) == 1 else "s"
 
     await interaction.followup.send(
         format_message(
             msg_type =  "warning",
             title    =  "run command",
-            subtitle = f"I don't have access to the emoji{plural} {format_values(inaccessible_ids, wrap = "`")}.",
+            subtitle = f"I don't have access to the emoji{s} {format_values(inaccessible_ids, wrap = "`")}.",
         ),
         view = _NoEmojiAccessView(on_continue),
     )

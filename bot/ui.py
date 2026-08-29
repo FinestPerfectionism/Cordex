@@ -71,9 +71,11 @@ __all__ = [
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class Modal(BaseModal):
-    def add_items(self, *items : Item["Modal | Self"]) -> None:
+    def add_items(self, *items : Item["Modal | Self"]) -> Self:
         for item in items:
             self.add_item(item)
+
+        return self
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # TextDisplay
@@ -91,12 +93,16 @@ class LayoutView(BaseLayoutView):
     def __init__(self, *, timeout : float | None = 600) -> None:
         super().__init__(timeout = timeout)
 
-    def add_text(self, text : str, /) -> None:
+    def add_text(self, text : str, /) -> Self:
         self.add_item(TextDisplay(text))
 
-    def add_items(self, *items : Item[BaseLayoutView | Self]) -> None:
+        return self
+
+    def add_items(self, *items : Item[BaseLayoutView | Self]) -> Self:
         for item in items:
             self.add_item(item)
+
+        return self
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Container
@@ -119,12 +125,15 @@ class Container[V : LayoutView](BaseContainer[V]):
     def color(self, value : Color | None, /) -> None:
         self.accent_color : Color | None = value
 
-    def add_text(self, text : str, /) -> None:
+    def add_text(self, text : str, /) -> Self:
         self.add_item(TextDisplay(text))
+        return self
 
-    def add_items(self, *items : Item[V]) -> None:
+    def add_items(self, *items : Item[V]) -> Self:
         for item in items:
             self.add_item(item)
+
+        return self
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Separator Sizes

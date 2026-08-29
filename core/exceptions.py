@@ -164,38 +164,6 @@ async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Bad Environment Main Guild or DMs Exception
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-class BadEnvironmentMainGuildOrDMs(CheckFailure):
-    pass
-
-async def send_bad_environment_mainguildordms(target : ContextOrInteraction) -> None:
-    await format_send(
-        target,
-        msg_type = "warning",
-        title    = "run command",
-        subtitle = "This command can only be run in the main guild (Goobers) or DMs.",
-        footer   = "Bad environment",
-    )
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Bad Environment Main Guild Exception
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-class BadEnvironmentMainGuild(CheckFailure):
-    pass
-
-async def send_bad_environment_mainguild(target : ContextOrInteraction) -> None:
-    await format_send(
-        target,
-        msg_type = "warning",
-        title    = "run command",
-        subtitle = "This command can only be run in the main guild (Goobers).",
-        footer   = "Bad environment",
-    )
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Environment Channel Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 

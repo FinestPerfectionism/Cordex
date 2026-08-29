@@ -1,7 +1,8 @@
 from discord import Forbidden, HTTPException, Message, NotFound
+from discord.abc import Messageable
 
 from bot import Interaction
-from commands.bot_owner._base import TextChannelTypes, check_if_bo
+from commands.bot_owner._base import check_if_bo
 from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import codeblock
 
@@ -14,7 +15,7 @@ async def run_bo_messages_delete(interaction : Interaction, message_id : str) ->
 
     channel = interaction.channel
 
-    if not isinstance(channel, TextChannelTypes):
+    if not isinstance(channel, Messageable):
         await send_bad_argument(interaction, subtitle = {"channel" : "The current channel does not support text messages."})
         return
 
@@ -37,7 +38,7 @@ async def run_bo_messages_delete(interaction : Interaction, message_id : str) ->
         return
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Delete Message — Message Menu Logic
+# 'Delete Message' Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def run_bo_messages_delete_menu(interaction : Interaction, message : Message) -> None:

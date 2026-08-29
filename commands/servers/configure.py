@@ -1,201 +1,189 @@
-from typing import Self, final
+from typing import Literal, final, override
 
-from discord import ChannelType
+from discord import Guild, Object
 
-from bot import Cordex, Interaction
-from bot.ui import (
-    ActionRow,
-    Button,
-    ChannelSelect,
-    Container,
-    LayoutView,
-    TextDisplay,
-    VisibleLargeSeparator,
-    blurple,
-    button,
-    red,
-    select,
-)
-from constants import ACCEPTED_EMOJI, COLOR_GREEN, COLOR_RED, COLOR_YELLOW, DENIED_EMOJI
+from bot import Interaction
+from bot.ui import ChannelSelect, TextDisplay
+from constants import ACCEPTED_EMOJI, DENIED_EMOJI
+from core.exceptions import send_bad_operation
+from core.paginator import NamedPaginator, PageData
+
+Keys = Literal["edit", "delete"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /server configure Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-class LoggingModerationRow(ActionRow["LoggingConfigurationView"]):
-    def __init__(self) -> None:
-        super().__init__()
+async def _get_channel_config(interaction : Interaction, key : Keys) -> int | None:
+    key_dict : dict[Keys, str] = {
+        "edit"   : "messages_edit_channel",
+        "delete" : "messages_delete_channel",
+    }
 
-    @select(
-        cls           = ChannelSelect,
-        placeholder   = "Choose a channel for Moderation logs...",
-        channel_types = [
-            ChannelType.text,
-            ChannelType.private_thread,
-            ChannelType.public_thread,
-        ],
+    fetched_key = key_dict[key]
+
+    # ⸻ We know that the command will run in a guild but the type checker doesn't...
+
+    if not interaction.guild:
+        return None
+
+    cursor = await interaction.client.db.execute(
+        "SELECT config_value FROM GuildConfig WHERE guild_id = ? AND config_key = ?",
+        (interaction.guild.id, fetched_key),
     )
-    async def slct_logging_moderation(self, interaction : Interaction, select : ChannelSelect[LayoutView]) -> None:
-        client = interaction.client
+    row = await cursor.fetchone()
+    await cursor.close()
 
-        if not self.view:
-            return
+    return row[0] if row else None
 
-        channel = select.values[0]
+async def _set_channel_config(interaction : Interaction, key : Keys, value : int) -> None:
+    key_dict : dict[Keys, str] = {
+        "edit"   : "messages_edit_channel",
+        "delete" : "messages_delete_channel",
+    }
 
-        await client.db.execute(
-            """
-            INSERT INTO GuildConfig (config_key, config_value)
-            VALUES ('logging_moderation_channel', ?)
-            ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
-            """,
-            [str(channel.id)],
-        )
-        await client.db.commit()
+    fetched_key = key_dict[key]
 
-        await self.view.refresh()
-        await interaction.response.edit_message(view = self.view)
+    # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-class LoggingAntinukeRow(ActionRow["LoggingConfigurationView"]):
-    def __init__(self) -> None:
-        super().__init__()
+    if not interaction.guild:
+        return
 
-    @select(
-        cls           = ChannelSelect,
-        placeholder   = "Choose a channel for Antinuke logs...",
-        channel_types = [
-            ChannelType.text,
-            ChannelType.private_thread,
-            ChannelType.public_thread,
-        ],
+    db = interaction.client.db
+
+    await db.execute(
+        (
+            "INSERT INTO GuildConfig (guild_id, config_key, config_value) VALUES (?, ?, ?) "
+            "ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value"
+        ),
+        (interaction.guild.id, fetched_key, value),
     )
-    async def slct_logging_antinuke(self, interaction : Interaction, select_item : ChannelSelect[LayoutView]) -> None:
-        client = interaction.client
-
-        if not self.view:
-            return
-
-        channel = select_item.values[0]
-
-        await client.db.execute(
-            """
-            INSERT INTO GuildConfig (config_key, config_value)
-            VALUES ('logging_antinuke_channel', ?)
-            ON CONFLICT(config_key) DO UPDATE SET config_value = excluded.config_value
-            """,
-            [str(channel.id)],
-        )
-        await client.db.commit()
-
-        await self.view.refresh()
-        await interaction.response.edit_message(view = self.view)
+    await db.commit()
 
 @final
-class LoggingConfigurationView(LayoutView):
-    def __init__(self, bot : Cordex) -> None:
-        super().__init__()
-        self.bot = bot
+class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
+    @override
+    async def callback(self, interaction : Interaction) -> None:
+        channel  = self.values[0]
+        previous = self.default_values
 
-        self.antinuke_display   : TextDisplay[Self]     = TextDisplay("")
-        self.moderation_display : TextDisplay[Self]     = TextDisplay("")
-        self.container          : Container[LayoutView] = Container(
-            self.antinuke_display,
-            LoggingAntinukeRow(),
-            self.moderation_display,
-            LoggingModerationRow(),
-            color = COLOR_RED,
-        )
-        self.add_item(self.container)
+        self.default_values = [Object(id = channel.id)]
 
-    async def refresh(self) -> None:
-        query = (
-            "SELECT config_key, config_value FROM GuildConfig "
-            "WHERE config_key IN ('logging_moderation_channel', 'logging_antinuke_channel')"
-        )
+        if not self.view:
+            return
 
-        async with self.bot.db.execute(query) as cursor:
-            rows = list(await cursor.fetchall())
+        try:
+            await _set_channel_config(interaction, "edit", channel.id)
+            self.view.edit_id = channel.id
+            self.view.update_pages()
+            await interaction.response.edit_message(view = self.view)
+        except Exception:
+            self.default_values = previous
+            await send_bad_operation(interaction, title = "update messages edit channel")
+            raise
 
-        config_dict = {row[0] : row[1] for row in rows}
-        configured_count = len(config_dict)
+@final
+class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
+    @override
+    async def callback(self, interaction : Interaction) -> None:
+        channel  = self.values[0]
+        previous = self.default_values
 
-        if configured_count == 2:
-            self.container.color = COLOR_GREEN
-        elif configured_count == 1:
-            self.container.color = COLOR_YELLOW
+        self.default_values = [Object(id = channel.id)]
+
+        if not self.view:
+            return
+
+        try:
+            await _set_channel_config(interaction, "delete", channel.id)
+            self.view.delete_id = channel.id
+            self.view.update_pages()
+            await interaction.response.edit_message(view = self.view)
+        except Exception:
+            self.default_values = previous
+            await send_bad_operation(interaction, title = "update messages delete channel")
+            raise
+
+@final
+class _ConfigurationView(NamedPaginator):
+    def __init__(
+        self,
+        guild          : Guild,
+        *,
+        edit_channel   : int | None,
+        delete_channel : int | None,
+    ) -> None:
+        self.guild     = guild
+        self.edit_id   = edit_channel
+        self.delete_id = delete_channel
+
+        self.edit_select   = _MessagesEditSelect()
+        self.delete_select = _MessagesDeleteSelect()
+
+        if self.edit_id:
+            self.edit_select.default_values = [Object(id = self.edit_id)]
+        if self.delete_id:
+            self.delete_select.default_values = [Object(id = self.delete_id)]
+
+        super().__init__([], container = True)
+        self.update_pages()
+
+    def update_pages(self) -> None:
+        edit = self.guild.get_channel(self.edit_id) if self.edit_id else None
+        if edit:
+            txt_edit = (
+                f"{ACCEPTED_EMOJI} Messages Edit Channel Set\n"
+                f"Message edits will be sent to {edit.mention}."
+            )
         else:
-            self.container.color = COLOR_RED
+            txt_edit = (
+                f"{DENIED_EMOJI} Messages Edit Channel Unset\n"
+                "Set one with the select below."
+            )
 
-        antinuke_id   = config_dict.get("logging_antinuke_channel")
-        moderation_id = config_dict.get("logging_moderation_channel")
+        delete = self.guild.get_channel(self.delete_id) if self.delete_id else None
+        if delete:
+            txt_delete = (
+                f"{ACCEPTED_EMOJI} Messages Delete Channel Set\n"
+                f"Message deletions will be sent to {delete.mention}."
+            )
+        else:
+            txt_delete = (
+                f"{DENIED_EMOJI} Messages Delete Channel Unset\n"
+                "Set one with the select below."
+            )
 
-        antinuke_text = (
-            f"{ACCEPTED_EMOJI} **Antinuke Logs Channel:**\n"
-            f"Configured to <#{antinuke_id}>."
-        ) if antinuke_id else (
-           f"{DENIED_EMOJI} **Antinuke Logs Channel:**\n"
-            "Not configured!"
-        )
-
-        moderation_text = (
-            f"{ACCEPTED_EMOJI} **Moderation Logs Channel:**\n"
-            f"Configured to <#{moderation_id}>."
-        ) if moderation_id else (
-           f"{DENIED_EMOJI} **Moderation Logs Channel:**\n"
-            "Not configured!"
-        )
-
-        self.antinuke_display.content   = antinuke_text
-        self.moderation_display.content = moderation_text
-
-class PickerRow(ActionRow["ConfigurationView"]):
-    def __init__(self) -> None:
-        super().__init__()
-
-    @button(label = "Antinuke", style = red)
-    async def btn_antinuke(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        await interaction.response.send_message(
-            "This button does nothing right now. :[",
-            ephemeral = True,
-        )
-
-    @button(label = "Moderation", style = red)
-    async def btn_moderation(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        await interaction.response.send_message(
-            "This button does nothing right now. :[",
-            ephemeral = True,
-        )
-
-    @button(label = "Logging", style = blurple)
-    async def btn_logging(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        if not self.view:
-            return
-
-        await interaction.response.defer(ephemeral = True)
-
-        logging_view = LoggingConfigurationView(self.view.bot)
-        await logging_view.refresh()
-
-        await interaction.followup.send(
-            view      = logging_view,
-            ephemeral = True,
-        )
-
-@final
-class ConfigurationView(LayoutView):
-    def __init__(self, bot : Cordex) -> None:
-        super().__init__()
-        self.bot = bot
-        self.add_item(
-            Container(
-                TextDisplay("# Guild Configuration"),
-                VisibleLargeSeparator(),
-                PickerRow(),
+        self.pages = [
+            PageData(
+                name    = "Messages",
+                content = [
+                    TextDisplay(txt_edit),
+                    self.edit_select,
+                    TextDisplay(txt_delete),
+                    self.delete_select,
+                ],
             ),
-        )
+            PageData(
+                name    = "Moderation",
+                content = ["This page doesn't display anything right now. :["],
+            ),
+        ]
 
-async def run_server_configure(interaction : Interaction, bot : Cordex) -> None:
+async def run_server_configure(interaction : Interaction) -> None:
+
+    # ⸻ We know that the command will run in a guild but the type checker doesn't...
+
+    if not interaction.guild:
+        return
+
+    edit_channel   = await _get_channel_config(interaction, "edit")
+    delete_channel = await _get_channel_config(interaction, "delete")
+
     await interaction.response.send_message(
-        view      = ConfigurationView(bot = bot),
+        view      = _ConfigurationView(
+            interaction.guild,
+            edit_channel   = edit_channel,
+            delete_channel = delete_channel,
+        ),
         ephemeral = True,
     )

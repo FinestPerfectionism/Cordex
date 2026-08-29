@@ -4,6 +4,7 @@ from discord.app_commands import command, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.permissions import guild_owner_cmd
 
 from .configure import run_server_configure
 from .health import run_server_health
@@ -32,8 +33,9 @@ class ServerCommands(
         name        = "configure",
         description = "Configure guild settings.",
     )
+    @guild_owner_cmd()
     async def cmd_server_configure(self, interaction : Interaction) -> None:
-        await run_server_configure(interaction, self.bot)
+        await run_server_configure(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /server info Command
@@ -54,9 +56,10 @@ class ServerCommands(
         name        = "health",
         description = "Run a health check on this guild.",
     )
+    @guild_owner_cmd()
     async def cmd_server_health(self, interaction : Interaction) -> None:
         await run_server_health(interaction)
 
-# async def setup(bot : Cordex) -> None:
-#     cog = ServerCommands(bot)
-#     await bot.add_cog(cog)
+async def setup(bot : Cordex) -> None:
+    cog = ServerCommands(bot)
+    await bot.add_cog(cog)

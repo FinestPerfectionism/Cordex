@@ -1,12 +1,12 @@
 from datetime import timedelta
 from typing import Literal, final
 
-from discord import Member
+from discord import Guild, Member
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
-from constants import COLOR_BLACK, CONTESTED_EMOJI, MAIN_GUILD_ID, QUARANTINE_ROLE_ID
+from constants import COLOR_BLACK, CONTESTED_EMOJI
 from core.cases import (
     BanAddPayload,
     BanRemovePayload,
@@ -25,9 +25,10 @@ from core.utilities import format_now, format_table
 
 @final
 class BaseActions:
-    def __init__(self, bot : Cordex) -> None:
+    def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
-        self.bot = bot
+        self.bot   = bot
+        self.guild = guild
 
     async def _dm_target(
         self,
@@ -53,14 +54,16 @@ class BaseActions:
         moderator = action.moderator
         target    = action.target
 
+        guild_name = self.guild.name
+
         type_map : dict[str, str] = {
-            "Ban Add"           : f'# {CONTESTED_EMOJI} You have been banned in the "goobers" server.',
-            "Ban Remove"        : f'# {CONTESTED_EMOJI} You have been un-banned the "goobers" server.',
-            "Kick"              : f'# {CONTESTED_EMOJI} You have been kicked from the "goobers" server.',
-            "Quarantine Add"    : f'# {CONTESTED_EMOJI} You have been placed in quarantine in the "goobers" server.',
-            "Quarantine Remove" : f'# {CONTESTED_EMOJI} You have been removed from quarantine in the "goobers" server.',
-            "Timeout Add"       : f'# {CONTESTED_EMOJI} You have been placed in timeout in the "goobers" server.',
-            "Timeout Remove"    : f'# {CONTESTED_EMOJI} You have been removed from timeout in the "goobers" server.',
+            "Ban Add"           : f"# {CONTESTED_EMOJI} You have been banned in the server {guild_name} server.",
+            "Ban Remove"        : f"# {CONTESTED_EMOJI} You have been un-banned the server {guild_name} server.",
+            "Kick"              : f"# {CONTESTED_EMOJI} You have been kicked from the server {guild_name} server.",
+            "Quarantine Add"    : f"# {CONTESTED_EMOJI} You have been placed in quarantine in the server {guild_name} server.",
+            "Quarantine Remove" : f"# {CONTESTED_EMOJI} You have been removed from quarantine in the server {guild_name} server.",
+            "Timeout Add"       : f"# {CONTESTED_EMOJI} You have been placed in timeout in the server {guild_name} server.",
+            "Timeout Remove"    : f"# {CONTESTED_EMOJI} You have been removed from timeout in the server {guild_name} server.",
         }
 
         title  = type_map[action_type]
@@ -76,7 +79,7 @@ class BaseActions:
             TextDisplay[LayoutView](
                 (
                     f"{title}\n"
-                    f"-# You were moderated in the goobers by at {format_now()}!\n"
+                    f"-# You were moderated in the server {guild_name} by at {format_now()}!\n"
                 ),
             ),
             VisibleLargeSeparator[LayoutView](),
@@ -162,7 +165,7 @@ class BaseActions:
 
         for action in targets:
             target = action.target
-            guild  = self.bot.get_guild(MAIN_GUILD_ID)
+            guild  = self.bot.get_guild(self.guild.id)
 
             try:
                 if action.dm_user:
@@ -201,12 +204,13 @@ class BaseActions:
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    """
     async def quarantine_add(self, targets : list[QuarantineAddPayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
             target = action.target
-            guild  = self.bot.get_guild(MAIN_GUILD_ID)
+            guild  = self.bot.get_guild(self.guild.id)
 
             try:
                 if guild:
@@ -221,6 +225,7 @@ class BaseActions:
                 errors.append((target, str(error)))
 
         return errors
+    """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_view
@@ -244,12 +249,13 @@ class BaseActions:
     # quarantine_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    """
     async def quarantine_remove(self, targets : list[QuarantineRemovePayload]) -> list[tuple[Member, str]]:
         errors : list[tuple[Member, str]] = []
 
         for action in targets:
             target = action.target
-            guild  = self.bot.get_guild(MAIN_GUILD_ID)
+            guild  = self.bot.get_guild(self.guild.id)
 
             try:
                 if guild:
@@ -264,6 +270,7 @@ class BaseActions:
                 errors.append((target, str(error)))
 
         return errors
+    """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_add

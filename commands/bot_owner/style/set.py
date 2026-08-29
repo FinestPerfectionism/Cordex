@@ -1,5 +1,5 @@
 from re import compile
-from typing import Self, final, override
+from typing import Self, TypedDict, final, override
 
 from discord import SelectOption
 
@@ -12,30 +12,54 @@ from core.utilities import codeblock
 
 COLOR_PATTERN = compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
 
+class NameStyleResult(TypedDict):
+    font_id   : DisplayNameFont
+    effect_id : DisplayNameEffect
+    colors    : list[str]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner style set Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
 class _StyleModal(Modal, title = "Set Display Name Style"):
-    def __init__(self) -> None:
+    def __init__(self, current_style : NameStyleResult) -> None:
         super().__init__()
 
-        self._font = Select[Self](
+        font_enum   = current_style["font_id"]
+        effect_enum = current_style["effect_id"]
+        colors_list = current_style["colors"]
+
+        font_options   = [
+            ("Sakura",            "cherry_bomb"),
+            ("Jellybean",         "chicle"),
+            ("Modern",            "museo_moderno"),
+            ("Medieval",          "neo_castel"),
+            ("8Bit",              "pixelify"),
+            ("Vampyre",           "sinistre"),
+            ("GG Sans [Default]", "default"),
+            ("Tempo",             "zilla_slab"),
+        ]
+        effect_options = [
+            ("Solid",    "solid"),
+            ("Gradient", "gradient"),
+            ("Neon",     "neon"),
+            ("Toon",     "toon"),
+            ("Pop",      "pop"),
+        ]
+
+        self._font   = Select[Self](
             placeholder = "Select a font...",
             required    = False,
             options     = [
-                SelectOption(label = "Sakura",            value = "cherry_bomb"),
-                SelectOption(label = "Jellybean",         value = "chicle"),
-                SelectOption(label = "Modern",            value = "museo_moderno"),
-                SelectOption(label = "Medieval",          value = "neo_castel"),
-                SelectOption(label = "8Bit",              value = "pixelify"),
-                SelectOption(label = "Vampyre",           value = "sinistre"),
-                SelectOption(label = "GG Sans [Default]", value = "default"),
-                SelectOption(label = "Tempo",             value = "zilla_slab"),
+                SelectOption(
+                    label   = label,
+                    value   = value,
+                    default = (font_enum.name == value),
+                ) for label, value in font_options
             ],
         )
-        self.font  = Label(
+        self.font    = Label(
             text        = "Font",
             description = "The display name's font.",
             component   = self._font,
@@ -45,11 +69,8 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             placeholder = "Select an effect...",
             required    = False,
             options     = [
-                SelectOption(label = "Solid",    value = "solid"),
-                SelectOption(label = "Gradient", value = "gradient"),
-                SelectOption(label = "Neon",     value = "neon"),
-                SelectOption(label = "Toon",     value = "toon"),
-                SelectOption(label = "Pop",      value = "pop"),
+                SelectOption(label = label, value = value, default = effect_enum.name == value)
+                for label, value in effect_options
             ],
         )
         self.effect  = Label(
@@ -60,7 +81,10 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
 
         self._colors = TextInput[Self](
             placeholder = "ABCDEF or ABCDEF-123456",
+            default     = "-".join(colors_list),
             required    = False,
+            min_length  = 6,
+            max_length  = 13,
         )
         self.colors  = Label(
             text        = "Color(s)",
@@ -78,9 +102,13 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
         if interaction.guild is None:
             return
 
-        font_value   = self._font.values[0]       if self._font.values else None
+        # ⸻ Grab the modal values.
+
+        font_value   = self._font.values[0]       if self._font.values   else None
         effect_value = self._effect.values[0]     if self._effect.values else None
-        colors_value = self._colors.value.strip() if self._colors.value else None
+        colors_value = self._colors.value.strip() if self._colors.value  else None
+
+        # ⸻ No argument passed.
 
         if font_value is None and effect_value is None and colors_value is None:
             await send_bad_argument(
@@ -92,14 +120,22 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
 
         try:
             current_style = await interaction.client.get_name_style(interaction.guild)
-            font_enum     = DisplayNameFont[font_value]     if font_value   is not None else current_style["font_id"]
-            effect_enum   = DisplayNameEffect[effect_value] if effect_value is not None else current_style["effect_id"]
+
+            font_enum   = DisplayNameFont[font_value]     if font_value   is not None else current_style["font_id"]
+            effect_enum = DisplayNameEffect[effect_value] if effect_value is not None else current_style["effect_id"]
 
             if colors_value is not None:
                 is_valid = bool(COLOR_PATTERN.match(colors_value))
                 has_dash = "-" in colors_value
 
-                if not is_valid or (effect_enum == DisplayNameEffect.gradient and not has_dash) or (effect_enum != DisplayNameEffect.gradient and has_dash):
+                # ⸻ Incorrect format for Color/Gradient was passed.
+
+                if not (
+                    is_valid or (
+                        effect_enum == DisplayNameEffect.gradient
+                        and not has_dash
+                    ) or (effect_enum != DisplayNameEffect.gradient and has_dash)
+                ):
                     error = (
                         "Gradient must be of the form `ABCDEF-123456`."
                         if effect_enum == DisplayNameEffect.gradient else
@@ -137,4 +173,5 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             )
 
 async def run_bo_style_set(interaction : Interaction) -> None:
-    await interaction.response.send_modal(_StyleModal())
+    style = await interaction.client.get_name_style(interaction.guild)
+    await interaction.response.send_modal(_StyleModal(style))

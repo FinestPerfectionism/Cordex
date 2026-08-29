@@ -38,25 +38,36 @@ def _is_private(target : GuildChannel) -> bool:
     return not target.permissions_for(target.guild.default_role).view_channel
 
 def _get_channel_emoji(target : GuildChannel) -> str | None:
+
+    # ⸻ target is the rules channel.
+
     if target.guild.rules_channel and target.id == target.guild.rules_channel.id:
         return RULES_EMOJI
 
     private = _is_private(target)
+
+    # ⸻ target is a StageChannel.
 
     if isinstance(target, StageChannel):
         if len(target.members) > 0:
             return ACTIVE_LOCKED_STAGE_EMOJI if private else ACTIVE_STAGE_EMOJI
         return LOCKED_STAGE_EMOJI if private else STAGE_EMOJI
 
+    # ⸻ target is a VoiceChannel.
+
     if isinstance(target, VoiceChannel):
         if len(target.members) > 0:
             return ACTIVE_LOCKED_VOICE_EMOJI if private else ACTIVE_VOICE_EMOJI
         return LOCKED_VOICE_EMOJI if private else VOICE_EMOJI
 
+    # ⸻ target is a ForumChannel or media channel.
+
     if isinstance(target, ForumChannel):
         if target.is_media():
             return LOCKED_MEDIA_EMOJI if private else MEDIA_EMOJI
         return LOCKED_FORUM_EMOJI if private else FORUM_EMOJI
+
+    # ⸻ target is a TextChannel or announcement channel.
 
     if isinstance(target, TextChannel):
         if target.is_news():

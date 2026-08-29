@@ -1,4 +1,6 @@
 CREATE TABLE IF NOT EXISTS GuildConfig (
-    config_key TEXT PRIMARY KEY,
-    config_value INTEGER
+    guild_id INTEGER NOT NULL,
+    config_key TEXT NOT NULL,
+    config_value INTEGER,
+    PRIMARY KEY (guild_id, config_key)
 );

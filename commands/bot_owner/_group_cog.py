@@ -72,19 +72,19 @@ class BotOwnerCommands(
 
     cog     : Group = Group(
         name        = "cog",
-        description = "Bot owner cog commands",
+        description = "Bot owner cog commands.",
     )
     message : Group = Group(
         name        = "message",
-        description = "Bot owner message commands",
+        description = "Bot owner message commands.",
     )
     state   : Group = Group(
         name        = "state",
-        description = "Bot owner state commands",
+        description = "Bot owner state commands.",
     )
     style   : Group = Group(
         name        = "style",
-        description = "Bot owner style commands",
+        description = "Bot owner style commands.",
     )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

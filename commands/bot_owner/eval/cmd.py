@@ -48,6 +48,7 @@ from core.responses import format_message, format_send
 from core.utilities import (
     codeblock,
     format_command,
+    format_now,
     format_table,
     format_values,
     truncate,
@@ -98,14 +99,14 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "COLOR_BLACK"   : COLOR_BLACK,
         "COLOR_WHITE"   : COLOR_WHITE,
 
-        "show_def"   : show_def,
-        "show_attrs" : show_attrs,
-
         "utcnow"         : utcnow,
         "get"            : get,
         "codeblock"      : codeblock,
         "truncate"       : truncate,
+        "show_def"       : show_def,
+        "show_attrs"     : show_attrs,
         "format_dt"      : format_dt,
+        "format_now"     : format_now,
         "format_command" : format_command,
         "format_values"  : format_values,
         "format_message" : format_message,

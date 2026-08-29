@@ -1,10 +1,11 @@
-from typing import Self, final
+from typing import Self, cast, final
 
-from discord import Message
+from discord import AllowedMentions, Guild, Message
 from discord.ext import commands
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex
+from bot.types import GuildMessagable
 from bot.ui import (
     Button,
     ButtonSection,
@@ -18,11 +19,7 @@ from commands.bot_owner.eval import eval_message_ids
 from constants import BOT_OWNER_ID, COLOR_GREY
 from core.utilities import format_table
 
-from . import (
-    channel_display,
-    clean_and_truncate,
-    format_attachments,
-)
+from ._base import attachments_display, channel_display, clean_and_truncate
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Edit Handling
@@ -34,14 +31,36 @@ class MessageEditHandler(commands.Cog):
         super().__init__()
         self.bot = bot
 
+    async def _get_log_channel(self, guild : Guild) -> GuildMessagable | None:
+        async with self.bot.db.execute(
+            "SELECT config_value FROM GuildConfig WHERE guild_id = ? AND config_key = ?",
+            (guild.id, "messages_edit_channel"),
+        ) as cursor:
+            res = await cursor.fetchone()
+
+        if not res:
+            return None
+
+        channel_id = cast(int | None, res[0])
+
+        if channel_id is None:
+            return None
+
+        log_channel = guild.get_channel(channel_id)
+
+        if not isinstance(log_channel, GuildMessagable):
+            return None
+
+        return log_channel
+
     @commands.Cog.listener("on_message_edit")
     async def message_edit_handler(self, before : Message, after : Message) -> None:
-        author = before.author
+        author  = before.author
+        guild   = before.guild
+        channel = before.channel
 
         before_content = before.content
         before_id      = before.id
-        before_channel = before.channel
-        before_guild   = before.guild
 
         after_content     = after.content
         after_attachments = after.attachments
@@ -53,7 +72,7 @@ class MessageEditHandler(commands.Cog):
 
         # ⸻ Block non-guild messages.
 
-        if before_guild is None:
+        if guild is None or not isinstance(channel, GuildMessagable):
             return
 
         # ⸻ Eval command editing.
@@ -76,7 +95,7 @@ class MessageEditHandler(commands.Cog):
 
             old_response_id = eval_message_ids.pop(before_id, None)
             if old_response_id is not None:
-                old_msg = await before_channel.fetch_message(old_response_id)
+                old_msg = await channel.fetch_message(old_response_id)
                 await old_msg.delete()
 
             return
@@ -102,7 +121,7 @@ class MessageEditHandler(commands.Cog):
                     format_table(
                         {
                             "Author"  : f"{author.mention} | {author.id}",
-                            "Channel" : channel_display(after.channel),
+                            "Channel" : channel_display(channel),
                         },
                     ),
                     button = Button(label = "Jump to Message", style = link, url = after.jump_url),
@@ -116,7 +135,7 @@ class MessageEditHandler(commands.Cog):
                     TextDisplay(
                         (
                             "### Attachments\n"
-                           f"{format_attachments(after_attachments)}"
+                           f"{attachments_display(after_attachments)}"
                         ),
                     ),
                 )
@@ -137,10 +156,15 @@ class MessageEditHandler(commands.Cog):
                 ),
             )
 
-        # await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
+        log_channel = await self._get_log_channel(guild)
+
+        if log_channel:
+            await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
+        else:
+            return
 
         await self.bot.process_commands(after)
 
-# async def setup(bot : Cordex) -> None:
-#     cog = MessageEditHandler(bot)
-#     await bot.add_cog(cog)
+async def setup(bot : Cordex) -> None:
+    cog = MessageEditHandler(bot)
+    await bot.add_cog(cog)

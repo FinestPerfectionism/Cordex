@@ -4,7 +4,6 @@ from logging import getLogger as get_logger
 from pathlib import Path
 from typing import Self, TypedDict, Unpack, cast, final, override
 
-from aiosqlite import Connection, connect
 from discord import Embed, Guild, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand, Command, Group
@@ -18,22 +17,9 @@ from discord.http import Route
 
 from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
+from core.state import Connection, connect
 
 from .ui import Button, LayoutView, Modal, View, button
-
-
-class DisplayNameStylesPayload(TypedDict):
-    font_id   : int
-    effect_id : int
-    colors    : list[int]
-
-class GuildMemberPayload(TypedDict):
-    display_name_styles : DisplayNameStylesPayload
-
-class NameStyleResult(TypedDict):
-    font_id   : DisplayNameFont
-    effect_id : DisplayNameEffect
-    colors    : list[str]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management
@@ -156,7 +142,22 @@ class Cordex(commands.Bot):
             },
         )
 
+    class NameStyleResult(TypedDict):
+        font_id   : DisplayNameFont
+        effect_id : DisplayNameEffect
+        colors    : list[str]
+
     async def get_name_style(self, guild : Guild, /) -> NameStyleResult:
+        class DisplayNameStylesPayload(TypedDict):
+            font_id   : int
+            effect_id : int
+            colors    : list[int]
+
+        class GuildMemberPayload(TypedDict):
+            display_name_styles : DisplayNameStylesPayload
+
+        # ⸻ It's very unlikely that self.user is None, but pryight will complain anyway.
+
         if self.user is None:
             error = "Client user is not logged in."
             raise ValueError(error)
@@ -219,34 +220,16 @@ class Cordex(commands.Bot):
 
         self.db = await connect(str(db_path))
 
-        def read_schemas() -> tuple[str, str, str, str, str]:
+        def read_schemas() -> tuple[str, str]:
             with Path("schemas/logging.sql").open(encoding = "utf-8") as f1:
-                log_sql = f1.read()
+                logging_sql = f1.read()
             with Path("schemas/cases.sql").open(encoding = "utf-8") as f2:
                 cases_sql = f2.read()
-            with Path("schemas/partnerships.sql").open(encoding = "utf-8") as f3:
-                partnerships_sql = f3.read()
-            with Path("schemas/guild_info.sql").open(encoding = "utf-8") as f4:
-                guild_info_sql = f4.read()
-            with Path("schemas/tickets.sql").open(encoding = "utf-8") as f5:
-                tickets_sql = f5.read()
-            return (
-                log_sql,
-                cases_sql,
-                partnerships_sql,
-                guild_info_sql,
-                tickets_sql,
-            )
+            return logging_sql, cases_sql
 
-        (
-            logging_schema,
-            cases_schema,
-            partnerships_schema,
-            guild_info_schema,
-            tickets_schema,
-        ) = await to_thread(read_schemas)
+        logging_schema, cases_schema = await to_thread(read_schemas)
 
-        for schema in [logging_schema, cases_schema, partnerships_schema, guild_info_schema, tickets_schema]:
+        for schema in [logging_schema, cases_schema]:
             await self.db.executescript(schema)
 
         await self.db.commit()

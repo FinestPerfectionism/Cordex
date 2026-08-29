@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import Literal, cast, final
+from typing import Literal, final
 
-from discord import Color, Embed, Member, TextChannel, Thread
+from discord import Color, Member
 
-from bot import Cordex
 from constants import (
     COLOR_BLACK,
     COLOR_BLURPLE,
@@ -135,27 +134,5 @@ CASE_MAP : dict[case_types, CaseData] = {
     "Note Remove"       : CaseType.NOTE_REMOVE,
 }
 
-async def create_case(bot : Cordex, case_type : case_types) -> None:
-    cursor = await bot.db.execute(
-        """
-        SELECT config_value FROM GuildConfig
-        WHERE config_key = 'logging_moderation_channel'
-        """,
-    )
-    row = await cursor.fetchone()
-
-    channel_id = row[0] if row else None
-
-    if channel_id is None:
-        return
-
-    validated_id = cast(int, channel_id)
-    channel = await bot.fetch_channel(validated_id)
-
-    if not isinstance(channel, TextChannel | Thread):
-        return
-
-    data  = CASE_MAP[case_type]
-    embed = Embed(title = data.case_title, color = data.case_color)
-
-    await channel.send(embed = embed)
+async def create_case() -> None:
+    ...

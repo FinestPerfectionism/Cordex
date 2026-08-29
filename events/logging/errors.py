@@ -13,7 +13,7 @@ from typing import final, override
 
 from aiohttp import ClientError
 from discord import (
-    Embed,
+    AllowedMentions,
     Forbidden,
     Guild,
     HTTPException,
@@ -24,9 +24,9 @@ from discord import (
 )
 from discord.app_commands import AppCommandError
 from discord.ext import commands
-from discord.utils import utcnow
 
 from bot import Context, Cordex, Interaction
+from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
     BOT_OWNER_MENTION,
@@ -35,20 +35,16 @@ from constants import (
 from core.exceptions import (
     BadEnvironmentDMs,
     BadEnvironmentGuild,
-    BadEnvironmentMainGuild,
-    BadEnvironmentMainGuildOrDMs,
     BadPermissionsCommand,
     UnimplementedCommand,
     send_bad_environment_dms,
     send_bad_environment_guild,
-    send_bad_environment_mainguild,
-    send_bad_environment_mainguildordms,
     send_bad_operation,
     send_bad_permissions_command,
     send_unimplemented_command,
 )
 from core.responses import format_send
-from core.utilities import codeblock, format_command
+from core.utilities import codeblock, format_command, format_now, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Errors Handling
@@ -62,6 +58,11 @@ class ErrorLogger(commands.Cog):
 
         self.tasks : set[Task[object]] = set()
 
+    @override
+    async def cog_load(self) -> None:
+        loop = get_running_loop()
+        loop.set_exception_handler(self.loop_exception_handler)
+
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Central Error Sender
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -69,67 +70,121 @@ class ErrorLogger(commands.Cog):
     async def _send_error(
         self,
         *,
-        title           : str,
-        user            : User | Member | None = None,
-        guild           : Guild         | None = None,
-        command_display : str           | None = None,
-        error_text      : str           | None = None,
-        traceback_text  : str           | None = None,
+        title       : str,
+        user        : User | Member | None = None,
+        guild       : Guild         | None = None,
+        interaction : Interaction   | None = None,
+        error       : str           | None = None,
+        traceback   : str           | None = None,
     ) -> None:
         channel = self.bot.get_channel(BOT_ERRORS_LOG_CHANNEL_ID)
 
         if not isinstance(channel, TextChannel):
             return
 
-        embed = Embed(
-            title     = title,
-            color     = COLOR_RED,
-            timestamp = utcnow(),
+        view = LayoutView()
+
+        container = Container[view](
+            TextDisplay(
+                (
+                    f"# {title}\n"
+                    f"{BOT_OWNER_MENTION}, an unexpected exception has occured."
+                ),
+            ),
+            color = COLOR_RED,
         )
 
-        if user:
-            embed.add_field(
-                name   = "User",
-                value  = (
-                    f"`{user}`\n"
-                    f"`{user.id}`"
+        if traceback:
+            container.add_item(
+                TextDisplay(
+                    (
+                        f"## Traceback\n"
+                        f"{codeblock(traceback[:3900])}"
+                    ),
                 ),
-                inline = True,
+            )
+
+        if user:
+            table = format_table(
+                {
+                    "User"     : user.mention,
+                    "Username" : user.name,
+                    "User ID"  : str(user.id),
+                },
+            )
+
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    (
+                        "## User\n"
+                       f"{table}"
+                    ),
+                ),
             )
 
         if guild:
-            embed.add_field(
-                name   = "Guild",
-                value  = (
-                    f"`{guild}`\n"
-                    f"`{guild.id}`"
+            table = format_table(
+                {
+                    "Guild Name" : guild.name,
+                    "Guild ID"   : str(guild.id),
+                },
+            )
+
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    (
+                        "## Guild\n"
+                       f"{table}"
+                    ),
                 ),
-                inline = True,
             )
 
-        if command_display:
-            embed.add_field(
-                name   = "Command",
-                value  = command_display,
-                inline = True,
+        if interaction and interaction.command:
+            qualified_name = interaction.command.qualified_name
+            command_id     = interaction.command_id
+
+            table = format_table(
+                {
+                    "Command"      : format_command(qualified_name),
+                    "Command Name" : qualified_name,
+                    "Command ID"   : str(command_id),
+                },
             )
 
-        if error_text:
-            embed.add_field(
-                name   = "Error",
-                value  = codeblock(error_text),
-                inline = False,
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+
+                        "## Command\n"
+                       f"{table}",
+
+                ),
             )
 
-        if traceback_text:
-            embed.description = (
-                f"**Traceback:**\n"
-                f"{codeblock(traceback_text[:3900])}"
-            )
-        else:
-            embed.description = None
+        if error:
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
 
-        await channel.send(BOT_OWNER_MENTION, embed = embed)
+                        "## Error\n"
+                       f"{codeblock(error)}",
+
+                ),
+            )
+
+        container.add_items(
+            VisibleLargeSeparator(),
+            TextDisplay(format_now()),
+        )
+
+        view.add_item(container)
+
+        await channel.send(
+            view             = view,
+            allowed_mentions = AllowedMentions.none(),
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Discord Event Errors
@@ -142,30 +197,21 @@ class ErrorLogger(commands.Cog):
         *_args    : str,
         **_kwargs : int,
     ) -> None:
-        if event == "on_interaction":
-            return
-
         exc_type, exc, tb = exc_info()
-
-        if isinstance(exc, commands.CommandNotFound):
-            return
-
-        if isinstance(exc, commands.MissingRequiredArgument):
-            return
 
         if exc is None:
             await self._send_error(
-                title      =  "Bot Event Error",
-                error_text = f"{event}: Unknown exception",
+                title  =  "Bot Event Error",
+                error  = f"{event}: Unknown exception",
             )
             return
 
-        traceback_text = "".join(format_exception(exc_type, exc, tb))
+        traceback = "".join(format_exception(exc_type, exc, tb))
 
         await self._send_error(
-            title          =  "Bot Event Error",
-            error_text     = f"{event}: {exc}",
-            traceback_text = traceback_text,
+            title     =  "Bot Event Error",
+            error     = f"{event}: {exc}",
+            traceback = traceback,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -200,14 +246,6 @@ class ErrorLogger(commands.Cog):
             await send_bad_environment_dms(interaction)
             return
 
-        if isinstance(error, BadEnvironmentMainGuild):
-            await send_bad_environment_mainguild(interaction)
-            return
-
-        if isinstance(error, BadEnvironmentMainGuildOrDMs):
-            await send_bad_environment_mainguildordms(interaction)
-            return
-
         if isinstance(error, UnimplementedCommand):
             await send_unimplemented_command(interaction)
             return
@@ -217,12 +255,12 @@ class ErrorLogger(commands.Cog):
         traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self._send_error(
-            title           = "Command Error",
-            user            = interaction.user,
-            guild           = interaction.guild,
-            command_display = format_command(interaction.command.qualified_name) if interaction.command else "Unknown",
-            error_text      = str(error),
-            traceback_text  = traceback_text,
+            title       = "Command Error",
+            user        = interaction.user,
+            guild       = interaction.guild,
+            interaction = interaction,
+            error       = str(error),
+            traceback   = traceback_text,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -249,9 +287,9 @@ class ErrorLogger(commands.Cog):
         traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self._send_error(
-            title          =  "Extension Error",
-            error_text     = f"{extension}: {error}",
-            traceback_text = traceback_text,
+            title     =  "Extension Error",
+            error     = f"{extension}: {error}",
+            traceback = traceback_text,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -270,9 +308,9 @@ class ErrorLogger(commands.Cog):
             traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
             await self._send_error(
-                title          = "HTTP / REST Error",
-                error_text     = str(exc),
-                traceback_text = traceback_text,
+                title     = "HTTP / REST Error",
+                error     = str(exc),
+                traceback = traceback_text,
             )
             raise
 
@@ -307,9 +345,9 @@ class ErrorLogger(commands.Cog):
 
         self.create_task(
             self._send_error(
-                title          = "Background Task Error",
-                error_text     = str(exc),
-                traceback_text = traceback_text,
+                title     = "Background Task Error",
+                error     = str(exc),
+                traceback = traceback_text,
             ),
             name = "task_error_reporter",
         )
@@ -337,16 +375,11 @@ class ErrorLogger(commands.Cog):
 
         loop.create_task(
             self._send_error(
-                title          = "Asyncio Event Loop Error",
-                error_text     = msg_str,
-                traceback_text = traceback_text,
+                title     = "Asyncio Event Loop Error",
+                error     = msg_str,
+                traceback = traceback_text,
             ),
         )
-
-    @override
-    async def cog_load(self) -> None:
-        loop = get_running_loop()
-        loop.set_exception_handler(self.loop_exception_handler)
 
 async def setup(bot : Cordex) -> None:
     cog = ErrorLogger(bot)

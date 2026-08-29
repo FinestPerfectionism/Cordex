@@ -52,13 +52,15 @@ class _NameRow(ActionRow["NamedPaginator"]):
             page = self.paginator.pages[index]
 
             is_current = index == self.paginator.current_page
-            btn : Button[LayoutView] = (
+
+            button : Button[LayoutView] = (
                 Button(label = page.name, style = blurple, disabled = is_current)
-                if is_current
-                else Button(label = page.name)
+                if is_current else
+                Button(label = page.name)
             )
-            btn.callback = self._make_callback(index)
-            self.add_item(btn)
+            button.callback = self._make_callback(index)
+
+            self.add_item(button)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _make_callback

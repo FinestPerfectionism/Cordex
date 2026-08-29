@@ -90,17 +90,18 @@ def format_values(
     conj     : str  = "and",
     wrap     : str  = "",
 ) -> str:
+    if not items:
+        return ""
+
     items = [f"{wrap}{item}{wrap}" for item in items]
 
-    if not use_conj:
+    if not use_conj or len(items) == 1:
         return divider.join(items)
 
-    if len(items) == 1:
-        return items[0]
     if len(items) == 2:
         return f"{items[0]} {conj} {items[1]}"
 
-    return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
+    return f"{divider.join(items[:-1])}{divider} {conj} {items[-1]}"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # check_hierarchy

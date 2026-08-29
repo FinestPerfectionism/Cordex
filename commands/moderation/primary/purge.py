@@ -1,15 +1,14 @@
 from typing import Self, final, override
 
-from discord import Member, Message, StageChannel, TextChannel, Thread, VoiceChannel
+from discord import Member, Message
 
 from bot import Interaction
+from bot.types import GuildMessagable
 from bot.ui import Checkbox, Label, Modal, TextDisplay, TextInput, UserSelect
 from constants import CONTESTED_EMOJI
 from core.exceptions import send_bad_argument
 from core.responses import format_send
 from core.utilities import check_hierarchy
-
-ChannelTypes = TextChannel | VoiceChannel | StageChannel | Thread
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation purge Logic
@@ -73,7 +72,7 @@ async def run_mod_primary_purge(interaction : Interaction) -> None:
 
             # ⸻ We already validated interaction.channel.
 
-            if not isinstance(interaction.channel, ChannelTypes):
+            if not isinstance(interaction.channel, GuildMessagable):
                 return
 
             # ⸻ Force requires Target.
@@ -178,7 +177,7 @@ async def run_mod_primary_purge(interaction : Interaction) -> None:
                 subtitle = f"Purged {len(deleted)} messages.",
             )
 
-    if not isinstance(interaction.channel, ChannelTypes):
+    if not isinstance(interaction.channel, GuildMessagable):
         await send_bad_argument(
             interaction,
             subtitle = {None : "This channel is not purgable."},

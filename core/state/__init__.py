@@ -1,3 +1,3 @@
-from .utilities import sql_t
+from ._base import Connection, connect
 
-__all__ = ["sql_t"]
+__all__ = ["Connection", "connect"]
