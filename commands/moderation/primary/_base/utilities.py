@@ -1,6 +1,16 @@
+from typing import Literal
+
 from bot import Interaction
 
-from .select import ActionType
+type ActionType = Literal[
+    "Ban Add",
+    "Ban Remove",
+    "Kick",
+    "Quarantine Add",
+    "Quarantine Remove",
+    "Timeout Add",
+    "Timeout Remove",
+]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Utilites Base

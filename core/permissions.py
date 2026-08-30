@@ -1,5 +1,4 @@
 from collections.abc import Callable
-from typing import Literal
 
 from discord.app_commands import check
 
@@ -15,12 +14,6 @@ from .exceptions import BadEnvironmentGuild, BadPermissionsCommand
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # @access_control
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-_ContextType = Literal[
-    "DMs",
-    "Guild",
-    "Guild + DMs",
-]
 
 def access_control[F : Callable[..., object]](allowed_users : list[int] | None = None) -> Callable[[F], F]:
     users = allowed_users or []

@@ -10,6 +10,8 @@ from bot import Interaction, bot
 
 from .exceptions import UnimplementedCommand
 
+type Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -31,9 +33,6 @@ def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_now
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 
 def format_now(style : Styles = "F", /) -> str:
     return format_dt(utcnow(), style)

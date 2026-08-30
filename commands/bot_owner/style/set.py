@@ -1,21 +1,21 @@
 from re import compile
-from typing import Self, TypedDict, final, override
+from typing import Self, final, override
 
 from discord import SelectOption
 
 from bot import Interaction
+from bot.types import NameStyleResult
 from bot.ui import Label, Modal, Select, TextInput
 from constants import DisplayNameEffect, DisplayNameFont
-from core.exceptions import send_bad_argument, send_bad_operation
+from core.exceptions import (
+    send_bad_argument,
+    send_bad_environment_dms,
+    send_bad_operation,
+)
 from core.responses import format_send
 from core.utilities import codeblock
 
 COLOR_PATTERN = compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
-
-class NameStyleResult(TypedDict):
-    font_id   : DisplayNameFont
-    effect_id : DisplayNameEffect
-    colors    : list[str]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner style set Logic
@@ -26,9 +26,9 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
     def __init__(self, current_style : NameStyleResult) -> None:
         super().__init__()
 
-        font_enum   = current_style["font_id"]
-        effect_enum = current_style["effect_id"]
-        colors_list = current_style["colors"]
+        font_enum   = current_style.font_id
+        effect_enum = current_style.effect_id
+        colors_list = current_style.colors
 
         font_options   = [
             ("Sakura",            "cherry_bomb"),
@@ -69,7 +69,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             placeholder = "Select an effect...",
             required    = False,
             options     = [
-                SelectOption(label = label, value = value, default = effect_enum.name == value)
+                SelectOption(label = label, value = value, default = (effect_enum.name == value))
                 for label, value in effect_options
             ],
         )
@@ -79,9 +79,14 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             component   = self._effect,
         )
 
+        if effect_enum == DisplayNameEffect.gradient and len(colors_list) == 1:
+            colors_default = f"{colors_list[0]}-{colors_list[0]}"
+        else:
+            colors_default = "-".join(colors_list)
+
         self._colors = TextInput[Self](
             placeholder = "ABCDEF or ABCDEF-123456",
-            default     = "-".join(colors_list),
+            default     = colors_default,
             required    = False,
             min_length  = 6,
             max_length  = 13,
@@ -121,8 +126,8 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
         try:
             current_style = await interaction.client.get_name_style(interaction.guild)
 
-            font_enum   = DisplayNameFont[font_value]     if font_value   is not None else current_style["font_id"]
-            effect_enum = DisplayNameEffect[effect_value] if effect_value is not None else current_style["effect_id"]
+            font_enum   = DisplayNameFont[font_value]     if font_value   is not None else current_style.font_id
+            effect_enum = DisplayNameEffect[effect_value] if effect_value is not None else current_style.effect_id
 
             if colors_value is not None:
                 is_valid = bool(COLOR_PATTERN.match(colors_value))
@@ -151,7 +156,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
 
                 color_list = colors_value.split("-")
             else:
-                color_list = current_style["colors"]
+                color_list = current_style.colors
 
             await interaction.client.set_name_style(
                 guild     = interaction.guild,
@@ -173,5 +178,9 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             )
 
 async def run_bo_style_set(interaction : Interaction) -> None:
+    if not interaction.guild:
+        await send_bad_environment_dms(interaction)
+        return
+
     style = await interaction.client.get_name_style(interaction.guild)
     await interaction.response.send_modal(_StyleModal(style))

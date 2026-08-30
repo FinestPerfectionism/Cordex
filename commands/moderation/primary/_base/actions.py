@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Literal, final
+from typing import final
 
 from discord import Guild, Member
 from discord.utils import format_dt, utcnow
@@ -19,6 +19,8 @@ from core.cases import (
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
+from .utilities import ActionType
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -32,15 +34,7 @@ class BaseActions:
 
     async def _dm_target(
         self,
-        action_type : Literal[
-            "Ban Add",
-            "Ban Remove",
-            "Kick",
-            "Quarantine Add",
-            "Quarantine Remove",
-            "Timeout Add",
-            "Timeout Remove",
-        ],
+        action_type : ActionType,
         action      : (
             BanAddPayload
             | BanRemovePayload

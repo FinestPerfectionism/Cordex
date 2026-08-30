@@ -3,12 +3,12 @@ from typing import Literal, final, override
 from discord import Guild, Object
 
 from bot import Interaction
-from bot.ui import ChannelSelect, TextDisplay
+from bot.ui import ActionRow, ChannelSelect, TextDisplay
 from constants import ACCEPTED_EMOJI, DENIED_EMOJI
 from core.exceptions import send_bad_operation
 from core.paginator import NamedPaginator, PageData
 
-Keys = Literal["edit", "delete"]
+type Keys = Literal["edit", "delete"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /server configure Logic
@@ -132,29 +132,30 @@ class _ConfigurationView(NamedPaginator):
 
         super().__init__(initial_pages, container = True)
         self.update_pages()
+        self._render()
 
     def update_pages(self) -> None:
         edit = self.guild.get_channel(self.edit_id) if self.edit_id else None
         if edit:
             txt_edit = (
-                f"{ACCEPTED_EMOJI} Messages Edit Channel Set\n"
+                f"{ACCEPTED_EMOJI} **Messages Edit Channel Set**\n"
                 f"Message edits will be sent to {edit.mention}."
             )
         else:
             txt_edit = (
-                f"{DENIED_EMOJI} Messages Edit Channel Unset\n"
+                f"{DENIED_EMOJI} **Messages Edit Channel Unset**\n"
                 "Set one with the select below."
             )
 
         delete = self.guild.get_channel(self.delete_id) if self.delete_id else None
         if delete:
             txt_delete = (
-                f"{ACCEPTED_EMOJI} Messages Delete Channel Set\n"
+                f"{ACCEPTED_EMOJI} **Messages Delete Channel Set**\n"
                 f"Message deletions will be sent to {delete.mention}."
             )
         else:
             txt_delete = (
-                f"{DENIED_EMOJI} Messages Delete Channel Unset\n"
+                f"{DENIED_EMOJI} **Messages Delete Channel Unset**\n"
                 "Set one with the select below."
             )
 
@@ -162,15 +163,16 @@ class _ConfigurationView(NamedPaginator):
             PageData(
                 name    = "Messages",
                 content = [
+                    "# Messages",
                     TextDisplay(txt_edit),
-                    self.edit_select,
+                    ActionRow(self.edit_select),
                     TextDisplay(txt_delete),
-                    self.delete_select,
+                    ActionRow(self.delete_select),
                 ],
             ),
             PageData(
                 name    = "Moderation",
-                content = ["This page doesn't display anything right now. :["],
+                content = ["# Moderation", "This page doesn't display anything right now. :["],
             ),
         ]
 

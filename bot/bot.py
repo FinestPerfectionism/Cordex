@@ -19,6 +19,7 @@ from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
 from core.state import Connection, connect
 
+from .types import NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -142,28 +143,23 @@ class Cordex(commands.Bot):
             },
         )
 
-    class NameStyleResult(TypedDict):
-        font_id   : DisplayNameFont
-        effect_id : DisplayNameEffect
-        colors    : list[str]
-
     async def get_name_style(self, guild : Guild, /) -> NameStyleResult:
-        class DisplayNameStylesPayload(TypedDict):
+        class NameStylePayload(TypedDict):
             font_id   : int
             effect_id : int
             colors    : list[int]
 
-        class GuildMemberPayload(TypedDict):
-            display_name_styles : DisplayNameStylesPayload
+        class MemberNameStylePayload(TypedDict):
+            display_name_styles : NameStylePayload
 
-        # ⸻ It's very unlikely that self.user is None, but pryight will complain anyway.
+        # ⸻ It's very unlikely that self.user is None, but pyright will complain anyway.
 
         if self.user is None:
             error = "Client user is not logged in."
             raise ValueError(error)
 
         response = cast(
-            GuildMemberPayload,
+            MemberNameStylePayload,
             await self.http.request(
                 route = Route(
                     "GET", "/guilds/{guild_id}/members/{user_id}",
@@ -174,13 +170,12 @@ class Cordex(commands.Bot):
         )
 
         styles = response["display_name_styles"]
-        colors = styles["colors"]
 
-        return {
-            "font_id"   : DisplayNameFont(styles["font_id"]),
-            "effect_id" : DisplayNameEffect(styles["effect_id"]),
-            "colors"    : [f"{color:06x}" for color in colors],
-        }
+        return NameStyleResult(
+            font_id   = DisplayNameFont(styles["font_id"]),
+            effect_id = DisplayNameEffect(styles["effect_id"]),
+            colors    = [f"{color:06x}" for color in styles["colors"]],
+        )
 
     async def reset_name_style(self, *, guild : Guild, branded : bool = True) -> None:
 

@@ -1,4 +1,4 @@
-from typing import Self, final
+from typing import Literal, Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, Member
 from discord.utils import escape_markdown, format_dt, utcnow
@@ -25,6 +25,8 @@ from constants import (
 )
 from core.utilities import codeblock, format_table, format_values
 
+type _Scope = Literal["guild", "global"]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /member info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -33,7 +35,7 @@ async def run_member_info(
     interaction : Interaction,
     member      : Member | None = None,
     *,
-    server      : bool   | None = True,
+    scope       : _Scope | None = "global",
 ) -> None:
     await interaction.response.defer()
 
@@ -103,8 +105,8 @@ async def run_member_info(
     fetched_target = await client.fetch_user(target.id)
     guild_target   = guild.get_member(target.id) or await guild.fetch_member(target.id)
 
-    avatar = (guild_target.guild_avatar if server else None) or fetched_target.avatar
-    banner = (guild_target.guild_banner if server else None) or fetched_target.banner
+    avatar = (guild_target.guild_avatar if scope == "guild" else None) or fetched_target.avatar
+    banner = (guild_target.guild_banner if scope == "guild" else None) or fetched_target.banner
 
     # ⸻ Build the view.
 
@@ -150,15 +152,14 @@ async def run_member_info(
                 ),
             )
 
-        if server:
-            container.add_item(
-                TextDisplay(
-                    (
-                        "**Join Order**\n"
-                        f"{joins}"
-                    ),
+        container.add_item(
+            TextDisplay(
+                (
+                    "**Join Order**\n"
+                    f"{joins}"
                 ),
-            )
+            ),
+        )
 
         if banner:
             container.add_item(MediaGallery(MediaGalleryItem(banner.url)))

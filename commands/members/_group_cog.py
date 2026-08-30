@@ -1,7 +1,7 @@
 from typing import final
 
 from discord import Member
-from discord.app_commands import command, describe, guild_only
+from discord.app_commands import Choice, choices, command, describe, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -33,16 +33,28 @@ class MemberCommands(
     )
     @describe(
         member = "The user to view information for. Defaults to yourself.",
-        server = "Whether to view the server profile or the global profile. Defaults to True.",
+        scope  = 'Whether to view the guild profile or the global profile of the member. Defaults to "guild".',
+    )
+    @choices(
+        scope = [
+            Choice(
+                name  = "Guild",
+                value = "guild",
+            ),
+            Choice(
+                name  = "Global",
+                value = "global",
+            ),
+        ],
     )
     async def cmd_member_info(
         self,
         interaction : Interaction,
         member      : Member | None = None,
         *,
-        server      : bool   | None = None,
+        scope       : str    | None = None,
     ) -> None:
-        await run_member_info(interaction = interaction, member = member, server = server)
+        await run_member_info(interaction, member, scope)
 
 async def setup(bot : Cordex) -> None:
     cog = MemberCommands(bot)

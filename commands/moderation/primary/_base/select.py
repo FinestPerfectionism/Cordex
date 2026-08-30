@@ -1,6 +1,6 @@
-from typing import Literal
-
 from bot.ui import Modal
+
+from .utilities import ActionType
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Select Base
@@ -9,16 +9,6 @@ from bot.ui import Modal
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # State
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-ActionType = Literal[
-    "Ban Add",
-    "Ban Remove",
-    "Kick",
-    "Quarantine Add",
-    "Quarantine Remove",
-    "Timeout Add",
-    "Timeout Remove",
-]
 
 class ModerationModal(Modal):
     def __init__(self, title : ActionType) -> None:
