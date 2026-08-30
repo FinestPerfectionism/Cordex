@@ -112,14 +112,14 @@ async def run_member_info(
     class InfoView(LayoutView):
         container = Container[Self](
             TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
-            color = target.color if (server and target.color.value) else COLOR_GREY,
+            color = target.color if target.color.value else COLOR_GREY,
         )
 
         user_info = format_table(
             {
                 "Name"       : escape_markdown(target.global_name or target.name),
                 "Nickname"   : escape_markdown(target.nick or "None"),
-                "Username"   : escape_markdown(target.name),
+                "Username"   : escape_markdown(f"{target.name}{f"#{target.discriminator}" if target.discriminator != "0" else ""}"),
                 "Joined at"  : f"{format_dt(target.joined_at, style = "F")} | {format_dt(target.joined_at, style = "R")}" if target.joined_at else "Unknown",
                 "Created at" : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
             },
