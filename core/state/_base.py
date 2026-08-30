@@ -63,4 +63,6 @@ async def connect(
         autocommit        = cast("bool", autocommit),
     )
 
-    return cast("Connection", raw_connection)
+    conn = cast("Connection", raw_connection)
+    conn.__class__ = Connection
+    return conn
