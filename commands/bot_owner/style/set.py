@@ -4,7 +4,18 @@ from typing import TYPE_CHECKING, Self, final, override
 from discord import SelectOption
 
 from bot.ui import Label, Modal, Select, TextInput
-from constants import DisplayNameEffect, DisplayNameFont
+from constants import (
+    EIGHTBIT_FONT_EMOJI,
+    GG_SANS_FONT_EMOJI,
+    JELLYBEAN_FONT_EMOJI,
+    MEDIEVAL_FONT_EMOJI,
+    MODERN_FONT_EMOJI,
+    SAKURA_FONT_EMOJI,
+    TEMPO_FONT_EMOJI,
+    VAMPYRE_FONT_EMOJI,
+    DisplayNameEffect,
+    DisplayNameFont,
+)
 from core.exceptions import (
     send_bad_argument,
     send_bad_environment_guild,
@@ -33,14 +44,14 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
         colors_list = current_style.colors
 
         font_options   = [
-            ("Sakura",            "cherry_bomb"),
-            ("Jellybean",         "chicle"),
-            ("Modern",            "museo_moderno"),
-            ("Medieval",          "neo_castel"),
-            ("8Bit",              "pixelify"),
-            ("Vampyre",           "sinistre"),
-            ("GG Sans [Default]", "default"),
-            ("Tempo",             "zilla_slab"),
+            ("GG Sans",   "Discord's GG Sans font.", "default",       GG_SANS_FONT_EMOJI),
+            ("Tempo",     "Tempo font.",             "zilla_slab",    TEMPO_FONT_EMOJI),
+            ("Sakura",    "Sakura font.",            "cherry_bomb",   SAKURA_FONT_EMOJI),
+            ("Jellybean", "Jellybean font.",         "chicle",        JELLYBEAN_FONT_EMOJI),
+            ("Modern",    "Modern font.",            "museo_moderno", MODERN_FONT_EMOJI),
+            ("Medieval",  "Medieval font.",          "neo_castel",    MEDIEVAL_FONT_EMOJI),
+            ("8Bit",      "8Bit font.",              "pixelify",      EIGHTBIT_FONT_EMOJI),
+            ("Vampyre",   "Vampyre font.",           "sinistre",      VAMPYRE_FONT_EMOJI),
         ]
         effect_options = [
             ("Solid",    "solid"),
@@ -55,10 +66,12 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             required    = False,
             options     = [
                 SelectOption(
-                    label   = label,
-                    value   = value,
-                    default = (font_enum.name == value),
-                ) for label, value in font_options
+                    label       = label,
+                    value       = value,
+                    emoji       = emoji,
+                    default     = (font_enum.name == value),
+                    description = description,
+                ) for label, description, value, emoji in font_options
             ],
         )
         self.font    = Label(
