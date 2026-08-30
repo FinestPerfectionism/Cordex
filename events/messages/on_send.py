@@ -84,6 +84,9 @@ class MessageSendHandler(commands.Cog):
             except Forbidden:
                 return
 
+            if not target_message.content and not target_message.attachments:
+                return
+
             await message.reply(
                 view             = Preview(target = target_message, link = content),
                 mention_author   = False,
