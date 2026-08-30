@@ -28,8 +28,7 @@ class MessageDeleteHandler(commands.Cog):
 
     async def _get_log_channel(self, guild : Guild) -> GuildMessagable | None:
         async with self.bot.db.execute(
-            "SELECT config_value FROM GuildConfig WHERE guild_id = ? AND config_key = ?",
-            (guild.id, "messages_delete_channel"),
+            t"SELECT config_value FROM GuildConfig WHERE guild_id = {guild.id} AND config_key = {"messages_delete_channel"}",
         ) as cursor:
             res = await cursor.fetchone()
 

@@ -30,9 +30,9 @@ async def _get_channel_config(interaction : Interaction, key : Keys) -> int | No
         return None
 
     cursor = await interaction.client.db.execute(
-        "SELECT config_value FROM GuildConfig WHERE guild_id = ? AND config_key = ?",
-        (interaction.guild.id, fetched_key),
+        t"SELECT config_value FROM GuildConfig WHERE guild_id = {interaction.guild.id} AND config_key = {fetched_key}",
     )
+
     row = await cursor.fetchone()
     await cursor.close()
 
@@ -55,10 +55,9 @@ async def _set_channel_config(interaction : Interaction, key : Keys, value : int
 
     await db.execute(
         (
-            "INSERT INTO GuildConfig (guild_id, config_key, config_value) VALUES (?, ?, ?) "
-            "ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value"
+            t"INSERT INTO GuildConfig (guild_id, config_key, config_value) VALUES ({interaction.guild.id}, {fetched_key}, {value}) "
+            t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value"
         ),
-        (interaction.guild.id, fetched_key, value),
     )
     await db.commit()
 
