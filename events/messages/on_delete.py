@@ -63,6 +63,13 @@ class MessageDeleteHandler(commands.Cog):
         if guild is None or not isinstance(channel, GuildMessagable):
             return
 
+        # ⸻ Block messages that do not belong to the current guild context.
+
+        log_channel = await self._get_log_channel(guild)
+
+        if log_channel is None or log_channel.guild.id != guild.id:
+            return
+
         # ⸻ Block evaluations.
 
         if content.startswith(".eval") and is_bot_owner(author):
@@ -104,12 +111,7 @@ class MessageDeleteHandler(commands.Cog):
                 ),
             )
 
-        log_channel = await self._get_log_channel(guild)
-
-        if log_channel:
-            await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
-        else:
-            return
+        await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
 
 async def setup(bot : Cordex) -> None:
     cog = MessageDeleteHandler(bot)

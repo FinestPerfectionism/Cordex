@@ -76,6 +76,13 @@ class MessageEditHandler(commands.Cog):
         if guild is None or not isinstance(channel, GuildMessagable):
             return
 
+        # ⸻ Block messages that do not belong to the current guild context.
+
+        log_channel = await self._get_log_channel(guild)
+
+        if log_channel is None or log_channel.guild.id != guild.id:
+            return
+
         # ⸻ Eval command editing.
 
         if before_id in eval_message_ids:
@@ -157,12 +164,7 @@ class MessageEditHandler(commands.Cog):
                 ),
             )
 
-        log_channel = await self._get_log_channel(guild)
-
-        if log_channel:
-            await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
-        else:
-            return
+        await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
 
         await self.bot.process_commands(after)
 
