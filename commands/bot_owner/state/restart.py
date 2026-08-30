@@ -35,23 +35,33 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
         subtitle = "Restarting bot...",
     )
 
+    log.info("Attempting a restart.")
+
     try:
         await client.change_presence(
             status   = Status.idle,
             activity = CustomActivity(name = "Restarting..."),
         )
-
         await sleep(1)
+    except Exception:
+        log.info("Couldn't set presence while restarting. Continuing...")
 
+    try:
         for handler in log.handlers:
             if hasattr(handler, "flush"):
                 handler.flush()
 
         stdout.flush()
         stderr.flush()
+    except Exception:
+        log.exception("Couldn't flush logs. Continuing...")
 
+    try:
         await client.close()
+    except Exception:
+        log.exception("Received fatal error during restart.")
 
+    try:
         execv(  # ruff: ignore[start-process-with-no-shell]
             executable,
             [executable, *argv[1:]],

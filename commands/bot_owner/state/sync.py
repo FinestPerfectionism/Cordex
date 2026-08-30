@@ -11,7 +11,7 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
     client = interaction.client
 
     try:
-        log.info("Starting a tree sync.")
+        log.info("Attempting a tree sync.")
         synced = await client.tree.sync()
         await client.rebuild_commands_cache()
         await format_send(
@@ -29,4 +29,4 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
         )
         return
     else:
-        log.info("Tree sync finished. %s commands synced.", len(synced))
+        log.info("Tree sync complete. %s commands synced.", len(synced))

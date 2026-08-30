@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING, Self, final, override
 
-from discord import Forbidden, HTTPException, Message, NotFound, TextStyle
+from discord import HTTPException, Message, NotFound, TextStyle
 from discord.abc import Messageable
 
 from bot.ui import Label, Modal, TextInput
 from commands.bot_owner._base import check_if_bo, emoji_inaccessible
-from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.utilities import codeblock
 
 if TYPE_CHECKING:
@@ -30,23 +30,18 @@ async def run_bo_messages_edit(
 
     async def do_edit(interaction : Interaction) -> None:
         try:
-            try:
-                target = await channel.fetch_message(int(message_id))
+            target = await channel.fetch_message(int(message_id))
 
-            except (NotFound, ValueError, HTTPException):
-                await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist in this channel, I lack permissions to access it, or it is not a valid ID."})
-                return
-
-            if target.author != interaction.client.user:
-                await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I can't (and shouldn't) edit it."})
-                return
-
-            await target.edit(content = text)
-            await interaction.followup.send("Edited!", ephemeral = True)
-
-        except Forbidden:
-            await send_unknown_error(interaction)
+        except NotFound, ValueError, HTTPException:
+            await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist in this channel, I lack permissions to access it, or it is not a valid ID."})
             return
+
+        if target.author != interaction.client.user:
+            await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I can't (and shouldn't) edit it."})
+            return
+
+        await target.edit(content = text)
+        await interaction.followup.send("Edited!", ephemeral = True)
 
     if await emoji_inaccessible(interaction, text, do_edit):
         return

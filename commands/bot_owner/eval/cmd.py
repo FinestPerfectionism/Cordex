@@ -200,7 +200,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
     )
 
     try:
-        exec(to_compile, env)
+        exec(to_compile, env)  # ruff: ignore[exec-builtin]
     except Exception as e:
         await message.add_reaction(DENIED_EMOJI)
         res = await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))

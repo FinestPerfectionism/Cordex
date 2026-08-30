@@ -39,7 +39,7 @@ async def connect(
     *,
     iter_chunk_size   : int                      = 64,
     loop              : AbstractEventLoop | None = None,
-    timeout           : float                    = 5.0,
+    timeout           : float                    = 5.0,  # ruff: ignore[async-function-with-timeout]
     detect_types      : int                      = 0,
     isolation_level   : Literal[
         "DEFERRED",

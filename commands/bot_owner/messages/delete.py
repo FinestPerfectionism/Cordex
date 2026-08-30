@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
-from discord import Forbidden, HTTPException, Message, NotFound
+from discord import HTTPException, Message, NotFound
 from discord.abc import Messageable
 
 from commands.bot_owner._base import check_if_bo
-from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.utilities import codeblock
 
 if TYPE_CHECKING:
@@ -24,22 +24,17 @@ async def run_bo_messages_delete(interaction : Interaction, message_id : str) ->
         return
 
     try:
-        try:
-            target = await channel.fetch_message(int(message_id))
-        except (NotFound, ValueError, HTTPException):
-            await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist in this channel, I lack permissions to access it, or it is not a valid ID."})
-            return
-
-        if target.author != interaction.client.user:
-            await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I shouldn't delete it."})
-            return
-
-        await target.delete()
-        await interaction.followup.send("Deleted!", ephemeral = True)
-
-    except Forbidden:
-        await send_unknown_error(interaction)
+        target = await channel.fetch_message(int(message_id))
+    except NotFound, ValueError, HTTPException:
+        await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided does not exist in this channel, I lack permissions to access it, or it is not a valid ID."})
         return
+
+    if target.author != interaction.client.user:
+        await send_bad_argument(interaction, subtitle = {"message-id" : "The message provided was not sent by me, so I shouldn't delete it."})
+        return
+
+    await target.delete()
+    await interaction.followup.send("Deleted!", ephemeral = True)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # 'Delete Message' Logic

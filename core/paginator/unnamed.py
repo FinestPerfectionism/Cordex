@@ -55,18 +55,19 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
+        page = int(self.page_input.value) - 1
+
+        # ⸻ You're already on this page!
+
+        if page == self.paginator.current_page:
+            await send_bad_request(
+                interaction,
+                title    = "jump to page",
+                subtitle = "You are already viewing this page.",
+            )
+            return
+
         try:
-            page = int(self.page_input.value) - 1
-
-            # ⸻ You're already on this page!
-
-            if page == self.paginator.current_page:
-                await send_bad_request(
-                    interaction,
-                    title    = "jump to page",
-                    subtitle = "You are already viewing this page.",
-                )
-                return
 
             # ⸻ Success..?
 

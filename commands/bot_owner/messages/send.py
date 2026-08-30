@@ -1,12 +1,12 @@
 from asyncio import sleep
 from typing import TYPE_CHECKING, Self, final, override
 
-from discord import Forbidden, HTTPException, Message, NotFound, TextStyle
+from discord import HTTPException, Message, NotFound, TextStyle
 from discord.abc import Messageable
 
 from bot.ui import Checkbox, Label, Modal, TextInput
 from commands.bot_owner._base import check_if_bo, emoji_inaccessible
-from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.utilities import codeblock
 
 if TYPE_CHECKING:
@@ -41,31 +41,28 @@ async def run_bo_messages_send(
         typing_speed = len(text) * 0.05
         typing_delay = min(typing_speed, 10.0)
 
-        try:
-            reference : Message | None = None
-            if reply_id:
-                try:
-                    reference = await channel.fetch_message(int(reply_id))
+        reference : Message | None = None
 
-                except (NotFound, ValueError, HTTPException):
-                    await send_bad_argument(
-                        interaction,
-                        subtitle = {"message-id" : "The message provided does not exist in this channel, I lack permissions to access it, or it is not a valid ID."},
-                    )
-                    return
+        if reply_id:
+            try:
+                reference = await channel.fetch_message(int(reply_id))
 
-            if hasattr(channel, "typing"):
-                async with channel.typing():
-                    await sleep(typing_delay)
-            if reference:
-                await reference.reply(text, mention_author = ping)
-            else:
-                await channel.send(text)
-            await interaction.followup.send("Sent!", ephemeral = True)
+            except NotFound, ValueError, HTTPException:
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {"message-id" : "The message provided does not exist in this channel, I lack permissions to access it, or it is not a valid ID."},
+                )
+                return
 
-        except Forbidden:
-            await send_unknown_error(interaction)
-            return
+        async with channel.typing():
+            await sleep(typing_delay)
+
+        if reference:
+            await reference.reply(text, mention_author = ping)
+        else:
+            await channel.send(text)
+
+        await interaction.followup.send("Sent!", ephemeral = True)
 
     if await emoji_inaccessible(interaction, text, do_send):
         return

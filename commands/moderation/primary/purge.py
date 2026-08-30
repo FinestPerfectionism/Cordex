@@ -112,7 +112,7 @@ async def run_mod_primary_purge(interaction : Interaction) -> None:
 
             try:
                 amount = int(self._amount.value)
-            except (ValueError, TypeError):
+            except ValueError, TypeError:
                 await send_bad_argument(
                     interaction,
                     subtitle = {"Amount" : "`Amount` must be a valid whole number string."},

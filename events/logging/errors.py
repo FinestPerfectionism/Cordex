@@ -305,12 +305,12 @@ class ErrorLogger(commands.Cog):
             NotFound,
             HTTPException,
             ClientError,
-        ) as exc:
-            traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
+        ) as e:
+            traceback_text = "".join(format_exception(type(e), e, e.__traceback__))
 
             await self._send_error(
                 title     = "HTTP / REST Error",
-                error     = str(exc),
+                error     = str(e),
                 traceback = traceback_text,
             )
             raise

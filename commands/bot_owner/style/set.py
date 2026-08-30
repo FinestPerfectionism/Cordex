@@ -125,41 +125,41 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             )
             return
 
+        current_style = await interaction.client.get_name_style(interaction.guild)
+
+        font_enum   = DisplayNameFont[font_value]     if font_value   is not None else current_style.font_id
+        effect_enum = DisplayNameEffect[effect_value] if effect_value is not None else current_style.effect_id
+
+        if colors_value is not None:
+            is_valid = bool(COLOR_PATTERN.match(colors_value))
+            has_dash = "-" in colors_value
+
+            # ⸻ Incorrect format for Color/Gradient was passed.
+
+            if not (
+                is_valid or (
+                    effect_enum == DisplayNameEffect.gradient
+                    and not has_dash
+                ) or (effect_enum != DisplayNameEffect.gradient and has_dash)
+            ):
+                error = (
+                    "Gradient must be of the form `ABCDEF-123456`."
+                    if effect_enum == DisplayNameEffect.gradient else
+                    "Color must be of the form `ABCDEF`."
+                )
+
+                await send_bad_argument(
+                    interaction,
+                    title    = "set display name style",
+                    subtitle = {"colors" : error},
+                )
+                return
+
+            color_list = colors_value.split("-")
+        else:
+            color_list = current_style.colors
+
         try:
-            current_style = await interaction.client.get_name_style(interaction.guild)
-
-            font_enum   = DisplayNameFont[font_value]     if font_value   is not None else current_style.font_id
-            effect_enum = DisplayNameEffect[effect_value] if effect_value is not None else current_style.effect_id
-
-            if colors_value is not None:
-                is_valid = bool(COLOR_PATTERN.match(colors_value))
-                has_dash = "-" in colors_value
-
-                # ⸻ Incorrect format for Color/Gradient was passed.
-
-                if not (
-                    is_valid or (
-                        effect_enum == DisplayNameEffect.gradient
-                        and not has_dash
-                    ) or (effect_enum != DisplayNameEffect.gradient and has_dash)
-                ):
-                    error = (
-                        "Gradient must be of the form `ABCDEF-123456`."
-                        if effect_enum == DisplayNameEffect.gradient else
-                        "Color must be of the form `ABCDEF`."
-                    )
-
-                    await send_bad_argument(
-                        interaction,
-                        title    = "set display name style",
-                        subtitle = {"colors" : error},
-                    )
-                    return
-
-                color_list = colors_value.split("-")
-            else:
-                color_list = current_style.colors
-
             await interaction.client.set_name_style(
                 interaction.guild,
                 font_id   = font_enum,
