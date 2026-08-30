@@ -1,7 +1,7 @@
 import re
 from typing import TYPE_CHECKING, Self, final
 
-from discord import AllowedMentions, MediaGalleryItem, Message
+from discord import AllowedMentions, Forbidden, MediaGalleryItem, Message
 from discord.abc import Messageable
 from discord.ext import commands
 
@@ -74,14 +74,14 @@ class MessageSendHandler(commands.Cog):
             channel_id = int(match.group(2))
             message_id = int(match.group(3))
 
-            target_channel = await self.bot.fetch_channel(channel_id)
+            target_channel = self.bot.get_channel(channel_id)
 
             if not isinstance(target_channel, Messageable):
                 return
 
-            target_message = await target_channel.fetch_message(message_id)
-
-            if not target_message.content and not target_message.attachments:
+            try:
+                target_message = await target_channel.fetch_message(message_id)
+            except Forbidden:
                 return
 
             await message.reply(
