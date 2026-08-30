@@ -3,7 +3,7 @@ from operator import itemgetter
 from typing import Self, cast, final, override
 
 from discord import SelectOption
-from discord.app_commands import Command
+from discord.app_commands import Command, Parameter
 
 from bot import Interaction
 from bot.ui import (
@@ -20,7 +20,6 @@ from bot.ui import (
     VisibleLargeSeparator,
 )
 from constants import (
-    ARROW_EMOJI,
     COMMAND_EMOJI,
     CONTESTED_EMOJI,
     DEVELOPER_EMOJI,
@@ -29,7 +28,6 @@ from constants import (
     HORIZONTAL_SETTINGS,
     MEMBER_EMOJI,
     MODERATION_EMOJI,
-    PARTNERSHIP_EMOJI,
     PENCIL_EMOJI,
     QUERY_EMOJI,
     SEARCH_EMOJI,
@@ -89,6 +87,12 @@ def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
 
     return [cmd for score, cmd in scored if score >= 0.4]
 
+def _format_parameter(param : Parameter, argument : HelpArgument | None) -> str:
+    name        = argument.name        if argument else (param.display_name or param.name)
+    description = argument.description if argument else (param.description  or "*No description provided.*")
+
+    return f"`{name} | {label_for_parameter(param)}:` {description}"
+
 def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
     metadata = get_help_metadata(cmd)
 
@@ -107,9 +111,7 @@ def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
                 VisibleLargeSeparator(),
                 TextDisplay("## Arguments"),
                 *(
-                    TextDisplay(
-                        f"`{(argument := metadata.arguments.get(param.name, HelpArgument())).name or param.display_name or param.name} | {label_for_parameter(param)}:` {argument.description or param.description or "*No description provided.*"}",
-                    )
+                    TextDisplay(_format_parameter(param, metadata.arguments.get(param.name)))
                     for param in cmd.parameters
                 ),
             ],
@@ -197,7 +199,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
                 SelectOption(
                     label       = "Server Commands",
                     value       = "server",
-                    description = "Server commands. Children: configure, info",
+                    description = "Server commands. Children: configure, health, info",
                     emoji       = EMOJI_EMOJI,
                 ),
                 SelectOption(
@@ -217,18 +219,6 @@ class _CategorySelect(Select[UnnamedPaginator]):
                     value       = "member",
                     description = "Member commands. Children: info",
                     emoji       = MEMBER_EMOJI,
-                ),
-                SelectOption(
-                    label       = "Partnership Commands",
-                    value       = "partnership",
-                    description = "Partnership commands. Children: add, update, remove",
-                    emoji       = PARTNERSHIP_EMOJI,
-                ),
-                SelectOption(
-                    label       = "Leave Commands",
-                    value       = "leave",
-                    description = "Leave commands. Children: add, remove",
-                    emoji       = ARROW_EMOJI,
                 ),
             ],
         )
@@ -255,12 +245,6 @@ class _CategorySelect(Select[UnnamedPaginator]):
             case "member":
                 filtered = [c for c in self._commands if c.qualified_name.startswith("member")]
                 title    = f"# {MEMBER_EMOJI} Member Commands"
-            case "partnership":
-                filtered = [c for c in self._commands if c.qualified_name.startswith("partnership")]
-                title    = f"# {PARTNERSHIP_EMOJI} Partnership Commands"
-            case "leave":
-                filtered = [c for c in self._commands if c.qualified_name.startswith("leave")]
-                title    = f"# {ARROW_EMOJI} Leave Commands"
             case _:
                 filtered = self._commands
                 title    = f"# {HORIZONTAL_SETTINGS} All Commands"

@@ -5,8 +5,9 @@ from discord.app_commands import Choice, choices, command, describe, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.help import HelpArgument, help_description
 
-from .info import run_member_info
+from .info import Scope, run_member_info
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Member Group Commands
@@ -27,6 +28,14 @@ class MemberCommands(
     # /member info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @help_description(
+        arguments = {
+            "scope" : HelpArgument(
+                name        = "scope",
+                description = 'Whether to view the guild profile or the global profile of the member. Defaults to "guild".',
+            ),
+        },
+    )
     @command(
         name        = "info",
         description = "View information for a member.",
@@ -52,7 +61,7 @@ class MemberCommands(
         interaction : Interaction,
         member      : Member | None = None,
         *,
-        scope       : str    | None = None,
+        scope       : Scope  | None = "global",
     ) -> None:
         await run_member_info(interaction, member, scope)
 

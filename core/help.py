@@ -13,8 +13,8 @@ type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
 
 @dataclass(frozen = True, slots = True)
 class HelpArgument:
-    name        : str | None = None
-    description : str | None = None
+    name        : str
+    description : str
 
 
 @dataclass(frozen = True, slots = True)
@@ -38,9 +38,9 @@ _registry : dict[object, HelpMetadata] = {}
 
 def help_description[GroupT : Group | commands.Cog, **P, T](
     *,
-    arguments : dict[str, HelpArgument] | None = None,
+    arguments : dict[str, HelpArgument],
 ) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
-    metadata = HelpMetadata(arguments = arguments or {})
+    metadata = HelpMetadata(arguments = arguments)
 
     def decorator(cmd : Command[GroupT, P, T]) -> Command[GroupT, P, T]:
         _registry[cmd] = metadata
