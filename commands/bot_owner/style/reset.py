@@ -21,7 +21,7 @@ async def run_bo_style_reset(
         return
 
     try:
-        await interaction.client.reset_name_style(guild = interaction.guild, branded = branded)
+        await interaction.client.reset_name_style(interaction.guild, branded = branded)
         await format_send(
             interaction,
             msg_type = "success",

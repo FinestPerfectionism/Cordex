@@ -126,8 +126,9 @@ class Cordex(commands.Bot):
 
     async def set_name_style(
         self,
-        *,
         guild     : Guild,
+        /,
+        *,
         font_id   : DisplayNameFont,
         effect_id : DisplayNameEffect,
         colors    : list[str],
@@ -177,12 +178,12 @@ class Cordex(commands.Bot):
             colors    = [f"{color:06x}" for color in styles["colors"]],
         )
 
-    async def reset_name_style(self, *, guild : Guild, branded : bool = True) -> None:
+    async def reset_name_style(self, guild : Guild, /, *, branded : bool = True) -> None:
 
         # ⸻ Branded is the bot's special scheme instead of a normal discord font.
 
         await self.set_name_style(
-            guild     = guild,
+            guild,
             font_id   = DisplayNameFont.zilla_slab if branded else DisplayNameFont.default,
             effect_id = DisplayNameEffect.gradient if branded else DisplayNameEffect.solid,
             colors    = ["FFFFFF", "000000"]       if branded else ["FFFFFF", "FFFFFF"],

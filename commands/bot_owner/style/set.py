@@ -159,7 +159,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
                 color_list = current_style.colors
 
             await interaction.client.set_name_style(
-                guild     = interaction.guild,
+                interaction.guild,
                 font_id   = font_enum,
                 effect_id = effect_enum,
                 colors    = color_list,
