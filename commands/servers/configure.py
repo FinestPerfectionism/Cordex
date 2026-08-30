@@ -1,6 +1,6 @@
 from typing import Literal, final, override
 
-from discord import Guild, Object
+from discord import ChannelType, Guild, Object
 
 from bot import Interaction
 from bot.ui import ActionRow, ChannelSelect, TextDisplay
@@ -63,7 +63,10 @@ async def _set_channel_config(interaction : Interaction, key : Keys, value : int
 @final
 class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
     def __init__(self) -> None:
-        super().__init__(placeholder = "Select a channel...")
+        super().__init__(
+            placeholder   = "Select a channel...",
+            channel_types = [ChannelType.text],
+        )
 
     @override
     async def callback(self, interaction : Interaction) -> None:
@@ -88,7 +91,10 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
 @final
 class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
     def __init__(self) -> None:
-        super().__init__(placeholder = "Select a channel...")
+        super().__init__(
+            placeholder   = "Select a channel...",
+            channel_types = [ChannelType.text],
+        )
 
     @override
     async def callback(self, interaction : Interaction) -> None:
