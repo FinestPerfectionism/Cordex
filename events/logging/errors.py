@@ -103,7 +103,7 @@ class ErrorLogger(commands.Cog):
                 TextDisplay(
                     (
                         f"## Traceback\n"
-                        f"{codeblock(traceback[:3900])}"
+                        f"{codeblock(traceback[:2000])}"
                     ),
                 ),
             )
@@ -256,7 +256,7 @@ class ErrorLogger(commands.Cog):
 
         await send_bad_operation(interaction)
 
-        traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
+        traceback = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self._send_error(
             title       = "Command Error",
@@ -264,7 +264,7 @@ class ErrorLogger(commands.Cog):
             guild       = interaction.guild,
             interaction = interaction,
             error       = str(error),
-            traceback   = traceback_text,
+            traceback   = traceback,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -285,12 +285,12 @@ class ErrorLogger(commands.Cog):
         extension : str,
         error     : commands.ExtensionError,
     ) -> None:
-        traceback_text = "".join(format_exception(type(error), error, error.__traceback__))
+        traceback = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self._send_error(
             title     =  "Extension Error",
             error     = f"{extension}: {error}",
-            traceback = traceback_text,
+            traceback = traceback,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -306,12 +306,12 @@ class ErrorLogger(commands.Cog):
             HTTPException,
             ClientError,
         ) as e:
-            traceback_text = "".join(format_exception(type(e), e, e.__traceback__))
+            traceback = "".join(format_exception(type(e), e, e.__traceback__))
 
             await self._send_error(
                 title     = "HTTP / REST Error",
                 error     = str(e),
-                traceback = traceback_text,
+                traceback = traceback,
             )
             raise
 
@@ -342,13 +342,13 @@ class ErrorLogger(commands.Cog):
         if exc is None:
             return
 
-        traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
+        traceback = "".join(format_exception(type(exc), exc, exc.__traceback__))
 
         self.create_task(
             self._send_error(
                 title     = "Background Task Error",
                 error     = str(exc),
-                traceback = traceback_text,
+                traceback = traceback,
             ),
             name = "task_error_reporter",
         )
@@ -370,15 +370,15 @@ class ErrorLogger(commands.Cog):
         msg_str = str(msg) if msg is not None else "No message"
 
         if isinstance(exc, BaseException):
-            traceback_text = "".join(format_exception(type(exc), exc, exc.__traceback__))
+            traceback = "".join(format_exception(type(exc), exc, exc.__traceback__))
         else:
-            traceback_text = msg_str
+            traceback = msg_str
 
         loop.create_task(
             self._send_error(
                 title     = "Asyncio Event Loop Error",
                 error     = msg_str,
-                traceback = traceback_text,
+                traceback = traceback,
             ),
         )
 
