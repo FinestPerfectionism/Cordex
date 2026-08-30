@@ -113,7 +113,7 @@ class NamedPaginator(LayoutView):
 
         # ⸻ Render.
 
-        self._render()
+        self.render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_above
@@ -121,7 +121,7 @@ class NamedPaginator(LayoutView):
 
     def add_above(self, *items : Item[LayoutView]) -> None:
         self._above_items.extend(items)
-        self._render()
+        self.render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_over
@@ -129,7 +129,7 @@ class NamedPaginator(LayoutView):
 
     def add_over(self, *items : Item[LayoutView]) -> None:
         self._over_items.extend(items)
-        self._render()
+        self.render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_under
@@ -137,7 +137,7 @@ class NamedPaginator(LayoutView):
 
     def add_under(self, *items : Item[LayoutView]) -> None:
         self._under_items.extend(items)
-        self._render()
+        self.render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_below
@@ -145,13 +145,13 @@ class NamedPaginator(LayoutView):
 
     def add_below(self, *items : Item[LayoutView]) -> None:
         self._below_items.extend(items)
-        self._render()
+        self.render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # _render
+    # render
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def _render(self) -> None:
+    def render(self) -> None:
         self.clear_items()
 
         # ⸻ Add all items above.
@@ -219,12 +219,12 @@ class NamedPaginator(LayoutView):
             previous_page = self.current_page
 
             self.current_page = target
-            self._render()
+            self.render()
 
             try:
                 await interaction.response.edit_message(view = self)
             except Exception:
                 self.current_page = previous_page
-                self._render()
+                self.render()
                 await send_bad_operation(interaction, title = "turn page")
                 raise

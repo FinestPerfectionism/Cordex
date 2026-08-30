@@ -138,7 +138,6 @@ class _ConfigurationView(NamedPaginator):
 
         super().__init__(initial_pages, container = True)
         self.update_pages()
-        self._render()
 
     def update_pages(self) -> None:
         edit = self.guild.get_channel(self.edit_id) if self.edit_id else None
@@ -181,6 +180,8 @@ class _ConfigurationView(NamedPaginator):
                 content = ["# Moderation", "This page doesn't display anything right now. :["],
             ),
         ]
+
+        self.render()
 
 async def run_server_configure(interaction : Interaction) -> None:
 
