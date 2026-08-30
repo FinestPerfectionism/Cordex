@@ -3,7 +3,7 @@ from operator import itemgetter
 from typing import Self, cast, final, override
 
 from discord import SelectOption
-from discord.app_commands import Command, Parameter
+from discord.app_commands import Command
 
 from bot import Interaction
 from bot.ui import (
@@ -37,9 +37,8 @@ from constants import (
 from core.exceptions import send_bad_operation, send_bad_request
 from core.help import (
     AnnotatedCommand,
-    HelpArgument,
+    Argument,
     get_help_metadata,
-    label_for_parameter,
 )
 from core.paginator import UnnamedPaginator
 from core.utilities import format_command
@@ -87,11 +86,17 @@ def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
 
     return [cmd for score, cmd in scored if score >= 0.4]
 
-def _format_parameter(param : Parameter, argument : HelpArgument | None) -> str:
-    name        = argument.name        if argument else (param.display_name or param.name)
-    description = argument.description if argument else (param.description  or "*No description provided.*")
+def _format_parameter(argument : Argument) -> str:
+    prefix = "(Optional) " if argument.type.optional else ""
 
-    return f"`{name} | {label_for_parameter(param)}:` {description}"
+    if argument.type.type == "Choice":
+        options  = ", ".join(argument.type.choices)
+        arg_type = f"Choice[{options}]"
+    else:
+        arg_type = argument.type.type
+
+    return f"`{argument.name} | {prefix}{arg_type}:` {argument.description}"
+
 
 def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
     metadata = get_help_metadata(cmd)
@@ -105,14 +110,14 @@ def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
         ),
     ]
 
-    if cmd.parameters:
+    if metadata.arguments:
         items.extend(
             [
                 VisibleLargeSeparator(),
                 TextDisplay("## Arguments"),
                 *(
-                    TextDisplay(_format_parameter(param, metadata.arguments.get(param.name)))
-                    for param in cmd.parameters
+                    TextDisplay(_format_parameter(argument))
+                    for argument in metadata.arguments.values()
                 ),
             ],
         )

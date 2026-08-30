@@ -1,44 +1,58 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Literal
 
-from discord import AppCommandOptionType
-from discord.app_commands import Command, Group, Parameter
+from discord.app_commands import Command, Group
 from discord.ext import commands
 
 type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
+type _ArgumentTypes = Literal[
+    "Attachment",
+    "Boolean",
+    "String",
+    "Integer",
+    "Float",
+    "Mentionable",
+    "Channel",
+    "Role",
+    "User",
+    "Choice",
+    "Autocomplete",
+]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Help Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @dataclass(frozen = True, slots = True)
-class HelpArgument:
+class ArgumentType:
+    type     : _ArgumentTypes
+    choices  : list[str]
+    optional : bool
+
+    def __post_init__(self) -> None:
+        if self.choices and self.type != "Choice":
+            error = f"Expected type = Choice if using choices, not '{self.type}'"
+            raise ValueError(error)
+
+
+@dataclass(frozen = True, slots = True)
+class Argument:
     name        : str
+    type        : ArgumentType
     description : str
 
 
 @dataclass(frozen = True, slots = True)
 class HelpMetadata:
-    arguments : dict[str, HelpArgument] = field(default_factory = dict)
+    arguments : dict[str, Argument] = field(default_factory = dict)
 
-
-_TYPE_LABELS : dict[AppCommandOptionType, str] = {
-    AppCommandOptionType.string      : "Text Input",
-    AppCommandOptionType.integer     : "Number",
-    AppCommandOptionType.boolean     : "Yes/No",
-    AppCommandOptionType.user        : "User",
-    AppCommandOptionType.channel     : "Channel",
-    AppCommandOptionType.role        : "Role",
-    AppCommandOptionType.mentionable : "Mentionable",
-    AppCommandOptionType.number      : "Decimal",
-    AppCommandOptionType.attachment  : "Attachment",
-}
 
 _registry : dict[object, HelpMetadata] = {}
 
 def help_description[GroupT : Group | commands.Cog, **P, T](
     *,
-    arguments : dict[str, HelpArgument],
+    arguments : dict[str, Argument],
 ) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
     metadata = HelpMetadata(arguments = arguments)
 
@@ -50,10 +64,3 @@ def help_description[GroupT : Group | commands.Cog, **P, T](
 
 def get_help_metadata[GroupT : Group | commands.Cog, **P, T](cmd : Command[GroupT, P, T]) -> HelpMetadata:
     return _registry.get(cmd, HelpMetadata())
-
-def label_for_parameter(param : Parameter) -> str:
-    if param.choices:
-        choices = ", ".join(choice.name for choice in param.choices)
-        return f"Choice[{choices}]"
-
-    return _TYPE_LABELS.get(param.type, "Text Input")

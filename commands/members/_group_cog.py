@@ -5,7 +5,7 @@ from discord.app_commands import Choice, choices, command, describe, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.help import HelpArgument, help_description
+from core.help import Argument, ArgumentType, help_description
 
 from .info import Scope, run_member_info
 
@@ -30,8 +30,13 @@ class MemberCommands(
 
     @help_description(
         arguments = {
-            "scope" : HelpArgument(
+            "scope" : Argument(
                 name        = "scope",
+                type        = ArgumentType(
+                    type     = "Choice",
+                    choices  = ["Guild", "Global"],
+                    optional = True,
+                ),
                 description = 'Whether to view the guild profile or the global profile of the member. Defaults to "guild".',
             ),
         },
