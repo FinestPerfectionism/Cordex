@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING, Literal, final, override
 
-from discord import ChannelType, Guild, Object
+from discord import ChannelType, Guild, Object, TextChannel
 
 from bot.ui import ActionRow, ChannelSelect, TextDisplay
 from constants import ACCEPTED_EMOJI, DENIED_EMOJI
-from core.exceptions import send_bad_operation
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import NamedPaginator, PageData
 
 if TYPE_CHECKING:
@@ -76,6 +76,27 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
 
         self.default_values = [Object(id = channel.id)]
 
+        if not interaction.guild:
+            return
+
+        if not isinstance(channel, TextChannel):
+            return
+
+        permissions = channel.permissions_for(interaction.guild.me)
+
+        if not permissions.send_messages:
+            await send_bad_argument(
+                interaction,
+                title    = "set delete channel",
+                subtitle = {None : "I don't have permissions to send messages in that channel."},
+            )
+        if not permissions.view_channel:
+            await send_bad_argument(
+                interaction,
+                title    = "set delete channel",
+                subtitle = {None : "I don't have permissions to view that channel."},
+            )
+
         if not self.view:
             return
 
@@ -103,6 +124,27 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
         previous = self.default_values
 
         self.default_values = [Object(id = channel.id)]
+
+        if not interaction.guild:
+            return
+
+        if not isinstance(channel, TextChannel):
+            return
+
+        permissions = channel.permissions_for(interaction.guild.me)
+
+        if not permissions.send_messages:
+            await send_bad_argument(
+                interaction,
+                title    = "set edit channel",
+                subtitle = {None : "I don't have permissions to send messages in that channel."},
+            )
+        if not permissions.view_channel:
+            await send_bad_argument(
+                interaction,
+                title    = "set edit channel",
+                subtitle = {None : "I don't have permissions to view that channel."},
+            )
 
         if not self.view:
             return
