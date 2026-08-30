@@ -1,6 +1,7 @@
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-from bot import Interaction
+if TYPE_CHECKING:
+    from bot import Interaction
 
 type ActionType = Literal[
     "Ban Add",

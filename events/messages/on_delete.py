@@ -1,10 +1,8 @@
-from typing import Self, cast, final
+from typing import TYPE_CHECKING, Self, cast, final
 
-from discord import Guild, Message
 from discord.ext import commands
 from discord.mentions import AllowedMentions
 
-from bot import Cordex
 from bot.types import GuildMessagable
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_RED
@@ -12,6 +10,11 @@ from core.permissions import is_bot_owner
 from core.utilities import format_now, format_table
 
 from ._base import attachments_display, channel_display, clean_and_truncate
+
+if TYPE_CHECKING:
+    from discord import Guild, Message
+
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Delete Handling
@@ -33,7 +36,7 @@ class MessageDeleteHandler(commands.Cog):
         if not res:
             return None
 
-        channel_id = cast(int | None, res[0])
+        channel_id = cast("int | None", res[0])
 
         if channel_id is None:
             return None

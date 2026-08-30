@@ -102,13 +102,13 @@ async def _send(
         )
 
     if delete_after is not None:
-        return await cast(Messageable, target).send(
+        return await cast("Messageable", target).send(
             content          = content,
             delete_after     = delete_after,
             allowed_mentions = mentions or AllowedMentions.all(),
         )
 
-    return await cast(Messageable, target).send(
+    return await cast("Messageable", target).send(
         content          = content,
         allowed_mentions = mentions or AllowedMentions.all(),
     )

@@ -1,6 +1,9 @@
+from typing import TYPE_CHECKING
+
 from bot.ui import Modal
 
-from .utilities import ActionType
+if TYPE_CHECKING:
+    from .utilities import ActionType
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Select Base

@@ -1,9 +1,11 @@
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from discord import Guild
 from discord.ext import commands
 
-from bot import Cordex
+if TYPE_CHECKING:
+    from discord import Guild
+
+    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Style Enforcing

@@ -71,7 +71,7 @@ __all__ = [
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class Modal(BaseModal):
-    def add_items(self, *items : Item["Modal | Self"]) -> Self:
+    def add_items(self, *items : Item[Modal | Self]) -> Self:
         for item in items:
             self.add_item(item)
 

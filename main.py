@@ -1,3 +1,4 @@
+import sys
 from asyncio import run
 from logging import (
     CRITICAL,
@@ -11,7 +12,6 @@ from logging import (
 )
 from logging import getLogger as get_logger
 from os import getenv
-from sys import exit
 from typing import ClassVar, final, override
 
 from dotenv import load_dotenv
@@ -82,4 +82,4 @@ if __name__ == "__main__":
         log.info("Received error — KeyboardInterrupt")
     except Exception:
         log.exception("Received fatal error during startup")
-        exit(1)
+        sys.exit(1)

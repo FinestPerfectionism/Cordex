@@ -1,10 +1,9 @@
-from typing import Self, final
+from typing import TYPE_CHECKING, Self, final
 
 from discord import ForumChannel, StageChannel, TextChannel, Thread, VoiceChannel
 from discord.abc import GuildChannel
 from discord.utils import format_dt
 
-from bot import Interaction
 from bot.ui import Container, LayoutView, TextDisplay
 from constants import (
     ACTIVE_LOCKED_STAGE_EMOJI,
@@ -29,6 +28,9 @@ from constants import (
     VOICE_EMOJI,
 )
 from core.utilities import format_table
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /channel info Logic

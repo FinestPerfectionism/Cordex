@@ -1,13 +1,15 @@
-from typing import Self, final, override
+from typing import TYPE_CHECKING, Self, final, override
 
 from discord import Forbidden, HTTPException, Message, NotFound, TextStyle
 from discord.abc import Messageable
 
-from bot import Interaction
 from bot.ui import Label, Modal, TextInput
 from commands.bot_owner._base import check_if_bo, emoji_inaccessible
 from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import codeblock
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner message edit Logic

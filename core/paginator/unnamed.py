@@ -1,8 +1,5 @@
-from typing import Self, final, override
+from typing import TYPE_CHECKING, Self, final, override
 
-from discord import Color
-
-from bot import Interaction
 from bot.ui import (
     ActionRow,
     Button,
@@ -19,6 +16,11 @@ from bot.ui import (
 )
 from core.exceptions import send_bad_operation, send_bad_request
 
+if TYPE_CHECKING:
+    from discord import Color
+
+    from bot import Interaction
+
 __all__ = ["UnnamedPaginator"]
 
 type _ItemsList      = list[Item[LayoutView]]
@@ -32,7 +34,7 @@ type _ItemsOrStrList = list[str | Item[LayoutView]]
 class _PageJumpModal(Modal, title = "Jump to Page"):
     page_input : TextInput[Self]
 
-    def __init__(self, paginator : "UnnamedPaginator") -> None:
+    def __init__(self, paginator : UnnamedPaginator) -> None:
         super().__init__()
         self.paginator = paginator
 
@@ -97,7 +99,7 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
 
 @final
 class _PageRow(ActionRow["UnnamedPaginator"]):
-    def __init__(self, paginator : "UnnamedPaginator") -> None:
+    def __init__(self, paginator : UnnamedPaginator) -> None:
         super().__init__()
         self.paginator = paginator
 

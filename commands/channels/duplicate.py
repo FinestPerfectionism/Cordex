@@ -1,6 +1,10 @@
-from discord.abc import GuildChannel
 
-from bot import Interaction
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from discord.abc import GuildChannel
+
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /channel duplicate Logic

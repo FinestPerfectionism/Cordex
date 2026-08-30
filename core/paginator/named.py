@@ -1,9 +1,6 @@
 from dataclasses import dataclass
-from typing import Protocol, final
+from typing import TYPE_CHECKING, Protocol, final
 
-from discord import Color
-
-from bot import Interaction
 from bot.ui import (
     ActionRow,
     Button,
@@ -15,6 +12,11 @@ from bot.ui import (
     blurple,
 )
 from core.exceptions import send_bad_operation
+
+if TYPE_CHECKING:
+    from discord import Color
+
+    from bot import Interaction
 
 __all__ = ["NamedPaginator", "PageData"]
 
@@ -35,7 +37,7 @@ class _InteractionCallback(Protocol):
 
 @final
 class _NameRow(ActionRow["NamedPaginator"]):
-    def __init__(self, paginator : "NamedPaginator", indices : range) -> None:
+    def __init__(self, paginator : NamedPaginator, indices : range) -> None:
         super().__init__()
         self.paginator = paginator
         self.indices   = indices

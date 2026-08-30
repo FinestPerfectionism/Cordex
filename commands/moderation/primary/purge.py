@@ -1,14 +1,16 @@
-from typing import Self, final, override
+from typing import TYPE_CHECKING, Self, final, override
 
 from discord import Member, Message
 
-from bot import Interaction
 from bot.types import GuildMessagable
 from bot.ui import Checkbox, Label, Modal, TextDisplay, TextInput, UserSelect
 from constants import CONTESTED_EMOJI
 from core.exceptions import send_bad_argument
 from core.responses import format_send
 from core.utilities import check_hierarchy
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation purge Logic

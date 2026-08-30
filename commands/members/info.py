@@ -1,9 +1,8 @@
-from typing import Literal, Self, final
+from typing import TYPE_CHECKING, Literal, Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, Member
 from discord.utils import escape_markdown, format_dt, utcnow
 
-from bot import Interaction
 from bot.ui import (
     Container,
     LayoutView,
@@ -24,6 +23,9 @@ from constants import (
 )
 from core.permissions import is_bot_owner
 from core.utilities import codeblock, format_table, format_values
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 type Scope = Literal["guild", "global"]
 

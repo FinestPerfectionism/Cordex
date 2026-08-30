@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
+
 from discord import AllowedMentions, Role
 
-from bot import Interaction
 from constants import COLOR_GREY
 from core.paginator import UnnamedPaginator
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role members Logic
@@ -42,7 +46,7 @@ async def run_role_members(
     person_label = "Bots"   if person_filter      == "bots"          else ("Humans" if person_filter == "humans" else "Members")
     role_label   = "not in" if actual_role_filter == "whodoesnthave" else "in"
 
-    _view = UnnamedPaginator(
+    view = UnnamedPaginator(
         f"### {person_label} {role_label} {role.mention},",
         [f"- {member.mention} | {member.id}" for member in filtered] if filtered else ["No members found."],
         data_name = person_label.lower(),
@@ -52,7 +56,7 @@ async def run_role_members(
     )
 
     await interaction.followup.send(
-        view             = _view,
+        view             = view,
         ephemeral        = True,
         allowed_mentions = AllowedMentions.none(),
     )

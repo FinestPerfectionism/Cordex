@@ -1,11 +1,12 @@
-from typing import final
+from typing import TYPE_CHECKING, final
 
 from discord.app_commands import command, describe
 from discord.ext import commands
 
-from bot import Cordex, Interaction
-
 from .help import run_help
+
+if TYPE_CHECKING:
+    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Help Command

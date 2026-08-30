@@ -1,12 +1,14 @@
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from discord import AllowedMentions, Embed, Role
 
-from bot import Interaction
 from constants import COLOR_BLURPLE
 from core.exceptions import send_bad_argument
 
 from ._base import format_permission
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role compare Logic
@@ -27,7 +29,7 @@ async def run_role_compare(
     diffs_role_2 : list[str] = []
 
     for perm_name, value1 in role_1.permissions:
-        value2 : bool = cast(bool, getattr(role_2.permissions, perm_name))
+        value2 : bool = cast("bool", getattr(role_2.permissions, perm_name))
         if value1 != value2:
             diffs_role_1.append(format_permission(perm_name, value = value1))
             diffs_role_2.append(format_permission(perm_name, value = value2))

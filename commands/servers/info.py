@@ -1,9 +1,8 @@
-from typing import Self, final
+from typing import TYPE_CHECKING, Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, VerificationLevel
 from discord.utils import format_dt
 
-from bot import Interaction
 from bot.ui import (
     Container,
     LayoutView,
@@ -28,6 +27,9 @@ from constants import (
 )
 from core.exceptions import send_bad_operation
 from core.utilities import format_table
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /server info Logic

@@ -52,7 +52,7 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
 
         await client.close()
 
-        execv(  # noqa: S606
+        execv(  # ruff: ignore[start-process-with-no-shell]
             executable,
             [executable, *argv[1:]],
         )

@@ -2,17 +2,15 @@ from asyncio import to_thread
 from collections.abc import Awaitable, Callable
 from logging import getLogger as get_logger
 from pathlib import Path
-from typing import Self, TypedDict, Unpack, cast, final, override
+from typing import TYPE_CHECKING, Self, TypedDict, Unpack, cast, final, override
 
 from discord import Embed, Guild, Intents, Message, Status
 from discord import Interaction as BaseInteraction
-from discord.app_commands import AppCommand, Command, Group
 from discord.ext import commands
 from discord.ext.commands import Cog  # type: ignore[reportMissingTypeStubs]
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     Context as BaseContext,
 )
-from discord.ext.commands.view import StringView  # type: ignore[reportMissingTypeStubs]
 from discord.http import Route
 
 from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
@@ -21,6 +19,12 @@ from core.state import Connection, connect
 
 from .types import NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
+
+if TYPE_CHECKING:
+    from discord.app_commands import AppCommand, Command, Group
+    from discord.ext.commands.view import (
+        StringView,  # type: ignore[reportMissingTypeStubs]
+    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management
@@ -37,7 +41,7 @@ type _Inter = Callable[[Interaction], Awaitable[None]]
 
 class _ContextKwargs(TypedDict, total = False):
     message : Message
-    bot     : "Cordex"
+    bot     : Cordex
     view    : StringView
 
 class _ContextClass(BaseContext["Cordex"]):
@@ -52,7 +56,7 @@ class _ContextClass(BaseContext["Cordex"]):
                 self.callback = view_callback
 
             @button(label = "Click me!")
-            async def btn_basic(self, interaction : "Interaction", _button : Button[Self]) -> None:
+            async def btn_basic(self, interaction : Interaction, _button : Button[Self]) -> None:
                 try:
                     await self.callback(interaction)
                 except Exception as e:
@@ -160,7 +164,7 @@ class Cordex(commands.Bot):
             raise ValueError(error)
 
         response = cast(
-            MemberNameStylePayload,
+            "MemberNameStylePayload",
             await self.http.request(
                 route = Route(
                     "GET", "/guilds/{guild_id}/members/{user_id}",
@@ -217,10 +221,8 @@ class Cordex(commands.Bot):
         self.db = await connect(str(db_path))
 
         def read_schemas() -> tuple[str, str]:
-            with Path("schemas/logging.sql").open(encoding = "utf-8") as f1:
-                logging_sql = f1.read()
-            with Path("schemas/cases.sql").open(encoding = "utf-8") as f2:
-                cases_sql = f2.read()
+            logging_sql = Path("schemas/logging.sql").read_text(encoding = "utf-8")
+            cases_sql = Path("schemas/cases.sql").read_text(encoding = "utf-8")
             return logging_sql, cases_sql
 
         logging_schema, cases_schema = await to_thread(read_schemas)

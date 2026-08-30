@@ -63,7 +63,7 @@ reportMatchNotExhaustive            = "error"
 useLibraryCodeForTypes              = true
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py314"
 line-length    = 88
 extend-exclude = [
     ".local/skills",
@@ -100,23 +100,22 @@ preview = true
 ignore  = [
     "D",
     "BLE",
-    "PD011",
-    "CPY001",
-    "PLR6301",
-    "PLR2004",
-    "E203",
-    "E221",
-    "E222",
-    "E241",
-    "E251",
-    "E252",
-    "E271",
-    "E272",
-    "E302",
-    "E501",
-    "E999",
-    "N813",
-    "ERA001",
+    "missing-copyright-notice",
+    "no-self-use",
+    "magic-value-comparison",
+    "whitespace-before-punctuation",
+    "multiple-spaces-before-operator",
+    "multiple-spaces-after-operator",
+    "multiple-spaces-after-comma",
+    "unexpected-spaces-around-keyword-parameter-equals",
+    "missing-whitespace-around-parameter-equals",
+    "multiple-spaces-after-keyword",
+    "multiple-spaces-before-keyword",
+    "blank-lines-top-level",
+    "line-too-long",
+    "syntax-error",
+    "camelcase-imported-as-lowercase",
+    "commented-out-code",
 ]
 
 [tool.ruff.lint.mccabe]

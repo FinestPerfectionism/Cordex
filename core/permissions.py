@@ -1,12 +1,16 @@
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
-from discord import Member, User
 from discord.app_commands import check
 
-from bot import Interaction
 from constants import DEVELOPER_IDS
 
 from .exceptions import BadEnvironmentGuild, BadPermissionsCommand
+
+if TYPE_CHECKING:
+    from discord import Member, User
+
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permissions Management

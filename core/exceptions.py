@@ -1,8 +1,11 @@
+from typing import TYPE_CHECKING
+
 from discord.app_commands import CheckFailure
 
-from bot import ContextOrInteraction
-
 from .responses import format_send
+
+if TYPE_CHECKING:
+    from bot import ContextOrInteraction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management

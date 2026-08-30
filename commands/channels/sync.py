@@ -1,9 +1,14 @@
-from discord.abc import GuildChannel
 
-from bot import Interaction
+from typing import TYPE_CHECKING
+
 from bot.types import GuildMessagableChannel
 from core.exceptions import send_bad_argument
 from core.responses import format_send
+
+if TYPE_CHECKING:
+    from discord.abc import GuildChannel
+
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /channel sync Logic

@@ -1,9 +1,11 @@
-from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from discord.app_commands import Command, Group
 from discord.ext import commands
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
 type _ArgumentTypes = Literal[

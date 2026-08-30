@@ -1,12 +1,14 @@
-from typing import Self, final
+from typing import TYPE_CHECKING, Self, final
 
 from discord import AllowedMentions, Member, Role
 from discord.utils import format_dt
 
-from bot import Interaction
 from bot.ui import Container, LayoutView, TextDisplay
 from constants import COLOR_GREY
 from core.utilities import codeblock, format_table
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role info Logic

@@ -1,6 +1,10 @@
-from bot import Interaction
+
+from typing import TYPE_CHECKING
 
 from ._base import send_moderation_modal
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation kick Logic

@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal, final
-
-from discord import Color, Member
+from typing import TYPE_CHECKING, Literal, final
 
 from constants import (
     COLOR_BLACK,
@@ -12,6 +10,9 @@ from constants import (
     COLOR_RED,
     COLOR_YELLOW,
 )
+
+if TYPE_CHECKING:
+    from discord import Color, Member
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cases Management

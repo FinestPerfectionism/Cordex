@@ -1,12 +1,14 @@
-from typing import Literal, final, override
+from typing import TYPE_CHECKING, Literal, final, override
 
 from discord import ChannelType, Guild, Object
 
-from bot import Interaction
 from bot.ui import ActionRow, ChannelSelect, TextDisplay
 from constants import ACCEPTED_EMOJI, DENIED_EMOJI
 from core.exceptions import send_bad_operation
 from core.paginator import NamedPaginator, PageData
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 type Keys = Literal["edit", "delete"]
 

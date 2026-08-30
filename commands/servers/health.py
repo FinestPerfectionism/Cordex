@@ -1,4 +1,7 @@
-from bot import Interaction
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /server health Logic

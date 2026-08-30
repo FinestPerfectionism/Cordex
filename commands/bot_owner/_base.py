@@ -1,5 +1,5 @@
+import re
 from collections.abc import Awaitable, Callable
-from re import compile
 from typing import Self, final
 
 from bot import Interaction, bot
@@ -20,7 +20,7 @@ type _Inter = Callable[[Interaction], Awaitable[None]]
 # Emoji Stuff
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-EMOJI_PATTERN = compile(r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>")
+EMOJI_PATTERN = re.compile(r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>")
 
 def _inaccessible_emoji_ids(text : str) -> list[str]:
     inaccessible_ids : list[str] = []

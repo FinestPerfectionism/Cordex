@@ -1,13 +1,16 @@
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from discord import Member
 from discord.app_commands import Choice, choices, command, describe, guild_only
 from discord.ext import commands
 
-from bot import Cordex, Interaction
 from core.help import Argument, ArgumentType, help_description
 
 from .info import Scope, run_member_info
+
+if TYPE_CHECKING:
+    from discord import Member
+
+    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Member Group Commands

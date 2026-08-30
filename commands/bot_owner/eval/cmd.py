@@ -1,11 +1,9 @@
 import asyncio
-from builtins import exec
-from collections.abc import Awaitable, Callable
 from contextlib import redirect_stdout
 from io import StringIO
 from textwrap import indent
 from traceback import format_exc
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import discord
 from discord import app_commands
@@ -55,6 +53,9 @@ from core.utilities import (
 )
 
 from .tools import format_dict, show_attrs, show_def
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
@@ -206,7 +207,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         eval_message_ids[message.id] = res.id
         return
 
-    func = cast(Callable[[], Awaitable[object]], env["func"])
+    func = cast("Callable[[], Awaitable[object]]", env["func"])
 
     try:
         with redirect_stdout(stdout):

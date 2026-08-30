@@ -1,6 +1,5 @@
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from discord import Message
 from discord.app_commands import (
     Choice,
     ContextMenu,
@@ -14,7 +13,6 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     command as prefix_command,
 )
 
-from bot import Context, Cordex, Interaction
 from core.permissions import bot_owner_cmd
 
 from ._base import get_cogs
@@ -35,6 +33,11 @@ from .messages import (
 )
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 from .style import run_bo_style_reset, run_bo_style_set
+
+if TYPE_CHECKING:
+    from discord import Message
+
+    from bot import Context, Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands

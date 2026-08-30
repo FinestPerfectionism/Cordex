@@ -1,8 +1,9 @@
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
 
 from discord import StageChannel, TextChannel, Thread, VoiceChannel
 
-from constants import DisplayNameEffect, DisplayNameFont
+if TYPE_CHECKING:
+    from constants import DisplayNameEffect, DisplayNameFont
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Types

@@ -1,5 +1,9 @@
-from bot import Interaction
+from typing import TYPE_CHECKING
+
 from core.responses import format_send
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner state shutdown Logic

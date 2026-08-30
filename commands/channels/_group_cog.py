@@ -1,10 +1,8 @@
-from typing import final
+from typing import TYPE_CHECKING, final
 
-from discord.abc import GuildChannel
 from discord.app_commands import Choice, choices, command, describe, guild_only, rename
 from discord.ext import commands
 
-from bot import Cordex, Interaction
 from core.utilities import unimplemented
 
 from .compare import run_channel_compare
@@ -12,6 +10,11 @@ from .duplicate import run_channel_duplicate
 from .info import run_channel_info
 from .permissions import run_channel_permissions
 from .sync import run_channel_sync
+
+if TYPE_CHECKING:
+    from discord.abc import GuildChannel
+
+    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Channel Group Commands

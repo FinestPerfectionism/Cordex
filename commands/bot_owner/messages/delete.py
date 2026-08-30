@@ -1,10 +1,14 @@
+from typing import TYPE_CHECKING
+
 from discord import Forbidden, HTTPException, Message, NotFound
 from discord.abc import Messageable
 
-from bot import Interaction
 from commands.bot_owner._base import check_if_bo
 from core.exceptions import send_bad_argument, send_bad_operation, send_unknown_error
 from core.utilities import codeblock
+
+if TYPE_CHECKING:
+    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner message delete Logic
