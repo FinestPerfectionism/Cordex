@@ -40,7 +40,7 @@ class MemberCommands(
                     choices  = ["Guild", "Global"],
                     optional = True,
                 ),
-                description = 'Whether to view the guild profile or the global profile of the member. Defaults to "guild".',
+                description = 'Whether to view the guild profile or the global profile of the member. Defaults to "global".',
             ),
         },
     )
@@ -50,7 +50,7 @@ class MemberCommands(
     )
     @describe(
         member = "The user to view information for. Defaults to yourself.",
-        scope  = 'Whether to view the guild profile or the global profile of the member. Defaults to "guild".',
+        scope  = 'Whether to view the guild profile or the global profile of the member. Defaults to "global".',
     )
     @choices(
         scope = [
