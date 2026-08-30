@@ -186,6 +186,11 @@ class NamedPaginator(LayoutView):
 
         items : _ItemsList = [*self._over_items, *page_items, VisibleLargeSeparator()]
 
+        self._name_rows = [
+            _NameRow(self, range(i, min(i + 5, len(self.pages))))
+            for i in range(0, len(self.pages), 5)
+        ] if len(self.pages) >= 2 else []
+
         for name_row in self._name_rows:
             name_row.update_states()
             items.append(name_row)

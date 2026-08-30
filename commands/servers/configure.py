@@ -125,7 +125,12 @@ class _ConfigurationView(NamedPaginator):
         if self.delete_id:
             self.delete_select.default_values = [Object(id = self.delete_id)]
 
-        super().__init__([], container = True)
+        initial_pages = [
+            PageData(name = "Messages",   content = []),
+            PageData(name = "Moderation", content = []),
+        ]
+
+        super().__init__(initial_pages, container = True)
         self.update_pages()
 
     def update_pages(self) -> None:
