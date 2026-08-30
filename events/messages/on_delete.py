@@ -7,7 +7,8 @@ from discord.mentions import AllowedMentions
 from bot import Cordex
 from bot.types import GuildMessagable
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
-from constants import BOT_OWNER_ID, COLOR_RED
+from constants import COLOR_RED
+from core.permissions import is_bot_owner
 from core.utilities import format_now, format_table
 
 from ._base import attachments_display, channel_display, clean_and_truncate
@@ -64,7 +65,7 @@ class MessageDeleteHandler(commands.Cog):
 
         # ⸻ Block evaluations.
 
-        if content.startswith(".eval") and author.id == BOT_OWNER_ID:
+        if content.startswith(".eval") and is_bot_owner(author):
             return
 
         @final

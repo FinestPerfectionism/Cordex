@@ -21,11 +21,11 @@ from bot.ui import (
 )
 from constants import (
     ARROW_EMOJI,
-    BOT_OWNER_MENTION,
     COMMAND_EMOJI,
     CONTESTED_EMOJI,
     DEVELOPER_EMOJI,
     EMOJI_EMOJI,
+    FINESTPERFECTIONISM_ID,
     HORIZONTAL_SETTINGS,
     MEMBER_EMOJI,
     MODERATION_EMOJI,
@@ -335,7 +335,7 @@ async def run_help(interaction : Interaction, name : str | None = None) -> None:
                         "# About me,\n"
                         "I am not quite sure who I will serve for right now... but hopefully that will change!\n"
                        f"## {DEVELOPER_EMOJI} My Developer\n"
-                       f"My developer is {BOT_OWNER_MENTION}. I was created and am actively maintained by him.\n"
+                       f"My developer is <@{FINESTPERFECTIONISM_ID}>. I was created and am actively maintained by him.\n"
                        f"## {STANDSTILL_EMOJI} What I Do\n"
                         "- **Advanced UI:** I utilize Components V2, modals, and views, to provide a clean user interface that is both easy to navigate and visually appealing.\n"
                         "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"

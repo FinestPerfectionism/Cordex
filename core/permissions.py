@@ -1,9 +1,10 @@
 from collections.abc import Callable
 
+from discord import Member, User
 from discord.app_commands import check
 
 from bot import Interaction
-from constants import BOT_OWNER_ID
+from constants import DEVELOPER_IDS
 
 from .exceptions import BadEnvironmentGuild, BadPermissionsCommand
 
@@ -37,7 +38,7 @@ def access_control[F : Callable[..., object]](allowed_users : list[int] | None =
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def bot_owner_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
-    return access_control(allowed_users = [BOT_OWNER_ID])
+    return access_control(allowed_users = list(DEVELOPER_IDS))
 
 def guild_owner_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
     def predicate(interaction : Interaction) -> bool:
@@ -54,3 +55,10 @@ def guild_owner_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
         return func
 
     return decorator
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Permission Checks
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+def is_bot_owner(target : User | Member, /) -> bool:
+    return target.id in DEVELOPER_IDS

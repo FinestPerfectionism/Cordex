@@ -29,7 +29,7 @@ from bot import Context, Cordex, Interaction
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
-    BOT_OWNER_MENTION,
+    BOTWORKS_MENTION,
     COLOR_RED,
 )
 from core.exceptions import (
@@ -88,7 +88,7 @@ class ErrorLogger(commands.Cog):
             TextDisplay(
                 (
                     f"# {title}\n"
-                    f"{BOT_OWNER_MENTION}, an unexpected exception has occured."
+                    f"{BOTWORKS_MENTION}, an unexpected exception has occured."
                 ),
             ),
             color = COLOR_RED,
@@ -156,10 +156,10 @@ class ErrorLogger(commands.Cog):
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-
+                    (
                         "## Command\n"
-                       f"{table}",
-
+                       f"{table}"
+                    ),
                 ),
             )
 
@@ -167,10 +167,10 @@ class ErrorLogger(commands.Cog):
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-
+                    (
                         "## Error\n"
-                       f"{codeblock(error)}",
-
+                       f"{codeblock(error)}"
+                    ),
                 ),
             )
 
@@ -183,7 +183,7 @@ class ErrorLogger(commands.Cog):
 
         await channel.send(
             view             = view,
-            allowed_mentions = AllowedMentions.none(),
+            allowed_mentions = AllowedMentions(users = False, roles = True),
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -269,10 +269,7 @@ class ErrorLogger(commands.Cog):
 
     @commands.Cog.listener("on_command_error")
     async def prefix_command_error_handler(self, _ctx : Context, _error : commands.CommandError) -> None:
-
-        # ⸻ Literally just pass since only eval uses prefix and we shouldn't care.
-
-        pass
+        pass  # ⸻ Literally just pass since only eval uses prefix and we shouldn't care.
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Extension Errors

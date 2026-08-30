@@ -15,7 +15,6 @@ from bot.ui import (
 from constants import (
     BIG_BOT_EMOJI,
     BOOSTER_EMOJI,
-    BOT_OWNER_ID,
     COLOR_GREY,
     DEVELOPER_EMOJI,
     EMPLOYEE_EMOJI,
@@ -23,6 +22,7 @@ from constants import (
     PARTNER_EMOJI,
     PET_CORDEX_EMOJI,
 )
+from core.permissions import is_bot_owner
 from core.utilities import codeblock, format_table, format_values
 
 type _Scope = Literal["guild", "global"]
@@ -70,12 +70,12 @@ async def run_member_info(
         filter(
             None,
             [
-                f"- {DEVELOPER_EMOJI} This user is **my owner**."          if target.id == BOT_OWNER_ID else None,
-                f"- {PET_CORDEX_EMOJI} This user is a **good boy**."       if client.user and target == client.user else None,
-                f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**." if target.public_flags.staff else None,
-                f"- {PARTNER_EMOJI} This user is a **Discord Partner**."   if target.public_flags.partner else None,
-                f"- {OWNER_EMOJI} This user is the **Server Owner**."      if guild.owner == target else None,
-                f"- {BOOSTER_EMOJI} This user is a **Server Booster**."    if target.premium_since is not None else None,
+                f"- {DEVELOPER_EMOJI} This user is one of my **my owners**." if is_bot_owner(target) else None,
+                f"- {PET_CORDEX_EMOJI} This user is a **good boy**."         if client.user and target == client.user else None,
+                f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**."   if target.public_flags.staff else None,
+                f"- {PARTNER_EMOJI} This user is a **Discord Partner**."     if target.public_flags.partner else None,
+                f"- {OWNER_EMOJI} This user is the **Server Owner**."        if guild.owner == target else None,
+                f"- {BOOSTER_EMOJI} This user is a **Server Booster**."      if target.premium_since is not None else None,
             ],
         ),
     )

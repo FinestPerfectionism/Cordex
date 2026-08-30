@@ -16,7 +16,8 @@ from bot.ui import (
     link,
 )
 from commands.bot_owner.eval import eval_message_ids
-from constants import BOT_OWNER_ID, COLOR_GREY
+from constants import COLOR_GREY
+from core.permissions import is_bot_owner
 from core.utilities import format_table
 
 from ._base import attachments_display, channel_display, clean_and_truncate
@@ -102,7 +103,7 @@ class MessageEditHandler(commands.Cog):
 
         # ⸻ Block evaluations.
 
-        if after_content.startswith(".eval") and author.id == BOT_OWNER_ID:
+        if after_content.startswith(".eval") and is_bot_owner(author):
             return
 
         # ⸻ Edit message logging.

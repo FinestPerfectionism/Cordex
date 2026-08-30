@@ -4,9 +4,9 @@ from typing import Self, final
 
 from bot import Interaction, bot
 from bot.ui import Button, View, button, green, red
-from constants import BOT_OWNER_ID
 from core.cog_loader import discover_cogs
 from core.exceptions import send_bad_permissions_command
+from core.permissions import is_bot_owner
 from core.responses import format_message
 from core.utilities import format_values
 
@@ -90,7 +90,7 @@ def get_cogs() -> list[str]:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def check_if_bo(interaction : Interaction) -> bool:
-    if interaction.user.id == BOT_OWNER_ID:
+    if is_bot_owner(interaction.user):
         return True
 
     await send_bad_permissions_command(interaction)

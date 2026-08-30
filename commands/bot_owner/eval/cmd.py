@@ -28,7 +28,6 @@ from bot.ui import (
 )
 from constants import (
     ACCEPTED_EMOJI,
-    BOT_OWNER_ID,
     COLOR_BLACK,
     COLOR_BLUE,
     COLOR_BLURPLE,
@@ -44,6 +43,7 @@ from constants import (
 )
 from core.exceptions import send_bad_argument, send_bad_permissions_command
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
+from core.permissions import is_bot_owner
 from core.responses import format_message, format_send
 from core.utilities import (
     codeblock,
@@ -179,9 +179,9 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "PageData"         : PageData,
     }
 
-    # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to really warrant it.
+    # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to warrant it.
 
-    if ctx.author.id != BOT_OWNER_ID:
+    if not is_bot_owner(ctx.author):
         await send_bad_permissions_command(ctx)
         return
 

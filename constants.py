@@ -52,19 +52,27 @@ COLOR_WHITE   = Color(0xFFFFFF)
 # User IDs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-BOT_OWNER_ID = 1311394031640776716
+FINESTPERFECTIONISM_ID = 1311394031640776716
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# User Mentions
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-BOT_OWNER_MENTION = "<@1311394031640776716>"
+DEVELOPER_IDS = {FINESTPERFECTIONISM_ID}
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Server IDs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 SUPPORT_GUILD_ID = 1537571856964386971
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Role IDs
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+BOTWORKS_ROLE_ID = 1537572167322046514
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Role Mentions
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+BOTWORKS_MENTION = f"<@&{BOTWORKS_ROLE_ID}>"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Channel IDs
