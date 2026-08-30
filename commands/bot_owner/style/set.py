@@ -9,7 +9,7 @@ from bot.ui import Label, Modal, Select, TextInput
 from constants import DisplayNameEffect, DisplayNameFont
 from core.exceptions import (
     send_bad_argument,
-    send_bad_environment_dms,
+    send_bad_environment_guild,
     send_bad_operation,
 )
 from core.responses import format_send
@@ -179,7 +179,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
 
 async def run_bo_style_set(interaction : Interaction) -> None:
     if not interaction.guild:
-        await send_bad_environment_dms(interaction)
+        await send_bad_environment_guild(interaction)
         return
 
     style = await interaction.client.get_name_style(interaction.guild)
