@@ -34,7 +34,6 @@ type _Scope = Literal["guild", "global"]
 async def run_member_info(
     interaction : Interaction,
     member      : Member | None = None,
-    *,
     scope       : _Scope | None = "global",
 ) -> None:
     await interaction.response.defer()
