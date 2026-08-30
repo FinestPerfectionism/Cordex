@@ -103,8 +103,8 @@ async def run_member_info(
     fetched_target = await client.fetch_user(target.id)
     guild_target   = guild.get_member(target.id) or await guild.fetch_member(target.id)
 
-    avatar = guild_target.guild_avatar if server else fetched_target.avatar
-    banner = guild_target.guild_banner if server else fetched_target.banner
+    avatar = (guild_target.guild_avatar if server else None) or fetched_target.avatar
+    banner = (guild_target.guild_banner if server else None) or fetched_target.banner
 
     # ⸻ Build the view.
 
