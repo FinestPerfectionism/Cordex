@@ -22,8 +22,8 @@ from .ui import Button, LayoutView, Modal, View, button
 
 if TYPE_CHECKING:
     from discord.app_commands import AppCommand, Command, Group
-    from discord.ext.commands.view import (
-        StringView,  # type: ignore[reportMissingTypeStubs]
+    from discord.ext.commands.view import (  # type: ignore[reportMissingTypeStubs]
+        StringView,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -112,10 +112,11 @@ class Cordex(commands.Bot):
         status  = Status.online
 
         super().__init__(
-            command_prefix = prefix,
-            intents        = intents,
-            help_command   = None,
-            status         = status,
+            chunk_guilds_at_startup = True,
+            command_prefix          = prefix,
+            help_command            = None,
+            intents                 = intents,
+            status                  = status,
         )
         self.db : Connection
 
