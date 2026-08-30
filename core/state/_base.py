@@ -3,12 +3,12 @@ from collections.abc import Iterable
 from pathlib import Path
 from sqlite3 import LEGACY_TRANSACTION_CONTROL
 from sqlite3 import Connection as SqliteConnection
-from sqlite3 import connect as sqlite_connect
 from string.templatelib import Template
 from typing import Literal, cast, override
 
 from aiosqlite import Connection as AiosqliteConnection
 from aiosqlite import Cursor
+from aiosqlite import connect as aiosqlite_connect
 from aiosqlite.context import Result
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -32,7 +32,7 @@ class Connection(AiosqliteConnection):
 
 
 async def connect(
-    database          : str | bytes       | Path,
+    database          : str               | Path,
     *,
     iter_chunk_size   : int                      = 64,
     loop              : AbstractEventLoop | None = None,
@@ -49,21 +49,18 @@ async def connect(
     uri               : bool                     = False,
     autocommit        : bool              | int  = LEGACY_TRANSACTION_CONTROL,
 ) -> Connection:
-    def sqlite_connector() -> SqliteConnection:
-        loc = database.decode("utf-8") if isinstance(database, bytes) else str(database)
+    raw_connection = await aiosqlite_connect(
+        database          = database,
+        iter_chunk_size   = iter_chunk_size,
+        loop              = loop,
+        timeout           = timeout,
+        detect_types      = detect_types,
+        isolation_level   = isolation_level,
+        check_same_thread = check_same_thread,
+        factory           = factory,
+        cached_statements = cached_statements,
+        uri               = uri,
+        autocommit        = cast(bool, autocommit),
+    )
 
-        return sqlite_connect(
-            loc,
-            timeout           = timeout,
-            detect_types      = detect_types,
-            isolation_level   = isolation_level,
-            check_same_thread = check_same_thread,
-            factory           = factory,
-            cached_statements = cached_statements,
-            uri               = uri,
-            autocommit        = cast(bool, autocommit),
-        )
-
-    connection = Connection(sqlite_connector, iter_chunk_size = iter_chunk_size, loop = loop)
-    await connection._connect()
-    return connection
+    return cast(Connection, raw_connection)
