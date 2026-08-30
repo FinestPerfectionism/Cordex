@@ -5,10 +5,11 @@ from asyncio import (
     create_task,
     get_running_loop,
 )
+from collections.abc import Coroutine
 from secrets import randbelow
 from sys import exc_info
 from traceback import format_exception
-from typing import TYPE_CHECKING, final, override
+from typing import final, override
 
 from aiohttp import ClientError
 from discord import (
@@ -21,8 +22,10 @@ from discord import (
     TextChannel,
     User,
 )
+from discord.app_commands import AppCommandError
 from discord.ext import commands
 
+from bot import Context, Cordex, Interaction
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
@@ -42,13 +45,6 @@ from core.exceptions import (
 )
 from core.responses import format_send
 from core.utilities import codeblock, format_command, format_now, format_table
-
-if TYPE_CHECKING:
-    from collections.abc import Coroutine
-
-    from discord.app_commands import AppCommandError
-
-    from bot import Context, Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Errors Handling

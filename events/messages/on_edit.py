@@ -1,9 +1,10 @@
-from typing import TYPE_CHECKING, Self, cast, final
+from typing import Self, cast, final
 
 from discord import AllowedMentions, Guild, Message
 from discord.ext import commands
 from discord.utils import format_dt, utcnow
 
+from bot import Cordex
 from bot.types import GuildMessagable
 from bot.ui import (
     Button,
@@ -20,9 +21,6 @@ from core.permissions import is_bot_owner
 from core.utilities import format_table
 
 from ._base import attachments_display, channel_display, clean_and_truncate
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Message Edit Handling

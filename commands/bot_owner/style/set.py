@@ -1,8 +1,10 @@
 import re
-from typing import TYPE_CHECKING, Self, final, override
+from typing import Self, final, override
 
 from discord import SelectOption
 
+from bot import Interaction
+from bot.types import NameStyleResult
 from bot.ui import Label, Modal, Select, TextInput
 from constants import (
     EIGHTBIT_FONT_EMOJI,
@@ -23,10 +25,6 @@ from core.exceptions import (
 )
 from core.responses import format_send
 from core.utilities import codeblock
-
-if TYPE_CHECKING:
-    from bot import Interaction
-    from bot.types import NameStyleResult
 
 COLOR_PATTERN = re.compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
 

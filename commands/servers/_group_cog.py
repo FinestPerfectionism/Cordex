@@ -1,16 +1,14 @@
-from typing import TYPE_CHECKING, final
+from typing import final
 
 from discord.app_commands import command, guild_only
 from discord.ext import commands
 
+from bot import Cordex, Interaction
 from core.permissions import guild_owner_cmd
 
 from .configure import run_server_configure
 from .health import run_server_health
 from .info import run_server_info
-
-if TYPE_CHECKING:
-    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Server Group Commands

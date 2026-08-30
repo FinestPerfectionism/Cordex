@@ -1,10 +1,11 @@
 import re
-from typing import TYPE_CHECKING, Self, final
+from typing import Self, final
 
 from discord import AllowedMentions, Forbidden, MediaGalleryItem, Message
 from discord.abc import Messageable
 from discord.ext import commands
 
+from bot import Cordex
 from bot.ui import (
     Container,
     LayoutView,
@@ -12,9 +13,6 @@ from bot.ui import (
     TextDisplay,
     VisibleLargeSeparator,
 )
-
-if TYPE_CHECKING:
-    from bot import Cordex
 
 MESSAGE_LINK_PATTERN = re.compile(r"https://discord(?:app)?\.com/channels/(\d+|@me)/(\d+)/(\d+)")
 

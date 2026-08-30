@@ -1,12 +1,9 @@
-from typing import TYPE_CHECKING
 
 from discord import AllowedMentions, Role
 
+from bot import Interaction
 from constants import COLOR_GREY
 from core.paginator import UnnamedPaginator
-
-if TYPE_CHECKING:
-    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role members Logic

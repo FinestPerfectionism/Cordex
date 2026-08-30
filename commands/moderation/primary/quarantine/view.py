@@ -1,7 +1,6 @@
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from bot import Interaction
+
+from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation quarantine view Logic

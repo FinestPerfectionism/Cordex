@@ -1,10 +1,8 @@
 
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from discord.abc import GuildChannel
+from discord.abc import GuildChannel
 
-    from bot import Interaction
+from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /channel compare Logic

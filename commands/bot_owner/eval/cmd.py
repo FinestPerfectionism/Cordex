@@ -1,9 +1,10 @@
 import asyncio
+from collections.abc import Awaitable, Callable
 from contextlib import redirect_stdout
 from io import StringIO
 from textwrap import indent
 from traceback import format_exc
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 import discord
 from discord import app_commands
@@ -53,9 +54,6 @@ from core.utilities import (
 )
 
 from .tools import format_dict, show_attrs, show_def
-
-if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic

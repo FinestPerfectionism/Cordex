@@ -1,11 +1,8 @@
-from typing import TYPE_CHECKING
 
+from bot import Interaction
 from core.exceptions import send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock
-
-if TYPE_CHECKING:
-    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner style reset Logic

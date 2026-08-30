@@ -1,8 +1,9 @@
-from typing import TYPE_CHECKING, final
+from typing import final
 
 from discord.app_commands import Group, command, guild_only
 from discord.ext import commands
 
+from bot import Cordex, Interaction
 from core.permissions import bot_owner_cmd
 
 # senior_moderator_cmd,
@@ -36,9 +37,6 @@ from .primary.timeout import (
     run_mod_primary_timeout_remove,
     run_mod_primary_timeout_view,
 )
-
-if TYPE_CHECKING:
-    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Group Commands

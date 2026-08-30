@@ -1,10 +1,11 @@
 from difflib import SequenceMatcher
 from operator import itemgetter
-from typing import TYPE_CHECKING, Self, cast, final, override
+from typing import Self, cast, final, override
 
 from discord import SelectOption
 from discord.app_commands import Command
 
+from bot import Interaction
 from bot.ui import (
     ActionRow,
     Button,
@@ -41,9 +42,6 @@ from core.help import (
 )
 from core.paginator import UnnamedPaginator
 from core.utilities import format_command
-
-if TYPE_CHECKING:
-    from bot import Interaction
 
 type CommandList = list[AnnotatedCommand]
 

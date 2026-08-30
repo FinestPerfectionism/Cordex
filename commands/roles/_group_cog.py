@@ -1,8 +1,10 @@
-from typing import TYPE_CHECKING, final
+from typing import final
 
+from discord import Role
 from discord.app_commands import Choice, choices, command, describe, guild_only, rename
 from discord.ext import commands
 
+from bot import Cordex, Interaction
 from core.utilities import unimplemented
 
 from .compare import run_role_compare
@@ -10,11 +12,6 @@ from .duplicate import run_role_duplicate
 from .info import run_role_info
 from .members import run_role_members
 from .permissions import run_role_permissions
-
-if TYPE_CHECKING:
-    from discord import Role
-
-    from bot import Cordex, Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Role Group Commands

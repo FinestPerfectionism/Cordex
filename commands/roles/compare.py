@@ -1,14 +1,12 @@
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from discord import AllowedMentions, Embed, Role
 
+from bot import Interaction
 from constants import COLOR_BLURPLE
 from core.exceptions import send_bad_argument
 
 from ._base import format_permission
-
-if TYPE_CHECKING:
-    from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role compare Logic

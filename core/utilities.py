@@ -1,16 +1,14 @@
 from collections.abc import Callable
 from operator import eq, ge, gt, le, lt
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
+from discord import Member, Role
 from discord.app_commands import check
 from discord.utils import format_dt, utcnow
 
 from bot import Interaction, bot
 
 from .exceptions import UnimplementedCommand
-
-if TYPE_CHECKING:
-    from discord import Member, Role
 
 type Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 

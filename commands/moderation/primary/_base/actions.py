@@ -1,28 +1,25 @@
 from datetime import timedelta
-from typing import TYPE_CHECKING, final
+from typing import final
 
+from discord import Guild, Member
 from discord.utils import format_dt, utcnow
 
+from bot import Cordex
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_BLACK, CONTESTED_EMOJI
+from core.cases import (
+    BanAddPayload,
+    BanRemovePayload,
+    KickPayload,
+    QuarantineAddPayload,
+    QuarantineRemovePayload,
+    TimeoutAddPayload,
+    TimeoutRemovePayload,
+)
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
-if TYPE_CHECKING:
-    from discord import Guild, Member
-
-    from bot import Cordex
-    from core.cases import (
-        BanAddPayload,
-        BanRemovePayload,
-        KickPayload,
-        QuarantineAddPayload,
-        QuarantineRemovePayload,
-        TimeoutAddPayload,
-        TimeoutRemovePayload,
-    )
-
-    from .utilities import ActionType
+from .utilities import ActionType
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base

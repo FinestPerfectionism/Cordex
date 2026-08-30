@@ -2,14 +2,18 @@ from asyncio import to_thread
 from collections.abc import Awaitable, Callable
 from logging import getLogger as get_logger
 from pathlib import Path
-from typing import TYPE_CHECKING, Self, TypedDict, Unpack, cast, final, override
+from typing import Self, TypedDict, Unpack, cast, final, override
 
 from discord import Embed, Guild, Intents, Message, Status
 from discord import Interaction as BaseInteraction
+from discord.app_commands import AppCommand, Command, Group
 from discord.ext import commands
 from discord.ext.commands import Cog  # type: ignore[reportMissingTypeStubs]
 from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     Context as BaseContext,
+)
+from discord.ext.commands.view import (  # type: ignore[reportMissingTypeStubs]
+    StringView,
 )
 from discord.http import Route
 
@@ -19,12 +23,6 @@ from core.state import Connection, connect
 
 from .types import NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
-
-if TYPE_CHECKING:
-    from discord.app_commands import AppCommand, Command, Group
-    from discord.ext.commands.view import (  # type: ignore[reportMissingTypeStubs]
-        StringView,
-    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management

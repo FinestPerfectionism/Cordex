@@ -1,13 +1,10 @@
-from typing import TYPE_CHECKING
 
 from discord import Attachment, Thread
 from discord.utils import escape_markdown
 
+from bot.types import GuildMessagable
 from constants import ARROW_EMOJI
 from core.utilities import truncate
-
-if TYPE_CHECKING:
-    from bot.types import GuildMessagable
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Messages Handling Base

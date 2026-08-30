@@ -1,18 +1,15 @@
+from asyncio import AbstractEventLoop
+from collections.abc import Iterable
+from pathlib import Path
 from sqlite3 import LEGACY_TRANSACTION_CONTROL
 from sqlite3 import Connection as SqliteConnection
 from string.templatelib import Template
-from typing import TYPE_CHECKING, Literal, cast, override
+from typing import Literal, cast, override
 
 from aiosqlite import Connection as AiosqliteConnection
 from aiosqlite import Cursor
 from aiosqlite import connect as aiosqlite_connect
-
-if TYPE_CHECKING:
-    from asyncio import AbstractEventLoop
-    from collections.abc import Iterable
-    from pathlib import Path
-
-    from aiosqlite.context import Result
+from aiosqlite.context import Result
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # State Base
