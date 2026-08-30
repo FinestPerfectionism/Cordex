@@ -113,7 +113,6 @@ ignore  = [
     "multiple-spaces-before-keyword",
     "blank-lines-top-level",
     "line-too-long",
-    "syntax-error",
     "camelcase-imported-as-lowercase",
     "commented-out-code",
 ]
