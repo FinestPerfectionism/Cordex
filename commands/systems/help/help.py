@@ -1,6 +1,6 @@
 from difflib import SequenceMatcher
 from operator import itemgetter
-from typing import Self, cast, final, override
+from typing import Self, final, override
 
 from discord import SelectOption
 from discord.app_commands import Command
@@ -254,13 +254,15 @@ class _CategorySelect(Select[UnnamedPaginator]):
                 filtered = self._commands
                 title    = f"# {HORIZONTAL_SETTINGS} All Commands"
 
+        if not self.view:
+            return
+
         for option in self.options:
             option.default = (option.value == value)
 
-        paginator = cast("UnnamedPaginator", self.view)
-        paginator.update_data(title, _build_sections(filtered))
+        self.view.update_data(title, _build_sections(filtered))
 
-        await interaction.response.edit_message(view = paginator)
+        await interaction.response.edit_message(view = self.view)
 
 @final
 class _QueryButton(Button[UnnamedPaginator]):

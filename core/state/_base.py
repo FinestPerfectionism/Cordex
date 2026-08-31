@@ -60,7 +60,7 @@ async def connect(
         factory           = factory,
         cached_statements = cached_statements,
         uri               = uri,
-        autocommit        = cast("bool", autocommit),
+        autocommit        = autocommit,
     )
 
     conn = cast("Connection", raw_connection)
