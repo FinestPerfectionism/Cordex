@@ -5,6 +5,7 @@ from discord.abc import GuildChannel
 from discord.utils import format_dt
 
 from bot import Interaction
+from bot.types import GuildMessagable
 from bot.ui import Container, LayoutView, TextDisplay
 from constants import (
     ACTIVE_LOCKED_STAGE_EMOJI,
@@ -79,13 +80,13 @@ def _get_channel_emoji(target : GuildChannel) -> str | None:
 async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
     await interaction.response.defer()
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
-    if interaction.guild is None:
-        return
-
     target = channel or interaction.channel
     thread_target : Thread | None = None
+
+    # ⸻ We know that the command will run in a guild but the type checker doesn't...
+
+    if interaction.guild is None or not isinstance(target, GuildMessagable):
+        return
 
     if isinstance(target, Thread):
         thread_target = target
@@ -107,7 +108,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
         emoji_display = f"| {channel_type_emoji} " if channel_type_emoji else ""
         header_text   = f"### {target.mention} {emoji_display}| {target.id}"
 
-    topic = getattr(target, "topic", None)
+    topic = target.topic if isinstance(target, TextChannel) else None
 
     @final
     class InfoView(LayoutView):
@@ -117,7 +118,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
                 format_table(
                     {
                         "???"               :  "This (mostly) doesn't display any information... yet.",
-                        "Not Safe for Work" :  "Yes" if getattr(target, "nsfw", False) else "No",
+                        "Not Safe for Work" :  "Yes" if target.nsfw else "No",
                         "Created at"        : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
                     },
                 ),

@@ -1,5 +1,3 @@
-from typing import cast
-
 from discord import AllowedMentions, Embed, Role
 
 from bot import Interaction
@@ -19,15 +17,14 @@ async def run_role_compare(
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 
-    if role_1.id == role_2.id:
+    if role_1 == role_2:
         await send_bad_argument(interaction, subtitle = {("role-1", "role-2") : "You cannot compare a role with itself."})
         return
 
     diffs_role_1 : list[str] = []
     diffs_role_2 : list[str] = []
 
-    for perm_name, value1 in role_1.permissions:
-        value2 : bool = cast("bool", getattr(role_2.permissions, perm_name))
+    for (perm_name, value1), (_, value2) in zip(role_1.permissions, role_2.permissions, strict = False):
         if value1 != value2:
             diffs_role_1.append(format_permission(perm_name, value = value1))
             diffs_role_2.append(format_permission(perm_name, value = value2))
