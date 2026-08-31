@@ -43,7 +43,7 @@ from core.exceptions import (
     send_bad_permissions_command,
     send_unimplemented_command,
 )
-from core.responses import format_send
+from core.responses import ResponseOverride, format_send
 from core.utilities import codeblock, format_command, format_now, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -229,9 +229,9 @@ class ErrorLogger(commands.Cog):
                     interaction,
                     msg_type  = "error",
                     title     = "I'm sorry, Dave,",
-                    subtitle  = "I'm afraid I can't do that.",
-                    footer    = "You are not authorized to run this command — Bad request.",
-                    override  = True,
+                    subtitle  = "I'm afraid I can't do that",
+                    footer    = "You are not authorized to run this command — Bad request",
+                    override  = ResponseOverride(prefix = False),
                     ephemeral = False,
                 )
             else:
@@ -365,10 +365,7 @@ class ErrorLogger(commands.Cog):
         msg = context.get("message")
         msg_str = str(msg) if msg is not None else "No message"
 
-        if isinstance(exc, BaseException):
-            traceback = "".join(format_exception(type(exc), exc, exc.__traceback__))
-        else:
-            traceback = msg_str
+        traceback = "".join(format_exception(type(exc), exc, exc.__traceback__)) if isinstance(exc, BaseException) else msg_str
 
         loop.create_task(
             self._send_error(

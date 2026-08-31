@@ -1,4 +1,4 @@
-from typing import Literal, cast
+from typing import Literal, Self, final
 
 from discord import AllowedMentions, Interaction, Message
 from discord.abc import Messageable
@@ -19,6 +19,40 @@ from constants import (
 
 type _MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
 type _SendTarget = ContextOrInteraction | Messageable
+
+@final
+class PunctuationOverride:
+    def __init__(
+        self,
+        *,
+        title    : bool | None = None,
+        subtitle : bool | None = None,
+        footer   : bool | None = None,
+    ) -> None:
+        super().__init__()
+        self.title    = title
+        self.subtitle = subtitle
+        self.footer   = footer
+
+    @classmethod
+    def all_true(cls) -> Self:
+        return cls(title = True, subtitle = True, footer = True)
+
+    @classmethod
+    def all_false(cls) -> Self:
+        return cls(title = False, subtitle = False, footer = False)
+
+@final
+class ResponseOverride:
+    def __init__(
+        self,
+        *,
+        prefix      : bool                       = True,
+        punctuation : PunctuationOverride | None = None,
+    ) -> None:
+        super().__init__()
+        self.prefix      = prefix
+        self.punctuation = punctuation or PunctuationOverride()
 
 def _emoji_match(msg_type : _MessageType) -> str:
     match msg_type:
@@ -48,22 +82,36 @@ def _title_match(msg_type : _MessageType) -> str:
 # Internal Builders
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def _build_title(msg_type : _MessageType, title : str, *, override : bool = False) -> str:
-    if override:
-        return f"{_emoji_match(msg_type)} **{title}**"
+def _apply_punctuation(text : str, default : str, *, setting : bool | None) -> str:
+    if setting is False:
+        return text
 
-    prefix      = _title_match(msg_type)
-    punctuation = "!" if msg_type in {"warning", "error"} else "."
-    clean_title = title.rstrip(".!") + punctuation
+    if setting is True:
+        return text + default
+
+    if text.endswith((".", "?", "!", ",")):
+        return text
+
+    return text + default
+
+def _build_title(msg_type : _MessageType, title : str, config : ResponseOverride) -> str:
+    prefix         = _title_match(msg_type) if config.prefix else ""
+    default_punc   = "!" if msg_type in {"warning", "error"} else "."
+    clean_title    = _apply_punctuation(title, default_punc, setting = config.punctuation.title)
 
     if prefix:
         return f"{_emoji_match(msg_type)} **{prefix} {clean_title}**"
     return f"{_emoji_match(msg_type)} **{clean_title}**"
 
-def _build_footer(footer : str | None) -> str | None:
+def _build_subtitle(subtitle : str | None, config : ResponseOverride) -> str | None:
+    if subtitle is None:
+        return None
+    return _apply_punctuation(subtitle, ".", setting = config.punctuation.subtitle)
+
+def _build_footer(footer : str | None, config : ResponseOverride) -> str | None:
     if footer is None:
         return None
-    return f"{footer.rstrip(". ")}."
+    return _apply_punctuation(footer, ".", setting = config.punctuation.footer)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Internal Send
@@ -75,7 +123,6 @@ async def _send(
     *,
     content      : str,
     ephemeral    : bool                   = True,
-    delete_after : float           | None = None,
     message      : Message         | None = None,
     mentions     : AllowedMentions | None = None,
 ) -> Message | None:
@@ -97,18 +144,10 @@ async def _send(
     if message is not None:
         return await message.edit(
             content          = content,
-            delete_after     = delete_after,
             allowed_mentions = mentions or AllowedMentions.all(),
         )
 
-    if delete_after is not None:
-        return await cast("Messageable", target).send(
-            content          = content,
-            delete_after     = delete_after,
-            allowed_mentions = mentions or AllowedMentions.all(),
-        )
-
-    return await cast("Messageable", target).send(
+    return await target.send(
         content          = content,
         allowed_mentions = mentions or AllowedMentions.all(),
     )
@@ -121,16 +160,18 @@ def format_message(
     *,
     msg_type : _MessageType,
     title    : str,
-    subtitle : str | None = None,
-    footer   : str | None = None,
-    override : bool       = False,
+    subtitle : str              | None = None,
+    footer   : str              | None = None,
+    override : ResponseOverride | None = None,
 ) -> str:
-    lines : list[str] = [_build_title(msg_type, title, override = override)]
+    config = override or ResponseOverride()
+    lines : list[str] = [_build_title(msg_type, title, config)]
 
-    if subtitle:
-        lines.append(subtitle)
+    subtitle_text = _build_subtitle(subtitle, config)
+    if subtitle_text:
+        lines.append(subtitle_text)
 
-    footer_text = _build_footer(footer)
+    footer_text = _build_footer(footer, config)
     if footer_text:
         lines.append(f"-# {footer_text}")
 
@@ -142,13 +183,12 @@ async def format_send(
     *,
     msg_type     : _MessageType,
     title        : str,
-    subtitle     : str             | None = None,
-    footer       : str             | None = None,
-    override     : bool                   = False,
-    ephemeral    : bool                   = True,
-    delete_after : float           | None = None,
-    message      : Message         | None = None,
-    mentions     : AllowedMentions | None = None,
+    subtitle     : str              | None = None,
+    footer       : str              | None = None,
+    ephemeral    : bool                    = True,
+    message      : Message          | None = None,
+    mentions     : AllowedMentions  | None = None,
+    override     : ResponseOverride | None = None,
 ) -> Message | None:
     content = format_message(
         msg_type = msg_type,
@@ -161,7 +201,6 @@ async def format_send(
         target,
         content      = content,
         ephemeral    = ephemeral,
-        delete_after = delete_after,
         message      = message,
         mentions     = mentions,
     )
