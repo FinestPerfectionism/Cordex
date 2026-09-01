@@ -55,20 +55,20 @@ class MessageSendHandler(commands.Cog):
                     container.add_text(target.content)
 
                 if target.attachments:
-                    items = [
-                        MediaGalleryItem(attachment.url)
-                        for attachment in target.attachments
-                        if attachment.content_type
-                        and attachment.content_type.startswith(("image/", "video/"))
-                    ]
-
-                    if items:
-                        container.add_item(MediaGallery(*items))
+                    container.add_item(
+                        MediaGallery(
+                            *[
+                                MediaGalleryItem(attachment.url)
+                                for attachment in target.attachments
+                                if attachment.content_type
+                                and attachment.content_type.startswith(("image/", "video/"))
+                            ],
+                        ),
+                    )
 
                 self.add_item(container)
 
-        match = MESSAGE_LINK_PATTERN.search(content)
-        if match:
+        if match := MESSAGE_LINK_PATTERN.search(content):
             channel_id = int(match.group(2))
             message_id = int(match.group(3))
 
