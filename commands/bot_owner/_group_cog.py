@@ -14,7 +14,7 @@ from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
     command as prefix_command,
 )
 
-from bot import Context, Cordex, Interaction
+from bot import Context, Cordex, Interaction, log
 from core.permissions import bot_owner_cmd
 
 from ._base import get_cogs
@@ -24,7 +24,7 @@ from .cogs import (
     run_bo_cog_reload,
     run_bo_cog_unload,
 )
-from .eval import run_bo_eval
+from .eval import eval_message_ids, run_bo_eval
 from .messages import (
     run_bo_messages_delete,
     run_bo_messages_delete_menu,
@@ -86,6 +86,56 @@ class BotOwnerCommands(
         name        = "style",
         description = "Bot owner style commands.",
     )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # .eval Command Edit Listener
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @commands.Cog.listener("on_message_edit")
+    async def message_edit_handler(self, before : Message, after : Message) -> None:
+        before_id = before.id
+
+        # ⸻ Eval command editing.
+
+        log.info("Pre-eval log block.")
+        if before_id in eval_message_ids:
+            log.info("Entered primary eval block.")
+
+            # ⸻ Remove our old reactions.
+
+            if self.bot.user is not None:
+                log.info("Entered 'self.bot.user is not None' block.")
+                for reaction in before.reactions:
+                    log.info("Entered 'for reaction in before.reactions' block.")
+                    if reaction.me:
+                        log.info("Entered 'if reaction.me' block.")
+                        try:
+                            await reaction.remove(self.bot.user)
+                        except Exception:
+                            log.exception("Failure in eval command reinvocation — 'reaction.remove(self.bot.user)'")
+
+            # ⸻ Reinvoke the command.
+
+            try:
+                ctx = await self.bot.get_context(after)
+                await self.bot.invoke(ctx)
+            except Exception:
+                log.exception("Failure in eval command reinvocation — 'self.bot.invoke(ctx)'")
+
+            # ⸻ Remove our old response (done after the reinvocation since faster reevaluation is better).
+
+            old_response_id = eval_message_ids.pop(before_id, None)
+            if old_response_id is not None:
+                log.info("Entered 'if old_response_id is not None' block.")
+
+                old_msg = await after.channel.fetch_message(old_response_id)
+
+                try:
+                    await old_msg.delete()
+                except Exception:
+                    log.exception("Failure in eval command reinvocation — 'old_msg.delete()'")
+
+            return
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Cog Autocomplete

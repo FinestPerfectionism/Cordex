@@ -56,7 +56,7 @@ stream_handler = StreamHandler()
 stream_handler.setFormatter(CustomFormatter())
 
 root_logger = get_logger()
-root_logger.setLevel(DEBUG)
+root_logger.setLevel(INFO)
 root_logger.addHandler(stream_handler)
 
 TOKEN = getenv("TOKEN")
