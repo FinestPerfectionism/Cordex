@@ -1,3 +1,4 @@
+from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, Self, final, override
 
 from discord import (
@@ -65,6 +66,8 @@ __all__ = [
 if TYPE_CHECKING:
     from .bot import Interaction
 
+log = get_logger("Cordex")
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot UI
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -83,6 +86,9 @@ class LayoutView(BaseLayoutView):
         return self
 
     def add_items(self, *items : Item[BaseLayoutView | Self]) -> Self:
+        if len(items) == 1:
+            log.warning("Prefer LayoutView.add_item over LayoutView.add_items")
+
         for item in items:
             self.add_item(item)
 
@@ -103,6 +109,9 @@ class Modal(BaseModal):
         return self
 
     def add_items(self, *items : Item[Modal | Self]) -> Self:
+        if len(items) == 1:
+            log.warning("Prefer Modal.add_item over Modal.add_items")
+
         for item in items:
             self.add_item(item)
 
@@ -142,6 +151,9 @@ class Container[V : LayoutView](BaseContainer[V]):
         return self
 
     def add_items(self, *items : Item[V]) -> Self:
+        if len(items) == 1:
+            log.warning("Prefer Container.add_item over Container.add_items")
+
         for item in items:
             self.add_item(item)
 
