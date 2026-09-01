@@ -215,7 +215,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
     except Exception as e:
         await message.add_reaction(DENIED_EMOJI)
         res = await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
-        eval_message_ids[message.id] = res.id
+        eval_message_ids[int(message.id)] = int(res.id)
         return
 
     func = cast("Callable[[], Awaitable[object]]", env["func"])
@@ -228,7 +228,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         await message.add_reaction(CONTESTED_EMOJI)
         res   = await ctx.send(codeblock(f"{value}{format_exc()}"))
 
-        eval_message_ids[message.id] = res.id
+        eval_message_ids[int(message.id)] = int(res.id)
     else:
         value = stdout.getvalue()
         await message.add_reaction(ACCEPTED_EMOJI)
@@ -236,7 +236,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         if ret is None:
             if value:
                 res = await ctx.send(codeblock(value))
-                eval_message_ids[message.id] = res.id
+                eval_message_ids[int(message.id)] = int(res.id)
         else:
             res = await ctx.send(codeblock(f"{value}{ret}"))
-            eval_message_ids[message.id] = res.id
+            eval_message_ids[int(message.id)] = int(res.id)

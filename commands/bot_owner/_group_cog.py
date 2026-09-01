@@ -93,7 +93,7 @@ class BotOwnerCommands(
 
     @commands.Cog.listener("on_message_edit")
     async def message_edit_handler(self, before : Message, after : Message) -> None:
-        before_id = before.id
+        before_id = int(before.id)
 
         # ⸻ Eval command editing.
 
@@ -114,26 +114,27 @@ class BotOwnerCommands(
                         except Exception:
                             log.exception("Failure in eval command reinvocation — 'reaction.remove(self.bot.user)'")
 
-            # ⸻ Reinvoke the command.
-
-            try:
-                ctx = await self.bot.get_context(after)
-                await self.bot.invoke(ctx)
-            except Exception:
-                log.exception("Failure in eval command reinvocation — 'self.bot.invoke(ctx)'")
-
-            # ⸻ Remove our old response (done after the reinvocation since faster reevaluation is better).
+            # ⸻ Remove our old response.
 
             old_response_id = eval_message_ids.pop(before_id, None)
             if old_response_id is not None:
                 log.info("Entered 'if old_response_id is not None' block.")
 
-                old_msg = await after.channel.fetch_message(old_response_id)
-
                 try:
+                    old_msg = await after.channel.fetch_message(int(old_response_id))
                     await old_msg.delete()
                 except Exception:
                     log.exception("Failure in eval command reinvocation — 'old_msg.delete()'")
+
+            # ⸻ Reinvoke the command explicitly.
+
+            try:
+                ctx = await self.bot.get_context(after)
+                if ctx.command is None:
+                    ctx.command = self.cmd_bo_eval
+                await self.bot.invoke(ctx)
+            except Exception:
+                log.exception("Failure in eval command reinvocation — 'self.bot.invoke(ctx)'")
 
             return
 
