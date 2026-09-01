@@ -92,21 +92,21 @@ class BotOwnerCommands(
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.Cog.listener("on_message_edit")
-    async def message_edit_handler(self, before : Message, after : Message) -> None:
-        before_id = int(before.id)
+    async def message_edit_handler(self, _before : Message, after : Message) -> None:
+        target_id = int(after.id)
 
         # ⸻ Eval command editing.
 
-        log.info("Pre-eval log block.")
-        if before_id in eval_message_ids:
+        log.info(f"Pre-eval log block. Target ID: {target_id}, Map: {eval_message_ids}")
+        if target_id in eval_message_ids:
             log.info("Entered primary eval block.")
 
             # ⸻ Remove our old reactions.
 
             if self.bot.user is not None:
                 log.info("Entered 'self.bot.user is not None' block.")
-                for reaction in before.reactions:
-                    log.info("Entered 'for reaction in before.reactions' block.")
+                for reaction in after.reactions:
+                    log.info("Entered 'for reaction in reactions' block.")
                     if reaction.me:
                         log.info("Entered 'if reaction.me' block.")
                         try:
@@ -116,7 +116,7 @@ class BotOwnerCommands(
 
             # ⸻ Remove our old response.
 
-            old_response_id = eval_message_ids.pop(before_id, None)
+            old_response_id = eval_message_ids.pop(target_id, None)
             if old_response_id is not None:
                 log.info("Entered 'if old_response_id is not None' block.")
 
@@ -126,7 +126,7 @@ class BotOwnerCommands(
                 except Exception:
                     log.exception("Failure in eval command reinvocation — 'old_msg.delete()'")
 
-            # ⸻ Reinvoke the command explicitly.
+            # ⸻ Reinvoke the command.
 
             try:
                 ctx = await self.bot.get_context(after)
