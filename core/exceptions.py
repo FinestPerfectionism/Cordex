@@ -1,7 +1,7 @@
 
 from discord.app_commands import CheckFailure
 
-from bot import ContextOrInteraction
+from bot import Interaction
 
 from .responses import format_send
 
@@ -13,12 +13,12 @@ from .responses import format_send
 # Unknown Error Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_unknown_error(target : ContextOrInteraction) -> None:
+async def send_unknown_error(target : Interaction) -> None:
     await format_send(
         target,
         msg_type = "error",
         title    = "run command",
-        subtitle = "An unknown exception occurred during this interaction.",
+        subtitle = "An unknown exception occurred during this interaction",
         footer   = "Unknown error",
     )
 
@@ -27,11 +27,11 @@ async def send_unknown_error(target : ContextOrInteraction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_operation(
-    target   : ContextOrInteraction,
+    target   : Interaction,
     /,
     *,
     title    : str = "run command",
-    subtitle : str = "An exception occurred during this interaction.",
+    subtitle : str = "An exception occurred during this interaction",
 ) -> None:
     await format_send(
         target,
@@ -46,11 +46,11 @@ async def send_bad_operation(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_request(
-    target   : ContextOrInteraction,
+    target   : Interaction,
     /,
     *,
     title    : str = "run command",
-    subtitle : str = "The requested operation is invalid.",
+    subtitle : str = "The requested operation is invalid",
 ) -> None:
     await format_send(
         target,
@@ -65,7 +65,7 @@ async def send_bad_request(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_argument(
-    target   : ContextOrInteraction,
+    target   : Interaction,
     /,
     *,
     title    : str = "run command",
@@ -99,12 +99,12 @@ async def send_bad_argument(
 class UnimplementedCommand(CheckFailure):
     pass
 
-async def send_unimplemented_command(target : ContextOrInteraction) -> None:
+async def send_unimplemented_command(target : Interaction) -> None:
     await format_send(
         target,
         msg_type = "error",
         title    = "run command",
-        subtitle = "This command is currently unimplemented.",
+        subtitle = "This command is currently unimplemented",
         footer   = "Bad request",
     )
 
@@ -115,12 +115,12 @@ async def send_unimplemented_command(target : ContextOrInteraction) -> None:
 class BadPermissionsCommand(CheckFailure):
     pass
 
-async def send_bad_permissions_command(target : ContextOrInteraction) -> None:
+async def send_bad_permissions_command(target : Interaction) -> None:
     await format_send(
         target,
         msg_type = "error",
         title    = "run command",
-        subtitle = "You are not authorized to run this command.",
+        subtitle = "You are not authorized to run this command",
         footer   = "Bad request",
     )
 
@@ -129,7 +129,7 @@ async def send_bad_permissions_command(target : ContextOrInteraction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_bad_permissions_argument(
-    target   : ContextOrInteraction,
+    target   : Interaction,
     subtitle : list[str],
     /,
 ) -> None:
@@ -138,7 +138,7 @@ async def send_bad_permissions_argument(
     text = f"You are not authorized to use the following arguments: {", ".join(args)}"
 
     if len(args) == 1:
-        text = f"You are not authorized to use the {args[0]} argument."
+        text = f"You are not authorized to use the {args[0]} argument"
 
     await format_send(
         target,
@@ -155,12 +155,12 @@ async def send_bad_permissions_argument(
 class BadEnvironmentGuild(CheckFailure):
     pass
 
-async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
+async def send_bad_environment_guild(target : Interaction) -> None:
     await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
-        subtitle = "This command can only be run in a guild.",
+        subtitle = "This command can only be run in a guild",
         footer   = "Bad environment",
     )
 
@@ -168,12 +168,12 @@ async def send_bad_environment_guild(target : ContextOrInteraction) -> None:
 # Bad Environment Channel Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def send_bad_environment_channel(target : ContextOrInteraction) -> None:
+async def send_bad_environment_channel(target : Interaction) -> None:
     await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
-        subtitle = "This command cannot be run in this channel or thread.",
+        subtitle = "This command cannot be run in this channel or thread",
         footer   = "Bad environment",
     )
 
@@ -184,11 +184,11 @@ async def send_bad_environment_channel(target : ContextOrInteraction) -> None:
 class BadEnvironmentDMs(CheckFailure):
     pass
 
-async def send_bad_environment_dms(target : ContextOrInteraction) -> None:
+async def send_bad_environment_dms(target : Interaction) -> None:
     await format_send(
         target,
         msg_type = "warning",
         title    = "run command",
-        subtitle = "This command can only be run in DMs.",
+        subtitle = "This command can only be run in DMs",
         footer   = "Bad environment",
     )

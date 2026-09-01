@@ -22,7 +22,7 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
         await send_bad_operation(
             interaction,
             title    = "restart bot",
-            subtitle = "A restart is already in progress.",
+            subtitle = "A restart is already in progress",
         )
         return
 

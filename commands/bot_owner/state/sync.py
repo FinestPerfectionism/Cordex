@@ -18,7 +18,7 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
             interaction,
             msg_type = "success",
             title    = "synced app command tree",
-            subtitle = "Successfully globally synced the app command tree.",
+            subtitle = "Successfully globally synced the app command tree",
         )
     except Exception as e:
         log.exception("An exxception occurred during the tree sync.")

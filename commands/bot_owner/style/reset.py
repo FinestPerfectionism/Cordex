@@ -27,7 +27,7 @@ async def run_bo_style_reset(
             interaction,
             msg_type = "success",
             title    = "reset display name style",
-            subtitle = "The bot's display name style has been reset for this server.",
+            subtitle = "The bot's display name style has been reset for this server",
         )
     except Exception as e:
         await send_bad_operation(

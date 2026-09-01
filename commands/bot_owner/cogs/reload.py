@@ -54,16 +54,19 @@ async def run_bo_cog_reload(interaction : Interaction, cog : str | None = None) 
 
     if failed:
         msg = "\n".join(f"{c}: {e}" for c, e in failed)
+
         if len(failed) == len(cogs):
             status = "All cogs failed to reload."
         elif len(failed) > 1:
             status = "Multiple cogs failed to reload."
         else:
             status = "A cog failed to reload."
-        amount = "cogs" if len(cogs) > 1 else "cog"
+
+        s = "s" if len(cogs) > 1 else ""
+
         await send_bad_operation(
             interaction,
-            title    = f"reload {amount}",
+            title    = f"reload cog{s}",
             subtitle = (
                 f"{status}\n"
                 f"{codeblock(msg[:1800])}"
@@ -75,5 +78,5 @@ async def run_bo_cog_reload(interaction : Interaction, cog : str | None = None) 
         interaction,
         msg_type = "success",
         title    = "reloaded cogs",
-        subtitle = "Reloaded all cogs successfully.",
+        subtitle = "Reloaded all cogs successfully",
     )

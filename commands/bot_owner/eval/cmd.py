@@ -40,7 +40,6 @@ from constants import (
     DENIED_EMOJI,
     STANDSTILL_EMOJI,
 )
-from core.exceptions import send_bad_argument, send_bad_permissions_command
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
 from core.permissions import is_bot_owner
 from core.responses import format_message, format_send
@@ -181,11 +180,25 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
     # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to warrant it.
 
     if not is_bot_owner(ctx.author):
-        await send_bad_permissions_command(ctx)
+        await ctx.send(
+            format_message(
+                msg_type = "warning",
+                title    = "run command",
+                subtitle = "This command can only be run in a guild",
+                footer   = "Bad environment",
+            ),
+        )
         return
 
     if not body:
-        await send_bad_argument(ctx, subtitle = {"body" : "This is a required argument was ommitted."})
+        await ctx.send(
+            format_message(
+                msg_type = "error",
+                title    = "",
+                subtitle = "`body`: This is a required argument was ommitted.",
+                footer   = "Bad argumnt",
+            ),
+        )
         return
 
     message = ctx.message

@@ -57,11 +57,13 @@ async def run_server_info(interaction : Interaction) -> None:
         return
 
     guild = interaction.guild
-    if not (owner := guild.owner):
+    owner = guild.owner
+
+    if not owner:
         if guild.owner_id is not None:
             owner = await guild.fetch_member(guild.owner_id)
         else:
-            await send_bad_operation(interaction, subtitle = "Fetching the guild owner failed repeatedly.")
+            await send_bad_operation(interaction, subtitle = "Fetching the guild owner failed repeatedly")
             return
 
     member_total = guild.member_count or 0

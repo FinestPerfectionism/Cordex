@@ -1,4 +1,4 @@
-from typing import Self, final
+from typing import TYPE_CHECKING, Self, final, override
 
 from discord import (
     ButtonStyle,
@@ -62,28 +62,12 @@ __all__ = [
     "select",
 ]
 
+if TYPE_CHECKING:
+    from .bot import Interaction
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot UI
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Modal
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-class Modal(BaseModal):
-    def add_items(self, *items : Item[Modal | Self]) -> Self:
-        for item in items:
-            self.add_item(item)
-
-        return self
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# TextDisplay
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-class TextDisplay[V : LayoutView | Modal](BaseTextDisplay[V]):
-    def __init__(self, content : str, /) -> None:
-        super().__init__(content)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # LayoutView
@@ -103,6 +87,34 @@ class LayoutView(BaseLayoutView):
             self.add_item(item)
 
         return self
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Modal
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class Modal(BaseModal):
+    @override
+    async def on_submit(self, interaction : "Interaction", /) -> None:  # type: ignore[reportIncompatibleMethodOverride] # ruff: ignore[quoted-annotation]
+        ...
+
+    def add_text(self, text : str, /) -> Self:
+        self.add_item(TextDisplay(text))
+
+        return self
+
+    def add_items(self, *items : Item[Modal | Self]) -> Self:
+        for item in items:
+            self.add_item(item)
+
+        return self
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# TextDisplay
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class TextDisplay[V : LayoutView | Modal](BaseTextDisplay[V]):
+    def __init__(self, content : str, /) -> None:
+        super().__init__(content)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Container

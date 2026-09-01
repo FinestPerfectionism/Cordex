@@ -38,28 +38,30 @@ async def run_bo_cog_pullreload(interaction : Interaction) -> None:
         return
 
     failed : list[tuple[str, Exception]] = []
-    for c in cogs:
+    for cog in cogs:
         try:
-            await client.reload_extension(c)
+            await client.reload_extension(cog)
             await client.tree.sync()
             await client.rebuild_commands_cache()
-            log.info("Reloaded cog %s", c)
+            log.info("Reloaded cog %s", cog)
         except Exception as e:
-            failed.append((c, e))
-            log.exception("Failed to reload cog %s", c)
+            failed.append((cog, e))
+            log.exception("Failed to reload cog %s", cog)
 
     if failed:
         msg = "\n".join(f"{c}: {e}" for c, e in failed)
+
         if len(failed) == len(cogs):
             status = "All cogs failed to reload."
         elif len(failed) > 1:
             status = "Multiple cogs failed to reload."
         else:
             status = "A cog failed to reload."
-        amount = "cogs" if len(cogs) > 1 else "cog"
+
+        s = "s" if len(cogs) > 1 else ""
         await send_bad_operation(
             interaction,
-            title    = f"reload {amount}",
+            title    = f"reload cog{s}",
             subtitle = (
                 f"Pull succeeded. {status}\n"
                 f"{codeblock(msg[:1800])}"

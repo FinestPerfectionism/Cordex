@@ -79,7 +79,7 @@ class MessageEditHandler(commands.Cog):
 
         log_channel = await self._get_log_channel(guild)
 
-        if log_channel is None or log_channel.guild.id != guild.id:
+        if log_channel is None or log_channel.guild != guild:
             return
 
         # ⸻ Eval command editing.

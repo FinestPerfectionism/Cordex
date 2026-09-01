@@ -61,10 +61,9 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
             await send_bad_request(
                 interaction,
                 title    = "jump to page",
-                subtitle = "You are already viewing this page.",
+                subtitle = "You are already viewing this page",
             )
             return
-
         try:
 
             # ⸻ Success..?
@@ -78,7 +77,7 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
                 await send_bad_request(
                     interaction,
                     title    =  "jump to page",
-                    subtitle = f"Please enter a page between 1 and {len(self.paginator.pages)}.",
+                    subtitle = f"Please enter a page between 1 and {len(self.paginator.pages)}",
                 )
 
         # ⸻ Must be a positive integer greater than or equal to 1!
@@ -87,7 +86,7 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
             await send_bad_request(
                 interaction,
                 title    = "jump to page",
-                subtitle = "Please enter a positive integer greater than or equal to one.",
+                subtitle = "Please enter a positive integer greater than or equal to one",
             )
 
         # ⸻ Unhandled error.

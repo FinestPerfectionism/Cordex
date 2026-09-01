@@ -42,7 +42,7 @@ def _get_channel_emoji(target : GuildChannel) -> str | None:
 
     # ⸻ target is the rules channel.
 
-    if target.guild.rules_channel and target.id == target.guild.rules_channel.id:
+    if target.guild.rules_channel and target == target.guild.rules_channel:
         return RULES_EMOJI
 
     private = _is_private(target)
