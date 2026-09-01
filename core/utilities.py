@@ -115,14 +115,14 @@ def check_hierarchy(
 
     # ⸻ Owner vs Owner
 
-    if actor.guild.owner_id == actor.id:
-        if target.guild.owner_id == target.id:
+    if actor.guild.owner == actor:
+        if target.guild.owner == target:
             return comparison in {"=", ">=", "<="}
         return comparison in {">", ">="}
 
     # ⸻ Actor vs Owner
 
-    if target.guild.owner_id == target.id:
+    if target.guild.owner == target:
         return comparison in {"<", "<="}
 
     actor_role  = actor.top_role

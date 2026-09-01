@@ -1,5 +1,3 @@
-
-
 from discord import Role
 
 from bot import Interaction

@@ -3,7 +3,6 @@ from typing import Literal, Self, final
 from discord import AllowedMentions, Interaction, Message
 from discord.abc import Messageable
 
-from bot import ContextOrInteraction
 from constants import (
     ACCEPTED_EMOJI,
     CONTESTED_EMOJI,
@@ -18,7 +17,7 @@ from constants import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 type _MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
-type _SendTarget = ContextOrInteraction | Messageable
+type _SendTarget = Interaction | Messageable
 
 @final
 class PunctuationOverride:
