@@ -1,8 +1,11 @@
 
-from discord import AllowedMentions, Embed, Role
+from typing import Self, final
+
+from discord import AllowedMentions, Role
 
 from bot import Interaction
-from constants import COLOR_BLURPLE
+from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
+from constants import COLOR_GREY
 
 from ._base import format_permission
 
@@ -18,17 +21,27 @@ async def run_role_permissions(
     await interaction.response.defer(ephemeral = True)
 
     lines : list[str] = []
-    for perm_name, value in role.permissions:
+    for name, value in role.permissions:
         if perm_filter == "enabled" and not value:
             continue
+
         if perm_filter == "disabled" and value:
             continue
-        lines.append(format_permission(perm_name, value = value))
 
-    embed = Embed(
-        title       = f"Permissions for {role.name}",
-        description = f"**{role.name}:**\n" + "\n".join(lines) if lines else "No permissions match this filter.",
-        color       = COLOR_BLURPLE,
+        lines.append(format_permission(name, value = value))
+
+    mention = role.mention if not role.is_default() else "@everyone"
+
+    @final
+    class PermissionsView(LayoutView):
+        container = Container[Self](
+            TextDisplay(f"### Permissions for {mention},"),
+            VisibleLargeSeparator(),
+            TextDisplay("\n".join(lines) if lines else "No permissions match this filter."),
+            color = role.color if role.color.value else COLOR_GREY,
+        )
+
+    await interaction.followup.send(
+        view             = PermissionsView(),
+        allowed_mentions = AllowedMentions.none(),
     )
-
-    await interaction.followup.send(embed = embed, allowed_mentions = AllowedMentions.none())
