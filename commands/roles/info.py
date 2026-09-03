@@ -1,13 +1,23 @@
 from typing import Self, final
 
 from discord import AllowedMentions, Asset, Member, Role
-from discord.ui import Thumbnail
 from discord.utils import format_dt
 
 from bot import Interaction
-from bot.ui import Container, LayoutView, TextDisplay, ThumbnailSection
+from bot.ui import (
+    ActionRow,
+    Button,
+    Container,
+    LayoutView,
+    TextDisplay,
+    Thumbnail,
+    ThumbnailSection,
+    button,
+)
 from constants import COLOR_GREY
 from core.utilities import codeblock, format_table
+
+from .members import run_role_members
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role info Logic
@@ -24,6 +34,7 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
     guild = interaction.guild
 
     roles = sorted(guild.roles, key = lambda r : r.position)
+
     hierarchy_lines = ""
 
     for p in range(role.position + 3, role.position - 4, -1):
@@ -72,22 +83,30 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
 
     icon_url = role.display_icon.url if isinstance(role.display_icon, Asset) else None
 
+    mention = role.mention if not role.is_default() else "@everyone"
+
+    class MemberRow(ActionRow["InfoView"]):
+        @button(label = "View Members")
+        async def btn_viewmembers(self, interaction : Interaction, _button : Button[InfoView]) -> None:
+            await run_role_members(interaction, role = role)
+
     @final
     class InfoView(LayoutView):
         container = Container[Self](
-            TextDisplay(f"### {role.mention} | {role.id}"),
+            TextDisplay(f"### {mention} | {role.id}"),
             color = role.color if role.color.value else COLOR_GREY,
         )
-
-        if diff:
-            container.add_item(TextDisplay(diff))
 
         if icon_url:
             container.add_item(ThumbnailSection(table, thumbnail = Thumbnail(icon_url)))
         else:
             container.add_item(table)
 
+        if diff:
+            container.add_item(TextDisplay(diff))
+
         container.add_item(hierarchy)
+        container.add_item(MemberRow())
 
     await interaction.followup.send(
         view             = InfoView(),
