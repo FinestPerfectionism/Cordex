@@ -123,8 +123,8 @@ class _ContextClass(BaseContext["Cordex"]):
 
         if len(msg) < 2000:
             await self.send(msg)
-
-        await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
+        else:
+            await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
 
 
 type Context              = _ContextClass
