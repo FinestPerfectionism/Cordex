@@ -109,7 +109,7 @@ class ErrorLogger(commands.Cog):
                 {
                     "User"     : user.mention,
                     "Username" : user.name,
-                    "User ID"  : str(user.id),
+                    "User ID"  : user.id,
                 },
             )
 
@@ -127,7 +127,7 @@ class ErrorLogger(commands.Cog):
             table = format_table(
                 {
                     "Guild Name" : guild.name,
-                    "Guild ID"   : str(guild.id),
+                    "Guild ID"   : guild.id,
                 },
             )
 

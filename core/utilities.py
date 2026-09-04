@@ -65,7 +65,7 @@ def format_command(path : str, /) -> str:
 # format_table
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_table(table : dict[str, str], /, *, padding : int = 1) -> str:
+def format_table(table : dict[str | int, str | int], /, *, padding : int = 1) -> str:
     biggest_key = max([len(str(key)) for key in table], default = 0)
     width       = biggest_key + padding
 
