@@ -12,12 +12,10 @@ from core.paginator import UnnamedPaginator
 async def run_role_members(
     interaction   : Interaction,
     role          : Role,
-    role_filter   : str | None = None,
+    role_filter   : str | None = "whohas",
     person_filter : str | None = None,
 ) -> None:
     await interaction.response.defer()
-
-    actual_role_filter = role_filter or "whohas"
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -26,7 +24,7 @@ async def run_role_members(
 
     not_members = set(interaction.guild.members) - set(role.members)
 
-    match (actual_role_filter, person_filter):
+    match (role_filter, person_filter):
         case ("whohas", "humans"):
             filtered = [m for m in role.members if not m.bot]
         case ("whohas", "bots"):
@@ -40,8 +38,8 @@ async def run_role_members(
         case _:
             filtered = list(not_members)
 
-    person_label = "Bots"   if person_filter      == "bots"          else ("Humans" if person_filter == "humans" else "Members")
-    role_label   = "not in" if actual_role_filter == "whodoesnthave" else "in"
+    person_label = "Bots"   if person_filter == "bots"          else ("Humans" if person_filter == "humans" else "Members")
+    role_label   = "not in" if role_filter   == "whodoesnthave" else "in"
 
     mention = role.mention if not role.is_default() else "@everyone"
 
@@ -53,8 +51,7 @@ async def run_role_members(
         color     = role.color if role.color.value else COLOR_GREY,
         container = True,
     )
-
-    await interaction.followup.send(
+    view.message = await interaction.followup.send(
         view             = view,
         allowed_mentions = AllowedMentions.none(),
     )
