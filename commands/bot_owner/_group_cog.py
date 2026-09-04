@@ -96,14 +96,15 @@ class BotOwnerCommands(
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Process commands.
+        # ⸻ Process eval command edit.
 
-        if after.content.startswith(".eval") and self.bot.user:
+        if after.content.startswith(".eval") and self.bot.user and before.content != after.content:
             try:
                 await after.clear_reactions()
             except Forbidden:
                 try:
-                    for reaction in after.reactions:
+                    message = await after.channel.fetch_message(after.id)
+                    for reaction in message.reactions:
                         if reaction.me:
                             await reaction.remove(self.bot.user)
                 except HTTPException:

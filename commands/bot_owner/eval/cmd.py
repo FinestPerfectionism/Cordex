@@ -192,9 +192,9 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         await ctx.send(
             format_message(
                 msg_type = "error",
-                title    = "",
+                title    = "run command",
                 subtitle = "`body`: This is a required argument was ommitted.",
-                footer   = "Bad argumnt",
+                footer   = "Bad argument",
             ),
         )
         return
