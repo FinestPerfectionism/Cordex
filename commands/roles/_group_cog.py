@@ -10,8 +10,8 @@ from core.utilities import unimplemented
 from .compare import run_role_compare
 from .duplicate import run_role_duplicate
 from .info import run_role_info
-from .members import run_role_members
-from .permissions import run_role_permissions
+from .members import PersonFilter, RoleFilter, run_role_members
+from .permissions import PermissionsFilter, run_role_permissions
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Role Group Commands
@@ -80,20 +80,20 @@ class RoleCommands(
     )
     @choices(
         role_filter = [
-            Choice(name = "Member of",       value = "whohas"),
-            Choice(name = "Not a Member of", value = "whodoesnthave"),
+            Choice(name = "Member of",       value = "In"),
+            Choice(name = "Not a Member of", value = "Not In"),
         ],
         person_filter = [
-            Choice(name = "Humans", value = "humans"),
-            Choice(name = "Bots",   value = "bots"),
+            Choice(name = "Humans", value = "Humans"),
+            Choice(name = "Bots",   value = "Bots"),
         ],
     )
     async def cmd_role_members(
         self,
         interaction   : Interaction,
         role          : Role,
-        role_filter   : str | None = None,
-        person_filter : str | None = None,
+        role_filter   : RoleFilter   = "In",
+        person_filter : PersonFilter = "Both",
     ) -> None:
         await run_role_members(interaction, role, role_filter, person_filter)
 
@@ -112,15 +112,15 @@ class RoleCommands(
     )
     @choices(
         permissions_filter = [
-            Choice(name = "Enabled",  value = "enabled"),
-            Choice(name = "Disabled", value = "disabled"),
+            Choice(name = "Enabled",  value = "Enabled"),
+            Choice(name = "Disabled", value = "Disabled"),
         ],
     )
     async def cmd_role_permissions(
         self,
         interaction        : Interaction,
         role               : Role,
-        permissions_filter : str | None = None,
+        permissions_filter : PermissionsFilter = "Both",
     ) -> None:
         await run_role_permissions(interaction, role, permissions_filter)
 

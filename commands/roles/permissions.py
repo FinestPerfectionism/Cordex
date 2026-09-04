@@ -1,5 +1,4 @@
-
-from typing import Self, final
+from typing import Literal, Self, final
 
 from discord import AllowedMentions, Role
 
@@ -9,6 +8,8 @@ from constants import COLOR_GREY
 
 from ._base import format_permission
 
+PermissionsFilter = Literal["Both", "Enabled", "Disabled"]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role permissions Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -16,33 +17,35 @@ from ._base import format_permission
 async def run_role_permissions(
     interaction : Interaction,
     role        : Role,
-    perm_filter : str | None = None,
+    perm_filter : PermissionsFilter = "Both",
 ) -> None:
     await interaction.response.defer()
 
     lines : list[str] = []
     for name, value in role.permissions:
-        if perm_filter == "enabled" and not value:
+        if perm_filter == "Enabled" and not value:
             continue
 
-        if perm_filter == "disabled" and value:
+        if perm_filter == "Disabled" and value:
             continue
 
         lines.append(format_permission(name, value = value))
 
+    # ⸻ Mentions.
+
     role_mention = role.mention if not role.is_default() else "@everyone"
 
     match perm_filter:
-        case "enabled":
+        case "Both":
+            filter_mention = ""
+        case "Enabled":
             filter_mention = "Enabled "
-        case "disabled":
+        case "Disabled":
             filter_mention = "Disabled "
-        case None:
-            filter_mention = ""
-        case _:
-            filter_mention = ""
 
     p = "p" if filter_mention else "P"
+
+    # ⸻ Build the view.
 
     @final
     class PermissionsView(LayoutView):

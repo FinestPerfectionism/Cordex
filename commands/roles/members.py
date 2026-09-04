@@ -1,9 +1,13 @@
+from typing import Literal
 
 from discord import AllowedMentions, Role
 
 from bot import Interaction
 from constants import COLOR_GREY
 from core.paginator import UnnamedPaginator
+
+PersonFilter = Literal["Both", "Humans", "Bots"]
+RoleFilter   = Literal["In", "Not In"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role members Logic
@@ -12,10 +16,10 @@ from core.paginator import UnnamedPaginator
 async def run_role_members(
     interaction   : Interaction,
     role          : Role,
-    role_filter   : str | None = "whohas",
-    person_filter : str | None = None,
+    role_filter   : RoleFilter   = "In",
+    person_filter : PersonFilter = "Both",
     *,
-    ephemeral     : bool       = False,
+    ephemeral     : bool         = False,
 ) -> None:
     await interaction.response.defer(ephemeral = ephemeral)
 
@@ -24,28 +28,29 @@ async def run_role_members(
     if interaction.guild is None:
         return
 
-    role_filter = role_filter or "whohas"
+    # ⸻ Resolve the list.
 
     not_members = set(interaction.guild.members) - set(role.members)
+    members     = role.members
 
-    match (role_filter, person_filter):
-        case ("whohas", "humans"):
-            filtered = [m for m in role.members if not m.bot]
-        case ("whohas", "bots"):
-            filtered = [m for m in role.members if m.bot]
-        case ("whohas", _):
-            filtered = list(role.members)
-        case (_, "humans"):
-            filtered = [m for m in not_members if not m.bot]
-        case (_, "bots"):
-            filtered = [m for m in not_members if m.bot]
-        case _:
-            filtered = list(not_members)
+    source      = members if role_filter == "In" else not_members
 
-    person_label = "Bots"   if person_filter == "bots"          else ("Humans" if person_filter == "humans" else "Members")
-    role_label   = "not in" if role_filter   == "whodoesnthave" else "in"
+    match person_filter:
+        case "Both":
+            filtered = list(source)
+        case "Humans":
+            filtered = [m for m in source if not m.bot]
+        case "Bots":
+            filtered = [m for m in source if m.bot]
+
+    # ⸻ Labels.
+
+    person_label = "Bots"   if person_filter == "Bots"   else ("Humans" if person_filter == "Humans" else "Members")
+    role_label   = "not in" if role_filter   == "Not In" else "in"
 
     mention = role.mention if not role.is_default() else "@everyone"
+
+    # ⸻ Build the paginator.
 
     view = UnnamedPaginator(
         f"### {person_label} {role_label} {mention},",
