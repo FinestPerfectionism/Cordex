@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Protocol, final
+from typing import Protocol, final, override
 
-from discord import Color
+from discord import Color, Message
 
 from bot import Interaction
 from bot.ui import (
@@ -80,8 +80,11 @@ class NamedPaginator(LayoutView):
         color     : Color | None = None,
         container : bool         = False,
         force     : bool         = False,
+        timeout   : int   | None = 600,
     ) -> None:
-        super().__init__()
+        super().__init__(timeout = timeout)
+        self.message : Message | None = None
+
         self._data      : list[PageData] = data
         self._color     : Color | None   = color
         self._container : bool           = container
@@ -114,6 +117,20 @@ class NamedPaginator(LayoutView):
         # ⸻ Render.
 
         self.render()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # on_timeout
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @override
+    async def on_timeout(self) -> None:
+        if self.timeout is not None:
+            for item in self.walk_children():
+                if isinstance(item, Button):
+                    item.disabled = True
+
+        if self.message:
+            await self.message.edit(view = self)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_above
