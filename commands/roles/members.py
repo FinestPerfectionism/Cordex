@@ -24,6 +24,8 @@ async def run_role_members(
     if interaction.guild is None:
         return
 
+    role_filter = role_filter or "whohas"
+
     not_members = set(interaction.guild.members) - set(role.members)
 
     match (role_filter, person_filter):
