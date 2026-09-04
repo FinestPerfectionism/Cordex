@@ -8,6 +8,7 @@ from discord.ext import commands
 from bot import Cordex
 from bot.ui import (
     Container,
+    File,
     LayoutView,
     MediaGallery,
     TextDisplay,
@@ -40,7 +41,7 @@ class Preview(commands.Cog):
 
         @final
         class PreviewView(LayoutView):
-            def __init__(self, *, target : Message, link : str) -> None:
+            def __init__(self, *, target : Message, link : str, names : list[str]) -> None:
                 super().__init__()
 
                 container = Container[Self](TextDisplay(f"{target.author.mention}: {link}"), VisibleLargeSeparator())
@@ -49,16 +50,22 @@ class Preview(commands.Cog):
                     container.add_text(target.content)
 
                 if target.attachments:
-                    container.add_item(
-                        MediaGallery(
-                            *[
-                                MediaGalleryItem(attachment.url)
-                                for attachment in target.attachments
-                                if attachment.content_type
-                                and attachment.content_type.startswith(("image/", "video/"))
-                            ],
-                        ),
-                    )
+                    gallery_items : list[MediaGalleryItem] = [
+                        MediaGalleryItem(attachment.url)
+                        for attachment in target.attachments
+                        if attachment.content_type
+                        and attachment.content_type.startswith(("image/", "video/"))
+                    ]
+                    file_items    : list[File[Self]]       = [
+                        File(f"attachment://{name}")
+                        for name in names
+                    ]
+
+                    if gallery_items:
+                        container.add_item(MediaGallery(*gallery_items))
+
+                    if file_items:
+                        container.append_items(file_items)
 
                 self.add_item(container)
 
@@ -81,8 +88,20 @@ class Preview(commands.Cog):
             if not target_message.content and not target_message.attachments:
                 return
 
+            # ⸻ Convert non-media attachments to files for re-uploading.
+
+            files = [
+                await attachment.to_file()
+                for attachment in target_message.attachments
+                if attachment.content_type
+                and not attachment.content_type.startswith(("image/", "video/"))
+            ]
+
+            names = [file.filename for file in files]
+
             await message.reply(
-                view             = PreviewView(target = target_message, link = content),
+                files            = files,
+                view             = PreviewView(target = target_message, link = content, names = names),
                 mention_author   = False,
                 allowed_mentions = AllowedMentions.none(),
             )

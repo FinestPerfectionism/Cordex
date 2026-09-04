@@ -114,7 +114,7 @@ class ModerationModal(Modal):
 
         items.append(self.dm)
 
-        self.add_items(*items)
+        self.append_items(items)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
