@@ -66,10 +66,6 @@ class MessageEditHandler(commands.Cog):
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Process commands.
-
-        await self.bot.process_commands(after)
-
         # ⸻ Block non-guild messages.
 
         if guild is None or not isinstance(channel, GuildMessagable):

@@ -1,6 +1,6 @@
 from typing import final
 
-from discord import Message
+from discord import Forbidden, HTTPException, Message
 from discord.app_commands import (
     Choice,
     ContextMenu,
@@ -86,6 +86,32 @@ class BotOwnerCommands(
         name        = "style",
         description = "Bot owner style commands.",
     )
+
+    @commands.Cog.listener("on_message_edit")
+    async def cmd_eval_listener(self, before : Message, after : Message) -> None:
+        author = before.author
+
+        # ⸻ Block bots and the bot itself.
+
+        if author.bot or author == self.bot.user:
+            return
+
+        # ⸻ Process commands.
+
+        if after.content.startswith(".eval") and self.bot.user:
+            try:
+                await after.clear_reactions()
+            except Forbidden:
+                try:
+                    for reaction in after.reactions:
+                        if reaction.me:
+                            await reaction.remove(self.bot.user)
+                except HTTPException:
+                    pass
+            except HTTPException:
+                pass
+
+            await self.bot.process_commands(after)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Cog Autocomplete
