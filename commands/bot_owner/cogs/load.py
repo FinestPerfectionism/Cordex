@@ -21,6 +21,7 @@ async def run_bo_cog_load(interaction : Interaction, cog : str) -> None:
     if cog in client.extensions:
         await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` is already loaded."})
         return
+
     try:
         await client.load_extension(cog)
         await client.tree.sync()

@@ -59,6 +59,7 @@ async def run_bo_cog_pullreload(interaction : Interaction) -> None:
             status = "A cog failed to reload."
 
         s = "s" if len(cogs) > 1 else ""
+
         await send_bad_operation(
             interaction,
             title    = f"reload cog{s}",

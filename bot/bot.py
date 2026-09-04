@@ -138,16 +138,12 @@ type ContextOrInteraction = Interaction | Context
 @final
 class Cordex(commands.Bot):
     def __init__(self) -> None:
-        prefix  = commands.when_mentioned_or(".")
-        intents = Intents.all()
-        status  = Status.online
-
         super().__init__(
             chunk_guilds_at_startup = True,
-            command_prefix          = prefix,
+            command_prefix          = commands.when_mentioned_or("."),
             help_command            = None,
-            intents                 = intents,
-            status                  = status,
+            intents                 = Intents.all(),
+            status                  = Status.online,
         )
         self.db : Connection
 
@@ -174,9 +170,9 @@ class Cordex(commands.Bot):
         await self.http.request(
             route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = guild.id),
             json  = {
-              "display_name_font_id"   : font_id.value,
-              "display_name_effect_id" : effect_id.value,
-              "display_name_colors"    : color_integers,
+                "display_name_font_id"   : font_id.value,
+                "display_name_effect_id" : effect_id.value,
+                "display_name_colors"    : color_integers,
             },
         )
 

@@ -15,10 +15,6 @@ async def run_bo_cog_unload(interaction : Interaction, cog : str) -> None:
 
     cogs = get_cogs()
 
-    if cog == "commands.bot_owner._group_cog":
-        await send_bad_argument(interaction, subtitle = {"cog": "You may not explicitly unload the bot-owner cog."})
-        return
-
     if cog not in cogs:
         await send_bad_argument(interaction, subtitle = {"cog" : f"Cog `{cog}` not found."})
         return

@@ -121,7 +121,9 @@ class BotOwnerCommands(
     async def _cog_autocomplete(self, _interaction : Interaction, current : str) -> list[Choice[str]]:
         return [
             Choice(name = cog, value = cog)
-            for cog in get_cogs() if current.lower() in cog.lower()
+            for cog in get_cogs()
+            if current.lower() in cog.lower()
+            and cog != "commands.bot_owner._group_cog"
         ][:25]
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
