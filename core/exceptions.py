@@ -1,4 +1,3 @@
-
 from discord.app_commands import CheckFailure
 
 from bot import Interaction
