@@ -130,6 +130,6 @@ class ChannelCommands(
     ) -> None:
         await run_channel_permissions(interaction, channel, permissions_filter)
 
-# async def setup(bot : Cordex) -> None:
-#     cog = ChannelCommands(bot)
-#     await bot.add_cog(cog)
+async def setup(bot : Cordex) -> None:
+    cog = ChannelCommands(bot)
+    await bot.add_cog(cog)
