@@ -106,7 +106,7 @@ class CaseType:
     NOTE_REMOVE       = CaseData("note_remove", COLOR_BLURPLE, "Note Removed")
 
 
-case_types = Literal[
+CaseTypes = Literal[
     "Lockdown Add",
     "Lockdown Remove",
     "Ban Add",
@@ -122,7 +122,7 @@ case_types = Literal[
     "Note Remove",
 ]
 
-CASE_MAP : dict[case_types, CaseData] = {
+CASE_MAP : dict[CaseTypes, CaseData] = {
     "Lockdown Add"      : CaseType.LOCKDOWN_ADD,
     "Lockdown Remove"   : CaseType.LOCKDOWN_REMOVE,
     "Ban Add"           : CaseType.BAN_ADD,
