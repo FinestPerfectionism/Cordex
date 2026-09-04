@@ -14,8 +14,10 @@ async def run_role_members(
     role          : Role,
     role_filter   : str | None = "whohas",
     person_filter : str | None = None,
+    *,
+    ephemeral     : bool       = False,
 ) -> None:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral = ephemeral)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -53,5 +55,6 @@ async def run_role_members(
     )
     view.message = await interaction.followup.send(
         view             = view,
+        ephemeral        = ephemeral,
         allowed_mentions = AllowedMentions.none(),
     )

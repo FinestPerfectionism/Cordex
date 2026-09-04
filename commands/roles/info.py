@@ -88,7 +88,7 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
     class MemberRow(ActionRow["InfoView"]):
         @button(label = "View Members")
         async def btn_viewmembers(self, interaction : Interaction, _button : Button[InfoView]) -> None:
-            await run_role_members(interaction, role = role)
+            await run_role_members(interaction, role, ephemeral = True)
 
     @final
     class InfoView(LayoutView):
