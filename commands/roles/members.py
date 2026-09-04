@@ -15,7 +15,7 @@ async def run_role_members(
     role_filter   : str | None = None,
     person_filter : str | None = None,
 ) -> None:
-    await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer()
 
     actual_role_filter = role_filter or "whohas"
 
