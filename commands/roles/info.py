@@ -1,6 +1,6 @@
-from typing import Self, final
+from typing import Self, final, override
 
-from discord import AllowedMentions, Asset, Member, Role
+from discord import AllowedMentions, Asset, Member, Message, Role
 from discord.utils import format_dt
 
 from bot import Interaction
@@ -92,23 +92,39 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
 
     @final
     class InfoView(LayoutView):
-        container = Container[Self](
-            TextDisplay(f"### {mention} | {role.id}"),
-            color = role.color if role.color.value else COLOR_GREY,
-        )
+        def __init__(self) -> None:
+            super().__init__()
+            self.message : Message | None = None
 
-        if icon_url:
-            container.add_item(ThumbnailSection(table, thumbnail = Thumbnail(icon_url)))
-        else:
-            container.add_item(table)
+            container = Container[Self](
+                TextDisplay(f"### {mention} | {role.id}"),
+                color = role.color if role.color.value else COLOR_GREY,
+            )
 
-        if diff:
-            container.add_item(TextDisplay(diff))
+            if icon_url:
+                container.add_item(ThumbnailSection(table, thumbnail = Thumbnail(icon_url)))
+            else:
+                container.add_item(table)
 
-        container.add_item(hierarchy)
-        container.add_item(MemberRow())
+            if diff:
+                container.add_item(TextDisplay(diff))
 
-    await interaction.followup.send(
-        view             = InfoView(),
+            container.add_item(hierarchy)
+            container.add_item(MemberRow())
+
+            self.add_item(container)
+
+        @override
+        async def on_timeout(self) -> None:
+            for item in self.walk_children():
+                if isinstance(item, Button):
+                    item.disabled = True
+
+            if self.message:
+                await self.message.edit(view = self)
+
+    view = InfoView()
+    view.message = await interaction.followup.send(
+        view             = view,
         allowed_mentions = AllowedMentions.none(),
     )
