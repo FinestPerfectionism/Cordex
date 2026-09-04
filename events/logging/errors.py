@@ -176,7 +176,7 @@ class ErrorLogger(commands.Cog):
 
         container.add_items(
             VisibleLargeSeparator(),
-            TextDisplay(format_now()),
+            TextDisplay(f"{format_now()} | {format_now("R")}"),
         )
 
         view.add_item(container)
