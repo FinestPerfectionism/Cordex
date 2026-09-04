@@ -113,46 +113,7 @@ def _build_footer(footer : str | None, config : ResponseOverride) -> str | None:
     return _apply_punctuation(footer, ".", setting = config.punctuation.footer)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Internal Send
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-async def _send(
-    target       : _SendTarget,
-    /,
-    *,
-    content      : str,
-    ephemeral    : bool                   = True,
-    message      : Message         | None = None,
-    mentions     : AllowedMentions | None = None,
-) -> Message | None:
-    if isinstance(target, Interaction):
-        if target.response.is_done():
-            return await target.followup.send(
-                content          = content,
-                ephemeral        = ephemeral,
-                allowed_mentions = mentions or AllowedMentions.all(),
-            )
-
-        await target.response.send_message(
-            content          = content,
-            ephemeral        = ephemeral,
-            allowed_mentions = mentions or AllowedMentions.all(),
-        )
-        return await target.original_response()
-
-    if message is not None:
-        return await message.edit(
-            content          = content,
-            allowed_mentions = mentions or AllowedMentions.all(),
-        )
-
-    return await target.send(
-        content          = content,
-        allowed_mentions = mentions or AllowedMentions.all(),
-    )
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Custom Message Builders
+# Message Builders
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def format_message(
@@ -196,10 +157,29 @@ async def format_send(
         footer   = footer,
         override = override,
     )
-    return await _send(
-        target,
-        content      = content,
-        ephemeral    = ephemeral,
-        message      = message,
-        mentions     = mentions,
+
+    if isinstance(target, Interaction):
+        if target.response.is_done():
+            return await target.followup.send(
+                content          = content,
+                ephemeral        = ephemeral,
+                allowed_mentions = mentions or AllowedMentions.all(),
+            )
+
+        await target.response.send_message(
+            content          = content,
+            ephemeral        = ephemeral,
+            allowed_mentions = mentions or AllowedMentions.all(),
+        )
+        return await target.original_response()
+
+    if message is not None:
+        return await message.edit(
+            content          = content,
+            allowed_mentions = mentions or AllowedMentions.all(),
+        )
+
+    return await target.send(
+        content          = content,
+        allowed_mentions = mentions or AllowedMentions.all(),
     )

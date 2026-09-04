@@ -1,8 +1,7 @@
 from typing import Self, cast, final
 
-from discord import Guild, Message
+from discord import AllowedMentions, Guild, Message
 from discord.ext import commands
-from discord.mentions import AllowedMentions
 
 from bot import Cordex
 from bot.types import GuildMessagable

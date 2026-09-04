@@ -179,8 +179,9 @@ class _ConfigurationView(NamedPaginator):
             self.delete_select.default_values = [Object(id = self.delete_id)]
 
         initial_pages = [
-            PageData(name = "Messages",   content = []),
-            PageData(name = "Moderation", content = []),
+            PageData(name = "Messages",      content = []),
+            PageData(name = "Moderation",    content = []),
+            PageData(name = "Configurators", content = []),
         ]
 
         super().__init__(initial_pages, container = True)
@@ -225,6 +226,10 @@ class _ConfigurationView(NamedPaginator):
             PageData(
                 name    = "Moderation",
                 content = ["# Moderation", "This page doesn't display anything right now. :["],
+            ),
+            PageData(
+                name    = "Configurators",
+                content = ["# Configurators", "This page doesn't display anything right now. :["],
             ),
         ]
 

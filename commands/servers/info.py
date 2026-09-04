@@ -85,21 +85,19 @@ async def run_server_info(interaction : Interaction) -> None:
     verification_level       = verification_level_map.get(guild.verification_level, "Unknown")
     verification_requirement = verification_requirement_map.get(guild.verification_level, "Unknown")
 
-    match guild.features:
-        case _ if "PARTNERED" in guild.features:
-            server_type_emoji = PARTNERED_SERVER_EMOJI
-        case _ if "VERIFIED" in guild.features:
-            server_type_emoji = VERIFIED_SERVER_EMOJI
-        case _ if "DISCOVERABLE" in guild.features and boost_count > 0:
-            server_type_emoji = BOOSTED_GLOBAL_SERVER_EMOJI
-        case _ if "COMMUNITY" in guild.features and boost_count > 0:
-            server_type_emoji = BOOSTED_SERVER_EMOJI
-        case _ if "DISCOVERABLE" in guild.features:
-            server_type_emoji = GLOBAL_SERVER_EMOJI
-        case _ if "COMMUNITY" in guild.features:
-            server_type_emoji = SERVER_EMOJI
-        case _:
-            server_type_emoji = None
+    features = guild.features
+    is_boosted = boost_count > 0
+
+    if "PARTNERED" in features:
+        server_type_emoji = PARTNERED_SERVER_EMOJI
+    elif "VERIFIED" in features:
+        server_type_emoji = VERIFIED_SERVER_EMOJI
+    elif "DISCOVERABLE" in features:
+        server_type_emoji = BOOSTED_GLOBAL_SERVER_EMOJI if is_boosted else GLOBAL_SERVER_EMOJI
+    elif "COMMUNITY" in features:
+        server_type_emoji = BOOSTED_SERVER_EMOJI if is_boosted else SERVER_EMOJI
+    else:
+        server_type_emoji = None
 
     @final
     class InfoView(LayoutView):

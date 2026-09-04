@@ -239,9 +239,13 @@ class NamedPaginator(LayoutView):
             self.render()
 
             try:
-                await interaction.response.edit_message(view = self)
+                if interaction.response.is_done():
+                    await interaction.edit_original_response(view = self)
+                else:
+                    await interaction.response.edit_message(view = self)
             except Exception:
                 self.current_page = previous_page
                 self.render()
+
                 await send_bad_operation(interaction, title = "turn page")
                 raise
