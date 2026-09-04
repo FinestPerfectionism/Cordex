@@ -220,7 +220,7 @@ class Cordex(commands.Bot):
         self.db = await connect(str(db_path))
 
         def read_schemas() -> tuple[str, str]:
-            config_sql = Path("schemas/configsql").read_text(encoding = "utf-8")
+            config_sql = Path("schemas/config.sql").read_text(encoding = "utf-8")
             cases_sql = Path("schemas/cases.sql").read_text(encoding = "utf-8")
             return config_sql, cases_sql
 
