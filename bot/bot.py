@@ -1,10 +1,20 @@
 from asyncio import to_thread
 from collections.abc import Awaitable, Callable
+from inspect import getsource
+from io import BytesIO
 from logging import getLogger as get_logger
 from pathlib import Path
+from types import (
+    CodeType,
+    FrameType,
+    FunctionType,
+    MethodType,
+    ModuleType,
+    TracebackType,
+)
 from typing import Self, TypedDict, Unpack, cast, final, override
 
-from discord import Embed, Guild, Intents, Message, Status
+from discord import Embed, File, Guild, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand, Command, Group
 from discord.ext import commands
@@ -23,6 +33,16 @@ from core.state import Connection, connect
 
 from .types import NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
+
+InspectableObject = (
+    ModuleType
+    | type
+    | MethodType
+    | FunctionType
+    | TracebackType
+    | FrameType
+    | CodeType
+)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot & Client Management
@@ -92,6 +112,19 @@ class _ContextClass(BaseContext["Cordex"]):
             await interaction.response.send_modal(modal)
 
         await self.send_button(func)
+
+    async def show_def(self, target : InspectableObject, /) -> None:
+        source = getsource(target)
+        msg    = (
+            "```py\n"
+           f"{source}\n"
+            "```"
+        )
+
+        if len(msg) < 2000:
+            await self.send(msg)
+
+        await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
 
 
 type Context              = _ContextClass

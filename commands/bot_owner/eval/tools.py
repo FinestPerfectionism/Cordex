@@ -1,36 +1,10 @@
-from inspect import getsource
 from json import dumps
-from types import (
-    CodeType,
-    FrameType,
-    FunctionType,
-    MethodType,
-    ModuleType,
-    TracebackType,
-)
 
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Tools
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# show_def
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-InspectableObject = (
-    ModuleType
-    | type
-    | MethodType
-    | FunctionType
-    | TracebackType
-    | FrameType
-    | CodeType
-)
-
-def show_def(target : InspectableObject, /) -> str:
-    return codeblock(getsource(target))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # show_attrs

@@ -52,7 +52,7 @@ from core.utilities import (
     truncate,
 )
 
-from .tools import format_dict, show_attrs, show_def
+from .tools import format_dict, show_attrs
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
@@ -99,7 +99,6 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "get"            : get,
         "codeblock"      : codeblock,
         "truncate"       : truncate,
-        "show_def"       : show_def,
         "show_attrs"     : show_attrs,
         "format_dt"      : format_dt,
         "format_now"     : format_now,
