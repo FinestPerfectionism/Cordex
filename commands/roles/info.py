@@ -1,6 +1,7 @@
+from contextlib import suppress
 from typing import Self, final, override
 
-from discord import AllowedMentions, Asset, Member, Message, Role
+from discord import AllowedMentions, Asset, Member, Message, NotFound, Role
 from discord.utils import format_dt
 
 from bot import Interaction
@@ -121,7 +122,8 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
                     item.disabled = True
 
             if self.message:
-                await self.message.edit(view = self)
+                with suppress(NotFound):
+                    await self.message.edit(view = self)
 
     view = InfoView()
     view.message = await interaction.followup.send(

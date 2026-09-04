@@ -1,6 +1,7 @@
+from contextlib import suppress
 from typing import Self, final, override
 
-from discord import Color, Message
+from discord import Color, Message, NotFound
 
 from bot import Interaction
 from bot.ui import (
@@ -216,7 +217,8 @@ class UnnamedPaginator(LayoutView):
                     item.disabled = True
 
         if self.message:
-            await self.message.edit(view = self)
+            with suppress(NotFound):
+                await self.message.edit(view = self)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _get_page_footer

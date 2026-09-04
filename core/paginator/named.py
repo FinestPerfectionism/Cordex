@@ -1,7 +1,8 @@
+from contextlib import suppress
 from dataclasses import dataclass
 from typing import Protocol, final, override
 
-from discord import Color, Message
+from discord import Color, Message, NotFound
 
 from bot import Interaction
 from bot.ui import (
@@ -130,7 +131,8 @@ class NamedPaginator(LayoutView):
                     item.disabled = True
 
         if self.message:
-            await self.message.edit(view = self)
+            with suppress(NotFound):
+                await self.message.edit(view = self)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_above
