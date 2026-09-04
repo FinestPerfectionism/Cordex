@@ -1,7 +1,7 @@
 from datetime import timedelta
-from typing import final
+from typing import Literal, final
 
-from discord import Guild, Member
+from discord import Guild, Message
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex
@@ -11,6 +11,7 @@ from core.cases import (
     BanAddPayload,
     BanRemovePayload,
     KickPayload,
+    PurgePayload,
     QuarantineAddPayload,
     QuarantineRemovePayload,
     TimeoutAddPayload,
@@ -19,14 +20,23 @@ from core.cases import (
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
-from .utilities import ActionType
+type ActionType = Literal[
+    "Ban Add",
+    "Ban Remove",
+    "Kick",
+    "Quarantine Add",
+    "Quarantine Remove",
+    "Timeout Add",
+    "Timeout Remove",
+    "Purge",
+]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
-class BaseActions:
+class Actions:
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
         self.bot   = bot
@@ -112,25 +122,14 @@ class BaseActions:
     # ban_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_add(self, targets : list[BanAddPayload]) -> list[tuple[Member, str]]:
-        errors : list[tuple[Member, str]] = []
+    async def ban_add(self, action : BanAddPayload) -> None:
+        if action.dm_user:
+            await self._dm_target("Ban Add", action)
 
-        for action in targets:
-            target = action.target
-
-            try:
-                if action.dm_user:
-                    await self._dm_target("Ban Add", action)
-
-                await target.ban(
-                    reason                 = f"Banned by {action.moderator.name}: {action.reason}",
-                    delete_message_seconds = 86400,
-                )
-
-            except Exception as error:
-                errors.append((target, str(error)))
-
-        return errors
+        await action.target.ban(
+            reason                 = f"Banned by {action.moderator.name}: {action.reason}",
+            delete_message_seconds = 86400,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_view
@@ -154,71 +153,38 @@ class BaseActions:
     # ban_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_remove(self, targets : list[BanRemovePayload]) -> list[tuple[Member, str]]:
-        errors : list[tuple[Member, str]] = []
+    async def ban_remove(self, action : BanRemovePayload) -> None:
+        if action.dm_user:
+            await self._dm_target("Ban Remove", action)
 
-        for action in targets:
-            target = action.target
-            guild  = self.bot.get_guild(self.guild.id)
-
-            try:
-                if action.dm_user:
-                    await self._dm_target("Ban Remove", action)
-
-                if guild is not None:
-                    await guild.unban(target, reason = f"Unbanned by {action.moderator.name}: {action.reason}")
-
-            except Exception as error:
-                errors.append((target, str(error)))
-
-        return errors
+        guild = self.bot.get_guild(self.guild.id)
+        if guild is not None:
+            await guild.unban(action.target, reason = f"Unbanned by {action.moderator.name}: {action.reason}")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # kick
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def kick(self, targets : list[KickPayload]) -> list[tuple[Member, str]]:
-        errors : list[tuple[Member, str]] = []
+    async def kick(self, action : KickPayload) -> None:
+        if action.dm_user:
+            await self._dm_target("Kick", action)
 
-        for action in targets:
-            target = action.target
-
-            try:
-                if action.dm_user:
-                    await self._dm_target("Kick", action)
-
-                await target.kick(reason = f"Kicked by {action.moderator.name}: {action.reason}")
-
-            except Exception as error:
-                errors.append((target, str(error)))
-
-        return errors
+        await action.target.kick(reason = f"Kicked by {action.moderator.name}: {action.reason}")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     """
-    async def quarantine_add(self, targets : list[QuarantineAddPayload]) -> list[tuple[Member, str]]:
-        errors : list[tuple[Member, str]] = []
+    async def quarantine_add(self, action : QuarantineAddPayload) -> None:
+        guild = self.bot.get_guild(self.guild.id)
+        if guild:
+            quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
+            if quarantine_role:
+                await action.target.add_roles(quarantine_role)
 
-        for action in targets:
-            target = action.target
-            guild  = self.bot.get_guild(self.guild.id)
-
-            try:
-                if guild:
-                    quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
-                    if quarantine_role:
-                        await target.add_roles(quarantine_role)
-
-                if action.dm_user:
-                    await self._dm_target("Quarantine Add", action)
-
-            except Exception as error:
-                errors.append((target, str(error)))
-
-        return errors
+        if action.dm_user:
+            await self._dm_target("Quarantine Add", action)
     """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -244,51 +210,29 @@ class BaseActions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     """
-    async def quarantine_remove(self, targets : list[QuarantineRemovePayload]) -> list[tuple[Member, str]]:
-        errors : list[tuple[Member, str]] = []
+    async def quarantine_remove(self, action : QuarantineRemovePayload) -> None:
+        guild = self.bot.get_guild(self.guild.id)
+        if guild:
+            quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
+            if quarantine_role:
+                await action.target.remove_roles(quarantine_role)
 
-        for action in targets:
-            target = action.target
-            guild  = self.bot.get_guild(self.guild.id)
-
-            try:
-                if guild:
-                    quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
-                    if quarantine_role:
-                        await target.remove_roles(quarantine_role)
-
-                if action.dm_user:
-                    await self._dm_target("Quarantine Remove", action)
-
-            except Exception as error:
-                errors.append((target, str(error)))
-
-        return errors
+        if action.dm_user:
+            await self._dm_target("Quarantine Remove", action)
     """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_add(self, targets : list[TimeoutAddPayload]) -> list[tuple[Member, str]]:
-        errors : list[tuple[Member, str]] = []
+    async def timeout_add(self, action : TimeoutAddPayload) -> None:
+        await action.target.edit(
+            timed_out_until = utcnow() + timedelta(seconds = action.length),
+            reason          = f"Timed out by {action.moderator.name}: {action.reason}",
+        )
 
-        for action in targets:
-            target = action.target
-
-            try:
-                await target.edit(
-                    timed_out_until = utcnow() + timedelta(seconds = action.length),
-                    reason          = f"Timed out by {action.moderator.name}: {action.reason}",
-                )
-
-                if action.dm_user:
-                    await self._dm_target("Timeout Add", action)
-
-            except Exception as error:
-                errors.append((target, str(error)))
-
-        return errors
+        if action.dm_user:
+            await self._dm_target("Timeout Add", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_view
@@ -312,29 +256,47 @@ class BaseActions:
     # timeout_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_remove(self, targets : list[TimeoutRemovePayload]) -> list[tuple[Member, str]]:
-        errors : list[tuple[Member, str]] = []
+    async def timeout_remove(self, action : TimeoutRemovePayload) -> None:
+        await action.target.edit(
+            timed_out_until = None,
+            reason          = f"Untimed out by {action.moderator.name}: {action.reason}",
+        )
 
-        for action in targets:
-            target = action.target
-
-            try:
-                await target.edit(timed_out_until = None, reason = f"Untimed out by {action.moderator.name}: {action.reason}")
-
-                if action.dm_user:
-                    await self._dm_target("Timeout Remove", action)
-
-            except Exception as error:
-                errors.append((target, str(error)))
-
-        return errors
+        if action.dm_user:
+            await self._dm_target("Timeout Remove", action)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # purge
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def purge(self) -> None:
+    async def purge(self, action : PurgePayload) -> list[Message]:
+        target  = action.target
+        channel = action.channel
+        amount  = action.amount
 
-        # ~~~ TODO: Switch from raw /purge command logic to a proper BaseActions.purge call
+        if not target:
+            deleted = await channel.purge(limit = amount)
+        elif not action.force:
+            deleted = await channel.purge(
+                limit = amount,
+                check = lambda msg : msg.author == target,
+            )
+        else:
+            messages : list[Message] = []
 
-        ...
+            async for message in channel.history(limit = 2000):
+                if message.author == target:
+                    messages.append(message)
+                    if len(messages) == amount:
+                        break
+
+            if messages:
+                message_set = set(messages)
+                deleted     = await channel.purge(
+                    limit = 2000,
+                    check = lambda msg : msg in message_set,
+                )
+            else:
+                deleted = []
+
+        return deleted

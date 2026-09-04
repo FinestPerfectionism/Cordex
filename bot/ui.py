@@ -87,7 +87,7 @@ class LayoutView(BaseLayoutView):
 
     def add_items(self, *items : Item[BaseLayoutView | Self]) -> Self:
         if len(items) == 1:
-            log.warning("Prefer LayoutView.add_item over LayoutView.add_items")
+            log.warning("Prefer LayoutView.add_item over LayoutView.add_items if only one item is being added.")
 
         for item in items:
             self.add_item(item)
@@ -110,7 +110,7 @@ class Modal(BaseModal):
 
     def add_items(self, *items : Item[Modal | Self]) -> Self:
         if len(items) == 1:
-            log.warning("Prefer Modal.add_item over Modal.add_items")
+            log.warning("Prefer Modal.add_item over Modal.add_items if only one item is being added.")
 
         for item in items:
             self.add_item(item)
@@ -152,7 +152,7 @@ class Container[V : LayoutView](BaseContainer[V]):
 
     def add_items(self, *items : Item[V]) -> Self:
         if len(items) == 1:
-            log.warning("Prefer Container.add_item over Container.add_items")
+            log.warning("Prefer Container.add_item over Container.add_items if only one item is being added.")
 
         for item in items:
             self.add_item(item)
@@ -160,16 +160,9 @@ class Container[V : LayoutView](BaseContainer[V]):
         return self
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Separator Sizes
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-large = SeparatorSpacing.large
-small = SeparatorSpacing.small
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Button Colors
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 blurple = ButtonStyle.blurple
 grey    = ButtonStyle.grey
@@ -180,6 +173,9 @@ link    = ButtonStyle.link
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Separator Variants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+large = SeparatorSpacing.large
+small = SeparatorSpacing.small
 
 @final
 class VisibleLargeSeparator[V : LayoutView](Separator[V]):

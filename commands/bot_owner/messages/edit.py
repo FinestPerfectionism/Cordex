@@ -88,7 +88,7 @@ async def run_bo_messages_edit_menu(interaction : Interaction, message : Message
                 await send_bad_operation(
                     interaction,
                     title    = "edit message",
-                    subtitle = codeblock(f"{e}"),
+                    subtitle = codeblock(e),
                 )
 
     try:
@@ -97,5 +97,5 @@ async def run_bo_messages_edit_menu(interaction : Interaction, message : Message
         await send_bad_operation(
             interaction,
             title    = "edit message",
-            subtitle = codeblock(f"{e}"),
+            subtitle = codeblock(e),
         )

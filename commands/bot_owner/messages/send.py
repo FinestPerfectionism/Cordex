@@ -112,7 +112,7 @@ async def run_bo_messages_reply_menu(interaction : Interaction, message : Messag
                 await send_bad_operation(
                     interaction,
                     title    = "reply to message",
-                    subtitle = codeblock(f"{e}"),
+                    subtitle = codeblock(e),
                 )
 
     try:
@@ -121,5 +121,5 @@ async def run_bo_messages_reply_menu(interaction : Interaction, message : Messag
         await send_bad_operation(
             interaction,
             title    = "reply to message",
-            subtitle = codeblock(f"{e}"),
+            subtitle = codeblock(e),
         )

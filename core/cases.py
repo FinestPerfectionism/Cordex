@@ -3,6 +3,7 @@ from typing import Literal, final
 
 from discord import Color, Member
 
+from bot.types import GuildMessagable
 from constants import (
     COLOR_BLACK,
     COLOR_BLURPLE,
@@ -66,8 +67,11 @@ type QuarantineRemovePayload = BaseRemovePayload
 @dataclass
 class PurgePayload:
     moderator : Member
-    target    : Member
+    target    : Member | None
     reason    : str
+    channel   : GuildMessagable
+    amount    : int
+    force     : bool
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # ...
@@ -134,5 +138,6 @@ CASE_MAP : dict[case_types, CaseData] = {
     "Note Remove"       : CaseType.NOTE_REMOVE,
 }
 
-async def create_case() -> None:
-    ...
+class Cases:
+    def create_case(self) -> None:
+        ...

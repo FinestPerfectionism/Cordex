@@ -220,13 +220,13 @@ class Cordex(commands.Bot):
         self.db = await connect(str(db_path))
 
         def read_schemas() -> tuple[str, str]:
-            logging_sql = Path("schemas/logging.sql").read_text(encoding = "utf-8")
+            config_sql = Path("schemas/configsql").read_text(encoding = "utf-8")
             cases_sql = Path("schemas/cases.sql").read_text(encoding = "utf-8")
-            return logging_sql, cases_sql
+            return config_sql, cases_sql
 
-        logging_schema, cases_schema = await to_thread(read_schemas)
+        config_schema, cases_schema = await to_thread(read_schemas)
 
-        for schema in [logging_schema, cases_schema]:
+        for schema in {config_schema, cases_schema}:
             await self.db.executescript(schema)
 
         await self.db.commit()

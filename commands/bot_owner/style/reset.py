@@ -33,5 +33,5 @@ async def run_bo_style_reset(
         await send_bad_operation(
             interaction,
             title    = "reset display name style",
-            subtitle = codeblock(f"{e}"),
+            subtitle = codeblock(e),
         )

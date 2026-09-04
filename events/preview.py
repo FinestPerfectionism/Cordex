@@ -17,35 +17,29 @@ from bot.ui import (
 MESSAGE_LINK_PATTERN = re.compile(r"https://discord(?:app)?\.com/channels/(\d+|@me)/(\d+)/(\d+)")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Message Send Handling
+# Preview Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @final
-class MessageSendHandler(commands.Cog):
+class Preview(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
     @commands.Cog.listener("on_message")
-    async def message_send_handler(self, message : Message) -> None:
+    async def preview_handler(self, message : Message) -> None:
         content = message.content
         author  = message.author
-        guild   = message.guild
 
         # ⸻ Block bots and the bot itself.
 
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Block non-guild messages.
-
-        if guild is None:
-            return
-
         # ⸻ Provide a preview for message links.
 
         @final
-        class Preview(LayoutView):
+        class PreviewView(LayoutView):
             def __init__(self, *, target : Message, link : str) -> None:
                 super().__init__()
 
@@ -82,15 +76,17 @@ class MessageSendHandler(commands.Cog):
             except Forbidden:
                 return
 
+            # ⸻ Message has no content or attachments. Perhaps an embed?
+
             if not target_message.content and not target_message.attachments:
                 return
 
             await message.reply(
-                view             = Preview(target = target_message, link = content),
+                view             = PreviewView(target = target_message, link = content),
                 mention_author   = False,
                 allowed_mentions = AllowedMentions.none(),
             )
 
 async def setup(bot : Cordex) -> None:
-    cog = MessageSendHandler(bot)
+    cog = Preview(bot)
     await bot.add_cog(cog)

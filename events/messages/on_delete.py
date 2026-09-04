@@ -108,7 +108,10 @@ class MessageDeleteHandler(commands.Cog):
                 ),
             )
 
-        await log_channel.send(view = DeleteView(), allowed_mentions = AllowedMentions.none())
+        await log_channel.send(
+            view             = DeleteView(),
+            allowed_mentions = AllowedMentions.none(),
+        )
 
 async def setup(bot : Cordex) -> None:
     cog = MessageDeleteHandler(bot)

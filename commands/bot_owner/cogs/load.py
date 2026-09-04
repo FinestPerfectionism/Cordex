@@ -39,7 +39,7 @@ async def run_bo_cog_load(interaction : Interaction, cog : str) -> None:
             title    = "load cog",
             subtitle = (
                 f"Failed to load cog `{cog}`:\n"
-                f"{codeblock(f"{e}")}"
+                f"{codeblock(e)}"
             ),
         )
         return

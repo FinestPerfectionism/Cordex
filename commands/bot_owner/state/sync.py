@@ -25,7 +25,7 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
         await send_bad_operation(
             interaction,
             title    = "sync app command tree",
-            subtitle = codeblock(f"{e}"),
+            subtitle = codeblock(e),
         )
         return
     else:

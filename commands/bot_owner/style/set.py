@@ -187,7 +187,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             await send_bad_operation(
                 interaction,
                 title    = "set display name style",
-                subtitle = codeblock(f"{e}"),
+                subtitle = codeblock(e),
             )
 
 async def run_bo_style_set(interaction : Interaction) -> None:

@@ -142,7 +142,7 @@ def check_hierarchy(
 # codeblock
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def codeblock(code : str, /, *, language : str | None = "py") -> str:
+def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str:
     return (
        f"```{language or ""}\n"
        f"{code}\n"

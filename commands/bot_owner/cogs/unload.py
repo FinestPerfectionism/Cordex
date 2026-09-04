@@ -45,7 +45,7 @@ async def run_bo_cog_unload(interaction : Interaction, cog : str) -> None:
             title    = "unload cog",
             subtitle = (
                 f"Failed to unload cog `{cog}`:\n"
-                f"{codeblock(f"{e}")}"
+                f"{codeblock(e)}"
             ),
         )
         return

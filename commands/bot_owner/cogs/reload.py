@@ -37,7 +37,7 @@ async def run_bo_cog_reload(interaction : Interaction, cog : str | None = None) 
                 title    =  "reload cog",
                 subtitle = (
                     f"Failed to reload cog `{cog}`:\n"
-                    f"{codeblock(f"{e}")}"
+                    f"{codeblock(e)}"
                 ),
             )
             return

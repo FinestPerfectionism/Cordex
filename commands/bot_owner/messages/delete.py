@@ -51,5 +51,5 @@ async def run_bo_messages_delete_menu(interaction : Interaction, message : Messa
         await send_bad_operation(
             interaction,
             title    = "delete message",
-            subtitle = codeblock(f"{e}"),
+            subtitle = codeblock(e),
         )

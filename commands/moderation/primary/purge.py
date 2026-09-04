@@ -1,14 +1,17 @@
 from typing import Self, final, override
 
-from discord import Member, Message
+from discord import Member
 
 from bot import Interaction
 from bot.types import GuildMessagable
 from bot.ui import Checkbox, Label, Modal, TextDisplay, TextInput, UserSelect
 from constants import CONTESTED_EMOJI
+from core.cases import PurgePayload
 from core.exceptions import send_bad_argument
 from core.responses import format_send
 from core.utilities import check_hierarchy
+
+from ._base import Actions
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation purge Logic
@@ -29,6 +32,13 @@ async def run_mod_primary_purge(interaction : Interaction) -> None:
                     "### `Force = True`\n"
                     "Finds `n` messages from the target and purges them from the channel."
                 ),
+            )
+
+            self._reason = TextInput[Self](placeholder = "Enter reason here...")
+            self.reason  = Label[Self](
+                text        = "Reason",
+                description = "Reason for the purge.",
+                component   = self._reason,
             )
 
             self._amount = TextInput[Self](
@@ -56,18 +66,19 @@ async def run_mod_primary_purge(interaction : Interaction) -> None:
                 component   = self._force,
             )
 
-            self.add_items(self.text, self.amount, self.target, self.force)
+            self.add_items(self.text, self.reason, self.amount, self.target, self.force)
 
         @override
         async def on_submit(self, interaction : Interaction) -> None:
             target = self._target.values[0]
+            reason = self._reason.value
             force  = self._force.value
 
             await interaction.response.defer(ephemeral = True)
 
             # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-            if not isinstance(interaction.user, Member) or not isinstance(target, Member):
+            if not interaction.guild or not isinstance(interaction.user, Member) or not isinstance(target, Member):
                 return
 
             # ⸻ We already validated interaction.channel.
@@ -141,34 +152,17 @@ async def run_mod_primary_purge(interaction : Interaction) -> None:
 
             # ⸻ Success!
 
-            channel = interaction.channel
-
-            # ~~~ TODO: Switch from raw logic to a proper BaseActions.purge call
-
-            if not target:
-                deleted = await channel.purge(limit = amount)
-            elif not force:
-                deleted = await channel.purge(
-                    limit = amount,
-                    check = lambda msg : msg.author == target,
-                )
-            else:
-                messages : list[Message] = []
-
-                async for message in channel.history(limit = 2000):
-                    if message.author == target:
-                        messages.append(message)
-                        if len(messages) == amount:
-                            break
-
-                if messages:
-                    message_set = set(messages)
-                    deleted     = await channel.purge(
-                        limit = 2000,
-                        check = lambda msg : msg in message_set,
-                    )
-                else:
-                    deleted = []
+            actions = Actions(interaction.client, interaction.guild)
+            deleted = await actions.purge(
+                PurgePayload(
+                    interaction.user,
+                    target,
+                    reason,
+                    interaction.channel,
+                    amount,
+                    force,
+                ),
+            )
 
             await format_send(
                 interaction,

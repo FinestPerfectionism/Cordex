@@ -77,6 +77,6 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
                 message  = confirm_msg,
                 msg_type = "error",
                 title    = "restart bot",
-                subtitle = codeblock(f"{e}"),
+                subtitle = codeblock(e),
             )
             await client.change_presence(status = Status.online)

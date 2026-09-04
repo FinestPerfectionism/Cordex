@@ -66,6 +66,10 @@ class MessageEditHandler(commands.Cog):
         if author.bot or author == self.bot.user:
             return
 
+        # ⸻ Process commands.
+
+        await self.bot.process_commands(after)
+
         # ⸻ Block non-guild messages.
 
         if guild is None or not isinstance(channel, GuildMessagable):
@@ -134,9 +138,10 @@ class MessageEditHandler(commands.Cog):
                 ),
             )
 
-        await log_channel.send(view = EditView(), allowed_mentions = AllowedMentions.none())
-
-        await self.bot.process_commands(after)
+        await log_channel.send(
+            view             = EditView(),
+            allowed_mentions = AllowedMentions.none(),
+        )
 
 async def setup(bot : Cordex) -> None:
     cog = MessageEditHandler(bot)
