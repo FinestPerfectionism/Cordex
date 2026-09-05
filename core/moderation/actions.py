@@ -216,7 +216,7 @@ class Actions:
 
         await action.target.ban(
             reason                 = f"Banned by {action.moderator.name}: {action.reason}",
-            delete_message_seconds = 86400,
+            delete_message_seconds = action.days_to_delete,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

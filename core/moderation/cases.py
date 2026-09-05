@@ -38,7 +38,8 @@ class BaseAddPayload:
 
 @dataclass
 class BanAddPayload(BaseAddPayload):
-    length : int | None
+    length         : int | None
+    days_to_delete : int
 
 
 type BanRemovePayload = BaseRemovePayload
