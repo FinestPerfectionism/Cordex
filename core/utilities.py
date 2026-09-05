@@ -70,7 +70,7 @@ def format_table[K, V](table : dict[K, V], /, *, padding : int = 1) -> str:
     width       = biggest_key + padding
 
     rows = [
-        f"`{str(key):>{width}}:` {value}"
+        f"`{key!s:>{width}}:` {value}"
         for key, value in table.items()
     ]
 
