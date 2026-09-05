@@ -91,7 +91,7 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
         if not guild:
             return
 
-        channel = await self.values[0].fetch()
+        channel = guild.get_channel(self.values[0].id)
 
         if not isinstance(channel, TextChannel):
             return
@@ -149,7 +149,7 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
         if not guild:
             return
 
-        channel = await self.values[0].fetch()
+        channel = guild.get_channel(self.values[0].id)
 
         if not isinstance(channel, TextChannel):
             return
