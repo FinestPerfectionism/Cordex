@@ -52,14 +52,17 @@ class QuarantineEnforcer(commands.Cog):
 
         expected_send = False
         expected_read = False
-        if (
-            after_ow.send_messages == expected_send
-            and after_ow.read_messages == expected_read
-            and after_ow.send_messages_in_threads == expected_send
-            and after_ow.create_public_threads == expected_send
-            and after_ow.create_private_threads == expected_send
-            and after_ow.create_instant_invite == expected_send
-        ):
+
+        checks = [
+            after_ow.send_messages            == expected_send,
+            after_ow.read_messages            == expected_read,
+            after_ow.send_messages_in_threads == expected_send,
+            after_ow.create_public_threads    == expected_send,
+            after_ow.create_private_threads   == expected_send,
+            after_ow.create_instant_invite    == expected_send,
+        ]
+
+        if all(checks):
             return
 
         await actions.quarantine_enforce("Channel")

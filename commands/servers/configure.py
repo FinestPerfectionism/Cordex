@@ -86,18 +86,22 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        channel  = self.values[0]
-        previous = self.default_values
+        guild = interaction.guild
 
-        self.default_values = [Object(id = channel.id)]
-
-        if not interaction.guild:
+        if not guild:
             return
+
+        channel = await self.values[0].fetch()
 
         if not isinstance(channel, TextChannel):
             return
 
-        permissions = channel.permissions_for(interaction.guild.me)
+        me = guild.me
+
+        if not me:
+            return
+
+        permissions = channel.permissions_for(me)
 
         if not permissions.send_messages:
             await send_bad_argument(
@@ -116,6 +120,9 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
 
         if not self.view:
             return
+
+        previous = self.default_values
+        self.default_values = [Object(id = channel.id)]
 
         try:
             await _set_guild_config(interaction, "edit", channel.id)
@@ -137,18 +144,22 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        channel  = self.values[0]
-        previous = self.default_values
+        guild = interaction.guild
 
-        self.default_values = [Object(id = channel.id)]
-
-        if not interaction.guild:
+        if not guild:
             return
+
+        channel = await self.values[0].fetch()
 
         if not isinstance(channel, TextChannel):
             return
 
-        permissions = channel.permissions_for(interaction.guild.me)
+        me = guild.me
+
+        if not me:
+            return
+
+        permissions = channel.permissions_for(me)
 
         if not permissions.send_messages:
             await send_bad_argument(
@@ -167,6 +178,9 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
 
         if not self.view:
             return
+
+        previous = self.default_values
+        self.default_values = [Object(id = channel.id)]
 
         try:
             await _set_guild_config(interaction, "delete", channel.id)
@@ -203,15 +217,21 @@ class _QuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         if not self.view:
             return
 
+        actions = Actions(interaction.client, interaction.guild)
+
         try:
             await _set_guild_config(interaction, "quarantine", role.id)
-            self.view.quarantine_id = role.id
-            self.view.update_pages()
-            await interaction.response.edit_message(view = self.view)
+            await actions.quarantine_enforce("Channel")
+            await actions.quarantine_enforce("Role")
         except Exception:
             self.default_values = previous
             await send_bad_operation(interaction, title = "update quarantine role")
             raise
+
+        self.view.quarantine_id = role.id
+        self.view.update_pages()
+
+        await interaction.response.edit_message(view = self.view)
 
 @final
 class _QuarantineEnforceModal(Modal, title = "Quarantine Enforce"):

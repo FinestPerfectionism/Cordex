@@ -1,5 +1,4 @@
 from asyncio import Semaphore, gather
-from contextlib import suppress
 from datetime import timedelta
 from typing import Literal, cast, final
 
@@ -7,7 +6,7 @@ from discord import Forbidden, Guild, Message, Role
 from discord.abc import GuildChannel
 from discord.utils import format_dt, utcnow
 
-from bot import Cordex
+from bot import Cordex, log
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_BLACK, CONTESTED_EMOJI
 from core.paginator import UnnamedPaginator
@@ -82,23 +81,29 @@ class Actions:
 
             async def edit_channel(channel : GuildChannel) -> None:
                 async with semaphore:
-                    with suppress(Forbidden):
-                        overwrites = channel.overwrites_for(quarantine_role)
+                    overwrites = channel.overwrites_for(quarantine_role)
 
-                        overwrites.send_messages_in_threads = False
-                        overwrites.create_instant_invite    = False
-                        overwrites.send_messages            = False
-                        overwrites.create_public_threads    = False
-                        overwrites.create_private_threads   = False
-                        overwrites.read_messages            = False
+                    overwrites.update(
+                        send_messages_in_threads = False,
+                        create_instant_invite    = False,
+                        send_messages            = False,
+                        create_public_threads    = False,
+                        create_private_threads   = False,
+                        read_messages            = False,
+                    )
 
+                    try:
                         await channel.set_permissions(
                             quarantine_role,
                             overwrite = overwrites,
                             reason    = "Scheduled quarantine enforce.",
                         )
+                    except Forbidden:
+                        pass
+                    except Exception:
+                        log.exception("Failure during quarantine enforcement — Channel")
 
-            await gather(*(edit_channel(c) for c in self.guild.channels))
+            await gather(*(edit_channel(channel) for channel in self.guild.channels))
 
         if enforce_type == "Role":
             me = self.guild.me
@@ -107,8 +112,12 @@ class Actions:
 
             my_role = me.top_role
             if my_role.position > 1 and quarantine_role.position != my_role.position - 1:
-                with suppress(Forbidden):
+                try:
                     await quarantine_role.edit(position = my_role.position - 1)
+                except Forbidden:
+                    pass
+                except Exception:
+                    log.exception("Failure during quarantine enforcement — Role")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _dm_target
