@@ -4,10 +4,11 @@ from discord import Member
 from discord.app_commands import CheckFailure, check
 
 from bot import Interaction
+from bot.types import GuildMessagable
 from core.exceptions import BadEnvironmentGuild
 from core.moderation import Actions, ActionType
 
-from .select import ModerationModal
+from .modal import ModerationModal
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Utilites Base
@@ -34,7 +35,7 @@ def quarantine_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
 
     return decorator
 
-async def send_moderation_modal(interaction : Interaction, action_type : ActionType, target : Member) -> None:
+async def send_moderation_modal(interaction : Interaction, action_type : ActionType, target : Member | GuildMessagable) -> None:
     modal_dict : dict[ActionType, ModerationModal] = {
         "Ban Add"           : ModerationModal("Ban Add",           target),
         "Ban Remove"        : ModerationModal("Ban Remove",        target),
@@ -43,6 +44,7 @@ async def send_moderation_modal(interaction : Interaction, action_type : ActionT
         "Quarantine Remove" : ModerationModal("Quarantine Remove", target),
         "Timeout Add"       : ModerationModal("Timeout Add",       target),
         "Timeout Remove"    : ModerationModal("Timeout Remove",    target),
+        "Purge"             : ModerationModal("Purge",             target),
     }
 
     modal = modal_dict[action_type]
