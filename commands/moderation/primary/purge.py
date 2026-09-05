@@ -6,12 +6,10 @@ from bot import Interaction
 from bot.types import GuildMessagable
 from bot.ui import Checkbox, Label, Modal, TextDisplay, TextInput, UserSelect
 from constants import CONTESTED_EMOJI
-from core.cases import PurgePayload
 from core.exceptions import send_bad_argument
+from core.moderation import Actions, PurgePayload
 from core.responses import format_send
 from core.utilities import check_hierarchy
-
-from ._base import Actions
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation purge Logic
