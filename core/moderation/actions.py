@@ -240,15 +240,12 @@ class Actions:
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    """
     async def quarantine_add(self, action : QuarantineAddPayload) -> None:
-        quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
-        if quarantine_role:
+        if quarantine_role := await self.get_quarantine_role():
             await action.target.add_roles(quarantine_role)
 
         if action.dm_user:
             await self._dm_target("Quarantine Add", action)
-    """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_view
@@ -272,15 +269,12 @@ class Actions:
     # quarantine_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    """
     async def quarantine_remove(self, action : QuarantineRemovePayload) -> None:
-        quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
-        if quarantine_role:
+        if quarantine_role := await self.get_quarantine_role():
             await action.target.remove_roles(quarantine_role)
 
         if action.dm_user:
             await self._dm_target("Quarantine Remove", action)
-    """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_add
