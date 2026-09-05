@@ -1,16 +1,15 @@
-from typing import final
+from typing import final, override
 
-from discord.app_commands import Group, command, guild_only
+from discord.app_commands import AppCommandError, Group, command, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.exceptions import send_bad_request
 from core.permissions import bot_owner_cmd
-
-# senior_moderator_cmd,
-# staff_cmd,
 from core.utilities import unimplemented
 
 from .cases import run_mod_cases_query, run_mod_cases_view
+from .primary._base import UnconfiguredQuarantine, quarantine_cmd
 from .primary.ban import (
     run_mod_primary_ban_add,
     run_mod_primary_ban_remove,
@@ -78,6 +77,14 @@ class ModerationCommands(
         description = "Moderation case commands",
     )
 
+    @override
+    async def cog_app_command_error(self, interaction : Interaction, error : AppCommandError) -> None:
+        if isinstance(error, UnconfiguredQuarantine):
+            await send_bad_request(
+                interaction,
+                subtitle = "This server has not configured a quarantine role, so quarantine operations cannot be performed",
+            )
+
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation lockdown add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -86,7 +93,6 @@ class ModerationCommands(
         name        = "add",
         description = "Add channel(s) or the server to lockdown.",
     )
-    # @senior_moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_lockdown_add(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_add(interaction)
@@ -99,7 +105,6 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove channel(s) or the server from lockdown.",
     )
-    # @director_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_lockdown_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_remove(interaction)
@@ -112,7 +117,6 @@ class ModerationCommands(
         name        = "add",
         description = "Ban member(s) from the server.",
     )
-    # @senior_moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_ban_add(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_add(interaction)
@@ -125,7 +129,6 @@ class ModerationCommands(
         name        = "view",
         description = "View all banned members.",
     )
-    # @staff_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_ban_view(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_view(interaction)
@@ -138,7 +141,6 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove a ban from member(s).",
     )
-    # @director_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_ban_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_remove(interaction)
@@ -151,7 +153,6 @@ class ModerationCommands(
         name        = "kick",
         description = "Kick member(s) from the server.",
     )
-    # @senior_moderator_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_kick(self, interaction : Interaction) -> None:
         await run_mod_primary_kick(interaction)
@@ -164,7 +165,7 @@ class ModerationCommands(
         name        = "add",
         description = "Add member(s) to quarantine.",
     )
-    # @senior_moderator_cmd()
+    @quarantine_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_quarantine_add(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_add(interaction)
@@ -177,7 +178,7 @@ class ModerationCommands(
         name        = "view",
         description = "View all quarantined members.",
     )
-    # @staff_cmd()
+    @quarantine_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_quarantine_view(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_view(interaction)
@@ -190,7 +191,7 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove member(s) from quarantine.",
     )
-    # @senior_moderator_cmd()
+    @quarantine_cmd()
     @bot_owner_cmd()
     async def cmd_mod_primary_quarantine_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_remove(interaction)

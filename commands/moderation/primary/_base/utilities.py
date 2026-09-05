@@ -1,13 +1,38 @@
+from collections.abc import Callable
+
 from discord import Member
+from discord.app_commands import CheckFailure, check
 
 from bot import Interaction
+from core.exceptions import BadEnvironmentGuild
+from core.moderation import Actions, ActionType
 
-from .actions import ActionType
 from .select import ModerationModal
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Utilites Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class UnconfiguredQuarantine(CheckFailure):
+    pass
+
+def quarantine_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
+    async def predicate(interaction : Interaction) -> bool:
+        if not interaction.guild:
+            raise BadEnvironmentGuild
+
+        actions = Actions(interaction.client, interaction.guild)
+
+        if not await actions.get_quarantine_role():
+            raise UnconfiguredQuarantine
+
+        return True
+
+    def decorator(func : F) -> F:
+        check(predicate)(func)
+        return func
+
+    return decorator
 
 async def send_moderation_modal(interaction : Interaction, action_type : ActionType, target : Member) -> None:
     modal_dict : dict[ActionType, ModerationModal] = {

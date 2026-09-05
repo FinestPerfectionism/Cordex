@@ -1,13 +1,19 @@
+from asyncio import Semaphore, gather
+from contextlib import suppress
 from datetime import timedelta
-from typing import Literal, final
+from typing import Literal, cast, final
 
-from discord import Guild, Message
+from discord import Forbidden, Guild, Message, Role
+from discord.abc import GuildChannel
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_BLACK, CONTESTED_EMOJI
-from core.cases import (
+from core.paginator import UnnamedPaginator
+from core.utilities import format_now, format_table
+
+from .cases import (
     BanAddPayload,
     BanRemovePayload,
     KickPayload,
@@ -17,8 +23,6 @@ from core.cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-from core.paginator import UnnamedPaginator
-from core.utilities import format_now, format_table
 
 type ActionType = Literal[
     "Ban Add",
@@ -42,6 +46,69 @@ class Actions:
         self.bot   = bot
         self.guild = guild
 
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_quarantine_role
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_quarantine_role(self) -> Role | None:
+        async with self.bot.db.execute(
+            t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"quarantine_role"}",
+        ) as cursor:
+            res = await cursor.fetchone()
+
+        if not res:
+            return None
+
+        if role_id := cast("int | None", res[0]) is None:
+            return None
+
+        return self.guild.get_role(role_id)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # quarantine_enforce
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    type EnforceTypes = Literal["Channel", "Role"]
+
+    async def quarantine_enforce(self, enforce_type : EnforceTypes) -> None:
+        quarantine_role = await self.get_quarantine_role()
+
+        if not quarantine_role:
+            return
+
+        if enforce_type == "Channel":
+            semaphore = Semaphore(5)
+
+            async def edit_channel(channel : GuildChannel) -> None:
+                async with semaphore:
+                    with suppress(Forbidden):
+                        overwrites = channel.overwrites_for(quarantine_role)
+
+                        overwrites.send_messages_in_threads = False
+                        overwrites.create_instant_invite    = False
+                        overwrites.send_messages            = False
+                        overwrites.create_public_threads    = False
+                        overwrites.create_private_threads   = False
+                        overwrites.read_messages            = False
+
+                        await channel.set_permissions(
+                            quarantine_role,
+                            overwrite = overwrites,
+                            reason    = "Scheduled quarantine enforce.",
+                        )
+
+            await gather(*(edit_channel(c) for c in self.guild.channels))
+
+        if enforce_type == "Role":
+            my_role = self.guild.self_role or self.guild.me.top_role
+
+            with suppress(Forbidden):
+                await quarantine_role.edit(position = my_role.position - 1)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # _dm_target
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
     async def _dm_target(
         self,
         action_type : ActionType,
@@ -58,16 +125,16 @@ class Actions:
         moderator = action.moderator
         target    = action.target
 
-        guild_name = self.guild.name
+        guild_name = f"'{self.guild.name}'"
 
         type_map : dict[str, str] = {
-            "Ban Add"           : f"# {CONTESTED_EMOJI} You have been banned in the server {guild_name} server.",
-            "Ban Remove"        : f"# {CONTESTED_EMOJI} You have been un-banned the server {guild_name} server.",
-            "Kick"              : f"# {CONTESTED_EMOJI} You have been kicked from the server {guild_name} server.",
-            "Quarantine Add"    : f"# {CONTESTED_EMOJI} You have been placed in quarantine in the server {guild_name} server.",
-            "Quarantine Remove" : f"# {CONTESTED_EMOJI} You have been removed from quarantine in the server {guild_name} server.",
-            "Timeout Add"       : f"# {CONTESTED_EMOJI} You have been placed in timeout in the server {guild_name} server.",
-            "Timeout Remove"    : f"# {CONTESTED_EMOJI} You have been removed from timeout in the server {guild_name} server.",
+            "Ban Add"           : f"# {CONTESTED_EMOJI} You have been banned in the server {guild_name}.",
+            "Ban Remove"        : f"# {CONTESTED_EMOJI} You have been un-banned the server {guild_name}.",
+            "Kick"              : f"# {CONTESTED_EMOJI} You have been kicked from the server {guild_name}.",
+            "Quarantine Add"    : f"# {CONTESTED_EMOJI} You have been placed in quarantine in the server {guild_name}.",
+            "Quarantine Remove" : f"# {CONTESTED_EMOJI} You have been removed from quarantine in the server {guild_name}.",
+            "Timeout Add"       : f"# {CONTESTED_EMOJI} You have been placed in timeout in the server {guild_name}.",
+            "Timeout Remove"    : f"# {CONTESTED_EMOJI} You have been removed from timeout in the server {guild_name}.",
         }
 
         title  = type_map[action_type]
@@ -157,9 +224,7 @@ class Actions:
         if action.dm_user:
             await self._dm_target("Ban Remove", action)
 
-        guild = self.bot.get_guild(self.guild.id)
-        if guild is not None:
-            await guild.unban(action.target, reason = f"Unbanned by {action.moderator.name}: {action.reason}")
+        await self.guild.unban(action.target, reason = f"Unbanned by {action.moderator.name}: {action.reason}")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # kick
@@ -177,11 +242,9 @@ class Actions:
 
     """
     async def quarantine_add(self, action : QuarantineAddPayload) -> None:
-        guild = self.bot.get_guild(self.guild.id)
-        if guild:
-            quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
-            if quarantine_role:
-                await action.target.add_roles(quarantine_role)
+        quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
+        if quarantine_role:
+            await action.target.add_roles(quarantine_role)
 
         if action.dm_user:
             await self._dm_target("Quarantine Add", action)
@@ -211,11 +274,9 @@ class Actions:
 
     """
     async def quarantine_remove(self, action : QuarantineRemovePayload) -> None:
-        guild = self.bot.get_guild(self.guild.id)
-        if guild:
-            quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
-            if quarantine_role:
-                await action.target.remove_roles(quarantine_role)
+        quarantine_role = guild.get_role(QUARANTINE_ROLE_ID)
+        if quarantine_role:
+            await action.target.remove_roles(quarantine_role)
 
         if action.dm_user:
             await self._dm_target("Quarantine Remove", action)

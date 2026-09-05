@@ -5,8 +5,7 @@ from discord import Member
 from bot import Interaction
 from bot.types import GuildMessagable
 from bot.ui import Checkbox, Item, Label, LayoutView, Modal, TextInput
-
-from .actions import ActionType
+from core.moderation import ActionType
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Select Base
