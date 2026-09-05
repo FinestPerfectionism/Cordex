@@ -1,6 +1,7 @@
+from asyncio import gather
 from typing import final, override
 
-from discord import Role
+from discord import Guild, Role
 from discord.abc import GuildChannel
 from discord.ext import commands, tasks
 
@@ -24,10 +25,12 @@ class QuarantineEnforcer(commands.Cog):
 
     @tasks.loop(minutes = 10)
     async def loop_quarantineenforce(self) -> None:
-        for guild in self.bot.guilds:
+        async def run_enforcement(guild : Guild) -> None:
             actions = Actions(self.bot, guild)
             await actions.quarantine_enforce("Channel")
             await actions.quarantine_enforce("Role")
+
+        await gather(*(run_enforcement(guild) for guild in self.bot.guilds))
 
     @loop_quarantineenforce.before_loop
     async def beforeloop_quarantineenforce(self) -> None:
@@ -41,20 +44,32 @@ class QuarantineEnforcer(commands.Cog):
         if not quarantine_role:
             return
 
-        if before.overwrites_for(quarantine_role) == after.overwrites_for(quarantine_role):
+        before_ow = before.overwrites_for(quarantine_role)
+        after_ow  = after.overwrites_for(quarantine_role)
+
+        if before_ow == after_ow:
+            return
+
+        expected_send = False
+        expected_read = False
+        if (
+            after_ow.send_messages == expected_send
+            and after_ow.read_messages == expected_read
+            and after_ow.send_messages_in_threads == expected_send
+            and after_ow.create_public_threads == expected_send
+            and after_ow.create_private_threads == expected_send
+            and after_ow.create_instant_invite == expected_send
+        ):
             return
 
         await actions.quarantine_enforce("Channel")
 
     @commands.Cog.listener("on_guild_channel_create")
-    async def listener_quarantineenforce_channelcreate(self, before : GuildChannel, after : GuildChannel) -> None:
-        actions = Actions(self.bot, after.guild)
+    async def listener_quarantineenforce_channelcreate(self, channel : GuildChannel) -> None:
+        actions = Actions(self.bot, channel.guild)
         quarantine_role = await actions.get_quarantine_role()
 
         if not quarantine_role:
-            return
-
-        if before.overwrites_for(quarantine_role) == after.overwrites_for(quarantine_role):
             return
 
         await actions.quarantine_enforce("Channel")

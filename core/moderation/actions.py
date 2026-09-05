@@ -59,7 +59,8 @@ class Actions:
         if not res:
             return None
 
-        if role_id := cast("int | None", res[0]) is None:
+        role_id = cast("int | None", res[0])
+        if role_id is None:
             return None
 
         return self.guild.get_role(role_id)
@@ -100,10 +101,14 @@ class Actions:
             await gather(*(edit_channel(c) for c in self.guild.channels))
 
         if enforce_type == "Role":
-            my_role = self.guild.self_role or self.guild.me.top_role
+            me = self.guild.me
+            if not me or not me.guild_permissions.manage_roles:
+                return
 
-            with suppress(Forbidden):
-                await quarantine_role.edit(position = my_role.position - 1)
+            my_role = me.top_role
+            if my_role.position > 1 and quarantine_role.position != my_role.position - 1:
+                with suppress(Forbidden):
+                    await quarantine_role.edit(position = my_role.position - 1)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _dm_target

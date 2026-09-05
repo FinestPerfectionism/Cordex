@@ -31,7 +31,8 @@ class MessageDeleteHandler(commands.Cog):
         if not res:
             return None
 
-        if channel_id := cast("int | None", res[0]) is None:
+        channel_id = cast("int | None", res[0])
+        if channel_id is None:
             return None
 
         log_channel = guild.get_channel(channel_id)

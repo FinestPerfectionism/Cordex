@@ -102,15 +102,17 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
         if not permissions.send_messages:
             await send_bad_argument(
                 interaction,
-                title    = "set delete channel",
+                title    = "set edit channel",
                 subtitle = {None : "I don't have permissions to send messages in that channel."},
             )
+            return
         if not permissions.view_channel:
             await send_bad_argument(
                 interaction,
-                title    = "set delete channel",
+                title    = "set edit channel",
                 subtitle = {None : "I don't have permissions to view that channel."},
             )
+            return
 
         if not self.view:
             return
@@ -151,15 +153,17 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
         if not permissions.send_messages:
             await send_bad_argument(
                 interaction,
-                title    = "set edit channel",
+                title    = "set delete channel",
                 subtitle = {None : "I don't have permissions to send messages in that channel."},
             )
+            return
         if not permissions.view_channel:
             await send_bad_argument(
                 interaction,
-                title    = "set edit channel",
+                title    = "set delete channel",
                 subtitle = {None : "I don't have permissions to view that channel."},
             )
+            return
 
         if not self.view:
             return

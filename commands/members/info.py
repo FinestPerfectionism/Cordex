@@ -13,11 +13,13 @@ from bot.ui import (
     ThumbnailSection,
 )
 from constants import (
+    ASTERISK_EMOJI,
     BIG_BOT_EMOJI,
     BOOSTER_EMOJI,
     COLOR_GREY,
     DEVELOPER_EMOJI,
     EMPLOYEE_EMOJI,
+    MODERATION_EMOJI,
     OWNER_EMOJI,
     PARTNER_EMOJI,
     PET_CORDEX_EMOJI,
@@ -74,6 +76,8 @@ async def run_member_info(
                 f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**."   if target.public_flags.staff else None,
                 f"- {PARTNER_EMOJI} This user is a **Discord Partner**."     if target.public_flags.partner else None,
                 f"- {OWNER_EMOJI} This user is the **Server Owner**."        if guild.owner == target else None,
+                f"- {ASTERISK_EMOJI} This user is an **Administrator**."     if target.guild_permissions.administrator else None,
+                f"- {MODERATION_EMOJI} This user is a **Moderator**."        if target.guild_permissions.moderate_members else None,
                 f"- {BOOSTER_EMOJI} This user is a **Server Booster**."      if target.premium_since is not None else None,
             ],
         ),
