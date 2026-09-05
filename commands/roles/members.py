@@ -6,8 +6,8 @@ from bot import Interaction
 from constants import COLOR_GREY
 from core.paginator import UnnamedPaginator
 
-PersonFilter = Literal["Both", "Humans", "Bots"]
-RoleFilter   = Literal["In", "Not In"]
+type PersonFilter = Literal["Both", "Humans", "Bots"]
+type RoleFilter   = Literal["In", "Not In"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role members Logic

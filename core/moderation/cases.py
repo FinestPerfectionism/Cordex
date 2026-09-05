@@ -106,7 +106,7 @@ class CaseType:
     NOTE_REMOVE       = CaseData("note_remove", COLOR_BLURPLE, "Note Removed")
 
 
-CaseTypes = Literal[
+type CaseTypes = Literal[
     "Lockdown Add",
     "Lockdown Remove",
     "Ban Add",

@@ -8,7 +8,7 @@ from constants import COLOR_GREY
 
 from ._base import format_permission
 
-PermissionsFilter = Literal["Both", "Enabled", "Disabled"]
+type PermissionsFilter = Literal["Both", "Enabled", "Disabled"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /role permissions Logic

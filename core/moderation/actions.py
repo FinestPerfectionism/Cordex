@@ -2,7 +2,7 @@ from asyncio import Semaphore, gather
 from datetime import timedelta
 from typing import Literal, cast, final
 
-from discord import Forbidden, Guild, Message, Role
+from discord import Forbidden, Guild, Member, Message, Role
 from discord.abc import GuildChannel
 from discord.utils import format_dt, utcnow
 
@@ -44,6 +44,13 @@ class Actions:
         super().__init__()
         self.bot   = bot
         self.guild = guild
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_quarantined_members
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_quarantined_members(self) -> list[Member] | None:
+        ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_quarantine_role
