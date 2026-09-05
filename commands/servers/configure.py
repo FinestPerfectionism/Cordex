@@ -16,6 +16,7 @@ from bot.ui import (
 )
 from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI, DENIED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
+from core.moderation import Actions
 from core.paginator import NamedPaginator, PageData
 
 type Keys = Literal["edit", "delete", "quarantine", "enforce_channels", "enforce_roles"]
@@ -251,6 +252,9 @@ class _QuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
+        if not interaction.guild:
+            return
+
         try:
             await _set_guild_config(interaction, "enforce_channels", int(self._channels.value))
             await _set_guild_config(interaction, "enforce_roles", int(self._roles.value))
@@ -258,9 +262,19 @@ class _QuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
             await send_bad_operation(interaction, title = "update quarantine enforcement")
             raise
 
-        self.view.enforce_channels = self._channels.value
-        self.view.enforce_roles    = self._roles.value
+        channels = self._channels.value
+        roles    = self._roles.value
+
+        self.view.enforce_channels = channels
+        self.view.enforce_roles    = roles
         self.view.update_pages()
+
+        actions = Actions(interaction.client, interaction.guild)
+
+        if channels:
+            await actions.quarantine_enforce("Channel")
+        if roles:
+            await actions.quarantine_enforce("Role")
 
         await interaction.response.edit_message(view = self.view)
 
