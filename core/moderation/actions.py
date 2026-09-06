@@ -349,7 +349,7 @@ class Actions:
     # purge
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def purge(self, action : PurgePayload) -> list[Message]:
+    async def purge(self, action : PurgePayload) -> int:
         target  = action.target
         channel = action.channel
         amount  = action.amount
@@ -379,7 +379,7 @@ class Actions:
             else:
                 deleted = []
 
-        return deleted
+        return len(deleted)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # note_add
