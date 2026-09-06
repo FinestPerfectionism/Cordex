@@ -78,8 +78,9 @@ log = get_logger("Cordex")
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 class LayoutView(BaseLayoutView):
-    def __init__(self, *, timeout : float | None = 600) -> None:
+    def __init__(self, *children : Item[LayoutView | Self], timeout : float | None = 600) -> None:
         super().__init__(timeout = timeout)
+        self.append_items(children)
 
     def add_text(self, text : str, /) -> Self:
         self.add_item(TextDisplay(text))
