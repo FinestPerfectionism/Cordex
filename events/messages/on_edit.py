@@ -52,7 +52,7 @@ class MessageEditHandler(commands.Cog):
         return log_channel
 
     @commands.Cog.listener("on_message_edit")
-    async def message_edit_handler(self, before : Message, after : Message) -> None:
+    async def listener_delete_onmessageedit(self, before : Message, after : Message) -> None:
         author  = before.author
         guild   = before.guild
         channel = before.channel
@@ -112,26 +112,20 @@ class MessageEditHandler(commands.Cog):
                 container.add_items(
                     VisibleLargeSeparator(),
                     TextDisplay(
-                        (
-                            "### Attachments\n"
-                           f"{attachments_display(after_attachments)}"
-                        ),
+                        "### Attachments\n"
+                       f"{attachments_display(after_attachments)}",
                     ),
                 )
 
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-                    (
-                        "### Before\n"
-                       f"{clean_and_truncate(before_content) or "[No content, likely an embed or attachment]"}"
-                    ),
+                    "### Before\n"
+                   f"{clean_and_truncate(before_content) or "[No content, likely an embed or attachment]"}",
                 ),
                 TextDisplay(
-                    (
-                        "### After\n"
-                       f"{clean_and_truncate(after_content) or "[No content, likely an embed or attachment]"}"
-                    ),
+                    "### After\n"
+                   f"{clean_and_truncate(after_content) or "[No content, likely an embed or attachment]"}",
                 ),
             )
 

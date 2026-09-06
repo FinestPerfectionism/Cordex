@@ -28,7 +28,7 @@ class Preview(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener("on_message")
-    async def preview_handler(self, message : Message) -> None:
+    async def listener_preview_onmessage(self, message : Message) -> None:
         content = message.content
         author  = message.author
 

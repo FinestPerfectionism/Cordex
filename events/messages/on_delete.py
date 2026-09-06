@@ -43,7 +43,7 @@ class MessageDeleteHandler(commands.Cog):
         return log_channel
 
     @commands.Cog.listener("on_message_delete")
-    async def message_delete_handler(self, message : Message) -> None:
+    async def listener_delete_onmessagedelete(self, message : Message) -> None:
         content     = message.content
         attachments = message.attachments
         author      = message.author
@@ -91,20 +91,16 @@ class MessageDeleteHandler(commands.Cog):
                 container.add_items(
                     VisibleLargeSeparator(),
                     TextDisplay(
-                        (
-                            "### Attachments\n"
-                           f"{attachments_display(attachments)}"
-                        ),
+                        "### Attachments\n"
+                       f"{attachments_display(attachments)}",
                     ),
                 )
 
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-                    (
-                        "### Content\n"
-                       f"{clean_and_truncate((content) or "[No content, likely an embed or attachment]")}"
-                    ),
+                    "### Content\n"
+                   f"{clean_and_truncate(content or "[No content, likely an embed or attachment]")}",
                 ),
             )
 
