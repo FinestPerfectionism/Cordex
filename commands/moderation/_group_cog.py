@@ -9,6 +9,7 @@ from discord.app_commands import (
     command,
     describe,
     guild_only,
+    rename,
 )
 from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
@@ -162,10 +163,11 @@ class ModerationCommands(
         description = "Remove a ban from member(s).",
     )
     @bot_has_permissions(ban_members = True)
-    @describe(target = "The ID of the member to unban. Must be between 17-19.")
+    @rename(target_id = "target-id")
+    @describe(target_id = "The ID of the member to unban. Must be between 17-19.")
     @bot_owner_cmd()
-    async def cmd_mod_primary_ban_remove(self, interaction : Interaction, target : Range[str, 17, 19]) -> None:
-        await run_mod_primary_ban_remove(interaction, target)
+    async def cmd_mod_primary_ban_remove(self, interaction : Interaction, target_id : Range[str, 17, 19]) -> None:
+        await run_mod_primary_ban_remove(interaction, target_id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation kick Command
