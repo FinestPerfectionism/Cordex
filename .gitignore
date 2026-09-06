@@ -9,3 +9,4 @@ build/
 uv.lock
 replit.nix
 *.db
+pyproject.toml

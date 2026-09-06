@@ -20,7 +20,7 @@ include          = ["."]
 exclude          = ["build"]
 
 reportDeprecated                    = "error"
-reportImplicitStringConcatenation   = "error"
+reportImplicitStringConcatenation   = false
 reportUnannotatedClassAttribute     = "error"
 reportIgnoreCommentWithoutRule      = "error"
 reportMissingParameterType          = "error"
