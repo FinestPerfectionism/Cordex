@@ -128,10 +128,8 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
 
         if topic:
             container.add_text(
-                (
-                    "**Description**\n"
-                   f"{topic}"
-                ),
+                "**Description**\n"
+               f"{topic}",
             )
 
     await interaction.followup.send(view = InfoView())

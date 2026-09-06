@@ -322,18 +322,16 @@ async def run_help(interaction : Interaction, name : str | None = None) -> None:
         view.add_below(
             Container(
                 TextDisplay(
-                    (
-                        "# About me,\n"
-                        "I am not quite sure who I will serve for right now... but hopefully that will change!\n"
-                       f"## {DEVELOPER_EMOJI} My Developer\n"
-                       f"My developer is <@{FINESTPERFECTIONISM_ID}>. I was created and am actively maintained by him.\n"
-                       f"## {STANDSTILL_EMOJI} What I Do\n"
-                        "- **Advanced UI:** I utilize Components V2, modals, and views, to provide a clean user interface that is both easy to navigate and visually appealing.\n"
-                        "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
-                        "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
-                       f"## {CONTESTED_EMOJI} Issues?\n"
-                       f"Should you have feedback or any issues with me, please speak to my developer."
-                    ),
+                    "# About me,\n"
+                    "I am not quite sure who I will serve for right now... but hopefully that will change!\n"
+                   f"## {DEVELOPER_EMOJI} My Developer\n"
+                   f"My developer is <@{FINESTPERFECTIONISM_ID}>. I was created and am actively maintained by him.\n"
+                   f"## {STANDSTILL_EMOJI} What I Do\n"
+                    "- **Advanced UI:** I utilize Components V2, modals, and views, to provide a clean user interface that is both easy to navigate and visually appealing.\n"
+                    "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
+                    "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
+                   f"## {CONTESTED_EMOJI} Issues?\n"
+                   f"Should you have feedback or any issues with me, please speak to my developer.",
                 ),
             ),
         )

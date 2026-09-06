@@ -81,22 +81,18 @@ class _ContextClass(BaseContext["Cordex"]):
                 except Exception as e:
                     if not interaction.response.is_done():
                         await interaction.response.send_message(
-                            (
-                               f"{DENIED_EMOJI} **Error! :[**\n"
-                                "```py\n"
-                               f"{e}\n"
-                                "```"
-                            ),
+                           f"{DENIED_EMOJI} **Error! :[**\n"
+                            "```py\n"
+                           f"{e}\n"
+                            "```",
                             ephemeral = True,
                         )
                     else:
                         await interaction.followup.send(
-                            (
-                               f"{DENIED_EMOJI} **Error! :[**\n"
-                                "```py\n"
-                               f"{e}\n"
-                                "```"
-                            ),
+                           f"{DENIED_EMOJI} **Error! :[**\n"
+                            "```py\n"
+                           f"{e}\n"
+                            "```",
                             ephemeral = True,
                         )
 

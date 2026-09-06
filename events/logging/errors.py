@@ -86,10 +86,8 @@ class ErrorLogger(commands.Cog):
 
         container = Container[view](
             TextDisplay(
-                (
-                    f"# {title}\n"
-                    f"{BOTWORKS_MENTION}, an unexpected exception has occured."
-                ),
+                f"# {title}\n"
+                f"{BOTWORKS_MENTION}, an unexpected exception has occured.",
             ),
             color = COLOR_RED,
         )
@@ -97,10 +95,8 @@ class ErrorLogger(commands.Cog):
         if traceback:
             container.add_item(
                 TextDisplay(
-                    (
-                        f"## Traceback\n"
-                        f"{codeblock(traceback[:2000])}"
-                    ),
+                    f"## Traceback\n"
+                    f"{codeblock(traceback[:2000])}",
                 ),
             )
 
@@ -116,10 +112,8 @@ class ErrorLogger(commands.Cog):
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-                    (
-                        "## User\n"
-                       f"{table}"
-                    ),
+                    "## User\n"
+                   f"{table}",
                 ),
             )
 
@@ -134,10 +128,8 @@ class ErrorLogger(commands.Cog):
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-                    (
-                        "## Guild\n"
-                       f"{table}"
-                    ),
+                    "## Guild\n"
+                   f"{table}",
                 ),
             )
 
@@ -156,10 +148,8 @@ class ErrorLogger(commands.Cog):
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-                    (
-                        "## Command\n"
-                       f"{table}"
-                    ),
+                    "## Command\n"
+                   f"{table}",
                 ),
             )
 
@@ -167,10 +157,8 @@ class ErrorLogger(commands.Cog):
             container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(
-                    (
-                        "## Error\n"
-                       f"{codeblock(error)}"
-                    ),
+                    "## Error\n"
+                   f"{codeblock(error)}",
                 ),
             )
 

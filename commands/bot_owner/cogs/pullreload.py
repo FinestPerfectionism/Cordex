@@ -31,8 +31,8 @@ async def run_bo_cog_pullreload(interaction : Interaction) -> None:
             interaction,
             title    =  "pull from git",
             subtitle = (
-                f"Failed to pull from git:\n"
-                f"{codeblock(pull_output[:1800])}"
+                "Failed to pull from git:\n"
+               f"{codeblock(pull_output[:1800])}"
             ),
         )
         return

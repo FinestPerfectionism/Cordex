@@ -69,10 +69,8 @@ async def _set_guild_config(interaction : Interaction, key : Keys, value : int) 
     db = interaction.client.db
 
     await db.execute(
-        (
-            t"INSERT INTO GuildConfig (guild_id, config_key, config_value) VALUES ({interaction.guild.id}, {fetched_key}, {value}) "
-            t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value"
-        ),
+        t"INSERT INTO GuildConfig (guild_id, config_key, config_value) VALUES ({interaction.guild.id}, {fetched_key}, {value}) "
+        t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
     )
     await db.commit()
 
@@ -247,12 +245,10 @@ class _QuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
             missing.append("`Manage Roles`")
 
         self.warning = TextDisplay[Self](
-            (
-               f"**{CONTESTED_EMOJI} Warning,**\n"
-                "I lack the following permissions:\n"
-               f"{"\n".join(f"- {permission}" for permission in missing)}\n"
-                "Settings will have no effect and nothing will be enforced!"
-            ),
+           f"**{CONTESTED_EMOJI} Warning,**\n"
+            "I lack the following permissions:\n"
+           f"{"\n".join(f"- {permission}" for permission in missing)}\n"
+            "Settings will have no effect and nothing will be enforced!",
         )
 
         self._channels = Checkbox[Self](default = view.enforce_channels)

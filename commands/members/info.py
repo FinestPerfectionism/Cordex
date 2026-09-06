@@ -138,29 +138,23 @@ async def run_member_info(
         if roles:
             container.add_item(
                 TextDisplay(
-                    (
-                        "**Roles**\n"
-                       f"{roles}"
-                    ),
+                    "**Roles**\n"
+                   f"{roles}",
                 ),
             )
 
         if characteristics:
             container.add_item(
                 TextDisplay(
-                    (
-                        "**Characteristics**\n"
-                       f"{characteristics}"
-                    ),
+                    "**Characteristics**\n"
+                   f"{characteristics}",
                 ),
             )
 
         container.add_item(
             TextDisplay(
-                (
-                    "**Join Order**\n"
-                    f"{joins}"
-                ),
+                "**Join Order**\n"
+                f"{joins}",
             ),
         )
 

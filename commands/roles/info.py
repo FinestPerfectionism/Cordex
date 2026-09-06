@@ -76,10 +76,8 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
     )
 
     hierarchy = TextDisplay["InfoView"](
-        (
-            f"**Relative Hierarchy**\n"
-            f"{codeblock(hierarchy_lines, language = None)}"
-        ),
+        f"**Relative Hierarchy**\n"
+        f"{codeblock(hierarchy_lines, language = None)}",
     )
 
     icon_url = role.display_icon.url if isinstance(role.display_icon, Asset) else None
