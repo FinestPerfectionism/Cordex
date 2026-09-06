@@ -1,3 +1,7 @@
+# pyright: reportImportCycles=false
+
+# ⸻ It's going to complain about 'Interaction' in ui.py.
+
 from asyncio import to_thread
 from collections.abc import Awaitable, Callable
 from inspect import getsource
@@ -18,11 +22,11 @@ from discord import Embed, File, Guild, Intents, Message, Status
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand, Command, Group
 from discord.ext import commands
-from discord.ext.commands import Cog  # type: ignore[reportMissingTypeStubs]
-from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
+from discord.ext.commands import Cog  # pyright: ignore[reportMissingTypeStubs]
+from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     Context as BaseContext,
 )
-from discord.ext.commands.view import (  # type: ignore[reportMissingTypeStubs]
+from discord.ext.commands.view import (  # pyright: ignore[reportMissingTypeStubs]
     StringView,
 )
 from discord.http import Route

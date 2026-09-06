@@ -107,7 +107,7 @@ class LayoutView(BaseLayoutView):
 
 class Modal(BaseModal):
     @override
-    async def on_submit(self, interaction : "Interaction", /) -> None:  # type: ignore[reportIncompatibleMethodOverride] # ruff: ignore[quoted-annotation]
+    async def on_submit(self, interaction : "Interaction", /) -> None:  # pyright: ignore[reportIncompatibleMethodOverride] # ruff: ignore[quoted-annotation]
         ...
 
     def add_text(self, text : str, /) -> Self:

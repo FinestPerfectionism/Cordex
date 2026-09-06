@@ -1,8 +1,6 @@
 from collections.abc import Callable
-from operator import eq, ge, gt, le, lt
 from typing import Literal
 
-from discord import Member, Role
 from discord.app_commands import check
 from discord.utils import format_dt, utcnow
 
@@ -10,7 +8,7 @@ from bot import Interaction, bot
 
 from .exceptions import UnimplementedCommand
 
-type Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
+type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
@@ -34,7 +32,7 @@ def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
 # format_now
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def format_now(style : Styles = "F", /) -> str:
+def format_now(style : _Styles = "F", /) -> str:
     return format_dt(utcnow(), style)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -101,42 +99,6 @@ def format_values(
         return f"{items[0]} {conj} {items[1]}"
 
     return f"{divider.join(items[:-1])}{divider} {conj} {items[-1]}"
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# check_hierarchy
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-def check_hierarchy(
-    *,
-    actor      : Member,
-    target     : Member,
-    comparison : Literal[">", "<", "=", ">=", "<="],
-) -> bool:
-
-    # ⸻ Owner vs Owner
-
-    if actor.guild.owner == actor:
-        if target.guild.owner == target:
-            return comparison in {"=", ">=", "<="}
-        return comparison in {">", ">="}
-
-    # ⸻ Actor vs Owner
-
-    if target.guild.owner == target:
-        return comparison in {"<", "<="}
-
-    actor_role  = actor.top_role
-    target_role = target.top_role
-
-    ops : dict[str, Callable[[Role, Role], bool]] = {
-        ">"  : gt,
-        "<"  : lt,
-        "="  : eq,
-        ">=" : ge,
-        "<=" : le,
-    }
-
-    return ops[comparison](actor_role, target_role)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # codeblock

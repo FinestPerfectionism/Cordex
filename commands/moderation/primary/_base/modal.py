@@ -1,6 +1,6 @@
 from typing import Self, final, override
 
-from discord import Member
+from discord import Member, User
 
 from bot import Interaction
 from bot.types import GuildMessagable
@@ -23,7 +23,11 @@ from bot.ui import (
 from constants import CONTESTED_EMOJI
 from core.exceptions import send_bad_argument
 from core.moderation import ActionType
-from core.utilities import check_hierarchy, format_table
+from core.utilities import format_table
+
+from .utilities import check_hierarchy
+
+type Targetable = User | Member | GuildMessagable
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Select Base
@@ -38,12 +42,11 @@ class ModerationModal(Modal):
     def __init__(
         self,
         action_type      : ActionType,
-        target           : Member | GuildMessagable,
+        target           : Targetable,
         *,
         reason_default   : str    | None = None,
         length_default   : str    | None = None,
         dtd_default      : str    | None = None,
-        memberid_default : str    | None = None,
         purge_default    : Member | None = None,
         amount_default   : str    | None = None,
         force_default    : bool          = False,
@@ -65,21 +68,21 @@ class ModerationModal(Modal):
         # ⸻ Validate that target is the correct type.
 
         if isinstance(target, GuildMessagable) and action_type not in channel_types:
-            error = "target cannot be GuildMesseagable if action_type is not channel type"
+            error = "target cannot be GuildMessagable if action_type is not channel type"
             raise ValueError(error)
 
-        if isinstance(target, Member) and action_type not in member_types:
-            error = "target cannot be Member if action_type is not a member type"
+        if isinstance(target, Member | User) and action_type not in member_types:
+            error = "target cannot be Member or User if action_type is not a user type"
             raise ValueError(error)
 
         title : dict[ActionType, str] = {
             "Ban Add"           : f"Banning {target_name}",
-            "Ban Remove"        :  "Unbanning a Member",
-            "Kick"              : f"Kick {target_name}",
-            "Quarantine Add"    : f"Place {target_name} in Quarantine",
-            "Quarantine Remove" : f"Remove {target_name} from Quarantine",
-            "Timeout Add"       : f"Place {target_name} in Timeout",
-            "Timeout Remove"    : f"Remove {target_name} from Timeout",
+            "Ban Remove"        : f"Unbanning {target_name}",
+            "Kick"              : f"Kicking {target_name}",
+            "Quarantine Add"    : f"Placing {target_name} in Quarantine",
+            "Quarantine Remove" : f"Removing {target_name} from Quarantine",
+            "Timeout Add"       : f"Placing {target_name} in Timeout",
+            "Timeout Remove"    : f"Removing {target_name} from Timeout",
             "Purge"             : f"Purging {target_name}",
         }
         name : dict[ActionType, str] = {
@@ -158,15 +161,6 @@ class ModerationModal(Modal):
                 )
 
                 items.append(self.dtd)
-            case "Ban Remove":
-                self._memberid = TextInput[Self](placeholder = "Enter ID here...", default = memberid_default)
-                self.memberid  = Label[Self](
-                    text        = "Member ID",
-                    description = "ID of the member to unban.",
-                    component   = self._memberid,
-                )
-
-                items.append(self.memberid)
             case "Purge":
                 self._amount = TextInput[Self](
                     placeholder = 'ex: "10"',
@@ -220,9 +214,8 @@ class ModerationModal(Modal):
 
         reason = self._reason.value
 
-        length   : str | None = None
-        dtd      : str | None = None
-        memberid : str | None = None
+        length : str | None = None
+        dtd    : str | None = None
 
         purge_member : Member | None = None
         amount       : int    | None = None
@@ -237,8 +230,6 @@ class ModerationModal(Modal):
         match self.action_type:
             case "Ban Add":
                 dtd = self._dtd.value
-            case "Ban Remove":
-                memberid = self._memberid.value
             case "Purge":
                 force          = self._force.value
                 selected_users = self._purge_target.values
@@ -260,7 +251,7 @@ class ModerationModal(Modal):
                 if force and purge_member is None:
                     await send_bad_argument(
                         interaction,
-                        subtitle = {"Force" : "`Force` is dependent on `Target`."},
+                        subtitle = {"force" : "`force` is dependent on `target`."},
                     )
                     return
 
@@ -271,20 +262,40 @@ class ModerationModal(Modal):
                     if purge_member == interaction.user:
                         await send_bad_argument(
                             interaction,
-                            subtitle = {"Target" : "You cannot moderate yourself."},
+                            subtitle = {"target" : "You cannot moderate yourself."},
                         )
                         return
 
                     # ⸻ You cannot moderate those higher in the hierarchy than you.
 
-                    if not check_hierarchy(
-                        actor      = interaction.user,
-                        target     = purge_member,
-                        comparison = "<=",
-                    ):
+                    client = interaction.client
+                    user   = interaction.user
+
+                    if check_hierarchy(user, "<=", purge_member):
+                        if check_hierarchy(user, "=", purge_member):
+                            await send_bad_argument(
+                                interaction,
+                                subtitle = {"target" : f"{purge_member.mention} is equal to you in the hierarchy."},
+                            )
+                            return
+
+                        if purge_member == client.user:
+                            await send_bad_argument(
+                                interaction,
+                                subtitle = {"target" : f"{purge_member.mention} is higher in the hierarchy than you."},
+                                footer   = "Nice try",
+                            )
+                            return
+
                         await send_bad_argument(
                             interaction,
-                            subtitle = {"Target" : f"{purge_member.mention} is higher in the hierarchy than you."},
+                            subtitle = {"target" : f"{purge_member.mention} is higher in the hierarchy than you."},
+                        )
+                        return
+                    if purge_member == client.user:
+                        await send_bad_argument(
+                            interaction,
+                            subtitle = {"target" : f"{purge_member.mention} cannot be moderated."},
                         )
                         return
 
@@ -295,7 +306,7 @@ class ModerationModal(Modal):
                 except ValueError, TypeError:
                     await send_bad_argument(
                         interaction,
-                        subtitle = {"Amount" : "`Amount` must be a valid whole number string."},
+                        subtitle = {"amount" : "`amount` must be a valid whole number string."},
                     )
                     return
 
@@ -303,19 +314,19 @@ class ModerationModal(Modal):
                     case 0:
                         await send_bad_argument(
                             interaction,
-                            subtitle = {"Amount" : "Cannot purge zero messages."},
+                            subtitle = {"amount" : "Cannot purge zero messages."},
                         )
                         return
                     case 1:
                         await send_bad_argument(
                             interaction,
-                            subtitle = {"Amount" : "Please delete the message manually."},
+                            subtitle = {"amount" : "Please delete the message manually."},
                         )
                         return
                     case n if n < 0:
                         await send_bad_argument(
                             interaction,
-                            subtitle = {"Amount" : "`Amount` cannot be a negative number."},
+                            subtitle = {"amount" : "`amount` cannot be a negative number."},
                         )
                         return
                     case _:
@@ -330,7 +341,7 @@ class ModerationModal(Modal):
             "User"     : self.target.mention,
             "Username" : self.target.name,
             "User ID"  : self.target.id,
-        } if isinstance(self.target, Member) else {
+        } if isinstance(self.target, Member | User) else {
             "Channel"    : self.target.mention,
             "Name"       : self.target.name,
             "Channel ID" : self.target.id,
@@ -343,9 +354,6 @@ class ModerationModal(Modal):
 
         if dtd is not None:
             action_table["Days to Delete"] = dtd
-
-        if memberid is not None:
-            action_table["Member ID"] = memberid
 
         if self.action_type == "Purge":
             action_table["Target"] = purge_member.mention if purge_member else "None"
@@ -371,7 +379,6 @@ class ModerationModal(Modal):
                         reason_default   = reason,
                         length_default   = length,
                         dtd_default      = dtd,
-                        memberid_default = memberid,
                         purge_default    = purge_member,
                         amount_default   = str(amount) if amount is not None else None,
                         force_default    = force,
@@ -393,3 +400,80 @@ class ModerationModal(Modal):
                 )
 
         await interaction.followup.send(view = ModerationView(), ephemeral = True)
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# send_moderation_modal
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+async def send_moderation_modal(
+    interaction : Interaction,
+    action_type : ActionType,
+    target      : int | Member | GuildMessagable,
+) -> None:
+    client = interaction.client
+    user   = interaction.user
+
+    if not isinstance(user, Member):
+        return
+
+    if isinstance(target, Member | GuildMessagable):
+        resolved_target = target
+    else:
+        resolved_target = await client.fetch_user(target)
+
+    if isinstance(target, Member):
+        if not check_hierarchy(user, ">", target):
+            if check_hierarchy(user, "=", target):
+                if target == client.user:
+                    await send_bad_argument(
+                        interaction,
+                        subtitle = {"target" : f"{target.mention} is equal to you in the hierarchy."},
+                        footer   = "Nice try",
+                    )
+                    return
+
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {"target" : f"{target.mention} is equal to you in the hierarchy."},
+                )
+                return
+
+            if target == client.user:
+                await send_bad_argument(
+                    interaction,
+                    subtitle = {"target" : f"{target.mention} is higher in the hierarchy than you."},
+                    footer   = "Nice try",
+                )
+                return
+
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : f"{target.mention} is higher in the hierarchy than you."},
+            )
+            return
+        if target == client.user:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : "Please... spare me."},
+                footer   = "Use the native `/kick` or `/ban` commands to remove me...",
+            )
+            return
+
+    action_types = {
+        "Ban Add",
+        "Ban Remove",
+        "Kick",
+        "Quarantine Add",
+        "Quarantine Remove",
+        "Timeout Add",
+        "Timeout Remove",
+        "Purge",
+    }
+
+    if action_type not in action_types:
+        error = f"action_type '{action_type}' is not a recognized moderation action"
+        raise ValueError(error)
+
+    modal = ModerationModal(action_type, resolved_target)
+
+    await interaction.response.send_modal(modal)

@@ -1,6 +1,14 @@
 from typing import final, override
 
-from discord.app_commands import AppCommandError, Group, command, guild_only
+from discord import Member
+from discord.app_commands import (
+    AppCommandError,
+    Group,
+    Range,
+    command,
+    describe,
+    guild_only,
+)
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -78,7 +86,7 @@ class ModerationCommands(
     )
 
     @override
-    async def cog_app_command_error(self, interaction : Interaction, error : AppCommandError) -> None:
+    async def cog_app_command_error(self, interaction : Interaction, error : AppCommandError) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         if isinstance(error, UnconfiguredQuarantine):
             await send_bad_request(
                 interaction,
@@ -117,9 +125,10 @@ class ModerationCommands(
         name        = "add",
         description = "Ban member(s) from the server.",
     )
+    @describe(target = "The member to ban.")
     @bot_owner_cmd()
-    async def cmd_mod_primary_ban_add(self, interaction : Interaction) -> None:
-        await run_mod_primary_ban_add(interaction)
+    async def cmd_mod_primary_ban_add(self, interaction : Interaction, target : Member) -> None:
+        await run_mod_primary_ban_add(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation ban view Command
@@ -141,9 +150,10 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove a ban from member(s).",
     )
+    @describe(target = "The ID of the member to unban. Must be between 17-19.")
     @bot_owner_cmd()
-    async def cmd_mod_primary_ban_remove(self, interaction : Interaction) -> None:
-        await run_mod_primary_ban_remove(interaction)
+    async def cmd_mod_primary_ban_remove(self, interaction : Interaction, target : Range[int, 17, 19]) -> None:
+        await run_mod_primary_ban_remove(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation kick Command
@@ -153,9 +163,10 @@ class ModerationCommands(
         name        = "kick",
         description = "Kick member(s) from the server.",
     )
+    @describe(target = "The member to kick.")
     @bot_owner_cmd()
-    async def cmd_mod_primary_kick(self, interaction : Interaction) -> None:
-        await run_mod_primary_kick(interaction)
+    async def cmd_mod_primary_kick(self, interaction : Interaction, target : Member) -> None:
+        await run_mod_primary_kick(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation quarantine add Command
@@ -165,10 +176,11 @@ class ModerationCommands(
         name        = "add",
         description = "Add member(s) to quarantine.",
     )
+    @describe(target = "The member to place in quarantine.")
     @quarantine_cmd()
     @bot_owner_cmd()
-    async def cmd_mod_primary_quarantine_add(self, interaction : Interaction) -> None:
-        await run_mod_primary_quarantine_add(interaction)
+    async def cmd_mod_primary_quarantine_add(self, interaction : Interaction, target : Member) -> None:
+        await run_mod_primary_quarantine_add(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation quarantine view Command
@@ -191,10 +203,11 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove member(s) from quarantine.",
     )
+    @describe(target = "The member to remove from quarantine.")
     @quarantine_cmd()
     @bot_owner_cmd()
-    async def cmd_mod_primary_quarantine_remove(self, interaction : Interaction) -> None:
-        await run_mod_primary_quarantine_remove(interaction)
+    async def cmd_mod_primary_quarantine_remove(self, interaction : Interaction, target : Member) -> None:
+        await run_mod_primary_quarantine_remove(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation timeout add Command
@@ -204,9 +217,10 @@ class ModerationCommands(
         name        = "add",
         description = "Add member(s) to timeout.",
     )
+    @describe(target = "The member to place in timeout.")
     @bot_owner_cmd()
-    async def cmd_mod_primary_timeout_add(self, interaction : Interaction) -> None:
-        await run_mod_primary_timeout_add(interaction)
+    async def cmd_mod_primary_timeout_add(self, interaction : Interaction, target : Member) -> None:
+        await run_mod_primary_timeout_add(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation timeout view Command
@@ -228,9 +242,10 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove member(s) from timeout.",
     )
+    @describe(target = "The member to remove from timeout.")
     @bot_owner_cmd()
-    async def cmd_mod_primary_timeout_remove(self, interaction : Interaction) -> None:
-        await run_mod_primary_timeout_remove(interaction)
+    async def cmd_mod_primary_timeout_remove(self, interaction : Interaction, target : Member) -> None:
+        await run_mod_primary_timeout_remove(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation purge Command

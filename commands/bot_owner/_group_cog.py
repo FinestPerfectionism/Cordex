@@ -10,7 +10,7 @@ from discord.app_commands import (
     rename,
 )
 from discord.ext import commands
-from discord.ext.commands import (  # type: ignore[reportMissingTypeStubs]
+from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     command as prefix_command,
 )
 
