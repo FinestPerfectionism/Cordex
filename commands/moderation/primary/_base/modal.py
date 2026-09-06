@@ -1,6 +1,6 @@
 from typing import Self, final, override
 
-from discord import Member, NotFound, User
+from discord import Member, User
 
 from bot import Interaction
 from bot.types import GuildMessagable
@@ -421,29 +421,13 @@ class ModerationModal(Modal):
 async def send_moderation_modal(
     interaction : Interaction,
     action_type : ActionType,
-    target      : int | Member | GuildMessagable,
+    target      : Targetable,
 ) -> None:
-    guild  = interaction.guild
     client = interaction.client
     user   = interaction.user
 
-    if not guild:
+    if not interaction.guild or not isinstance(user, Member):
         return
-
-    if not isinstance(user, Member):
-        return
-
-    if isinstance(target, Member | GuildMessagable):
-        resolved_target = target
-    else:
-        try:
-            resolved_target = await client.fetch_user(target)
-        except NotFound:
-            await send_bad_argument(
-                interaction,
-                subtitle = {"target" : "Target could not be resolved."},
-            )
-            return
 
     if isinstance(target, Member):
         if not check_hierarchy(user, ">", target):
@@ -498,6 +482,6 @@ async def send_moderation_modal(
         error = f"action_type '{action_type}' is not a recognized moderation action"
         raise ValueError(error)
 
-    modal = ModerationModal(action_type, resolved_target)
+    modal = ModerationModal(action_type, target)
 
     await interaction.response.send_modal(modal)
