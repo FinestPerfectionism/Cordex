@@ -27,8 +27,7 @@ class Preview(commands.Cog):
         super().__init__()
         self.bot = bot
 
-    @commands.Cog.listener("on_message")
-    async def listener_preview_onmessage(self, message : Message) -> None:
+    async def _process_message_preview(self, message : Message) -> None:
         content = message.content
         author  = message.author
 
@@ -69,24 +68,24 @@ class Preview(commands.Cog):
 
                 self.add_item(container)
 
-        if match := MESSAGE_LINK_PATTERN.search(content):
+        for match in MESSAGE_LINK_PATTERN.finditer(content):
             channel_id = int(match.group(2))
             message_id = int(match.group(3))
 
             target_channel = self.bot.get_channel(channel_id)
 
             if not isinstance(target_channel, Messageable):
-                return
+                continue
 
             try:
                 target_message = await target_channel.fetch_message(message_id)
             except Forbidden:
-                return
+                continue
 
             # ⸻ Message has no content or attachments. Perhaps an embed?
 
             if not target_message.content and not target_message.attachments:
-                return
+                continue
 
             # ⸻ Convert non-media attachments to files for re-uploading.
 
@@ -99,12 +98,21 @@ class Preview(commands.Cog):
 
             names = [file.filename for file in files]
 
-            await message.reply(
-                files            = files,
-                view             = PreviewView(target = target_message, link = content, names = names),
-                mention_author   = False,
-                allowed_mentions = AllowedMentions.none(),
-            )
+            async with message.channel.typing():
+                await message.reply(
+                    files            = files,
+                    view             = PreviewView(target = target_message, link = match.group(0), names = names),
+                    mention_author   = False,
+                    allowed_mentions = AllowedMentions.none(),
+                )
+
+    @commands.Cog.listener("on_message")
+    async def listener_preview_onmessage(self, message : Message) -> None:
+        await self._process_message_preview(message)
+
+    @commands.Cog.listener("on_message_edit")
+    async def listener_preview_onedit(self, _before : Message, after : Message) -> None:
+        await self._process_message_preview(after)
 
 async def setup(bot : Cordex) -> None:
     cog = Preview(bot)
