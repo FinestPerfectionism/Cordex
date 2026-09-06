@@ -1,6 +1,6 @@
 from typing import Self, final, override
 
-from discord import Member, User
+from discord import Member, NotFound, User
 
 from bot import Interaction
 from bot.types import GuildMessagable
@@ -44,14 +44,17 @@ class ModerationModal(Modal):
         action_type      : ActionType,
         target           : Targetable,
         *,
-        reason_default   : str    | None = None,
-        length_default   : str    | None = None,
-        dtd_default      : str    | None = None,
-        purge_default    : Member | None = None,
-        amount_default   : str    | None = None,
-        force_default    : bool          = False,
-        dm_default       : bool          = False,
+        reason_default   : str        | None = None,
+        length_default   : str        | None = None,
+        dtd_default      : str        | None = None,
+        purge_default    : Member     | None = None,
+        amount_default   : str        | None = None,
+        force_default    : bool              = False,
+        dm_default       : bool              = False,
+        edit_view        : LayoutView | None = None,
     ) -> None:
+        self.edit_view : LayoutView | None = edit_view
+
         target_name = target.name
 
         channel_types = {"Purge"}
@@ -306,7 +309,7 @@ class ModerationModal(Modal):
                 except ValueError, TypeError:
                     await send_bad_argument(
                         interaction,
-                        subtitle = {"amount" : "`amount` must be a valid whole number string."},
+                        subtitle = {"amount" : "`amount` must be a valid integer."},
                     )
                     return
 
@@ -372,6 +375,10 @@ class ModerationModal(Modal):
         class Edit(ActionRow["ModerationView"]):
             @button(label = "Edit", style = grey)
             async def btn_edit(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
+                view = self.view
+                if not view:
+                    return
+
                 await interaction.response.send_modal(
                     ModerationModal(
                         modal.action_type,
@@ -383,6 +390,7 @@ class ModerationModal(Modal):
                         amount_default   = str(amount) if amount is not None else None,
                         force_default    = force,
                         dm_default       = dm,
+                        edit_view        = view,
                     ),
                 )
 
@@ -399,7 +407,12 @@ class ModerationModal(Modal):
                     Edit(),
                 )
 
-        await interaction.followup.send(view = ModerationView(), ephemeral = True)
+        view = ModerationView()
+
+        if self.edit_view:
+            await interaction.edit_original_response(view = view)
+        else:
+            await interaction.followup.send(view = view, ephemeral = True)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # send_moderation_modal
@@ -410,8 +423,12 @@ async def send_moderation_modal(
     action_type : ActionType,
     target      : int | Member | GuildMessagable,
 ) -> None:
+    guild  = interaction.guild
     client = interaction.client
     user   = interaction.user
+
+    if not guild:
+        return
 
     if not isinstance(user, Member):
         return
@@ -419,7 +436,14 @@ async def send_moderation_modal(
     if isinstance(target, Member | GuildMessagable):
         resolved_target = target
     else:
-        resolved_target = await client.fetch_user(target)
+        try:
+            resolved_target = await client.fetch_user(target)
+        except NotFound:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : "Target could not be resolved."},
+            )
+            return
 
     if isinstance(target, Member):
         if not check_hierarchy(user, ">", target):
