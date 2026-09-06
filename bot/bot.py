@@ -70,7 +70,7 @@ class _ContextClass(BaseContext["Cordex"]):
     def __init__(self, **kwargs : Unpack[_ContextKwargs]) -> None:
         super().__init__(**kwargs)
 
-    async def send_button(self, callback : _Inter, /) -> None:
+    async def send_button(self, callback : _Inter, /) -> Message:
         @final
         class _ViewButton(View):
             def __init__(self, view_callback : _Inter, /) -> None:
@@ -103,21 +103,21 @@ class _ContextClass(BaseContext["Cordex"]):
                             ephemeral = True,
                         )
 
-        await self.send(view = _ViewButton(callback))
+        return await self.send(view = _ViewButton(callback))
 
-    async def send_embed(self, embed : Embed, /) -> None:
-        await self.send(embed = embed)
+    async def send_embed(self, embed : Embed, /) -> Message:
+        return await self.send(embed = embed)
 
-    async def send_view(self, view : View | LayoutView, /) -> None:
-        await self.send(view = view)
+    async def send_view(self, view : View | LayoutView, /) -> Message:
+        return await self.send(view = view)
 
-    async def send_modal(self, modal : Modal, /) -> None:
+    async def send_modal(self, modal : Modal, /) -> Message:
         async def func(interaction : Interaction) -> None:
             await interaction.response.send_modal(modal)
 
-        await self.send_button(func)
+        return await self.send_button(func)
 
-    async def show_def(self, target : InspectableObject, /) -> None:
+    async def show_def(self, target : InspectableObject, /) -> Message:
         source = getsource(target)
         msg    = (
             "```py\n"
@@ -126,9 +126,8 @@ class _ContextClass(BaseContext["Cordex"]):
         )
 
         if len(msg) < 2000:
-            await self.send(msg)
-        else:
-            await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
+            return await self.send(msg)
+        return await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
 
 
 type Context              = _ContextClass
