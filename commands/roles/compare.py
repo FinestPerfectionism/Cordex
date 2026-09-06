@@ -15,7 +15,7 @@ async def run_role_compare(
     role_1      : Role,
     role_2      : Role,
 ) -> None:
-    await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer()
 
     if role_1 == role_2:
         await send_bad_argument(interaction, subtitle = {("role-1", "role-2") : "You cannot compare a role with itself."})

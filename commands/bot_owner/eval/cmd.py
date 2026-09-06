@@ -54,6 +54,8 @@ from core.utilities import (
 
 from .tools import format_dict, show_attrs
 
+type Lambda = Callable[[], Awaitable[object]]
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # .eval Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -214,7 +216,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
         return
 
-    func = cast("Callable[[], Awaitable[object]]", env["func"])
+    func = cast("Lambda", env["func"])
 
     try:
         with redirect_stdout(stdout):

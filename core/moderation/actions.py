@@ -2,7 +2,7 @@ from asyncio import Semaphore, gather
 from datetime import timedelta
 from typing import Literal, cast, final
 
-from discord import Forbidden, Guild, Member, Message, Role
+from discord import Forbidden, Guild, HTTPException, Member, Message, Role
 from discord.abc import GuildChannel
 from discord.utils import format_dt, utcnow
 
@@ -16,6 +16,9 @@ from .cases import (
     BanAddPayload,
     BanRemovePayload,
     KickPayload,
+    NoteAddPayload,
+    NoteEditPayload,
+    NoteRemovePayload,
     PurgePayload,
     QuarantineAddPayload,
     QuarantineRemovePayload,
@@ -38,6 +41,7 @@ type ActionType = Literal[
 # Moderation Actions Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+# ruff: disable[too-many-public-methods]
 @final
 class Actions:
     def __init__(self, bot : Cordex, guild : Guild) -> None:
@@ -107,7 +111,7 @@ class Actions:
                         )
                     except Forbidden:
                         pass
-                    except Exception:
+                    except HTTPException:
                         log.exception("Failure during quarantine enforcement — Channel")
 
             await gather(*(edit_channel(channel) for channel in self.guild.channels))
@@ -123,7 +127,7 @@ class Actions:
                     await quarantine_role.edit(position = my_role.position - 1)
                 except Forbidden:
                     pass
-                except Exception:
+                except HTTPException:
                     log.exception("Failure during quarantine enforcement — Role")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -169,24 +173,20 @@ class Actions:
         view = LayoutView()
         view.add_items(
             TextDisplay[LayoutView](
-                (
-                    f"{title}\n"
-                    f"-# You were moderated in the server {guild_name} by at {format_now()}!\n"
-                ),
+                f"{title}\n"
+                f"-# You were moderated in the server {guild_name} by at {format_now()}!\n",
             ),
             VisibleLargeSeparator[LayoutView](),
             TextDisplay[LayoutView](
-                (
-                    f"{
-                        format_table(
-                            {
-                                "Moderator" : f"{moderator.mention} | {moderator.id}",
-                                "Reason"    : action.reason,
-                            }
-                        )
-                    }\n\n"
-                    f"{line}"
-                ),
+                f"{
+                    format_table(
+                        {
+                            "Moderator" : f"{moderator.mention} | {moderator.id}",
+                            "Reason"    : action.reason,
+                        }
+                    )
+                }\n\n"
+                f"{line}",
             ),
         )
 
@@ -216,7 +216,7 @@ class Actions:
 
         await action.target.ban(
             reason                 = f"Banned by {action.moderator.name}: {action.reason}",
-            delete_message_seconds = action.days_to_delete,
+            delete_message_seconds = action.seconds_to_delete,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -255,7 +255,7 @@ class Actions:
         if action.dm_user:
             await self._dm_target("Kick", action)
 
-        await action.target.kick(reason = f"Kicked by {action.moderator.name}: {action.reason}")
+        await self.guild.kick(action.target, reason = f"Kicked by {action.moderator.name}: {action.reason}")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_add
@@ -264,6 +264,8 @@ class Actions:
     async def quarantine_add(self, action : QuarantineAddPayload) -> None:
         if quarantine_role := await self.get_quarantine_role():
             await action.target.add_roles(quarantine_role)
+        else:
+            return
 
         if action.dm_user:
             await self._dm_target("Quarantine Add", action)
@@ -293,6 +295,8 @@ class Actions:
     async def quarantine_remove(self, action : QuarantineRemovePayload) -> None:
         if quarantine_role := await self.get_quarantine_role():
             await action.target.remove_roles(quarantine_role)
+        else:
+            return
 
         if action.dm_user:
             await self._dm_target("Quarantine Remove", action)
@@ -376,3 +380,33 @@ class Actions:
                 deleted = []
 
         return deleted
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # note_add
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def note_add(self, _action : NoteAddPayload) -> None:
+        ...
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # note_edit
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def note_edit(self, _action : NoteEditPayload) -> None:
+        ...
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # note_view
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def note_view(self, _action : Member)  -> None:
+        ...
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # note_remove
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def note_remove(self, _action : NoteRemovePayload) -> None:
+        ...
+
+# ruff: enable[too-many-public-methods]

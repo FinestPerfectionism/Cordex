@@ -20,7 +20,7 @@ from core.moderation import Actions
 class UnconfiguredQuarantine(CheckFailure):
     pass
 
-def quarantine_cmd[F : Callable[..., object]]() -> Callable[[F], F]:
+def quarantine_cmd[F]() -> Callable[[F], F]:
     async def predicate(interaction : Interaction) -> bool:
         if not interaction.guild:
             raise BadEnvironmentGuild

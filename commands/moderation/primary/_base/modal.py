@@ -109,14 +109,12 @@ class ModerationModal(Modal):
 
         if action_type == "Purge":
             self.text = TextDisplay[Self](
-                (
-                   f"{CONTESTED_EMOJI} **Use `Amount` alone, `Amount` + `Target`, or `Amount` + `Target` + `Force`.**\n"
-                    "## Cases\n"
-                    "### `Force = False (Default)`\n"
-                    "Finds `n` messages from the channel and purges any from the target.\n"
-                    "### `Force = True`\n"
-                    "Finds `n` messages from the target and purges them from the channel."
-                ),
+               f"{CONTESTED_EMOJI} **Use `Amount` alone, `Amount` + `Target`, or `Amount` + `Target` + `Force`.**\n"
+                "## Cases\n"
+                "### `Force = False (Default)`\n"
+                "Finds `n` messages from the channel and purges any from the target.\n"
+                "### `Force = True`\n"
+                "Finds `n` messages from the target and purges them from the channel.",
             )
 
             items.append(self.text)
@@ -130,19 +128,15 @@ class ModerationModal(Modal):
 
         items.append(self.reason)
 
-        is_lengthable = action_type.endswith("Add")
-        if is_lengthable:
-            is_permanent     = (action_type == "Ban Add")
-            length_statement = " Defaults to permanent." if is_permanent else ""
-
+        if action_type == "Timeout Add":
             self._length = TextInput[Self](
                 placeholder = "Enter length here...",
-                required    = not is_permanent,
+                required    = True,
                 default     = length_default,
             )
             self.length  = Label[Self](
-                text        =  "Length",
-                description = f"Length of the {self.name}.{length_statement}",
+                text        = "Length",
+                description = "Length of the timeout.",
                 component   = self._length,
             )
 
@@ -225,7 +219,7 @@ class ModerationModal(Modal):
         force        : bool          = False
         dm           : bool          = False
 
-        if self.action_type.endswith("Add"):
+        if self.action_type == "Timeout Add":
             length = self._length.value
 
         await interaction.response.defer(ephemeral = True)
@@ -462,8 +456,7 @@ async def send_moderation_modal(
         if target == client.user:
             await send_bad_argument(
                 interaction,
-                subtitle = {"target" : "Please... spare me."},
-                footer   = "Use the native `/kick` or `/ban` commands to remove me...",
+                subtitle = {"target" : f"{target.mention} cannot be moderated."},
             )
             return
 

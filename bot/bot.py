@@ -1,9 +1,8 @@
-# pyright: reportImportCycles=false
+# pyright: reportImportCycles = false
 
-# ⸻ It's going to complain about 'Interaction' in ui.py.
+# ⸻ It's going to complain about 'Interaction' in ui.py and types.py.
 
 from asyncio import to_thread
-from collections.abc import Awaitable, Callable
 from inspect import getsource
 from io import BytesIO
 from logging import getLogger as get_logger
@@ -35,7 +34,7 @@ from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
 from core.state import Connection, connect
 
-from .types import NameStyleResult
+from .types import LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
 
 InspectableObject = (
@@ -59,8 +58,6 @@ log = get_logger("Cordex")
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type _Inter = Callable[[Interaction], Awaitable[None]]
-
 class _ContextKwargs(TypedDict, total = False):
     message : Message
     bot     : Cordex
@@ -70,10 +67,10 @@ class _ContextClass(BaseContext["Cordex"]):
     def __init__(self, **kwargs : Unpack[_ContextKwargs]) -> None:
         super().__init__(**kwargs)
 
-    async def send_button(self, callback : _Inter, /) -> Message:
+    async def send_button(self, callback : LambdaInter, /) -> Message:
         @final
         class _ViewButton(View):
-            def __init__(self, view_callback : _Inter, /) -> None:
+            def __init__(self, view_callback : LambdaInter, /) -> None:
                 super().__init__(timeout = None)
                 self.callback = view_callback
 

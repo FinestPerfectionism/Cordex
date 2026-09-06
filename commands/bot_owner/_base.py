@@ -1,16 +1,14 @@
 import re
-from collections.abc import Awaitable, Callable
 from typing import Self, final
 
 from bot import Interaction, bot
+from bot.types import LambdaInter
 from bot.ui import Button, View, button, green, red
 from core.cog_loader import discover_cogs
 from core.exceptions import send_bad_permissions_command
 from core.permissions import is_bot_owner
 from core.responses import format_message
 from core.utilities import format_values
-
-type _Inter = Callable[[Interaction], Awaitable[None]]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Commands Base
@@ -34,7 +32,7 @@ def _inaccessible_emoji_ids(text : str) -> list[str]:
 
 @final
 class _NoEmojiAccessView(View):
-    def __init__(self, on_continue : _Inter) -> None:
+    def __init__(self, on_continue : LambdaInter) -> None:
         super().__init__(timeout = None)
         self.on_continue = on_continue
 
@@ -58,7 +56,7 @@ class _NoEmojiAccessView(View):
 async def emoji_inaccessible(
     interaction : Interaction,
     text        : str,
-    on_continue : _Inter,
+    on_continue : LambdaInter,
 ) -> bool:
     inaccessible_ids = _inaccessible_emoji_ids(text)
 

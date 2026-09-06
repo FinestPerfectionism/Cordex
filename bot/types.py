@@ -1,12 +1,18 @@
-from typing import NamedTuple
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, NamedTuple
 
 from discord import StageChannel, TextChannel, Thread, VoiceChannel
 
 from constants import DisplayNameEffect, DisplayNameFont
 
+if TYPE_CHECKING:
+    from .bot import Interaction
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Types
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+type LambdaInter = Callable[["Interaction"], Awaitable[None]]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Guild Messagables

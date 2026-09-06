@@ -18,7 +18,7 @@ type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 # @unimplemented
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def unimplemented[F : Callable[..., object]]() -> Callable[[F], F]:
+def unimplemented[F]() -> Callable[[F], F]:
     def predicate(_interaction : Interaction) -> bool:
         raise UnimplementedCommand
 

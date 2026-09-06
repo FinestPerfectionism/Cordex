@@ -38,8 +38,7 @@ class BaseAddPayload:
 
 @dataclass
 class BanAddPayload(BaseAddPayload):
-    length         : int | None
-    days_to_delete : int
+    seconds_to_delete : int
 
 
 type BanRemovePayload = BaseRemovePayload
@@ -58,11 +57,7 @@ class TimeoutAddPayload(BaseAddPayload):
 
 type TimeoutRemovePayload = BaseRemovePayload
 
-@dataclass
-class QuarantineAddPayload(BaseAddPayload):
-    length : int | None
-
-
+type QuarantineAddPayload    = BaseAddPayload
 type QuarantineRemovePayload = BaseRemovePayload
 
 @dataclass
@@ -73,6 +68,23 @@ class PurgePayload:
     channel   : GuildMessagable
     amount    : int
     force     : bool
+
+@dataclass
+class BaseNotePayload:
+    target  : Member
+    content : str
+
+@dataclass
+class NoteAddPayload(BaseNotePayload):
+    pass
+
+@dataclass
+class NoteEditPayload(BaseNotePayload):
+    pass
+
+@dataclass
+class NoteRemovePayload:
+    target : Member
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # ...
@@ -141,4 +153,10 @@ CASE_MAP : dict[CaseTypes, CaseData] = {
 
 class Cases:
     def create_case(self) -> None:
+        ...
+
+    def get_case(self) -> None:
+        ...
+
+    def edit_case(self) -> None:
         ...
