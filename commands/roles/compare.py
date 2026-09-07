@@ -1,6 +1,9 @@
-from discord import AllowedMentions, Embed, Role
+from typing import Self, final
+
+from discord import AllowedMentions, Role
 
 from bot import Interaction
+from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 
@@ -29,23 +32,34 @@ async def run_role_compare(
             diffs_role_1.append(format_permission(perm_name, value = value1))
             diffs_role_2.append(format_permission(perm_name, value = value2))
 
-    embed = Embed(
-        title = f"Permission Differences for {role_1.name} and {role_2.name}",
-        color = COLOR_GREY,
+    # ⸻ Build the view.
+
+    @final
+    class CompareView(LayoutView):
+        if not diffs_role_1:
+            container = Container[Self](
+                TextDisplay(f"### Permission Ddifferences for {role_1.mention} and {role_2.mention}"),
+                VisibleLargeSeparator(),
+                TextDisplay("Roles have identical permissions."),
+                color = COLOR_GREY,
+            )
+        else:
+            container = Container[Self](
+                TextDisplay(f"### Permission Differences for {role_1.mention} and {role_2.mention}"),
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    f"{role_1.mention}\n"
+                    f"{("No permissions." if role_1.permissions.value == 0 else "\n".join(diffs_role_1))}",
+                ),
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    f"{role_2.mention}\n"
+                    f"{("No permissions." if role_2.permissions.value == 0 else "\n".join(diffs_role_2))}",
+                ),
+                color = COLOR_GREY,
+            )
+
+    await interaction.followup.send(
+        view             = CompareView(),
+        allowed_mentions = AllowedMentions.none(),
     )
-
-    if not diffs_role_1:
-        embed.description = "Roles have identical permissions."
-    else:
-        embed.add_field(
-            name   = role_1.name,
-            value  = "No permissions." if role_1.permissions.value == 0 else "\n".join(diffs_role_1),
-            inline = True,
-        )
-        embed.add_field(
-            name   = role_2.name,
-            value  = "No permissions." if role_2.permissions.value == 0 else "\n".join(diffs_role_2),
-            inline = True,
-        )
-
-    await interaction.followup.send(embed = embed, allowed_mentions = AllowedMentions.none())
