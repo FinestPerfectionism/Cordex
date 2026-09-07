@@ -1,6 +1,6 @@
-from typing import Self, cast, final
+from typing import Self, final
 
-from discord import AllowedMentions, Guild, Message
+from discord import AllowedMentions, Message
 from discord.ext import commands
 from discord.utils import format_dt, utcnow
 
@@ -31,26 +31,6 @@ class MessageEditHandler(commands.Cog):
         super().__init__()
         self.bot = bot
 
-    async def _get_log_channel(self, guild : Guild) -> GuildMessagable | None:
-        async with self.bot.db.execute(
-            t"SELECT config_value FROM GuildConfig WHERE guild_id = {guild.id} AND config_key = {"messages_edit_channel"}",
-        ) as cursor:
-            res = await cursor.fetchone()
-
-        if not res:
-            return None
-
-        channel_id = cast("int | None", res[0])
-        if channel_id is None:
-            return None
-
-        log_channel = guild.get_channel(channel_id)
-
-        if not isinstance(log_channel, GuildMessagable):
-            return None
-
-        return log_channel
-
     @commands.Cog.listener("on_message_edit")
     async def listener_delete_onmessageedit(self, before : Message, after : Message) -> None:
         author  = before.author
@@ -74,7 +54,7 @@ class MessageEditHandler(commands.Cog):
 
         # ⸻ Block messages that do not belong to the current guild context.
 
-        log_channel = await self._get_log_channel(guild)
+        log_channel = await self.bot.config(guild).get_messages_edit_logging_channel()
 
         if log_channel is None or log_channel.guild != guild:
             return

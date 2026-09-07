@@ -10,6 +10,7 @@ from .cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
+from .managers import LockdownManager, NoteManager, QuarantineManager
 
 __all__ = [
     "ActionResult",
@@ -19,8 +20,11 @@ __all__ = [
     "BanRemovePayload",
     "Cases",
     "KickPayload",
+    "LockdownManager",
+    "NoteManager",
     "PurgePayload",
     "QuarantineAddPayload",
+    "QuarantineManager",
     "QuarantineRemovePayload",
     "TimeoutAddPayload",
     "TimeoutRemovePayload",

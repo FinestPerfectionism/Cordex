@@ -1,10 +1,8 @@
-from asyncio import Semaphore, gather
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Literal, cast, final
+from typing import Literal, final
 
-from discord import Forbidden, Guild, HTTPException, Member, Message, Role
-from discord.abc import GuildChannel
+from discord import Forbidden, Guild, HTTPException, Member, Message
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex, log
@@ -16,6 +14,7 @@ from core.utilities import format_now, format_table
 from .cases import (
     BanAddPayload,
     BanRemovePayload,
+    Cases,
     KickPayload,
     LockdownAddPayload,
     LockdownRemovePayload,
@@ -28,6 +27,7 @@ from .cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
+from .managers import LockdownManager, NoteManager, QuarantineManager
 
 type ActionType = Literal[
     "Ban Add",
@@ -51,13 +51,18 @@ class ActionResult[T = None]:
 # Moderation Actions Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-# ruff: disable[too-many-public-methods]
 @final
 class Actions:
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
-        self.bot   = bot
-        self.guild = guild
+        self.bot    = bot
+        self.guild  = guild
+        self.config = self.bot.config(guild)
+
+        self._cases              = Cases(bot, guild)
+        self._lockdown_manager   = LockdownManager(bot, guild)
+        self._quarantine_manager = QuarantineManager(bot, guild)
+        self._note_manager       = NoteManager(bot, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure
@@ -132,86 +137,6 @@ class Actions:
             return False
         else:
             return True
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_quarantined_members
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def get_quarantined_members(self) -> list[Member] | None:
-        ...
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_quarantine_role
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def get_quarantine_role(self) -> Role | None:
-        async with self.bot.db.execute(
-            t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"quarantine_role"}",
-        ) as cursor:
-            res = await cursor.fetchone()
-
-        if not res:
-            return None
-
-        role_id = cast("int | None", res[0])
-        if role_id is None:
-            return None
-
-        return self.guild.get_role(role_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # quarantine_enforce
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    type EnforceTypes = Literal["Channel", "Role"]
-
-    async def quarantine_enforce(self, enforce_type : EnforceTypes) -> None:
-        quarantine_role = await self.get_quarantine_role()
-        if not quarantine_role:
-            return
-
-        if enforce_type == "Channel":
-            semaphore = Semaphore(5)
-
-            async def edit_channel(channel : GuildChannel) -> None:
-                async with semaphore:
-                    overwrites = channel.overwrites_for(quarantine_role)
-
-                    overwrites.update(
-                        send_messages_in_threads = False,
-                        create_instant_invite    = False,
-                        send_messages            = False,
-                        create_public_threads    = False,
-                        create_private_threads   = False,
-                        read_messages            = False,
-                    )
-
-                    try:
-                        await channel.set_permissions(
-                            quarantine_role,
-                            overwrite = overwrites,
-                            reason    = "Scheduled quarantine enforce.",
-                        )
-                    except Forbidden:
-                        pass
-                    except HTTPException:
-                        self._log_failure("channel quarantine enforcement")
-
-            await gather(*(edit_channel(channel) for channel in self.guild.channels))
-
-        if enforce_type == "Role":
-            me = self.guild.me
-            if not me or not me.guild_permissions.manage_roles:
-                return
-
-            my_role = me.top_role
-            if my_role.position > 1 and quarantine_role.position != my_role.position - 1:
-                try:
-                    await quarantine_role.edit(position = my_role.position - 1)
-                except Forbidden:
-                    pass
-                except HTTPException:
-                    self._log_failure("role quarantine enforcement")
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_add
@@ -334,7 +259,7 @@ class Actions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def quarantine_add(self, action : QuarantineAddPayload) -> ActionResult:
-        quarantine_role = await self.get_quarantine_role()
+        quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
             return ActionResult(
                 failed  = True,
@@ -387,7 +312,7 @@ class Actions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def quarantine_remove(self, action : QuarantineRemovePayload) -> ActionResult:
-        quarantine_role = await self.get_quarantine_role()
+        quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
             return ActionResult(
                 failed  = True,
@@ -558,5 +483,3 @@ class Actions:
 
     async def note_remove(self, _action : NoteRemovePayload) -> None:
         ...
-
-# ruff: enable[too-many-public-methods]

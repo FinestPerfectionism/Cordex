@@ -16,7 +16,7 @@ from bot.ui import (
 )
 from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI, DENIED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
-from core.moderation import Actions
+from core.moderation import QuarantineManager
 from core.paginator import NamedPaginator, PageData
 
 type Keys = Literal["edit", "delete", "logging", "quarantine", "enforce_channels", "enforce_roles"]
@@ -29,10 +29,10 @@ async def _get_guild_config(interaction : Interaction, key : Keys) -> int | None
     key_dict : dict[Keys, str] = {
         "edit"             : "messages_edit_channel",
         "delete"           : "messages_delete_channel",
-        "logging"          : "logging_channel",
-        "quarantine"       : "quarantine_role",
-        "enforce_channels" : "quarantine_enforce_channels",
-        "enforce_roles"    : "quarantine_enforce_roles",
+        "logging"          : "moderation_logging_channel",
+        "quarantine"       : "moderation_quarantine_role",
+        "enforce_channels" : "moderation_quarantine_enforce_channels",
+        "enforce_roles"    : "moderation_quarantine_enforce_roles",
     }
 
     fetched_key = key_dict[key]
@@ -55,10 +55,10 @@ async def _set_guild_config(interaction : Interaction, key : Keys, value : int) 
     key_dict : dict[Keys, str] = {
         "edit"             : "messages_edit_channel",
         "delete"           : "messages_delete_channel",
-        "logging"          : "logging_channel",
-        "quarantine"       : "quarantine_role",
-        "enforce_channels" : "quarantine_enforce_channels",
-        "enforce_roles"    : "quarantine_enforce_roles",
+        "logging"          : "moderation_logging_channel",
+        "quarantine"       : "moderation_quarantine_role",
+        "enforce_channels" : "moderation_quarantine_enforce_channels",
+        "enforce_roles"    : "moderation_quarantine_enforce_roles",
     }
 
     fetched_key = key_dict[key]
@@ -193,7 +193,7 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
             raise
 
 @final
-class _LoggingSelect(ChannelSelect["_ConfigurationView"]):
+class _ModerationLoggingSelect(ChannelSelect["_ConfigurationView"]):
     def __init__(self) -> None:
         super().__init__(
             placeholder   = "Select a channel...",
@@ -251,7 +251,7 @@ class _LoggingSelect(ChannelSelect["_ConfigurationView"]):
             raise
 
 @final
-class _QuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
+class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
     def __init__(self) -> None:
         super().__init__(placeholder = "Select a role...")
 
@@ -275,12 +275,12 @@ class _QuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         if not self.view:
             return
 
-        actions = Actions(interaction.client, interaction.guild)
+        manager = QuarantineManager(interaction.client, interaction.guild)
 
         try:
             await _set_guild_config(interaction, "quarantine", role.id)
-            await actions.quarantine_enforce("Channel")
-            await actions.quarantine_enforce("Role")
+            await manager.quarantine_enforce("Channel")
+            await manager.quarantine_enforce("Role")
         except Exception:
             self.default_values = previous
             await send_bad_operation(interaction, title = "update quarantine role")
@@ -292,7 +292,7 @@ class _QuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         await interaction.response.edit_message(view = self.view)
 
 @final
-class _QuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
+class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
     def __init__(self, view : _ConfigurationView) -> None:
         super().__init__()
         self.view = view
@@ -349,17 +349,17 @@ class _QuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         self.view.enforce_roles    = roles
         self.view.update_pages()
 
-        actions = Actions(interaction.client, interaction.guild)
+        manager = QuarantineManager(interaction.client, interaction.guild)
 
         if channels:
-            await actions.quarantine_enforce("Channel")
+            await manager.quarantine_enforce("Channel")
         if roles:
-            await actions.quarantine_enforce("Role")
+            await manager.quarantine_enforce("Role")
 
         await interaction.response.edit_message(view = self.view)
 
 @final
-class _QuarantineEnforceButton(Button["_ConfigurationView"]):
+class _ModerationQuarantineEnforceButton(Button["_ConfigurationView"]):
     def __init__(self) -> None:
         super().__init__(label = "Configure Enforcement")
 
@@ -368,7 +368,7 @@ class _QuarantineEnforceButton(Button["_ConfigurationView"]):
         if not self.view:
             return
 
-        await interaction.response.send_modal(_QuarantineEnforceModal(self.view))
+        await interaction.response.send_modal(_ModerationQuarantineEnforceModal(self.view))
 
 @final
 class _ConfigurationView(NamedPaginator):
@@ -393,9 +393,9 @@ class _ConfigurationView(NamedPaginator):
 
         self.edit_select            = _MessagesEditSelect()
         self.delete_select          = _MessagesDeleteSelect()
-        self.logging_select         = _LoggingSelect()
-        self.quarantine_select      = _QuarantineRoleSelect()
-        self.quarantine_enforce_btn = _QuarantineEnforceButton()
+        self.logging_select         = _ModerationLoggingSelect()
+        self.quarantine_select      = _ModerationQuarantineRoleSelect()
+        self.quarantine_enforce_btn = _ModerationQuarantineEnforceButton()
 
         if self.edit_id:
             self.edit_select.default_values = [Object(id = self.edit_id)]

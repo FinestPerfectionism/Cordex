@@ -32,7 +32,7 @@ from discord.http import Route
 
 from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
-from core.state import Connection, connect
+from core.state import Config, Connection, connect
 
 from .types import LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
@@ -147,6 +147,13 @@ class Cordex(commands.Bot):
         self._app_commands_cache : list[AppCommand] = []
 
         self.restarting : bool = False
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Configuration
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def config(self, guild : Guild) -> Config:
+        return Config(self, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Name Styles
