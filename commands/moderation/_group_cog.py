@@ -3,7 +3,6 @@ from typing import final, override
 from discord import Member
 from discord.app_commands import (
     AppCommandError,
-    BotMissingPermissions,
     Group,
     Range,
     command,
@@ -15,12 +14,12 @@ from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.exceptions import send_bad_request
+from core.exceptions import UnconfiguredQuarantine, send_bad_request
 from core.permissions import bot_owner_cmd
 from core.utilities import unimplemented
 
 from .cases import run_mod_cases_query, run_mod_cases_view
-from .primary._base import UnconfiguredQuarantine, quarantine_cmd
+from .primary._base import quarantine_cmd
 from .primary.ban import (
     run_mod_primary_ban_add,
     run_mod_primary_ban_remove,
@@ -94,13 +93,6 @@ class ModerationCommands(
             await send_bad_request(
                 interaction,
                 subtitle = "This server has not configured a quarantine role, so quarantine operations cannot be performed",
-            )
-            return
-
-        if isinstance(error, BotMissingPermissions):
-            await send_bad_request(
-                interaction,
-                subtitle = "This command requires certain permissions to run that I lack",
             )
             return
 

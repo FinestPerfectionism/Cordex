@@ -22,7 +22,7 @@ from discord import (
     TextChannel,
     User,
 )
-from discord.app_commands import AppCommandError
+from discord.app_commands import AppCommandError, BotMissingPermissions
 from discord.ext import commands
 
 from bot import Context, Cordex, Interaction
@@ -36,11 +36,13 @@ from core.exceptions import (
     BadEnvironmentDMs,
     BadEnvironmentGuild,
     BadPermissionsCommand,
+    UnconfiguredQuarantine,
     UnimplementedCommand,
     send_bad_environment_dms,
     send_bad_environment_guild,
     send_bad_operation,
     send_bad_permissions_command,
+    send_bad_request,
     send_unimplemented_command,
 )
 from core.responses import ResponseOverride, format_send
@@ -236,6 +238,16 @@ class ErrorLogger(commands.Cog):
 
         if isinstance(error, UnimplementedCommand):
             await send_unimplemented_command(interaction)
+            return
+
+        if isinstance(error, UnconfiguredQuarantine):
+            return
+
+        if isinstance(error, BotMissingPermissions):
+            await send_bad_request(
+                interaction,
+                subtitle = "This command requires certain permissions to run that I lack",
+            )
             return
 
         await send_bad_operation(interaction)

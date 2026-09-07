@@ -3,10 +3,10 @@ from operator import eq, ge, gt, le, lt
 from typing import Literal
 
 from discord import Member, Role
-from discord.app_commands import CheckFailure, check
+from discord.app_commands import check
 
 from bot import Interaction
-from core.exceptions import BadEnvironmentGuild
+from core.exceptions import BadEnvironmentGuild, UnconfiguredQuarantine
 from core.moderation import Actions
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -16,9 +16,6 @@ from core.moderation import Actions
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # quarantine_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-class UnconfiguredQuarantine(CheckFailure):
-    pass
 
 def quarantine_cmd[F]() -> Callable[[F], F]:
     async def predicate(interaction : Interaction) -> bool:
