@@ -1,4 +1,5 @@
 import re
+from asyncio import gather, sleep
 from typing import Self, final
 
 from discord import AllowedMentions, Forbidden, MediaGalleryItem, Message
@@ -89,16 +90,17 @@ class Preview(commands.Cog):
 
             # ⸻ Convert non-media attachments to files for re-uploading.
 
-            files = [
-                await attachment.to_file()
-                for attachment in target_message.attachments
-                if attachment.content_type
-                and not attachment.content_type.startswith(("image/", "video/"))
+            attachments = [
+                attachment for attachment in target_message.attachments
+                if attachment.content_type and
+                not attachment.content_type.startswith(("image/", "video/"))
             ]
 
+            files = await gather(*(attachment.to_file() for attachment in attachments))
             names = [file.filename for file in files]
 
             async with message.channel.typing():
+                await sleep(0.5)
                 await message.reply(
                     files            = files,
                     view             = PreviewView(target = target_message, link = match.group(0), names = names),
