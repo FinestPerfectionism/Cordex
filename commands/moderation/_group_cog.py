@@ -339,6 +339,6 @@ class ModerationCommands(
     async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
         await run_mod_cases_view(interaction)
 
-# async def setup(bot : Cordex) -> None:
-#     cog = ModerationCommands(bot)
-#     await bot.add_cog(cog)
+async def setup(bot : Cordex) -> None:
+    cog = ModerationCommands(bot)
+    await bot.add_cog(cog)
