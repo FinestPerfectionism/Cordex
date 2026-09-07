@@ -69,6 +69,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "channel" : ctx.channel,
         "author"  : ctx.author,
         "guild"   : ctx.guild,
+        "me"      : getattr(ctx.guild, "me", None),
         "message" : ctx.message,
 
         "Context"              : Context,
