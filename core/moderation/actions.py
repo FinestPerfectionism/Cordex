@@ -41,7 +41,8 @@ type ActionType = Literal[
 @dataclass(frozen = True)
 class ActionResult[T = None]:
     failed  : bool
-    dm_sent : bool | None
+    # logged  : bool
+    dmed    : bool | None
     data    : T    | None = None
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -249,7 +250,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = success,
+            dmed    = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -295,7 +296,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = success,
+            dmed    = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -323,7 +324,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = success,
+            dmed    = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -335,7 +336,7 @@ class Actions:
         if not quarantine_role:
             return ActionResult(
                 failed  = True,
-                dm_sent = False,
+                dmed    = False,
             )
 
         if action.dm_user:
@@ -358,7 +359,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = success,
+            dmed    = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -388,7 +389,7 @@ class Actions:
         if not quarantine_role:
             return ActionResult(
                 failed  = True,
-                dm_sent = False,
+                dmed    = False,
             )
 
         if action.dm_user:
@@ -411,7 +412,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = success,
+            dmed    = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -439,7 +440,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = success,
+            dmed    = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -485,7 +486,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = success,
+            dmed    = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -522,7 +523,7 @@ class Actions:
 
         return ActionResult(
             failed  = failed,
-            dm_sent = None,
+            dmed    = None,
             data    = len(deleted),
         )
 

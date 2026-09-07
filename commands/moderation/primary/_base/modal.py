@@ -20,7 +20,7 @@ from bot.ui import (
     grey,
     red,
 )
-from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI
+from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI, DENIED_EMOJI
 from core.exceptions import send_bad_argument
 from core.moderation import (
     Actions,
@@ -34,6 +34,7 @@ from core.moderation import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
+from core.responses import ResponseOverride, format_message
 from core.utilities import format_table
 
 from .utilities import check_hierarchy
@@ -497,16 +498,65 @@ class ModerationModal(Modal):
                             ),
                         )
 
-                status_line = f"{CONTESTED_EMOJI} The {modal.name} failed." if result.failed else f"{ACCEPTED_EMOJI} The {modal.name} was successful."
+                table : dict[str, str] = {}
+                statuses : list[bool] = []
 
-                if result.dm_sent is False:
-                    status_line += " The member could not be DMed."
+                if not result.failed:
+                    table[modal.action_type] = f"{ACCEPTED_EMOJI} Success."
+                    statuses.append(True)
+                else:
+                    table[modal.action_type] = f"{DENIED_EMOJI} Fail."
+                    statuses.append(False)
+
+                if result.dmed is True:
+                    table["DMed Member"] = f"{ACCEPTED_EMOJI} Success."
+                    statuses.append(True)
+                elif result.dmed is False:
+                    table["DMed Member"] = f"{DENIED_EMOJI} Fail."
+                    statuses.append(False)
+
+                # if result.logged is True:
+                #     table["Logged"] = f"{ACCEPTED_EMOJI} Success."
+                #     statuses.append(True)
+                # elif result.logged is False:
+                #     table["Logged"] = f"{DENIED_EMOJI} Fail."
+                #     statuses.append(False)
 
                 if modal.action_type == "Purge" and isinstance(result.data, int):
-                    status_line += f" Purged {result.data} message(s)."
+                    purge_line = f"Purged {result.data} message(s).\n"
+                else:
+                    purge_line = None
+
+                subtitle = (
+                    f"{purge_line}"
+                    f"{format_table(table)}"
+                )
+
+                if all(statuses):
+                    msg_type = "success"
+                elif any(statuses):
+                    msg_type = "warning"
+                else:
+                    msg_type = "error"
+
+                if all(statuses):
+                    title = f"The {modal.name} was successful"
+                elif any(statuses):
+                    title = f"The {modal.name} was partially successful"
+                else:
+                    title = f"The {modal.name} failed"
 
                 result_view = LayoutView()
-                result_view.add_item(TextDisplay(status_line))
+                result_view.add_item(
+                    TextDisplay(
+                        format_message(
+                            msg_type = msg_type,
+                            title    = title,
+                            subtitle = subtitle,
+                            override = ResponseOverride(prefix = False),
+                        ),
+                    ),
+                )
 
                 await interaction.edit_original_response(view = result_view)
 
