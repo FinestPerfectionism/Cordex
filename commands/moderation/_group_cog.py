@@ -95,12 +95,14 @@ class ModerationCommands(
                 interaction,
                 subtitle = "This server has not configured a quarantine role, so quarantine operations cannot be performed",
             )
+            return
 
         if isinstance(error, BotMissingPermissions):
             await send_bad_request(
                 interaction,
                 subtitle = "This command requires certain permissions to run that I lack",
             )
+            return
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation lockdown add Command
@@ -275,9 +277,10 @@ class ModerationCommands(
         description = "Purge messages from member(s) or channel(s).",
     )
     @bot_has_permissions(manage_messages = True, read_message_history = True)
+    @describe(target = "The member to purge messages from.")
     @bot_owner_cmd()
-    async def cmd_mod_primary_purge(self, interaction : Interaction) -> None:
-        await run_mod_primary_purge(interaction)
+    async def cmd_mod_primary_purge(self, interaction : Interaction, target : Member | None = None) -> None:
+        await run_mod_primary_purge(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation note add Command

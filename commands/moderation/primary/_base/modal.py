@@ -15,7 +15,6 @@ from bot.ui import (
     Modal,
     TextDisplay,
     TextInput,
-    UserSelect,
     VisibleLargeSeparator,
     button,
     grey,
@@ -53,23 +52,23 @@ type Targetable = User | Member | GuildMessagable
 class ModerationModal(Modal):
     def __init__(
         self,
-        action_type      : ActionType,
-        target           : Targetable,
+        action_type          : ActionType,
+        target               : Targetable,
         *,
-        reason_default   : str        | None = None,
-        length_default   : str        | None = None,
-        dtd_default      : str        | None = None,
-        purge_default    : Member     | None = None,
-        amount_default   : str        | None = None,
-        force_default    : bool              = False,
-        dm_default       : bool              = False,
-        edit_view        : LayoutView | None = None,
+        reason_default       : str        | None = None,
+        length_default       : str        | None = None,
+        dtd_default          : str        | None = None,
+        purge_target_default : Member     | None = None,
+        amount_default       : str        | None = None,
+        force_default        : bool              = False,
+        dm_default           : bool              = False,
+        edit_view            : LayoutView | None = None,
     ) -> None:
-        self.edit_view : LayoutView | None = edit_view
+        self.edit_view            : LayoutView | None = edit_view
+        self.purge_target_default : Member     | None = purge_target_default
 
         target_name = target.name
 
-        channel_types = {"Purge"}
         member_types  = {
             "Ban Add",
             "Ban Remove",
@@ -82,7 +81,7 @@ class ModerationModal(Modal):
 
         # ⸻ Validate that target is the correct type.
 
-        if isinstance(target, GuildMessagable) and action_type not in channel_types:
+        if isinstance(target, GuildMessagable) and action_type != "Purge":
             error = "target cannot be GuildMessagable if action_type is not channel type"
             raise ValueError(error)
 
@@ -183,17 +182,6 @@ class ModerationModal(Modal):
                     component   = self._amount,
                 )
 
-                self._purge_target = UserSelect[Self](
-                    placeholder    = "Enter a member...",
-                    required       = False,
-                    default_values = [purge_default] if purge_default else [],
-                )
-                self.purge_target  = Label[Self](
-                    text        = "Target",
-                    description = "The target to purge messages from.",
-                    component   = self._purge_target,
-                )
-
                 self._force = Checkbox[Self](default = force_default)
                 self.force  = Label[Self](
                     text        = "Force",
@@ -201,7 +189,7 @@ class ModerationModal(Modal):
                     component   = self._force,
                 )
 
-                items.extend((self.amount, self.purge_target, self.force))
+                items.extend((self.amount, self.force))
             case _:
                 pass
 
@@ -226,7 +214,7 @@ class ModerationModal(Modal):
         length : str | None = None
         dtd    : str | None = None
 
-        purge_member : Member | None = None
+        purge_member : Member | None = self.purge_target_default
         amount       : int    | None = None
         force        : bool          = False
         dm           : bool          = False
@@ -240,10 +228,7 @@ class ModerationModal(Modal):
             case "Ban Add":
                 dtd = self._dtd.value
             case "Purge":
-                force          = self._force.value
-                selected_users = self._purge_target.values
-                target_user    = selected_users[0] if selected_users else None
-                purge_member   = target_user if isinstance(target_user, Member) else None
+                force = self._force.value
 
                 # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -263,50 +248,6 @@ class ModerationModal(Modal):
                         subtitle = {"force" : "`force` is dependent on `target`."},
                     )
                     return
-
-                if purge_member is not None:
-
-                    # ⸻ You cannot moderate yourself.
-
-                    if purge_member == interaction.user:
-                        await send_bad_argument(
-                            interaction,
-                            subtitle = {"target" : "You cannot moderate yourself."},
-                        )
-                        return
-
-                    # ⸻ You cannot moderate those higher in the hierarchy than you.
-
-                    client = interaction.client
-                    user   = interaction.user
-
-                    if check_hierarchy(user, "<=", purge_member):
-                        if check_hierarchy(user, "=", purge_member):
-                            await send_bad_argument(
-                                interaction,
-                                subtitle = {"target" : f"{purge_member.mention} is equal to you in the hierarchy."},
-                            )
-                            return
-
-                        if purge_member == client.user:
-                            await send_bad_argument(
-                                interaction,
-                                subtitle = {"target" : f"{purge_member.mention} is higher in the hierarchy than you."},
-                                footer   = "Nice try",
-                            )
-                            return
-
-                        await send_bad_argument(
-                            interaction,
-                            subtitle = {"target" : f"{purge_member.mention} is higher in the hierarchy than you."},
-                        )
-                        return
-                    if purge_member == client.user:
-                        await send_bad_argument(
-                            interaction,
-                            subtitle = {"target" : f"{purge_member.mention} cannot be moderated."},
-                        )
-                        return
 
                 # ⸻ Validate amount.
 
@@ -422,14 +363,14 @@ class ModerationModal(Modal):
                     ModerationModal(
                         modal.action_type,
                         modal.target,
-                        reason_default = reason,
-                        length_default = length,
-                        dtd_default    = dtd,
-                        purge_default  = purge_member,
-                        amount_default = str(amount) if amount is not None else None,
-                        force_default  = force,
-                        dm_default     = dm,
-                        edit_view      = view,
+                        reason_default       = reason,
+                        length_default       = length,
+                        dtd_default          = dtd,
+                        purge_target_default = purge_member,
+                        amount_default       = str(amount) if amount is not None else None,
+                        force_default        = force,
+                        dm_default           = dm,
+                        edit_view            = view,
                     ),
                 )
 
@@ -590,9 +531,10 @@ class ModerationModal(Modal):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 async def send_moderation_modal(
-    interaction : Interaction,
-    action_type : ActionType,
-    target      : Targetable,
+    interaction  : Interaction,
+    action_type  : ActionType,
+    target       : Targetable,
+    purge_target : Member | None = None,
 ) -> None:
     client = interaction.client
     user   = interaction.user
@@ -600,40 +542,52 @@ async def send_moderation_modal(
     if not interaction.guild or not isinstance(user, Member):
         return
 
-    if isinstance(target, Member):
-        if not check_hierarchy(user, ">", target):
-            if check_hierarchy(user, "=", target):
-                if target == client.user:
+    check_target = purge_target if action_type == "Purge" else target
+
+    if isinstance(check_target, Member):
+
+        # ⸻ You cannot moderate yourself.
+
+        if check_target == interaction.user:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : "You cannot moderate yourself."},
+            )
+            return
+
+        if not check_hierarchy(user, ">", check_target):
+            if check_hierarchy(user, "=", check_target):
+                if check_target == client.user:
                     await send_bad_argument(
                         interaction,
-                        subtitle = {"target" : f"{target.mention} is equal to you in the hierarchy."},
+                        subtitle = {"target" : f"{check_target.mention} is equal to you in the hierarchy."},
                         footer   = "Nice try",
                     )
                     return
 
                 await send_bad_argument(
                     interaction,
-                    subtitle = {"target" : f"{target.mention} is equal to you in the hierarchy."},
+                    subtitle = {"target" : f"{check_target.mention} is equal to you in the hierarchy."},
                 )
                 return
 
-            if target == client.user:
+            if check_target == client.user:
                 await send_bad_argument(
                     interaction,
-                    subtitle = {"target" : f"{target.mention} is higher in the hierarchy than you."},
+                    subtitle = {"target" : f"{check_target.mention} is higher in the hierarchy than you."},
                     footer   = "Nice try",
                 )
                 return
 
             await send_bad_argument(
                 interaction,
-                subtitle = {"target" : f"{target.mention} is higher in the hierarchy than you."},
+                subtitle = {"target" : f"{check_target.mention} is higher in the hierarchy than you."},
             )
             return
-        if target == client.user:
+        if check_target == client.user:
             await send_bad_argument(
                 interaction,
-                subtitle = {"target" : f"{target.mention} cannot be moderated."},
+                subtitle = {"target" : f"{check_target.mention} cannot be moderated."},
             )
             return
 
@@ -652,6 +606,6 @@ async def send_moderation_modal(
         error = f"action_type '{action_type}' is not a recognized moderation action"
         raise ValueError(error)
 
-    modal = ModerationModal(action_type, target)
+    modal = ModerationModal(action_type, target, purge_target_default = purge_target)
 
     await interaction.response.send_modal(modal)
