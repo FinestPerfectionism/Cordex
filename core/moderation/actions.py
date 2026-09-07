@@ -57,84 +57,11 @@ class Actions:
         self.guild = guild
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_quarantined_members
+    # _log_failure
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_quarantined_members(self) -> list[Member] | None:
-        ...
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_quarantine_role
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def get_quarantine_role(self) -> Role | None:
-        async with self.bot.db.execute(
-            t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"quarantine_role"}",
-        ) as cursor:
-            res = await cursor.fetchone()
-
-        if not res:
-            return None
-
-        role_id = cast("int | None", res[0])
-        if role_id is None:
-            return None
-
-        return self.guild.get_role(role_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # quarantine_enforce
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    type EnforceTypes = Literal["Channel", "Role"]
-
-    async def quarantine_enforce(self, enforce_type : EnforceTypes) -> None:
-        quarantine_role = await self.get_quarantine_role()
-        if not quarantine_role:
-            return
-
-        if enforce_type == "Channel":
-            semaphore = Semaphore(5)
-
-            async def edit_channel(channel : GuildChannel) -> None:
-                async with semaphore:
-                    overwrites = channel.overwrites_for(quarantine_role)
-
-                    overwrites.update(
-                        send_messages_in_threads = False,
-                        create_instant_invite    = False,
-                        send_messages            = False,
-                        create_public_threads    = False,
-                        create_private_threads   = False,
-                        read_messages            = False,
-                    )
-
-                    try:
-                        await channel.set_permissions(
-                            quarantine_role,
-                            overwrite = overwrites,
-                            reason    = "Scheduled quarantine enforce.",
-                        )
-                    except Forbidden:
-                        pass
-                    except HTTPException:
-                        log.exception("Failure during quarantine enforcement in guild %s, %s — Channel", self.guild.name, self.guild.id)
-
-            await gather(*(edit_channel(channel) for channel in self.guild.channels))
-
-        if enforce_type == "Role":
-            me = self.guild.me
-            if not me or not me.guild_permissions.manage_roles:
-                return
-
-            my_role = me.top_role
-            if my_role.position > 1 and quarantine_role.position != my_role.position - 1:
-                try:
-                    await quarantine_role.edit(position = my_role.position - 1)
-                except Forbidden:
-                    pass
-                except HTTPException:
-                    log.exception("Failure during quarantine enforcement in guild %s, %s — Role", self.guild.name, self.guild.id)
+    def _log_failure(self, msg : str, /) -> None:
+        log.exception("Failure during %s in guild %s, %s", msg, self.guild.name, self.guild.id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _dm_target
@@ -204,6 +131,86 @@ class Actions:
             return True
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_quarantined_members
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_quarantined_members(self) -> list[Member] | None:
+        ...
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_quarantine_role
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_quarantine_role(self) -> Role | None:
+        async with self.bot.db.execute(
+            t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"quarantine_role"}",
+        ) as cursor:
+            res = await cursor.fetchone()
+
+        if not res:
+            return None
+
+        role_id = cast("int | None", res[0])
+        if role_id is None:
+            return None
+
+        return self.guild.get_role(role_id)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # quarantine_enforce
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    type EnforceTypes = Literal["Channel", "Role"]
+
+    async def quarantine_enforce(self, enforce_type : EnforceTypes) -> None:
+        quarantine_role = await self.get_quarantine_role()
+        if not quarantine_role:
+            return
+
+        if enforce_type == "Channel":
+            semaphore = Semaphore(5)
+
+            async def edit_channel(channel : GuildChannel) -> None:
+                async with semaphore:
+                    overwrites = channel.overwrites_for(quarantine_role)
+
+                    overwrites.update(
+                        send_messages_in_threads = False,
+                        create_instant_invite    = False,
+                        send_messages            = False,
+                        create_public_threads    = False,
+                        create_private_threads   = False,
+                        read_messages            = False,
+                    )
+
+                    try:
+                        await channel.set_permissions(
+                            quarantine_role,
+                            overwrite = overwrites,
+                            reason    = "Scheduled quarantine enforce.",
+                        )
+                    except Forbidden:
+                        pass
+                    except HTTPException:
+                        self._log_failure("channel quarantine enforcement")
+
+            await gather(*(edit_channel(channel) for channel in self.guild.channels))
+
+        if enforce_type == "Role":
+            me = self.guild.me
+            if not me or not me.guild_permissions.manage_roles:
+                return
+
+            my_role = me.top_role
+            if my_role.position > 1 and quarantine_role.position != my_role.position - 1:
+                try:
+                    await quarantine_role.edit(position = my_role.position - 1)
+                except Forbidden:
+                    pass
+                except HTTPException:
+                    self._log_failure("role quarantine enforcement")
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -236,7 +243,7 @@ class Actions:
             failed = True
         except HTTPException:
             failed = True
-            log.exception("Failure during ban add in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("ban add")
         else:
             failed = False
 
@@ -282,7 +289,7 @@ class Actions:
             failed = True
         except HTTPException:
             failed = True
-            log.exception("Failure during ban removal in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("ban removal")
         else:
             failed = False
 
@@ -310,7 +317,7 @@ class Actions:
             failed = True
         except HTTPException:
             failed = True
-            log.exception("Failure during kick in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("kick")
         else:
             failed = False
 
@@ -345,7 +352,7 @@ class Actions:
             failed = True
         except HTTPException:
             failed = True
-            log.exception("Failure during quarantine add in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("quarantine add")
         else:
             failed = False
 
@@ -398,7 +405,7 @@ class Actions:
             failed = True
         except HTTPException:
             failed = True
-            log.exception("Failure during quarantine removal in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("quarantine removal")
         else:
             failed = False
 
@@ -426,7 +433,7 @@ class Actions:
             failed = True
         except HTTPException:
             failed = True
-            log.exception("Failure during timeout add in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("timeout add")
         else:
             failed = False
 
@@ -472,7 +479,7 @@ class Actions:
             failed = True
         except HTTPException:
             failed = True
-            log.exception("Failure during timeout removal in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("timeout removal")
         else:
             failed = False
 
@@ -509,7 +516,7 @@ class Actions:
         except Forbidden, HTTPException:
             failed  = True
             deleted = []
-            log.exception("Failure during purge in guild %s, %s", self.guild.name, self.guild.id)
+            self._log_failure("purge")
         else:
             failed = False
 
