@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal, Self, final
+from typing import Self, final
 
 from discord import AllowedMentions, Color, Guild, Member
 
@@ -114,68 +114,29 @@ Payloads = (
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# ...
+# Actions Class
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @dataclass(frozen = True)
 class CaseData:
-    value      : str
-    case_color : Color
-    case_title : str
-
-@final
-class CaseType:
-    LOCKDOWN_ADD      = CaseData("lockdown_add",    COLOR_GREY,  "Lockdown Added")
-    LOCKDOWN_REMOVE   = CaseData("lockdown_remove", COLOR_GREEN, "Lockdown Removed")
-
-    BAN_ADD           = CaseData("ban_add",    COLOR_BLACK, "Member Ban Added")
-    BAN_REMOVE        = CaseData("ban_remove", COLOR_GREEN, "Member Ban Removed")
-
-    KICK              = CaseData("kick", COLOR_RED, "Member Kicked")
-
-    QUARANTINE_ADD    = CaseData("quarantine_add",    COLOR_ORANGE, "Member Quarantine Added")
-    QUARANTINE_REMOVE = CaseData("quarantine_remove", COLOR_GREEN,  "Member Quarantine Removed")
-
-    TIMEOUT_ADD       = CaseData("timeout_add",    COLOR_YELLOW, "Member Timeout Added")
-    TIMEOUT_REMOVE    = CaseData("timeout_remove", COLOR_GREEN,  "Member Timeout Removed")
-
-    PURGE             = CaseData("purge", COLOR_BLUE, "Messages Purged")
-
-    NOTE_ADD          = CaseData("note_add",    COLOR_BLUE, "Note Added")
-    NOTE_EDIT         = CaseData("note_edit",   COLOR_BLUE, "Note Edited")
-    NOTE_REMOVE       = CaseData("note_remove", COLOR_BLUE, "Note Removed")
+    color : Color
+    title : str
 
 
-type CaseTypes = Literal[
-    "Lockdown Add",
-    "Lockdown Remove",
-    "Ban Add",
-    "Ban Remove",
-    "Kick",
-    "Quarantine Add",
-    "Quarantine Remove",
-    "Timeout Add",
-    "Timeout Remove",
-    "Purge",
-    "Note Add",
-    "Note Edit",
-    "Note Remove",
-]
-
-CASE_MAP : dict[CaseTypes, CaseData] = {
-    "Lockdown Add"      : CaseType.LOCKDOWN_ADD,
-    "Lockdown Remove"   : CaseType.LOCKDOWN_REMOVE,
-    "Ban Add"           : CaseType.BAN_ADD,
-    "Ban Remove"        : CaseType.BAN_REMOVE,
-    "Kick"              : CaseType.KICK,
-    "Quarantine Add"    : CaseType.QUARANTINE_ADD,
-    "Quarantine Remove" : CaseType.QUARANTINE_REMOVE,
-    "Timeout Add"       : CaseType.TIMEOUT_ADD,
-    "Timeout Remove"    : CaseType.TIMEOUT_REMOVE,
-    "Purge"             : CaseType.PURGE,
-    "Note Add"          : CaseType.NOTE_ADD,
-    "Note Edit"         : CaseType.NOTE_EDIT,
-    "Note Remove"       : CaseType.NOTE_REMOVE,
+CASE_MAP : dict[type, CaseData] = {
+    LockdownAddPayload      : CaseData(COLOR_GREY,   "Lockdown Added"),
+    LockdownRemovePayload   : CaseData(COLOR_GREEN,  "Lockdown Removed"),
+    BanAddPayload           : CaseData(COLOR_BLACK,  "Member Ban Added"),
+    BanRemovePayload        : CaseData(COLOR_GREEN,  "Member Ban Removed"),
+    KickPayload             : CaseData(COLOR_RED,    "Member Kicked"),
+    QuarantineAddPayload    : CaseData(COLOR_ORANGE, "Member Quarantine Added"),
+    QuarantineRemovePayload : CaseData(COLOR_GREEN,  "Member Quarantine Removed"),
+    TimeoutAddPayload       : CaseData(COLOR_YELLOW, "Member Timeout Added"),
+    TimeoutRemovePayload    : CaseData(COLOR_GREEN,  "Member Timeout Removed"),
+    PurgePayload            : CaseData(COLOR_BLUE,   "Messages Purged"),
+    NoteAddPayload          : CaseData(COLOR_BLUE,   "Note Added"),
+    NoteEditPayload         : CaseData(COLOR_BLUE,   "Note Edited"),
+    NoteRemovePayload       : CaseData(COLOR_BLUE,   "Note Removed"),
 }
 
 @final
@@ -189,16 +150,19 @@ class Cases:
     # create_case
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def create_case(self, _case : Payloads) -> None:
+    async def create_case(self, case : Payloads) -> None:
         log_channel = await self.bot.config(self.guild).get_moderation_logging_channel()
         if not log_channel:
             return
 
+        data = CASE_MAP[type(case)]
+
         @final
         class CaseView(LayoutView):
             container = Container[Self](
-                TextDisplay("..."),
+                TextDisplay(f"# {data.title}"),
                 VisibleLargeSeparator(),
+                color = data.color,
             )
 
         await log_channel.send(
