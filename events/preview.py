@@ -99,8 +99,16 @@ class Preview(commands.Cog):
             files = await gather(*(attachment.to_file() for attachment in attachments))
             names = [file.filename for file in files]
 
-            async with message.channel.typing():
-                await sleep(0.5)
+            if match == next(MESSAGE_LINK_PATTERN.finditer(content)):
+                async with message.channel.typing():
+                    await sleep(0.5)
+                    await message.reply(
+                        files            = files,
+                        view             = PreviewView(target = target_message, link = match.group(0), names = names),
+                        mention_author   = False,
+                        allowed_mentions = AllowedMentions.none(),
+                    )
+            else:
                 await message.reply(
                     files            = files,
                     view             = PreviewView(target = target_message, link = match.group(0), names = names),

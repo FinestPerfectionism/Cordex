@@ -63,10 +63,10 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "ctx"  : ctx,
         "tree" : ctx.bot.tree,
 
-        "channel" : ctx.channel,
-        "author"  : ctx.author,
         "guild"   : ctx.guild,
+        "channel" : ctx.channel,
         "me"      : getattr(ctx.guild, "me", None),
+        "author"  : ctx.author,
         "message" : ctx.message,
 
         "Context"              : Context,
@@ -176,10 +176,10 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
     if not is_bot_owner(ctx.author):
         await ctx.send(
             format_message(
-                msg_type = "warning",
+                msg_type = "error",
                 title    = "run command",
-                subtitle = "This command can only be run in a guild",
-                footer   = "Bad environment",
+                subtitle = "You are not authorized to run this command",
+                footer   = "Bad request",
             ),
         )
         return
@@ -196,6 +196,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         return
 
     message = ctx.message
+    channel = ctx.channel
 
     body       = "\n".join(body.split("\n")[1 : -1]) if body.startswith("```") else body.strip("` \n")
     stdout     = StringIO()
@@ -208,7 +209,8 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         exec(to_compile, env)  # ruff: ignore[exec-builtin]
     except Exception as e:
         await message.add_reaction(DENIED_EMOJI)
-        await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"))
+        async with channel.typing():
+            await ctx.send(codeblock(f"{e.__class__.__name__}: {e}"), delete_after = 15)
         return
 
     func = cast("Lambda", env["func"])
@@ -219,13 +221,16 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
     except Exception:
         value = stdout.getvalue()
         await message.add_reaction(CONTESTED_EMOJI)
-        await ctx.send(codeblock(f"{value}{format_exc()}"))
+        async with channel.typing():
+            await ctx.send(codeblock(f"{value}{format_exc()}"), delete_after = 15)
     else:
         value = stdout.getvalue()
         await message.add_reaction(ACCEPTED_EMOJI)
 
         if ret is None:
             if value:
-                await ctx.send(codeblock(value))
+                async with channel.typing():
+                    await ctx.send(codeblock(value), delete_after = 15)
         else:
-            await ctx.send(codeblock(f"{value}{ret}"))
+            async with channel.typing():
+                await ctx.send(codeblock(f"{value}{ret}"), delete_after = 15)

@@ -14,7 +14,7 @@ from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.exceptions import UnconfiguredQuarantine, send_bad_request
+from core.exceptions import UnconfiguredQuarantine, send_bad_operation
 from core.permissions import bot_owner_cmd
 from core.utilities import unimplemented
 
@@ -90,7 +90,7 @@ class ModerationCommands(
     @override
     async def cog_app_command_error(self, interaction : Interaction, error : AppCommandError) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         if isinstance(error, UnconfiguredQuarantine):
-            await send_bad_request(
+            await send_bad_operation(
                 interaction,
                 subtitle = "This server has not configured a quarantine role, so quarantine operations cannot be performed",
             )

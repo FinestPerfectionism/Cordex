@@ -17,6 +17,8 @@ from .cases import (
     BanAddPayload,
     BanRemovePayload,
     KickPayload,
+    LockdownAddPayload,
+    LockdownRemovePayload,
     NoteAddPayload,
     NoteEditPayload,
     NoteRemovePayload,
@@ -215,14 +217,14 @@ class Actions:
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_add(self) -> ActionResult:
+    async def lockdown_add(self, _action : LockdownAddPayload) -> ActionResult:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_remove(self) -> ActionResult:
+    async def lockdown_remove(self, _action : LockdownRemovePayload) -> ActionResult:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -495,6 +497,7 @@ class Actions:
 
     async def purge(self, action : PurgePayload) -> ActionResult[int]:
         target  = action.target
+        reason  = action.reason
         channel = action.channel
         amount  = action.amount
 
@@ -502,12 +505,13 @@ class Actions:
 
         async def _purge() -> list[Message]:
             if not target:
-                return await channel.purge(limit = amount)
+                return await channel.purge(limit = amount, reason = reason)
 
             limit = 1000 if action.force else amount
             return await channel.purge(
-                limit = limit,
-                check = lambda m : m.author == target,
+                limit  = limit,
+                check  = lambda m : m.author == target,
+                reason = reason,
             )
 
         # ⸻ Logic.
