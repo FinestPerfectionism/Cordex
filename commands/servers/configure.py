@@ -19,7 +19,7 @@ from core.exceptions import send_bad_argument, send_bad_operation
 from core.moderation import Actions
 from core.paginator import NamedPaginator, PageData
 
-type Keys = Literal["edit", "delete", "quarantine", "enforce_channels", "enforce_roles"]
+type Keys = Literal["edit", "delete", "logging", "quarantine", "enforce_channels", "enforce_roles"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /server configure Logic
@@ -29,6 +29,7 @@ async def _get_guild_config(interaction : Interaction, key : Keys) -> int | None
     key_dict : dict[Keys, str] = {
         "edit"             : "messages_edit_channel",
         "delete"           : "messages_delete_channel",
+        "logging"          : "logging_channel",
         "quarantine"       : "quarantine_role",
         "enforce_channels" : "quarantine_enforce_channels",
         "enforce_roles"    : "quarantine_enforce_roles",
@@ -54,6 +55,7 @@ async def _set_guild_config(interaction : Interaction, key : Keys, value : int) 
     key_dict : dict[Keys, str] = {
         "edit"             : "messages_edit_channel",
         "delete"           : "messages_delete_channel",
+        "logging"          : "logging_channel",
         "quarantine"       : "quarantine_role",
         "enforce_channels" : "quarantine_enforce_channels",
         "enforce_roles"    : "quarantine_enforce_roles",
@@ -191,6 +193,64 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
             raise
 
 @final
+class _LoggingSelect(ChannelSelect["_ConfigurationView"]):
+    def __init__(self) -> None:
+        super().__init__(
+            placeholder   = "Select a channel...",
+            channel_types = [ChannelType.text],
+        )
+
+    @override
+    async def callback(self, interaction : Interaction) -> None:
+        guild = interaction.guild
+
+        if not guild:
+            return
+
+        channel = guild.get_channel(self.values[0].id)
+
+        if not isinstance(channel, TextChannel):
+            return
+
+        me = guild.me
+
+        if not me:
+            return
+
+        permissions = channel.permissions_for(me)
+
+        if not permissions.send_messages:
+            await send_bad_argument(
+                interaction,
+                title    = "set logging channel",
+                subtitle = {None : "I don't have permissions to send messages in that channel."},
+            )
+            return
+        if not permissions.view_channel:
+            await send_bad_argument(
+                interaction,
+                title    = "set logging channel",
+                subtitle = {None : "I don't have permissions to view that channel."},
+            )
+            return
+
+        if not self.view:
+            return
+
+        previous = self.default_values
+        self.default_values = [Object(id = channel.id)]
+
+        try:
+            await _set_guild_config(interaction, "logging", channel.id)
+            self.view.logging_id = channel.id
+            self.view.update_pages()
+            await interaction.response.edit_message(view = self.view)
+        except Exception:
+            self.default_values = previous
+            await send_bad_operation(interaction, title = "update logging channel")
+            raise
+
+@final
 class _QuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
     def __init__(self) -> None:
         super().__init__(placeholder = "Select a role...")
@@ -318,6 +378,7 @@ class _ConfigurationView(NamedPaginator):
         *,
         edit_channel     : int | None,
         delete_channel   : int | None,
+        logging_channel  : int | None,
         quarantine_role  : int | None,
         enforce_channels : bool,
         enforce_roles    : bool,
@@ -325,12 +386,14 @@ class _ConfigurationView(NamedPaginator):
         self.guild            = guild
         self.edit_id          = edit_channel
         self.delete_id        = delete_channel
+        self.logging_id       = logging_channel
         self.quarantine_id    = quarantine_role
         self.enforce_channels = enforce_channels
         self.enforce_roles    = enforce_roles
 
         self.edit_select            = _MessagesEditSelect()
         self.delete_select          = _MessagesDeleteSelect()
+        self.logging_select         = _LoggingSelect()
         self.quarantine_select      = _QuarantineRoleSelect()
         self.quarantine_enforce_btn = _QuarantineEnforceButton()
 
@@ -338,6 +401,8 @@ class _ConfigurationView(NamedPaginator):
             self.edit_select.default_values = [Object(id = self.edit_id)]
         if self.delete_id:
             self.delete_select.default_values = [Object(id = self.delete_id)]
+        if self.logging_id:
+            self.logging_select.default_values = [Object(id = self.logging_id)]
         if self.quarantine_id:
             self.quarantine_select.default_values = [Object(id = self.quarantine_id)]
 
@@ -372,6 +437,18 @@ class _ConfigurationView(NamedPaginator):
         else:
             txt_delete = (
                 f"{DENIED_EMOJI} **Messages Delete Channel Unset**\n"
+                "Set one with the select below."
+            )
+
+        logging = self.guild.get_channel(self.logging_id) if self.logging_id else None
+        if logging:
+            txt_logging = (
+                f"{ACCEPTED_EMOJI} **Logging Channel Set**\n"
+                f"Moderation logs will be sent to {logging.mention}."
+            )
+        else:
+            txt_logging = (
+                f"{DENIED_EMOJI} **Logging Channel Unset**\n"
                 "Set one with the select below."
             )
 
@@ -432,6 +509,8 @@ class _ConfigurationView(NamedPaginator):
                 name    = "Moderation",
                 content = [
                     "# Moderation",
+                    TextDisplay(txt_logging),
+                    ActionRow(self.logging_select),
                     ButtonSection(txt_quarantine, button = self.quarantine_enforce_btn),
                     ActionRow(self.quarantine_select),
                 ],
@@ -453,6 +532,7 @@ async def run_server_configure(interaction : Interaction) -> None:
 
     edit_channel     = await _get_guild_config(interaction, "edit")
     delete_channel   = await _get_guild_config(interaction, "delete")
+    logging_channel  = await _get_guild_config(interaction, "logging")
     quarantine_role  = await _get_guild_config(interaction, "quarantine")
     enforce_channels = await _get_guild_config(interaction, "enforce_channels")
     enforce_roles    = await _get_guild_config(interaction, "enforce_roles")
@@ -462,6 +542,7 @@ async def run_server_configure(interaction : Interaction) -> None:
             interaction.guild,
             edit_channel     = edit_channel,
             delete_channel   = delete_channel,
+            logging_channel  = logging_channel,
             quarantine_role  = quarantine_role,
             enforce_channels = bool(enforce_channels),
             enforce_roles    = bool(enforce_roles),
