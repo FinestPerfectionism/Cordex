@@ -25,7 +25,7 @@ from .channels import (
     run_channel_permissions,
     run_channel_sync,
 )
-from .members import run_member_info
+from .members import run_member_avatar, run_member_info
 from .moderation import run_mod_cases_query, run_mod_cases_view
 from .roles import (
     run_role_compare,
@@ -61,6 +61,7 @@ __all__ = [
     "run_channel_sync",
     "run_help",
     # ^^^ ⸻ moderation/primary goes here
+    "run_member_avatar",
     "run_member_info",
     "run_mod_cases_query",
     "run_mod_cases_view",

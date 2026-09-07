@@ -1,12 +1,14 @@
 from dataclasses import dataclass
-from typing import Literal, final
+from typing import Literal, Self, cast, final
 
-from discord import Color, Member
+from discord import AllowedMentions, Color, Guild, Member
 
+from bot import Cordex
 from bot.types import GuildMessagable
+from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import (
     COLOR_BLACK,
-    COLOR_BLURPLE,
+    COLOR_BLUE,
     COLOR_GREEN,
     COLOR_GREY,
     COLOR_ORANGE,
@@ -35,6 +37,18 @@ class BaseAddPayload:
     target    : Member
     reason    : str
     dm_user   : bool
+
+@dataclass
+class LockdownAddPayload:
+    moderator : Member
+    target    : GuildMessagable
+    reason    : str
+
+@dataclass
+class LockdownRemovePayload:
+    moderator : Member
+    target    : GuildMessagable
+    reason    : str
 
 @dataclass
 class BanAddPayload(BaseAddPayload):
@@ -74,17 +88,30 @@ class BaseNotePayload:
     target  : Member
     content : str
 
-@dataclass
-class NoteAddPayload(BaseNotePayload):
-    pass
 
-@dataclass
-class NoteEditPayload(BaseNotePayload):
-    pass
+NoteAddPayload  = BaseNotePayload
+NoteEditPayload = BaseNotePayload
 
 @dataclass
 class NoteRemovePayload:
     target : Member
+
+
+Payloads = (
+    LockdownAddPayload
+    | LockdownRemovePayload
+    | BanAddPayload
+    | BanRemovePayload
+    | KickPayload
+    | QuarantineAddPayload
+    | QuarantineRemovePayload
+    | TimeoutAddPayload
+    | TimeoutRemovePayload
+    | PurgePayload
+    | NoteAddPayload
+    | NoteEditPayload
+    | NoteRemovePayload
+)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # ...
@@ -112,11 +139,11 @@ class CaseType:
     TIMEOUT_ADD       = CaseData("timeout_add",    COLOR_YELLOW, "Member Timeout Added")
     TIMEOUT_REMOVE    = CaseData("timeout_remove", COLOR_GREEN,  "Member Timeout Removed")
 
-    PURGE             = CaseData("purge", COLOR_BLURPLE, "Messages Purged")
+    PURGE             = CaseData("purge", COLOR_BLUE, "Messages Purged")
 
-    NOTE_ADD          = CaseData("note_add",    COLOR_BLURPLE, "Note Added")
-    NOTE_EDIT         = CaseData("note_edit",   COLOR_BLURPLE, "Note Edited")
-    NOTE_REMOVE       = CaseData("note_remove", COLOR_BLURPLE, "Note Removed")
+    NOTE_ADD          = CaseData("note_add",    COLOR_BLUE, "Note Added")
+    NOTE_EDIT         = CaseData("note_edit",   COLOR_BLUE, "Note Edited")
+    NOTE_REMOVE       = CaseData("note_remove", COLOR_BLUE, "Note Removed")
 
 
 type CaseTypes = Literal[
@@ -151,12 +178,68 @@ CASE_MAP : dict[CaseTypes, CaseData] = {
     "Note Remove"       : CaseType.NOTE_REMOVE,
 }
 
+@final
 class Cases:
-    def create_case(self) -> None:
+    def __init__(self, bot : Cordex, guild : Guild) -> None:
+        super().__init__()
+        self.bot   = bot
+        self.guild = guild
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # _get_log_channel
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def _get_log_channel(self) -> GuildMessagable | None:
+        async with self.bot.db.execute(
+            t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"messages_edit_channel"}",
+        ) as cursor:
+            res = await cursor.fetchone()
+
+        if not res:
+            return None
+
+        channel_id = cast("int | None", res[0])
+        if channel_id is None:
+            return None
+
+        log_channel = self.guild.get_channel(channel_id)
+
+        if not isinstance(log_channel, GuildMessagable):
+            return None
+
+        return log_channel
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # create_case
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def create_case(self, _case : Payloads) -> None:
+        log_channel = await self._get_log_channel()
+        if not log_channel:
+            return
+
+        @final
+        class CaseView(LayoutView):
+            container = Container[Self](
+                TextDisplay("..."),
+                VisibleLargeSeparator(),
+            )
+
+        await log_channel.send(
+            view             = CaseView(),
+            allowed_mentions = AllowedMentions.none(),
+        )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_case
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_case(self) -> None:
         ...
 
-    def get_case(self) -> None:
-        ...
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # edit_case
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def edit_case(self) -> None:
+    async def edit_case(self) -> None:
         ...

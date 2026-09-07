@@ -1,7 +1,7 @@
 from discord import AllowedMentions, Embed, Role
 
 from bot import Interaction
-from constants import COLOR_BLURPLE
+from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 
 from ._base import format_permission
@@ -31,7 +31,7 @@ async def run_role_compare(
 
     embed = Embed(
         title = f"Permission Differences for {role_1.name} and {role_2.name}",
-        color = COLOR_BLURPLE,
+        color = COLOR_GREY,
     )
 
     if not diffs_role_1:

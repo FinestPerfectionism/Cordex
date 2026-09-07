@@ -1,4 +1,4 @@
-from typing import Literal, Self, final
+from typing import Self, final
 
 from discord import AllowedMentions, MediaGalleryItem, Member
 from discord.utils import escape_markdown, format_dt, utcnow
@@ -27,7 +27,7 @@ from constants import (
 from core.permissions import is_bot_owner
 from core.utilities import codeblock, format_table, format_values
 
-type Scope = Literal["guild", "global"]
+from ._base import Scope
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /member info Logic
@@ -46,10 +46,10 @@ async def run_member_info(
 
     target = member or interaction.user
 
-    if interaction.guild is None or not isinstance(target, Member):
-        return
-
     guild = interaction.guild
+
+    if guild is None or not isinstance(target, Member):
+        return
 
     # ⸻ Sort the joined and roles lists.
 

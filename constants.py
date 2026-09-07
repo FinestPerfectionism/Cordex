@@ -38,7 +38,6 @@ class DisplayNameEffect(Enum):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-COLOR_BLURPLE = Color(0x5765F2)
 COLOR_BLUE    = Color(0x87acdf)
 COLOR_GREEN   = Color(0x3BA562)
 COLOR_YELLOW  = Color(0xF1B133)

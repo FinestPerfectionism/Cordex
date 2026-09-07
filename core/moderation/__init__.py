@@ -2,8 +2,6 @@ from .actions import ActionResult, Actions, ActionType
 from .cases import (
     BanAddPayload,
     BanRemovePayload,
-    BaseAddPayload,
-    BaseRemovePayload,
     Cases,
     KickPayload,
     PurgePayload,
@@ -19,8 +17,6 @@ __all__ = [
     "Actions",
     "BanAddPayload",
     "BanRemovePayload",
-    "BaseAddPayload",
-    "BaseRemovePayload",
     "Cases",
     "KickPayload",
     "PurgePayload",

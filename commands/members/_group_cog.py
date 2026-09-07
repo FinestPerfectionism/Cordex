@@ -7,7 +7,9 @@ from discord.ext import commands
 from bot import Cordex, Interaction
 from core.help import Argument, ArgumentType, help_description
 
-from .info import Scope, run_member_info
+from ._base import Scope
+from .avatar import run_member_avatar
+from .info import run_member_info
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Member Group Commands
@@ -23,6 +25,52 @@ class MemberCommands(
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /member avatar Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @help_description(
+        arguments = {
+            "scope" : Argument(
+                name        = "scope",
+                type        = ArgumentType(
+                    type     = "Choice",
+                    choices  = ["Guild", "Global"],
+                    optional = True,
+                ),
+                description = 'Whether to view the guild avatar or the global avatar of the member. Defaults to "global".',
+            ),
+        },
+    )
+    @command(
+        name        = "avatar",
+        description = "View the avatar of a member.",
+    )
+    @describe(
+        member = "The user to view the avataar for. Defaults to yourself.",
+        scope  = 'Whether to view the guild profile or the global profile of the member. Defaults to "global".',
+    )
+    @choices(
+        scope = [
+            Choice(
+                name  = "Guild",
+                value = "guild",
+            ),
+            Choice(
+                name  = "Global",
+                value = "global",
+            ),
+        ],
+    )
+    async def cmd_member_avatar(
+        self,
+        interaction : Interaction,
+        member      : Member | None = None,
+        *,
+        scope       : Scope  | None = "global",
+    ) -> None:
+        await run_member_avatar(interaction, member, scope)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /member info Command

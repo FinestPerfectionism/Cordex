@@ -143,7 +143,6 @@ class ModerationModal(Modal):
         if action_type == "Timeout Add":
             self._length = TextInput[Self](
                 placeholder = "Enter length here...",
-                required    = True,
                 default     = length_default,
             )
             self.length  = Label[Self](

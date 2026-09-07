@@ -14,8 +14,6 @@ from discord.utils import format_dt, get, utcnow
 import constants
 from bot import Context, ContextOrInteraction, Interaction, ui
 from bot.ui import (
-    BaseContainer,
-    BaseLayoutView,
     ButtonSection,
     Container,
     HiddenLargeSeparator,
@@ -29,7 +27,6 @@ from constants import (
     ACCEPTED_EMOJI,
     COLOR_BLACK,
     COLOR_BLUE,
-    COLOR_BLURPLE,
     COLOR_GREEN,
     COLOR_GREY,
     COLOR_ORANGE,
@@ -88,7 +85,6 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "DENIED_EMOJI"     : DENIED_EMOJI,
         "STANDSTILL_EMOJI" : STANDSTILL_EMOJI,
 
-        "COLOR_BLURPLE" : COLOR_BLURPLE,
         "COLOR_BLUE"    : COLOR_BLUE,
         "COLOR_GREEN"   : COLOR_GREEN,
         "COLOR_YELLOW"  : COLOR_YELLOW,
@@ -125,11 +121,9 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
 
         "View"           : ui.View,
         "LayoutView"     : LayoutView,
-        "BaseLayoutView" : BaseLayoutView,
         "Modal"          : ui.Modal,
 
         "Container"     : Container,
-        "BaseContainer" : BaseContainer,
         "Section"       : ui.Section,
         "Separator"     : ui.Separator,
         "ActionRow"     : ui.ActionRow,

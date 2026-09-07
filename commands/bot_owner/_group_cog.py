@@ -5,6 +5,7 @@ from discord.app_commands import (
     Choice,
     ContextMenu,
     Group,
+    Range,
     autocomplete,
     describe,
     rename,
@@ -243,9 +244,9 @@ class BotOwnerCommands(
         self,
         interaction : Interaction,
         text        : str,
-        reply_id    : str         | None = None,
+        reply_id    : Range[str, 17, 19] | None = None,
         *,
-        ping        : bool        | None = True,
+        ping        : bool               | None = True,
     ) -> None:
         await run_bo_messages_send(
             interaction,
@@ -279,7 +280,7 @@ class BotOwnerCommands(
         self,
         interaction : Interaction,
         text        : str,
-        message_id  : str,
+        message_id  : Range[str, 17, 19],
     ) -> None:
         await run_bo_messages_edit(interaction, text, message_id)
 
@@ -304,7 +305,7 @@ class BotOwnerCommands(
     async def cmd_bo_messages_delete(
         self,
         interaction : Interaction,
-        message_id  : str,
+        message_id  : Range[str, 17, 19],
     ) -> None:
         await run_bo_messages_delete(interaction, message_id)
 
