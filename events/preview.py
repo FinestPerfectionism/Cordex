@@ -41,7 +41,7 @@ class Preview(commands.Cog):
 
         @final
         class PreviewView(LayoutView):
-            def __init__(self, *, target : Message, link : str, names : list[str]) -> None:
+            def __init__(self, target : Message, link : str, names : list[str]) -> None:
                 super().__init__()
 
                 container = Container[Self](TextDisplay(f"{target.author.mention}: {link}"), VisibleLargeSeparator())
@@ -56,10 +56,7 @@ class Preview(commands.Cog):
                         if attachment.content_type
                         and attachment.content_type.startswith(("image/", "video/"))
                     ]
-                    file_items    : list[File[Self]]       = [
-                        File(f"attachment://{name}")
-                        for name in names
-                    ]
+                    file_items    : list[File[Self]]       = [File(f"attachment://{name}") for name in names]
 
                     if gallery_items:
                         container.add_item(MediaGallery(*gallery_items))
@@ -69,7 +66,7 @@ class Preview(commands.Cog):
 
                 self.add_item(container)
 
-        for match in MESSAGE_LINK_PATTERN.finditer(content):
+        for index, match in enumerate(MESSAGE_LINK_PATTERN.finditer(content)):
             channel_id = int(match.group(2))
             message_id = int(match.group(3))
 
@@ -99,19 +96,19 @@ class Preview(commands.Cog):
             files = await gather(*(attachment.to_file() for attachment in attachments))
             names = [file.filename for file in files]
 
-            if match == next(MESSAGE_LINK_PATTERN.finditer(content)):
+            if index == 0:
                 async with message.channel.typing():
                     await sleep(0.5)
                     await message.reply(
                         files            = files,
-                        view             = PreviewView(target = target_message, link = match.group(0), names = names),
+                        view             = PreviewView(target_message, match.group(0), names),
                         mention_author   = False,
                         allowed_mentions = AllowedMentions.none(),
                     )
             else:
                 await message.reply(
                     files            = files,
-                    view             = PreviewView(target = target_message, link = match.group(0), names = names),
+                    view             = PreviewView(target_message, match.group(0), names),
                     mention_author   = False,
                     allowed_mentions = AllowedMentions.none(),
                 )
