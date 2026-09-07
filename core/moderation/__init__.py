@@ -1,4 +1,4 @@
-from .actions import Actions, ActionType
+from .actions import ActionResult, Actions, ActionType
 from .cases import (
     BanAddPayload,
     BanRemovePayload,
@@ -14,6 +14,7 @@ from .cases import (
 )
 
 __all__ = [
+    "ActionResult",
     "ActionType",
     "Actions",
     "BanAddPayload",

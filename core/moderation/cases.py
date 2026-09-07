@@ -41,7 +41,7 @@ class BanAddPayload(BaseAddPayload):
     seconds_to_delete : int
 
 
-type BanRemovePayload = BaseRemovePayload
+BanRemovePayload = BaseRemovePayload
 
 @dataclass
 class KickPayload:
@@ -55,10 +55,10 @@ class TimeoutAddPayload(BaseAddPayload):
     length : int
 
 
-type TimeoutRemovePayload = BaseRemovePayload
+TimeoutRemovePayload = BaseRemovePayload
 
-type QuarantineAddPayload    = BaseAddPayload
-type QuarantineRemovePayload = BaseRemovePayload
+QuarantineAddPayload    = BaseAddPayload
+QuarantineRemovePayload = BaseRemovePayload
 
 @dataclass
 class PurgePayload:

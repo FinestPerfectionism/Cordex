@@ -1,3 +1,4 @@
+from contextlib import suppress
 from typing import Self, final, override
 
 from discord import Member, User
@@ -20,9 +21,20 @@ from bot.ui import (
     grey,
     red,
 )
-from constants import CONTESTED_EMOJI
+from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI
 from core.exceptions import send_bad_argument
-from core.moderation import ActionType
+from core.moderation import (
+    Actions,
+    ActionType,
+    BanAddPayload,
+    BanRemovePayload,
+    KickPayload,
+    PurgePayload,
+    QuarantineAddPayload,
+    QuarantineRemovePayload,
+    TimeoutAddPayload,
+    TimeoutRemovePayload,
+)
 from core.utilities import format_table
 
 from .utilities import check_hierarchy
@@ -334,17 +346,7 @@ class ModerationModal(Modal):
         if self.action_type != "Purge":
             dm = self._dm.value
 
-        target_table : dict[str, object] = {
-            "User"     : self.target.mention,
-            "Username" : self.target.name,
-            "User ID"  : self.target.id,
-        } if isinstance(self.target, Member | User) else {
-            "Channel"    : self.target.mention,
-            "Name"       : self.target.name,
-            "Channel ID" : self.target.id,
-        }
-
-        action_table : dict[str, object] = {"Reason": reason}
+        action_table : dict[str, object] = {"Reason" : reason}
 
         if length is not None:
             action_table["Length"] = length
@@ -353,18 +355,61 @@ class ModerationModal(Modal):
             action_table["Days to Delete"] = dtd
 
         if self.action_type == "Purge":
-            action_table["Target"] = purge_member.mention if purge_member else "None"
-            action_table["Amount"] = amount if amount is not None else "None"
+            action_table["Amount"] = amount or "None"
             action_table["Force"]  = force
+
+            sections : list[str] = [
+                "### Target Channel",
+                format_table(
+                    {
+                        "Channel"    : self.target.mention,
+                        "Name"       : self.target.name,
+                        "Channel ID" : self.target.id,
+                    },
+                ),
+            ]
+
+            if purge_member is not None:
+                sections.extend(
+                    (
+                        "### Target Member",
+                        format_table(
+                            {
+                                "User"     : purge_member.mention,
+                                "Username" : purge_member.name,
+                                "User ID"  : purge_member.id,
+                            },
+                        ),
+                    ),
+                )
+
+            sections.extend(
+                (
+                    "### Action Information",
+                    format_table(action_table),
+                ),
+            )
+
+            summary = "\n".join(sections)
         else:
             action_table["DM Member"] = dm
 
-        summary = (
-             "### Target\n"
-            f"{format_table(target_table)}\n"
-             "### Action Information\n"
-            f"{format_table(action_table)}"
-        )
+            target_table : dict[str, object] = {
+                "User"     : self.target.mention,
+                "Username" : self.target.name,
+                "User ID"  : self.target.id,
+            } if isinstance(self.target, Member | User) else {
+                "Channel"    : self.target.mention,
+                "Name"       : self.target.name,
+                "Channel ID" : self.target.id,
+            }
+
+            summary = (
+                 "### Target\n"
+                f"{format_table(target_table)}\n"
+                 "### Action Information\n"
+                f"{format_table(action_table)}"
+            )
 
         class Edit(ActionRow["ModerationView"]):
             @button(label = "Edit", style = grey)
@@ -377,20 +422,152 @@ class ModerationModal(Modal):
                     ModerationModal(
                         modal.action_type,
                         modal.target,
-                        reason_default   = reason,
-                        length_default   = length,
-                        dtd_default      = dtd,
-                        purge_default    = purge_member,
-                        amount_default   = str(amount) if amount is not None else None,
-                        force_default    = force,
-                        dm_default       = dm,
-                        edit_view        = view,
+                        reason_default = reason,
+                        length_default = length,
+                        dtd_default    = dtd,
+                        purge_default  = purge_member,
+                        amount_default = str(amount) if amount is not None else None,
+                        force_default  = force,
+                        dm_default     = dm,
+                        edit_view      = view,
                     ),
                 )
 
             @button(label = "Execute", style = red)
-            async def btn_execute(self, _interaction : Interaction, _button : Button[ModerationView]) -> None:
-                ...
+            async def btn_execute(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
+                await interaction.response.defer(ephemeral = True)
+
+                guild = interaction.guild
+                if not guild or not isinstance(interaction.user, Member):
+                    return
+
+                actions   = Actions(interaction.client, guild)
+                moderator = interaction.user
+
+                match modal.action_type:
+                    case "Ban Add":
+                        if not isinstance(modal.target, Member):
+                            return
+
+                        seconds_to_delete = 7 * 86400
+                        if dtd is not None:
+                            with suppress(ValueError):
+                                seconds_to_delete = int(dtd) * 86400
+
+                        result = await actions.ban_add(
+                            BanAddPayload(
+                                moderator         = moderator,
+                                target            = modal.target,
+                                reason            = reason,
+                                dm_user           = dm,
+                                seconds_to_delete = seconds_to_delete,
+                            ),
+                        )
+                    case "Ban Remove":
+                        if not isinstance(modal.target, Member):
+                            return
+
+                        result = await actions.ban_remove(
+                            BanRemovePayload(
+                                moderator = moderator,
+                                target    = modal.target,
+                                reason    = reason,
+                                dm_user   = dm,
+                            ),
+                        )
+                    case "Kick":
+                        if not isinstance(modal.target, Member):
+                            return
+
+                        result = await actions.kick(
+                            KickPayload(
+                                moderator = moderator,
+                                target    = modal.target,
+                                reason    = reason,
+                                dm_user   = dm,
+                            ),
+                        )
+                    case "Quarantine Add":
+                        if not isinstance(modal.target, Member):
+                            return
+
+                        result = await actions.quarantine_add(
+                            QuarantineAddPayload(
+                                moderator = moderator,
+                                target    = modal.target,
+                                reason    = reason,
+                                dm_user   = dm,
+                            ),
+                        )
+                    case "Quarantine Remove":
+                        if not isinstance(modal.target, Member):
+                            return
+
+                        result = await actions.quarantine_remove(
+                            QuarantineRemovePayload(
+                                moderator = moderator,
+                                target    = modal.target,
+                                reason    = reason,
+                                dm_user   = dm,
+                            ),
+                        )
+                    case "Timeout Add":
+                        if not isinstance(modal.target, Member):
+                            return
+
+                        try:
+                            timeout_length = int(length) if length is not None else 0
+                        except ValueError:
+                            timeout_length = 0
+
+                        result = await actions.timeout_add(
+                            TimeoutAddPayload(
+                                moderator = moderator,
+                                target    = modal.target,
+                                reason    = reason,
+                                dm_user   = dm,
+                                length    = timeout_length,
+                            ),
+                        )
+                    case "Timeout Remove":
+                        if not isinstance(modal.target, Member):
+                            return
+
+                        result = await actions.timeout_remove(
+                            TimeoutRemovePayload(
+                                moderator = moderator,
+                                target    = modal.target,
+                                reason    = reason,
+                                dm_user   = dm,
+                            ),
+                        )
+                    case "Purge":
+                        if not isinstance(modal.target, GuildMessagable):
+                            return
+
+                        result = await actions.purge(
+                            PurgePayload(
+                                moderator = moderator,
+                                target    = purge_member,
+                                reason    = reason,
+                                channel   = modal.target,
+                                amount    = amount or 0,
+                                force     = force,
+                            ),
+                        )
+
+                status_line = f"{CONTESTED_EMOJI} The {modal.name} failed." if result.failed else f"{ACCEPTED_EMOJI} The {modal.name} was successful."
+
+                if result.dm_sent is False:
+                    status_line += " The member could not be DMed."
+
+                if modal.action_type == "Purge" and isinstance(result.data, int):
+                    status_line += f" Purged {result.data} message(s)."
+
+                result_view = LayoutView()
+                result_view.add_item(TextDisplay(status_line))
+
+                await interaction.edit_original_response(view = result_view)
 
         class ModerationView(LayoutView):
             def __init__(self) -> None:
