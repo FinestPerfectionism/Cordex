@@ -1,4 +1,5 @@
 from asyncio import Semaphore, gather
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import Literal, cast, final
 
@@ -36,6 +37,12 @@ type ActionType = Literal[
     "Timeout Remove",
     "Purge",
 ]
+
+@dataclass(frozen = True)
+class ActionResult[T = None]:
+    failed  : bool
+    dm_sent : bool | None
+    data    : T    | None = None
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions Base
@@ -83,7 +90,6 @@ class Actions:
 
     async def quarantine_enforce(self, enforce_type : EnforceTypes) -> None:
         quarantine_role = await self.get_quarantine_role()
-
         if not quarantine_role:
             return
 
@@ -112,7 +118,7 @@ class Actions:
                     except Forbidden:
                         pass
                     except HTTPException:
-                        log.exception("Failure during quarantine enforcement — Channel")
+                        log.exception("Failure during quarantine enforcement in guild %s, %s — Channel", self.guild.name, self.guild.id)
 
             await gather(*(edit_channel(channel) for channel in self.guild.channels))
 
@@ -128,7 +134,7 @@ class Actions:
                 except Forbidden:
                     pass
                 except HTTPException:
-                    log.exception("Failure during quarantine enforcement — Role")
+                    log.exception("Failure during quarantine enforcement in guild %s, %s — Role", self.guild.name, self.guild.id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _dm_target
@@ -146,7 +152,7 @@ class Actions:
             | TimeoutAddPayload
             | TimeoutRemovePayload
         ),
-    ) -> None:
+    ) -> bool:
         moderator = action.moderator
         target    = action.target
 
@@ -190,33 +196,53 @@ class Actions:
             ),
         )
 
-        await target.send(view = view)
+        try:
+            await target.send(view = view)
+        except Forbidden, HTTPException:
+            return False
+        else:
+            return True
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_add(self) -> None:
+    async def lockdown_add(self) -> ActionResult:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_remove(self) -> None:
+    async def lockdown_remove(self) -> ActionResult:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_add(self, action : BanAddPayload) -> None:
+    async def ban_add(self, action : BanAddPayload) -> ActionResult:
         if action.dm_user:
-            await self._dm_target("Ban Add", action)
+            success = await self._dm_target("Ban Add", action)
+        else:
+            success = None
 
-        await action.target.ban(
-            reason                 = f"Banned by {action.moderator.name}: {action.reason}",
-            delete_message_seconds = action.seconds_to_delete,
+        try:
+            await action.target.ban(
+                reason                 = f"Banned by {action.moderator.name}: {action.reason}",
+                delete_message_seconds = action.seconds_to_delete,
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            log.exception("Failure during ban add in guild %s, %s", self.guild.name, self.guild.id)
+        else:
+            failed = False
+
+        return ActionResult(
+            failed  = failed,
+            dm_sent = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -241,34 +267,92 @@ class Actions:
     # ban_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_remove(self, action : BanRemovePayload) -> None:
+    async def ban_remove(self, action : BanRemovePayload) -> ActionResult:
         if action.dm_user:
-            await self._dm_target("Ban Remove", action)
+            success = await self._dm_target("Ban Remove", action)
+        else:
+            success = None
 
-        await self.guild.unban(action.target, reason = f"Unbanned by {action.moderator.name}: {action.reason}")
+        try:
+            await self.guild.unban(
+                action.target,
+                reason = f"Unbanned by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            log.exception("Failure during ban removal in guild %s, %s", self.guild.name, self.guild.id)
+        else:
+            failed = False
+
+        return ActionResult(
+            failed  = failed,
+            dm_sent = success,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # kick
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def kick(self, action : KickPayload) -> None:
+    async def kick(self, action : KickPayload) -> ActionResult:
         if action.dm_user:
-            await self._dm_target("Kick", action)
+            success = await self._dm_target("Kick", action)
+        else:
+            success = None
 
-        await self.guild.kick(action.target, reason = f"Kicked by {action.moderator.name}: {action.reason}")
+        try:
+            await self.guild.kick(
+                action.target,
+                reason = f"Kicked by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            log.exception("Failure during kick in guild %s, %s", self.guild.name, self.guild.id)
+        else:
+            failed = False
+
+        return ActionResult(
+            failed  = failed,
+            dm_sent = success,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_add(self, action : QuarantineAddPayload) -> None:
-        if quarantine_role := await self.get_quarantine_role():
-            await action.target.add_roles(quarantine_role)
-        else:
-            return
+    async def quarantine_add(self, action : QuarantineAddPayload) -> ActionResult:
+        quarantine_role = await self.get_quarantine_role()
+        if not quarantine_role:
+            return ActionResult(
+                failed  = True,
+                dm_sent = False,
+            )
 
         if action.dm_user:
-            await self._dm_target("Quarantine Add", action)
+            success = await self._dm_target("Quarantine Add", action)
+        else:
+            success = None
+
+        try:
+            await action.target.add_roles(
+                quarantine_role,
+                reason = f"Quarantined by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            log.exception("Failure during quarantine add in guild %s, %s", self.guild.name, self.guild.id)
+        else:
+            failed = False
+
+        return ActionResult(
+            failed  = failed,
+            dm_sent = success,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # quarantine_view
@@ -292,27 +376,64 @@ class Actions:
     # quarantine_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_remove(self, action : QuarantineRemovePayload) -> None:
-        if quarantine_role := await self.get_quarantine_role():
-            await action.target.remove_roles(quarantine_role)
-        else:
-            return
+    async def quarantine_remove(self, action : QuarantineRemovePayload) -> ActionResult:
+        quarantine_role = await self.get_quarantine_role()
+        if not quarantine_role:
+            return ActionResult(
+                failed  = True,
+                dm_sent = False,
+            )
 
         if action.dm_user:
-            await self._dm_target("Quarantine Remove", action)
+            success = await self._dm_target("Quarantine Remove", action)
+        else:
+            success = None
+
+        try:
+            await action.target.remove_roles(
+                quarantine_role,
+                reason = f"Unquarantined by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            log.exception("Failure during quarantine removal in guild %s, %s", self.guild.name, self.guild.id)
+        else:
+            failed = False
+
+        return ActionResult(
+            failed  = failed,
+            dm_sent = success,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_add(self, action : TimeoutAddPayload) -> None:
-        await action.target.edit(
-            timed_out_until = utcnow() + timedelta(seconds = action.length),
-            reason          = f"Timed out by {action.moderator.name}: {action.reason}",
-        )
-
+    async def timeout_add(self, action : TimeoutAddPayload) -> ActionResult:
         if action.dm_user:
-            await self._dm_target("Timeout Add", action)
+            success = await self._dm_target("Timeout Add", action)
+        else:
+            success = None
+
+        try:
+            await action.target.edit(
+                timed_out_until = utcnow() + timedelta(seconds = action.length),
+                reason          = f"Timed out by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            log.exception("Failure during timeout add in guild %s, %s", self.guild.name, self.guild.id)
+        else:
+            failed = False
+
+        return ActionResult(
+            failed  = failed,
+            dm_sent = success,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # timeout_view
@@ -336,50 +457,67 @@ class Actions:
     # timeout_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_remove(self, action : TimeoutRemovePayload) -> None:
-        await action.target.edit(
-            timed_out_until = None,
-            reason          = f"Untimed out by {action.moderator.name}: {action.reason}",
-        )
-
+    async def timeout_remove(self, action : TimeoutRemovePayload) -> ActionResult:
         if action.dm_user:
-            await self._dm_target("Timeout Remove", action)
+            success = await self._dm_target("Timeout Remove", action)
+        else:
+            success = None
+
+        try:
+            await action.target.edit(
+                timed_out_until = None,
+                reason          = f"Untimed out by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            log.exception("Failure during timeout removal in guild %s, %s", self.guild.name, self.guild.id)
+        else:
+            failed = False
+
+        return ActionResult(
+            failed  = failed,
+            dm_sent = success,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # purge
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def purge(self, action : PurgePayload) -> int:
+    async def purge(self, action : PurgePayload) -> ActionResult[int]:
         target  = action.target
         channel = action.channel
         amount  = action.amount
 
-        if not target:
-            deleted = await channel.purge(limit = amount)
-        elif not action.force:
-            deleted = await channel.purge(
-                limit = amount,
-                check = lambda msg : msg.author == target,
+        # ⸻ Helper.
+
+        async def _purge() -> list[Message]:
+            if not target:
+                return await channel.purge(limit = amount)
+
+            limit = 1000 if action.force else amount
+            return await channel.purge(
+                limit = limit,
+                check = lambda m : m.author == target,
             )
+
+        # ⸻ Logic.
+
+        try:
+            deleted = await _purge()
+        except Forbidden, HTTPException:
+            failed  = True
+            deleted = []
+            log.exception("Failure during purge in guild %s, %s", self.guild.name, self.guild.id)
         else:
-            messages : list[Message] = []
+            failed = False
 
-            async for message in channel.history(limit = 2000):
-                if message.author == target:
-                    messages.append(message)
-                    if len(messages) == amount:
-                        break
-
-            if messages:
-                message_set = set(messages)
-                deleted     = await channel.purge(
-                    limit = 2000,
-                    check = lambda msg : msg in message_set,
-                )
-            else:
-                deleted = []
-
-        return len(deleted)
+        return ActionResult(
+            failed  = failed,
+            dm_sent = None,
+            data    = len(deleted),
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # note_add
