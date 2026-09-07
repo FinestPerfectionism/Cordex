@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Literal, Self, cast, final
+from typing import Literal, Self, final
 
 from discord import AllowedMentions, Color, Guild, Member
 
@@ -186,35 +186,11 @@ class Cases:
         self.guild = guild
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # _get_log_channel
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def _get_log_channel(self) -> GuildMessagable | None:
-        async with self.bot.db.execute(
-            t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"messages_edit_channel"}",
-        ) as cursor:
-            res = await cursor.fetchone()
-
-        if not res:
-            return None
-
-        channel_id = cast("int | None", res[0])
-        if channel_id is None:
-            return None
-
-        log_channel = self.guild.get_channel(channel_id)
-
-        if not isinstance(log_channel, GuildMessagable):
-            return None
-
-        return log_channel
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # create_case
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def create_case(self, _case : Payloads) -> None:
-        log_channel = await self._get_log_channel()
+        log_channel = await self.bot.config(self.guild).get_moderation_logging_channel()
         if not log_channel:
             return
 
