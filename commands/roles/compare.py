@@ -38,14 +38,14 @@ async def run_role_compare(
     class CompareView(LayoutView):
         if not diffs_role_1:
             container = Container[Self](
-                TextDisplay(f"### Permission Ddifferences for {role_1.mention} and {role_2.mention}"),
+                TextDisplay(f"### Permission Differences for {role_1.mention} and {role_2.mention},"),
                 VisibleLargeSeparator(),
                 TextDisplay("Roles have identical permissions."),
                 color = COLOR_GREY,
             )
         else:
             container = Container[Self](
-                TextDisplay(f"### Permission Differences for {role_1.mention} and {role_2.mention}"),
+                TextDisplay(f"### Permission Differences for {role_1.mention} and {role_2.mention},"),
                 VisibleLargeSeparator(),
                 TextDisplay(
                     f"{role_1.mention}\n"
