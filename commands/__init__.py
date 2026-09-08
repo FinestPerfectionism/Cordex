@@ -34,8 +34,12 @@ from .roles import (
     run_role_members,
     run_role_permissions,
 )
-from .servers import run_server_configure, run_server_health, run_server_info
-from .systems import run_help
+from .servers import (
+    run_server_commands,
+    run_server_configure,
+    run_server_health,
+    run_server_info,
+)
 
 __all__ = [
     "run_bo_cog_load",
@@ -59,7 +63,6 @@ __all__ = [
     "run_channel_info",
     "run_channel_permissions",
     "run_channel_sync",
-    "run_help",
     # ^^^ ⸻ moderation/primary goes here
     "run_member_avatar",
     "run_member_info",
@@ -70,6 +73,7 @@ __all__ = [
     "run_role_info",
     "run_role_members",
     "run_role_permissions",
+    "run_server_commands",
     "run_server_configure",
     "run_server_health",
     "run_server_info",

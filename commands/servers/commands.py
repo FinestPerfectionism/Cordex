@@ -3,7 +3,8 @@ from operator import itemgetter
 from typing import Self, final, override
 
 from discord import SelectOption
-from discord.app_commands import Command
+from discord.app_commands import Command, Group
+from discord.ext import commands
 
 from bot import Interaction
 from bot.ui import (
@@ -12,58 +13,52 @@ from bot.ui import (
     ButtonSection,
     Container,
     Item,
+    Label,
     LayoutView,
+    MentionableSelect,
     Modal,
     Select,
     TextDisplay,
     TextInput,
-    VisibleLargeSeparator,
 )
 from constants import (
     COMMAND_EMOJI,
-    CONTESTED_EMOJI,
-    DEVELOPER_EMOJI,
     EMOJI_EMOJI,
-    FINESTPERFECTIONISM_ID,
     HORIZONTAL_SETTINGS,
     MEMBER_EMOJI,
     MODERATION_EMOJI,
     PENCIL_EMOJI,
     QUERY_EMOJI,
     SEARCH_EMOJI,
-    STANDSTILL_EMOJI,
     TEXT_EMOJI,
 )
 from core.exceptions import send_bad_operation, send_bad_request
-from core.help import (
-    AnnotatedCommand,
-    Argument,
-    get_help_metadata,
-)
 from core.paginator import UnnamedPaginator
 from core.utilities import format_command
 
+type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
 type CommandList = list[AnnotatedCommand]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /help Logic
+# /server commands Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-def _build_sections(cmds : CommandList) -> list[str | Item[LayoutView]]:
-    mention_strings = [
-        format_command(cmd.qualified_name)
-        for cmd in cmds
+def _build_sections(commands : CommandList) -> list[str | Item[LayoutView]]:
+    mentions = [
+        format_command(command.qualified_name)
+        for command in commands
     ]
 
     return [
         ButtonSection(
-            f"**{n}.** {m_str}\n-# {cmd.description or "*No description provided.*"}",
-            button = _InfoButton(cmd),
+            f"**{i}.** {mention}\n"
+            f"-# {command.description or "*No description provided.*"}",
+            button = _ConfigButton(command),
         )
-        for n, (cmd, m_str) in enumerate(zip(cmds, mention_strings, strict = False), start = 1)
+        for i, (command, mention) in enumerate(zip(commands, mentions, strict = False), start = 1)
     ]
 
-def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
+def _fuzzy_search(query : str, commands : CommandList) -> CommandList:
     query_lower = query.strip().lower()
 
     scored = [
@@ -71,76 +66,38 @@ def _fuzzy_search(query : str, cmds : CommandList) -> CommandList:
             SequenceMatcher(
                 None,
                 query_lower,
-                cmd.qualified_name.lower(),
+                command.qualified_name.lower(),
             ).ratio(),
-            cmd,
-        )
-        for cmd in cmds
+            command,
+        ) for command in commands
     ]
 
-    for index, (score, cmd) in enumerate(scored):
-        if query_lower and query_lower in cmd.qualified_name.lower():
-            scored[index] = (max(score, 0.85), cmd)
+    for index, (score, command) in enumerate(scored):
+        if query_lower and query_lower in command.qualified_name.lower():
+            scored[index] = (max(score, 0.85), command)
 
     scored.sort(key = itemgetter(0), reverse = True)
 
     return [cmd for score, cmd in scored if score >= 0.4]
 
-def _format_parameter(argument : Argument) -> str:
-    prefix = "(Optional) " if argument.type.optional else ""
-
-    if argument.type.type == "Choice":
-        options  = ", ".join(argument.type.choices)
-        arg_type = f"Choice[{options}]"
-    else:
-        arg_type = argument.type.type
-
-    return f"`{argument.name} | {prefix}{arg_type}:` {argument.description}"
-
-
-def _build_info_items(cmd : AnnotatedCommand) -> list[Item[LayoutView]]:
-    metadata = get_help_metadata(cmd)
-
-    items : list[Item[LayoutView]] = [
-        TextDisplay(
-            (
-                f"# {format_command(cmd.qualified_name)} Command\n"
-                f"*{cmd.description or "*No description provided.*"}*"
-            ),
-        ),
-    ]
-
-    if metadata.arguments:
-        items.extend(
-            [
-                VisibleLargeSeparator(),
-                TextDisplay("## Arguments"),
-                *(
-                    TextDisplay(_format_parameter(argument))
-                    for argument in metadata.arguments.values()
-                ),
-            ],
-        )
-
-    return items
-
-@final
-class _InfoView(LayoutView):
-    def __init__(self, cmd : AnnotatedCommand) -> None:
-        super().__init__()
-        self.add_item(Container(*_build_info_items(cmd)))
-
 @final
 class _QueryModal(Modal, title = "Query"):
-    text_input : TextInput[Self] = TextInput(label = "Enter a command name.")
-
-    def __init__(self, cmds : CommandList) -> None:
+    def __init__(self, commands : CommandList) -> None:
         super().__init__()
-        self._commands = cmds
+        self._commands = commands
+
+        self._text_input = TextInput[Self](placeholder = "Enter a query...")
+        self.text_input  = Label[Self](
+            text        = "Query",
+            description = "The query to enter.",
+            component   = self._text_input,
+        )
+
+        self.add_item(self.text_input)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        query   = self.text_input.value
+        query   = self._text_input.value
         matches = _fuzzy_search(query, self._commands)
 
         # ⸻ No commands matched closely enough to the query...
@@ -171,14 +128,34 @@ class _QueryModal(Modal, title = "Query"):
             raise
 
 @final
-class _InfoButton(Button[UnnamedPaginator]):
-    def __init__(self, cmd : AnnotatedCommand) -> None:
-        self._command = cmd
+class _ConfigModal(Modal, title = ""):
+    def __init__(self, command : AnnotatedCommand) -> None:
+        super().__init__()
+
+        self.current_allowed = TextDisplay[Self]("...")
+
+        self._allowed = MentionableSelect[Self](placeholder = "Enter up to 25 users/roles...", max_values = 25)
+        self.allowed  = Label[Self](
+            text        = "Allowed",
+            description = "The users/roles allowed to run the command. Uses OR logic.",
+            component   = self._allowed,
+        )
+
+        self.add_items(self.current_allowed, self.allowed)
+
+    @override
+    async def on_submit(self, interaction : Interaction) -> None:
+        ...
+
+@final
+class _ConfigButton(Button[UnnamedPaginator]):
+    def __init__(self, command : AnnotatedCommand) -> None:
+        self._command = command
         super().__init__(emoji = SEARCH_EMOJI)
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_message(view = _InfoView(self._command), ephemeral = True)
+        await interaction.response.send_modal(_ConfigModal(self._command))
 
 @final
 class _CategorySelect(Select[UnnamedPaginator]):
@@ -204,7 +181,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
                 SelectOption(
                     label       = "Server Commands",
                     value       = "server",
-                    description = "Server commands. Children: configure, health, info",
+                    description = "Server commands. Children: commands, configure, health, info",
                     emoji       = EMOJI_EMOJI,
                 ),
                 SelectOption(
@@ -274,68 +251,39 @@ class _QueryButton(Button[UnnamedPaginator]):
     async def callback(self, interaction : Interaction) -> None:
         await interaction.response.send_modal(_QueryModal(self._commands))
 
-async def run_help(interaction : Interaction, name : str | None = None) -> None:
-    await interaction.response.defer(ephemeral = True)
+async def run_server_commands(interaction : Interaction) -> None:
+    await interaction.response.defer()
 
     # ⸻ Grab the commands from the cache and then sort them.
 
-    cmds = [
-        c for c in interaction.client.get_commands_cache()
-        if isinstance(c, Command)
-        and not c.qualified_name.startswith("bot-owner")
+    commands = [
+        command for command in interaction.client.get_commands_cache()
+        if isinstance(command, Command) and
+        not command.qualified_name.startswith("bot-owner")
     ]
-    cmds.sort(key = lambda c : c.qualified_name)
+    commands.sort(key = lambda c : c.qualified_name)
 
-    if name:
-        matches = _fuzzy_search(name, cmds)
+    sections = _build_sections(commands)
 
-        # ⸻ No commands matched closely enough to the query...
+    # ⸻ Build the view,
 
-        if not matches:
-            await send_bad_request(interaction, subtitle = f'No commands found matching "{name}".')
-            return
-
-        await interaction.followup.send(view = _InfoView(matches[0]), ephemeral = True)
-    else:
-        sections = _build_sections(cmds)
-
-        # ⸻ Build the view,
-
-        view = UnnamedPaginator(
-            f"# {HORIZONTAL_SETTINGS} All Commands",
-            sections,
-            data_name = "Commands",
-            container = True,
-        )
-        view.add_above(
-            Container(
-                ButtonSection(
-                    (
-                       f"# {COMMAND_EMOJI} Command Browser\n"
-                        "-# Select a category to view commands."
-                    ),
-                    button = _QueryButton(cmds),
-                ),
-                ActionRow(_CategorySelect(cmds)),
+    view = UnnamedPaginator(
+        f"# {HORIZONTAL_SETTINGS} All Commands",
+        sections,
+        data_name = "Commands",
+        container = True,
+    )
+    view.add_above(
+        Container(
+            ButtonSection(
+               f"# {COMMAND_EMOJI} Command Browser\n"
+                "-# Select a category to view commands.",
+                button = _QueryButton(commands),
             ),
-        )
-        view.add_below(
-            Container(
-                TextDisplay(
-                    "# About me,\n"
-                    "I am not quite sure who I will serve for right now... but hopefully that will change!\n"
-                   f"## {DEVELOPER_EMOJI} My Developer\n"
-                   f"My developer is <@{FINESTPERFECTIONISM_ID}>. I was created and am actively maintained by him.\n"
-                   f"## {STANDSTILL_EMOJI} What I Do\n"
-                    "- **Advanced UI:** I utilize Components V2, modals, and views, to provide a clean user interface that is both easy to navigate and visually appealing.\n"
-                    "- **Guild Information:** I have a system to automatically manage guild information, such as rules, partnerships, and more.\n"
-                    "- **Informational Commands:** I have utilites for server information, member information, and more for staff members and the public.\n"
-                   f"## {CONTESTED_EMOJI} Issues?\n"
-                   f"Should you have feedback or any issues with me, please speak to my developer.",
-                ),
-            ),
-        )
+            ActionRow(_CategorySelect(commands)),
+        ),
+    )
 
-        # ⸻ and then send it
+    # ⸻ ...and then send it.
 
-        await interaction.followup.send(view = view, ephemeral = True)
+    await interaction.followup.send(view = view)
