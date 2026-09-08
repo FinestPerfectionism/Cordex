@@ -15,7 +15,6 @@ from discord.ext import commands
 
 from bot import Cordex, Interaction
 from core.exceptions import UnconfiguredQuarantine, send_bad_operation
-from core.permissions import bot_owner_cmd
 from core.utilities import unimplemented
 
 from .cases import run_mod_cases_query, run_mod_cases_view
@@ -105,7 +104,6 @@ class ModerationCommands(
         description = "Add channel(s) or the server to lockdown.",
     )
     @bot_has_permissions(manage_channels = True)
-    @bot_owner_cmd()
     async def cmd_mod_primary_lockdown_add(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_add(interaction)
 
@@ -118,7 +116,6 @@ class ModerationCommands(
         description = "Remove channel(s) or the server from lockdown.",
     )
     @bot_has_permissions(manage_channels = True)
-    @bot_owner_cmd()
     async def cmd_mod_primary_lockdown_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_remove(interaction)
 
@@ -132,7 +129,6 @@ class ModerationCommands(
     )
     @bot_has_permissions(ban_members = True)
     @describe(target = "The member to ban.")
-    @bot_owner_cmd()
     async def cmd_mod_primary_ban_add(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_ban_add(interaction, target)
 
@@ -144,7 +140,6 @@ class ModerationCommands(
         name        = "view",
         description = "View all banned members.",
     )
-    @bot_owner_cmd()
     async def cmd_mod_primary_ban_view(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_view(interaction)
 
@@ -159,7 +154,6 @@ class ModerationCommands(
     @bot_has_permissions(ban_members = True)
     @rename(target_id = "target-id")
     @describe(target_id = "The ID of the member to unban. Must be between 17-19.")
-    @bot_owner_cmd()
     async def cmd_mod_primary_ban_remove(self, interaction : Interaction, target_id : Range[str, 17, 19]) -> None:
         await run_mod_primary_ban_remove(interaction, target_id)
 
@@ -173,7 +167,6 @@ class ModerationCommands(
     )
     @bot_has_permissions(kick_members = True)
     @describe(target = "The member to kick.")
-    @bot_owner_cmd()
     async def cmd_mod_primary_kick(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_kick(interaction, target)
 
@@ -188,7 +181,6 @@ class ModerationCommands(
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to place in quarantine.")
     @quarantine_cmd()
-    @bot_owner_cmd()
     async def cmd_mod_primary_quarantine_add(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_quarantine_add(interaction, target)
 
@@ -201,7 +193,6 @@ class ModerationCommands(
         description = "View all quarantined members.",
     )
     @quarantine_cmd()
-    @bot_owner_cmd()
     async def cmd_mod_primary_quarantine_view(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_view(interaction)
 
@@ -216,7 +207,6 @@ class ModerationCommands(
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to remove from quarantine.")
     @quarantine_cmd()
-    @bot_owner_cmd()
     async def cmd_mod_primary_quarantine_remove(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_quarantine_remove(interaction, target)
 
@@ -230,7 +220,6 @@ class ModerationCommands(
     )
     @bot_has_permissions(moderate_members = True)
     @describe(target = "The member to place in timeout.")
-    @bot_owner_cmd()
     async def cmd_mod_primary_timeout_add(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_timeout_add(interaction, target)
 
@@ -242,7 +231,6 @@ class ModerationCommands(
         name        = "view",
         description = "View all timed out members.",
     )
-    @bot_owner_cmd()
     async def cmd_mod_primary_timeout_view(self, interaction : Interaction) -> None:
         await run_mod_primary_timeout_view(interaction)
 
@@ -256,7 +244,6 @@ class ModerationCommands(
     )
     @bot_has_permissions(moderate_members = True)
     @describe(target = "The member to remove from timeout.")
-    @bot_owner_cmd()
     async def cmd_mod_primary_timeout_remove(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_timeout_remove(interaction, target)
 
@@ -270,7 +257,6 @@ class ModerationCommands(
     )
     @bot_has_permissions(manage_messages = True, read_message_history = True)
     @describe(target = "The member to purge messages from.")
-    @bot_owner_cmd()
     async def cmd_mod_primary_purge(self, interaction : Interaction, target : Member | None = None) -> None:
         await run_mod_primary_purge(interaction, target)
 
@@ -282,7 +268,6 @@ class ModerationCommands(
         name        = "add",
         description = "Add a note to a member.",
     )
-    @bot_owner_cmd()
     async def cmd_mod_primary_note_add(self, interaction : Interaction) -> None:
         await run_mod_primary_note_add(interaction)
 
@@ -294,7 +279,6 @@ class ModerationCommands(
         name        = "view",
         description = "View a member's notes.",
     )
-    @bot_owner_cmd()
     async def cmd_mod_primary_note_view(self, interaction : Interaction) -> None:
         await run_mod_primary_note_view(interaction)
 
@@ -306,7 +290,6 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove a note from a member.",
     )
-    @bot_owner_cmd()
     async def cmd_mod_primary_note_remove(self, interaction : Interaction) -> None:
         await run_mod_primary_note_remove(interaction)
 
