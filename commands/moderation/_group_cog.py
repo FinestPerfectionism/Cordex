@@ -1,14 +1,12 @@
 from typing import final, override
 
-from discord import Member
+from discord import Member, User
 from discord.app_commands import (
     AppCommandError,
     Group,
-    Range,
     command,
     describe,
     guild_only,
-    rename,
 )
 from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
@@ -152,10 +150,9 @@ class ModerationCommands(
         description = "Remove a ban from member(s).",
     )
     @bot_has_permissions(ban_members = True)
-    @rename(target_id = "target-id")
-    @describe(target_id = "The ID of the member to unban. Must be between 17-19.")
-    async def cmd_mod_primary_ban_remove(self, interaction : Interaction, target_id : Range[str, 17, 19]) -> None:
-        await run_mod_primary_ban_remove(interaction, target_id)
+    @describe(target = "The member to unban.")
+    async def cmd_mod_primary_ban_remove(self, interaction : Interaction, target : User) -> None:
+        await run_mod_primary_ban_remove(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation kick Command
