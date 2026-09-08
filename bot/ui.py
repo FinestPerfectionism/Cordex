@@ -6,6 +6,7 @@ from discord import (
     ButtonStyle,
     Color,
     SeparatorSpacing,
+    TextStyle,
 )
 from discord.ui import (
     ActionRow,
@@ -24,7 +25,6 @@ from discord.ui import (
     Section,
     Select,
     Separator,
-    TextInput,
     Thumbnail,
     UserSelect,
     View,
@@ -35,6 +35,7 @@ from discord.ui import Container as BaseContainer
 from discord.ui import LayoutView as BaseLayoutView
 from discord.ui import Modal as BaseModal
 from discord.ui import TextDisplay as BaseTextDisplay
+from discord.ui import TextInput as BaseTextInput
 
 __all__ = [
     "ActionRow",
@@ -176,6 +177,30 @@ class Container[V : LayoutView](BaseContainer[V]):
             self.add_item(item)
 
         return self
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# TextInput
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+class TextInput[M : Modal](BaseTextInput[M]):
+    def __init__(
+        self,
+        *,
+        style       : TextStyle  = TextStyle.short,
+        placeholder : str | None = None,
+        default     : str | None = None,
+        required    : bool       = True,
+        min_length  : int | None = None,
+        max_length  : int | None = None,
+    ) -> None:
+        super().__init__(
+            style       = style,
+            placeholder = placeholder,
+            default     = default,
+            required    = required,
+            min_length  = min_length,
+            max_length  = max_length,
+        )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Button Colors
