@@ -29,6 +29,7 @@ from .primary.lockdown import (
 )
 from .primary.note import (
     run_mod_primary_note_add,
+    run_mod_primary_note_edit,
     run_mod_primary_note_remove,
     run_mod_primary_note_view,
 )
@@ -48,6 +49,7 @@ from .primary.timeout import (
 # Moderation Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+# ruff: disable[too-many-public-methods]
 @final
 @guild_only
 class ModerationCommands(
@@ -280,6 +282,17 @@ class ModerationCommands(
         await run_mod_primary_note_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation note edit Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @note.command(
+        name        = "edit",
+        description = "Edit a member's notes.",
+    )
+    async def cmd_mod_primary_note_edit(self, interaction : Interaction) -> None:
+        await run_mod_primary_note_edit(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation note remove Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -313,6 +326,8 @@ class ModerationCommands(
     @unimplemented()
     async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
         await run_mod_cases_view(interaction)
+
+# ruff: enable[too-many-public-methods]
 
 async def setup(bot : Cordex) -> None:
     cog = ModerationCommands(bot)
