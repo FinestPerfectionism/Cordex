@@ -99,7 +99,7 @@ class ModerationCommands(
 
     @lockdown.command(
         name        = "add",
-        description = "Add channel(s) or the server to lockdown.",
+        description = "Add a channel to lockdown.",
     )
     @bot_has_permissions(manage_channels = True)
     async def cmd_mod_primary_lockdown_add(self, interaction : Interaction) -> None:
@@ -111,7 +111,7 @@ class ModerationCommands(
 
     @lockdown.command(
         name        = "remove",
-        description = "Remove channel(s) or the server from lockdown.",
+        description = "Remove a channel from lockdown.",
     )
     @bot_has_permissions(manage_channels = True)
     async def cmd_mod_primary_lockdown_remove(self, interaction : Interaction) -> None:
@@ -123,7 +123,7 @@ class ModerationCommands(
 
     @ban.command(
         name        = "add",
-        description = "Ban member(s) from the server.",
+        description = "Ban a member from the server.",
     )
     @bot_has_permissions(ban_members = True)
     @describe(target = "The member to ban.")
@@ -147,7 +147,7 @@ class ModerationCommands(
 
     @ban.command(
         name        = "remove",
-        description = "Remove a ban from member(s).",
+        description = "Remove a ban from a member.",
     )
     @bot_has_permissions(ban_members = True)
     @describe(target = "The member to unban.")
@@ -160,7 +160,7 @@ class ModerationCommands(
 
     @command(
         name        = "kick",
-        description = "Kick member(s) from the server.",
+        description = "Kick a member from the server.",
     )
     @bot_has_permissions(kick_members = True)
     @describe(target = "The member to kick.")
@@ -173,7 +173,7 @@ class ModerationCommands(
 
     @quarantine.command(
         name        = "add",
-        description = "Add member(s) to quarantine.",
+        description = "Add a member to quarantine.",
     )
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to place in quarantine.")
@@ -199,7 +199,7 @@ class ModerationCommands(
 
     @quarantine.command(
         name        = "remove",
-        description = "Remove member(s) from quarantine.",
+        description = "Remove a member from quarantine.",
     )
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to remove from quarantine.")
@@ -213,7 +213,7 @@ class ModerationCommands(
 
     @timeout.command(
         name        = "add",
-        description = "Add member(s) to timeout.",
+        description = "Add a member to timeout.",
     )
     @bot_has_permissions(moderate_members = True)
     @describe(target = "The member to place in timeout.")
@@ -237,7 +237,7 @@ class ModerationCommands(
 
     @timeout.command(
         name        = "remove",
-        description = "Remove member(s) from timeout.",
+        description = "Remove a member from timeout.",
     )
     @bot_has_permissions(moderate_members = True)
     @describe(target = "The member to remove from timeout.")
@@ -250,7 +250,7 @@ class ModerationCommands(
 
     @command(
         name        = "purge",
-        description = "Purge messages from member(s) or channel(s).",
+        description = "Purge messages from a channel or member.",
     )
     @bot_has_permissions(manage_messages = True, read_message_history = True)
     @describe(target = "The member to purge messages from.")
