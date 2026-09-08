@@ -26,6 +26,7 @@ from constants import (
     EMOJI_EMOJI,
     HORIZONTAL_SETTINGS,
     MEMBER_EMOJI,
+    MEMBERS_EMOJI,
     MODERATION_EMOJI,
     PENCIL_EMOJI,
     QUERY_EMOJI,
@@ -128,9 +129,9 @@ class _QueryModal(Modal, title = "Query"):
             raise
 
 @final
-class _ConfigModal(Modal, title = ""):
+class _ConfigModal(Modal):
     def __init__(self, command : AnnotatedCommand) -> None:
-        super().__init__()
+        super().__init__(title = f"Configuring {command.qualified_name}")
 
         self.current_allowed = TextDisplay[Self]("...")
 
@@ -151,7 +152,7 @@ class _ConfigModal(Modal, title = ""):
 class _ConfigButton(Button[UnnamedPaginator]):
     def __init__(self, command : AnnotatedCommand) -> None:
         self._command = command
-        super().__init__(emoji = SEARCH_EMOJI)
+        super().__init__(emoji = PENCIL_EMOJI)
 
     @override
     async def callback(self, interaction : Interaction) -> None:
@@ -188,7 +189,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
                     label       = "Role Commands",
                     value       = "role",
                     description = "Role commands. Children: compare, duplicate, info, members, permissions",
-                    emoji       = PENCIL_EMOJI,
+                    emoji       = MEMBERS_EMOJI,
                 ),
                 SelectOption(
                     label       = "Channel Commands",
