@@ -5,7 +5,6 @@ from discord.app_commands import Choice, choices, command, describe, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.help import Argument, ArgumentType, help_description
 
 from ._base import Scope
 from .avatar import run_member_avatar
@@ -30,19 +29,6 @@ class MemberCommands(
     # /member avatar Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(
-        arguments = {
-            "scope" : Argument(
-                name        = "scope",
-                type        = ArgumentType(
-                    type     = "Choice",
-                    choices  = ["Guild", "Global"],
-                    optional = True,
-                ),
-                description = 'Whether to view the guild avatar or the global avatar of the member. Defaults to "global".',
-            ),
-        },
-    )
     @command(
         name        = "avatar",
         description = "View the avatar of a member.",
@@ -76,19 +62,6 @@ class MemberCommands(
     # /member info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @help_description(
-        arguments = {
-            "scope" : Argument(
-                name        = "scope",
-                type        = ArgumentType(
-                    type     = "Choice",
-                    choices  = ["Guild", "Global"],
-                    optional = True,
-                ),
-                description = 'Whether to view the guild profile or the global profile of the member. Defaults to "global".',
-            ),
-        },
-    )
     @command(
         name        = "info",
         description = "View information for a member.",
