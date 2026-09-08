@@ -33,7 +33,7 @@ from constants import (
     SEARCH_EMOJI,
     TEXT_EMOJI,
 )
-from core.exceptions import send_bad_operation, send_bad_request
+from core.exceptions import send_bad_argument, send_bad_operation, send_bad_request
 from core.paginator import UnnamedPaginator
 from core.utilities import format_command
 
@@ -146,7 +146,18 @@ class _ConfigModal(Modal):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        ...
+        allowed = self._allowed.values
+
+        guild = interaction.guild
+        if not guild:
+            return
+
+        quarantine_role = interaction.client.config(guild).get_moderation_quarantine_role()
+        if quarantine_role in allowed:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"allowed" : "Quarantine role cannot be used as a user/role command restriction."},
+            )
 
 @final
 class _ConfigButton(Button[UnnamedPaginator]):
