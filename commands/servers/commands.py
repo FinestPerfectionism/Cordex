@@ -131,7 +131,7 @@ class _QueryModal(Modal, title = "Query"):
 @final
 class _ConfigModal(Modal):
     def __init__(self, command : AnnotatedCommand) -> None:
-        super().__init__(title = f"Configuring {command.qualified_name}")
+        super().__init__(title = f"Configuring /{command.qualified_name}")
 
         self.current_allowed = TextDisplay[Self]("...")
 
