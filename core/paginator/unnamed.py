@@ -1,5 +1,6 @@
 from contextlib import suppress
 from typing import Self, final, override
+from warnings import warn
 
 from discord import Color, Message, NotFound
 
@@ -200,6 +201,15 @@ class UnnamedPaginator(LayoutView):
         if color and not container:
             error = "color is dependent on container"
             raise ValueError(error)
+
+        # ⸻ timeout without self.message.
+
+        if timeout and not self.message:
+            warn(
+                "timeout was passed but there is no message to edit.",
+                category   = UserWarning,
+                stacklevel = 2,
+            )
 
         # ⸻ Render.
 

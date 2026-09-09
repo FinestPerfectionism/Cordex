@@ -1,6 +1,7 @@
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Protocol, final, override
+from warnings import warn
 
 from discord import Color, Message, NotFound
 
@@ -96,6 +97,15 @@ class NamedPaginator(LayoutView):
         if len(data) == 1:
             error = "data must contain more than one page"
             raise ValueError(error)
+
+        # ⸻ timeout without self.message.
+
+        if timeout and not self.message:
+            warn(
+                "timeout was passed but there is no message to edit.",
+                category   = UserWarning,
+                stacklevel = 2,
+            )
 
         self.pages        : list[PageData] = data or [PageData("No content available.", ["No content available."])]
         self.current_page : int            = 0
