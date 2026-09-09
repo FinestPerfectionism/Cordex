@@ -152,7 +152,7 @@ class _ConfigModal(Modal):
         if not guild:
             return
 
-        quarantine_role = interaction.client.config(guild).get_moderation_quarantine_role()
+        quarantine_role = await interaction.client.config(guild).get_moderation_quarantine_role()
         if quarantine_role in allowed:
             await send_bad_argument(
                 interaction,
