@@ -98,15 +98,6 @@ class NamedPaginator(LayoutView):
             error = "data must contain more than one page"
             raise ValueError(error)
 
-        # ⸻ timeout without self.message.
-
-        if timeout and not self.message:
-            warn(
-                "timeout was passed but there is no message to edit.",
-                category   = UserWarning,
-                stacklevel = 2,
-            )
-
         self.pages        : list[PageData] = data or [PageData("No content available.", ["No content available."])]
         self.current_page : int            = 0
         self._name_rows   : list[_NameRow] = [
@@ -135,6 +126,16 @@ class NamedPaginator(LayoutView):
 
     @override
     async def on_timeout(self) -> None:
+
+        # ⸻ timeout without self.message.
+
+        if self.timeout and not self.message:
+            warn(
+                "timeout was passed but there is no message to edit.",
+                category   = UserWarning,
+                stacklevel = 2,
+            )
+
         if self.timeout is not None:
             for item in self.walk_children():
                 if isinstance(item, Button):
