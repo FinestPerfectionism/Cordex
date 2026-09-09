@@ -1,6 +1,7 @@
 from collections.abc import Iterable
 from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, Self, final, override
+from warnings import warn
 
 from discord import (
     ButtonStyle,
@@ -88,7 +89,11 @@ class LayoutView(BaseLayoutView):
 
     def add_items(self, *items : Item[LayoutView | Self]) -> Self:
         if len(items) == 1:
-            log.warning("Prefer LayoutView.add_item over LayoutView.add_items if only one item is being added.")
+            warn(
+                "Prefer LayoutView.add_item over LayoutView.add_items if only one item is being added.",
+                category   = UserWarning,
+                stacklevel = 2,
+            )
 
         for item in items:
             self.add_item(item)
@@ -117,7 +122,11 @@ class Modal(BaseModal):
 
     def add_items(self, *items : Item[Modal | Self]) -> Self:
         if len(items) == 1:
-            log.warning("Prefer Modal.add_item over Modal.add_items if only one item is being added.")
+            warn(
+                "Prefer Modal.add_item over Modal.add_items if only one item is being added.",
+                category   = UserWarning,
+                stacklevel = 2,
+            )
 
         for item in items:
             self.add_item(item)
@@ -165,7 +174,11 @@ class Container[V : LayoutView](BaseContainer[V]):
 
     def add_items(self, *items : Item[V]) -> Self:
         if len(items) == 1:
-            log.warning("Prefer Container.add_item over Container.add_items if only one item is being added.")
+            warn(
+                "Prefer Container.add_item over Container.add_items if only one item is being added.",
+                category   = UserWarning,
+                stacklevel = 2,
+            )
 
         for item in items:
             self.add_item(item)
