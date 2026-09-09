@@ -279,8 +279,8 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
 
         try:
             await _set_guild_config(interaction, "quarantine", role.id)
-            await manager.quarantine_enforce("Channel")
-            await manager.quarantine_enforce("Role")
+            await manager.enforce("Channel")
+            await manager.enforce("Role")
         except Exception:
             self.default_values = previous
             await send_bad_operation(interaction, title = "update quarantine role")
@@ -352,9 +352,9 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         manager = QuarantineManager(interaction.client, interaction.guild)
 
         if channels:
-            await manager.quarantine_enforce("Channel")
+            await manager.enforce("Channel")
         if roles:
-            await manager.quarantine_enforce("Role")
+            await manager.enforce("Role")
 
         await interaction.response.edit_message(view = self.view)
 

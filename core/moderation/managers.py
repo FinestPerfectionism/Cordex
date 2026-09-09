@@ -21,6 +21,43 @@ class LockdownManager:
         self.bot   = bot
         self.guild = guild
 
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # _log_failure
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def _log_failure(self, msg : str, /) -> None:
+        log.exception("Failure during %s in guild %s, %s", msg, self.guild.name, self.guild.id)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_channels
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_channels(self) -> list[GuildChannel] | None:
+        ...
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # enforce
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def enforce(self) -> None:
+        semaphore = Semaphore(5)
+
+        async def edit_channel(_channel : GuildChannel) -> None:
+            async with semaphore:
+                try:
+                    # await channel.set_permissions(
+                    #     ...,
+                    #     overwrite = ...,
+                    #     reason    = "Lockdown enforce.",
+                    # )
+                    ...
+                except Forbidden:
+                    pass
+                except HTTPException:
+                    self._log_failure("channel quarantine enforcement")
+
+        await gather(*(edit_channel(channel) for channel in self.guild.channels))
+
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Quarantine Manager
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -40,19 +77,19 @@ class QuarantineManager:
         log.exception("Failure during %s in guild %s, %s", msg, self.guild.name, self.guild.id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_quarantined_members
+    # get_members
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_quarantined_members(self) -> list[Member] | None:
+    async def get_members(self) -> list[Member] | None:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # quarantine_enforce
+    # enforce
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     type EnforceTypes = Literal["Channel", "Role"]
 
-    async def quarantine_enforce(self, enforce_type : EnforceTypes) -> None:
+    async def enforce(self, enforce_type : EnforceTypes) -> None:
         quarantine_role = await self.bot.config(self.guild).get_moderation_quarantine_role()
         if not quarantine_role:
             return
@@ -77,7 +114,7 @@ class QuarantineManager:
                         await channel.set_permissions(
                             quarantine_role,
                             overwrite = overwrites,
-                            reason    = "Scheduled quarantine enforce.",
+                            reason    = "Quarantine enforce.",
                         )
                     except Forbidden:
                         pass

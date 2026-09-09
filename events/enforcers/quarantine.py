@@ -27,8 +27,8 @@ class QuarantineEnforcer(commands.Cog):
     async def loop_quarantineenforce(self) -> None:
         async def run_enforcement(guild : Guild) -> None:
             manager = QuarantineManager(self.bot, guild)
-            await manager.quarantine_enforce("Channel")
-            await manager.quarantine_enforce("Role")
+            await manager.enforce("Channel")
+            await manager.enforce("Role")
 
         await gather(*(run_enforcement(guild) for guild in self.bot.guilds))
 
@@ -65,7 +65,7 @@ class QuarantineEnforcer(commands.Cog):
             return
 
         manager = QuarantineManager(self.bot, after.guild)
-        await manager.quarantine_enforce("Channel")
+        await manager.enforce("Channel")
 
     @commands.Cog.listener("on_guild_channel_create")
     async def listener_quarantineenforce_channelcreate(self, channel : GuildChannel) -> None:
@@ -75,7 +75,7 @@ class QuarantineEnforcer(commands.Cog):
             return
 
         manager = QuarantineManager(self.bot, channel.guild)
-        await manager.quarantine_enforce("Channel")
+        await manager.enforce("Channel")
 
     @commands.Cog.listener("on_guild_role_update")
     async def listener_quarantineenforce_roleupdate(self, before : Role, after : Role) -> None:
@@ -83,7 +83,7 @@ class QuarantineEnforcer(commands.Cog):
             return
 
         manager = QuarantineManager(self.bot, after.guild)
-        await manager.quarantine_enforce("Role")
+        await manager.enforce("Role")
 
 async def setup(bot : Cordex) -> None:
     cog = QuarantineEnforcer(bot)
