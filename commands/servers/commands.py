@@ -298,4 +298,4 @@ async def run_server_commands(interaction : Interaction) -> None:
 
     # ⸻ ...and then send it.
 
-    await interaction.followup.send(view = view)
+    view.message = await interaction.followup.send(view = view)
