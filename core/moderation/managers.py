@@ -136,14 +136,3 @@ class QuarantineManager:
                     pass
                 except HTTPException:
                     self._log_failure("role quarantine enforcement")
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Note Manager
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-@final
-class NoteManager:
-    def __init__(self, bot : Cordex, guild : Guild) -> None:
-        super().__init__()
-        self.bot   = bot
-        self.guild = guild

@@ -27,7 +27,7 @@ from .cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-from .managers import LockdownManager, NoteManager, QuarantineManager
+from .managers import LockdownManager, QuarantineManager
 
 type ActionType = Literal[
     "Ban Add",
@@ -62,7 +62,6 @@ class Actions:
         self._cases              = Cases(bot, guild)
         self._lockdown_manager   = LockdownManager(bot, guild)
         self._quarantine_manager = QuarantineManager(bot, guild)
-        self._note_manager       = NoteManager(bot, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure
@@ -176,8 +175,8 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = success,
+            failed = failed,
+            dmed   = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -222,8 +221,8 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = success,
+            failed = failed,
+            dmed   = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -250,8 +249,8 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = success,
+            failed = failed,
+            dmed   = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -263,7 +262,7 @@ class Actions:
         if not quarantine_role:
             return ActionResult(
                 failed  = True,
-                dmed    = False,
+                dmed   = False,
             )
 
         if action.dm_user:
@@ -285,8 +284,8 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = success,
+            failed = failed,
+            dmed   = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -315,8 +314,8 @@ class Actions:
         quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
             return ActionResult(
-                failed  = True,
-                dmed    = False,
+                failed = True,
+                dmed   = False,
             )
 
         if action.dm_user:
@@ -338,8 +337,8 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = success,
+            failed = failed,
+            dmed   = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -366,8 +365,8 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = success,
+            failed = failed,
+            dmed   = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -412,8 +411,8 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = success,
+            failed = failed,
+            dmed   = success,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -451,9 +450,9 @@ class Actions:
             failed = False
 
         return ActionResult(
-            failed  = failed,
-            dmed    = None,
-            data    = len(deleted),
+            failed = failed,
+            dmed   = None,
+            data   = len(deleted),
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
