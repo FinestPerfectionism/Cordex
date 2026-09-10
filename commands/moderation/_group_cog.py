@@ -321,7 +321,7 @@ class ModerationCommands(
 
     @cases.command(
         name        = "view",
-        description = "View a moderation case by it's ID.",
+        description = "View a moderation case by its ID.",
     )
     @unimplemented()
     async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
