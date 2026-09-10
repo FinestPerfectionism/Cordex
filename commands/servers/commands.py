@@ -3,10 +3,9 @@ from operator import itemgetter
 from typing import Self, final, override
 
 from discord import SelectOption
-from discord.app_commands import Command, Group
-from discord.ext import commands
 
 from bot import Interaction
+from bot.types import AnnotatedCommand
 from bot.ui import (
     ActionRow,
     Button,
@@ -37,7 +36,6 @@ from core.exceptions import send_bad_argument, send_bad_operation, send_bad_requ
 from core.paginator import UnnamedPaginator
 from core.utilities import format_command
 
-type AnnotatedCommand = Command[Group | commands.Cog, ..., object]
 type CommandList = list[AnnotatedCommand]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -270,7 +268,7 @@ async def run_server_commands(interaction : Interaction) -> None:
 
     commands = [
         command for command in interaction.client.get_commands_cache()
-        if isinstance(command, Command) and
+        if isinstance(command, AnnotatedCommand) and
         not command.qualified_name.startswith("bot-owner")
     ]
     commands.sort(key = lambda c : c.qualified_name)

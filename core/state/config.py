@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, cast, final
 
-from discord import Guild, Role
+from discord import Guild, Member, Role
 
 from bot.types import GuildMessagable
 
@@ -17,6 +17,13 @@ class Config:
         super().__init__()
         self.bot   = bot
         self.guild = guild
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_command_allowed
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_command_allowed(self) -> list[Role | Member]:
+        ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_moderation_quarantine_role

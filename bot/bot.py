@@ -19,9 +19,8 @@ from typing import Self, TypedDict, Unpack, cast, final, override
 
 from discord import Embed, File, Guild, Intents, Message, Status
 from discord import Interaction as BaseInteraction
-from discord.app_commands import AppCommand, Command, Group
+from discord.app_commands import AppCommand, CommandTree
 from discord.ext import commands
-from discord.ext.commands import Cog  # pyright: ignore[reportMissingTypeStubs]
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     Context as BaseContext,
 )
@@ -34,7 +33,7 @@ from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
 from core.state import Config, Connection, connect
 
-from .types import LambdaInter, NameStyleResult
+from .types import AnnotatedCommand, LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
 
 InspectableObject = (
@@ -122,6 +121,11 @@ class _ContextClass(BaseContext["Cordex"]):
             return await self.send(msg)
         return await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
 
+class _Tree(CommandTree):
+    @override
+    async def interaction_check(self, interaction : Interaction) -> bool:
+        return True
+
 
 type Context              = _ContextClass
 type Interaction          = BaseInteraction[Cordex]
@@ -140,11 +144,12 @@ class Cordex(commands.Bot):
             help_command            = None,
             intents                 = Intents.all(),
             status                  = Status.online,
+            tree_cls                = _Tree,
         )
         self.db : Connection
 
-        self._commands_cache     : list[Command[Group | Cog, ..., object] | Group] = []
-        self._app_commands_cache : list[AppCommand] = []
+        self._commands_cache     : list[AnnotatedCommand] = []
+        self._app_commands_cache : list[AppCommand]       = []
 
         self.restarting : bool = False
 
@@ -294,7 +299,7 @@ class Cordex(commands.Bot):
     async def build_app_commands_cache(self) -> None:
         self._app_commands_cache = await self.tree.fetch_commands()
 
-    def get_commands_cache(self) -> list[Command[Group | Cog, ..., object] | Group]:
+    def get_commands_cache(self) -> list[AnnotatedCommand]:
         if not self._commands_cache:
             self.build_commands_cache()
         return self._commands_cache
