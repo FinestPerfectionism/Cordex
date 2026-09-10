@@ -261,7 +261,7 @@ class Actions:
         quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
             return ActionResult(
-                failed  = True,
+                failed = True,
                 dmed   = False,
             )
 

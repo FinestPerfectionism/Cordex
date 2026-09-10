@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.utils import format_dt, get, utcnow
 
 import constants
-from bot import Context, ContextOrInteraction, Interaction, ui
+from bot import Context, ContextOrInteraction, Cordex, Interaction, ui
 from bot.ui import (
     ButtonSection,
     Container,
@@ -59,6 +59,8 @@ type Lambda = Callable[[], Awaitable[object]]
 
 async def run_bo_eval(ctx : Context, body : str) -> None:
     env : dict[str, object] = {
+        "Cordex" : Cordex,
+
         "bot"  : ctx.bot,
         "ctx"  : ctx,
         "tree" : ctx.bot.tree,

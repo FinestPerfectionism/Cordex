@@ -324,7 +324,3 @@ class Cordex(commands.Bot):
             await self.db.close()
 
         await super().close()
-
-
-bot  = Cordex()
-tree = bot.tree

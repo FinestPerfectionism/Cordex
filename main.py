@@ -6,7 +6,7 @@ from os import getenv
 
 from dotenv import load_dotenv
 
-from bot import bot, log
+from bot import Cordex, log
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Main Script
@@ -21,6 +21,7 @@ basic_config(
 
 TOKEN = getenv("TOKEN")
 
+bot = Cordex()
 async def _main() -> None:
     if not TOKEN:
         error = "TOKEN environment variable not set."
