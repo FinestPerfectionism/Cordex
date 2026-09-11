@@ -10,10 +10,10 @@ from core.exceptions import send_bad_argument
 from ._base import Scope
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /member avatar Logic
+# /member banner Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-async def run_member_avatar(
+async def run_member_banner(
     interaction : Interaction,
     member      : Member | None = None,
     scope       : Scope  | None = "global",
@@ -29,44 +29,44 @@ async def run_member_avatar(
     if guild is None or not isinstance(target, Member):
         return
 
-    # ⸻ Determine avatar based on server parameter.
+    # ⸻ Determine banner based on server parameter.
 
     fetched_target = await interaction.client.fetch_user(target.id)
     guild_target   = guild.get_member(target.id) or await guild.fetch_member(target.id)
 
-    avatar = (guild_target.guild_avatar if scope == "guild" else None) or fetched_target.avatar
+    banner = (guild_target.guild_banner if scope == "guild" else None) or fetched_target.banner
 
-    if not avatar:
+    if not banner:
         if target == interaction.user:
             await send_bad_argument(
                 interaction,
-                subtitle = {"member" : "You do not have an avatar set."},
+                subtitle = {"member" : "You do not have a banner set."},
             )
             return
 
         if target == interaction.client.user:
             await send_bad_argument(
                 interaction,
-                subtitle = {"member" : "I do not have an avatar set."},
+                subtitle = {"member" : "I do not have a banner set."},
             )
             return
 
         await send_bad_argument(
             interaction,
-            subtitle = {"member" : f"{target.mention} does not have an avatar set."},
+            subtitle = {"member" : f"{target.mention} does not have an banner set."},
         )
         return
 
     @final
-    class AvatarView(LayoutView):
+    class BannerView(LayoutView):
         container = Container[Self](
-            TextDisplay(f"### {target.mention}'s Avatar"),
-            TextDisplay(f"View {target.name}'s avatar [here]({avatar.url})."),
-            MediaGallery(MediaGalleryItem(avatar.url)),
+            TextDisplay(f"### {target.mention}'s Banner"),
+            TextDisplay(f"View {target.name}'s banner [here]({banner.url})."),
+            MediaGallery(MediaGalleryItem(banner.url)),
             color = target.color if target.color.value else COLOR_GREY,
         )
 
     await interaction.followup.send(
-        view             = AvatarView(),
+        view             = BannerView(),
         allowed_mentions = AllowedMentions.none(),
     )

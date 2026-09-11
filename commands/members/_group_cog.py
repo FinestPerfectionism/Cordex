@@ -8,6 +8,7 @@ from bot import Cordex, Interaction
 
 from ._base import Scope
 from .avatar import run_member_avatar
+from .banner import run_member_banner
 from .info import run_member_info
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -34,8 +35,8 @@ class MemberCommands(
         description = "View the avatar of a member.",
     )
     @describe(
-        member = "The user to view the avataar for. Defaults to yourself.",
-        scope  = 'Whether to view the guild profile or the global profile of the member. Defaults to "global".',
+        member = "The user to view the avatar for. Defaults to yourself.",
+        scope  = 'Whether to view the guild avatar or the global avatar of the member. Defaults to "global".',
     )
     @choices(
         scope = [
@@ -57,6 +58,39 @@ class MemberCommands(
         scope       : Scope  | None = "global",
     ) -> None:
         await run_member_avatar(interaction, member, scope)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /member banner Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @command(
+        name        = "banner",
+        description = "View the banner of a member.",
+    )
+    @describe(
+        member = "The user to view the banner for. Defaults to yourself.",
+        scope  = 'Whether to view the guild banner or the global banner of the member. Defaults to "global".',
+    )
+    @choices(
+        scope = [
+            Choice(
+                name  = "Guild",
+                value = "guild",
+            ),
+            Choice(
+                name  = "Global",
+                value = "global",
+            ),
+        ],
+    )
+    async def cmd_member_member(
+        self,
+        interaction : Interaction,
+        member      : Member | None = None,
+        *,
+        scope       : Scope  | None = "global",
+    ) -> None:
+        await run_member_banner(interaction, member, scope)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /member info Command
