@@ -34,9 +34,10 @@ class Fun(commands.Cog):
             resolved_reference = reference.resolved
 
             if isinstance(resolved_reference, Message) and resolved_reference.author == self.bot.user:
-                greetings = any(trigger in content for trigger in ["hi", "hello"])
+                words = [word.strip(".,!?\"'") for word in content.split()]
+                greetings = any(trigger in words for trigger in ["hi", "hello"])
 
-                if any([greetings]):
+                if greetings:
                     responses = ["Hello, human.", "Greetings.", "Hi..?", "Hi... I guess..."]
 
                     async with message.channel.typing():
