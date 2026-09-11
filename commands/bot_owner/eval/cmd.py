@@ -191,7 +191,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
             format_message(
                 msg_type = "error",
                 title    = "run command",
-                subtitle = "`body`: This is a required argument was ommitted.",
+                subtitle = "`body`: This is a required argument was omitted.",
                 footer   = "Bad argument",
             ),
         )

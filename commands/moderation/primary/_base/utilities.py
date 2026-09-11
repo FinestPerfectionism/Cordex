@@ -10,7 +10,7 @@ from core.exceptions import BadEnvironmentGuild, UnconfiguredQuarantine
 from core.moderation import Actions
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Moderation Utilites Base
+# Moderation Utilities Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

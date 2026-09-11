@@ -89,7 +89,7 @@ class ErrorLogger(commands.Cog):
         container = Container[view](
             TextDisplay(
                 f"# {title}\n"
-                f"{BOTWORKS_MENTION}, an unexpected exception has occured.",
+                f"{BOTWORKS_MENTION}, an unexpected exception has occurred.",
             ),
             color = COLOR_RED,
         )
