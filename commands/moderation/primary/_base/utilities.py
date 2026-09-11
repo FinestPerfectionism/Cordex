@@ -7,7 +7,6 @@ from discord.app_commands import check
 
 from bot import Interaction
 from core.exceptions import BadEnvironmentGuild, UnconfiguredQuarantine
-from core.moderation import Actions
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Utilities Base
@@ -22,9 +21,9 @@ def quarantine_cmd[F]() -> Callable[[F], F]:
         if not interaction.guild:
             raise BadEnvironmentGuild
 
-        actions = Actions(interaction.client, interaction.guild)
+        quarantine_role = await interaction.client.config(interaction.guild).get_moderation_quarantine_role()
 
-        if not await actions.get_quarantine_role():
+        if not quarantine_role:
             raise UnconfiguredQuarantine
 
         return True
