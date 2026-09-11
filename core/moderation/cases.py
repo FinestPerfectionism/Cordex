@@ -114,7 +114,7 @@ Payloads = (
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Actions Class
+# Cases Class
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 @dataclass(frozen = True)
