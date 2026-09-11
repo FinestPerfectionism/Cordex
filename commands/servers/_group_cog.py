@@ -34,6 +34,7 @@ class ServerCommands(
         name        = "commands",
         description = "Configure guild commands.",
     )
+    @guild_owner_cmd()
     async def cmd_server_commands(self, interaction : Interaction) -> None:
         await run_server_commands(interaction)
 
