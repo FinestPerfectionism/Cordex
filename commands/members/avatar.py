@@ -20,6 +20,8 @@ async def run_member_avatar(
 ) -> None:
     await interaction.response.defer()
 
+    client_user = interaction.client.user
+
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
     target = member or interaction.user
@@ -44,7 +46,7 @@ async def run_member_avatar(
             )
             return
 
-        if target == interaction.client.user:
+        if target == client_user:
             await send_bad_argument(
                 interaction,
                 subtitle = {"member" : "I do not have an avatar set."},
@@ -57,11 +59,21 @@ async def run_member_avatar(
         )
         return
 
+    if target == client_user:
+        mention = "My"
+        name    = "my"
+    elif target == interaction.user:
+        mention = "Your"
+        name    = "your"
+    else:
+        mention = f"{target.mention}'s'"
+        name    = f"{target.name}'s'"
+
     @final
     class AvatarView(LayoutView):
         container = Container[Self](
-            TextDisplay(f"### {target.mention}'s Avatar"),
-            TextDisplay(f"View {target.name}'s avatar [here]({avatar.url})."),
+            TextDisplay(f"### {mention} Avatar"),
+            TextDisplay(f"View {name} avatar [here]({avatar.url})."),
             MediaGallery(MediaGalleryItem(avatar.url)),
             color = target.color if target.color.value else COLOR_GREY,
         )

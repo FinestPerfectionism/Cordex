@@ -20,6 +20,8 @@ async def run_member_banner(
 ) -> None:
     await interaction.response.defer()
 
+    client_user = interaction.client.user
+
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
     target = member or interaction.user
@@ -44,7 +46,7 @@ async def run_member_banner(
             )
             return
 
-        if target == interaction.client.user:
+        if target == client_user:
             await send_bad_argument(
                 interaction,
                 subtitle = {"member" : "I do not have a banner set."},
@@ -53,15 +55,25 @@ async def run_member_banner(
 
         await send_bad_argument(
             interaction,
-            subtitle = {"member" : f"{target.mention} does not have an banner set."},
+            subtitle = {"member" : f"{target.mention} does not have a banner set."},
         )
         return
+
+    if target == client_user:
+        mention = "My"
+        name    = "my"
+    elif target == interaction.user:
+        mention = "Your"
+        name    = "your"
+    else:
+        mention = f"{target.mention}'s'"
+        name    = f"{target.name}'s'"
 
     @final
     class BannerView(LayoutView):
         container = Container[Self](
-            TextDisplay(f"### {target.mention}'s Banner"),
-            TextDisplay(f"View {target.name}'s banner [here]({banner.url})."),
+            TextDisplay(f"### {mention} Banner"),
+            TextDisplay(f"View {name} banner [here]({banner.url})."),
             MediaGallery(MediaGalleryItem(banner.url)),
             color = target.color if target.color.value else COLOR_GREY,
         )
