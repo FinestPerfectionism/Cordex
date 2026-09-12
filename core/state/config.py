@@ -124,5 +124,4 @@ class Config:
             if not res:
                 return False
 
-        value = cast("int | None", res[0])
-        return value is not None
+        return bool(cast("int | None", res[0]))
