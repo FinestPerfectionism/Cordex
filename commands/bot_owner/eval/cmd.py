@@ -1,4 +1,5 @@
 import asyncio
+import typing
 from collections.abc import Awaitable, Callable
 from contextlib import redirect_stdout
 from io import StringIO
@@ -77,6 +78,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
 
         "constants"    : constants,
         "asyncio"      : asyncio,
+        "typing"       : typing,
         "commands"     : commands,
         "app_commands" : app_commands,
         "discord"      : discord,
