@@ -60,7 +60,6 @@ class Config:
             return None
 
         log_channel = self.guild.get_channel(channel_id)
-
         if not isinstance(log_channel, GuildMessagable):
             return None
 
@@ -83,7 +82,6 @@ class Config:
             return None
 
         log_channel = self.guild.get_channel(channel_id)
-
         if not isinstance(log_channel, GuildMessagable):
             return None
 
@@ -106,7 +104,6 @@ class Config:
             return None
 
         log_channel = self.guild.get_channel(channel_id)
-
         if not isinstance(log_channel, GuildMessagable):
             return None
 
