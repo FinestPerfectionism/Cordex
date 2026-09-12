@@ -78,7 +78,7 @@ class Preview(commands.Cog):
             channel_id = int(match.group(2))
             message_id = int(match.group(3))
 
-            target_channel = self.bot.get_channel(channel_id)
+            target_channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
 
             if not isinstance(target_channel, Messageable):
                 continue
