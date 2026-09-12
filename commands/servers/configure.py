@@ -214,6 +214,10 @@ class _MessagesPreviewButton(Button["_ConfigurationView"]):
             style = green             if enabled else red,
         )
 
+    def update_state(self, *, enabled : bool) -> None:
+        self.label = "Preview Enabled" if enabled else "Preview Disabled"
+        self.style = green             if enabled else red
+
     @override
     async def callback(self, interaction : Interaction) -> None:
         if not self.view:
@@ -228,6 +232,7 @@ class _MessagesPreviewButton(Button["_ConfigurationView"]):
             raise
 
         self.view.preview = new_state
+        self.update_state(enabled = new_state)
         self.view.update_pages()
 
         await interaction.response.edit_message(view = self.view)
@@ -438,6 +443,7 @@ class _ConfigurationView(NamedPaginator):
         self.logging_select         = _ModerationLoggingSelect()
         self.quarantine_select      = _ModerationQuarantineRoleSelect()
         self.quarantine_enforce_btn = _ModerationQuarantineEnforceButton()
+        self.preview_button         = _MessagesPreviewButton(enabled = self.preview)
 
         if self.edit_id:
             self.edit_select.default_values = [Object(id = self.edit_id)]
@@ -493,7 +499,7 @@ class _ConfigurationView(NamedPaginator):
                 "Message previews will not be displayed for message links."
             )
 
-        preview_button = _MessagesPreviewButton(enabled = self.preview)
+        self.preview_button.update_state(enabled = self.preview)
 
         logging = self.guild.get_channel(self.logging_id) if self.logging_id else None
         if logging:
@@ -558,7 +564,7 @@ class _ConfigurationView(NamedPaginator):
                     ActionRow(self.edit_select),
                     TextDisplay(txt_delete),
                     ActionRow(self.delete_select),
-                    ButtonSection(txt_preview, button = preview_button),
+                    ButtonSection(txt_preview, button = self.preview_button),
                 ],
             ),
             PageData(
