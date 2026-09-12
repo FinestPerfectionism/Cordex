@@ -34,7 +34,7 @@ from core.moderation import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-from core.responses import ResponseOverride, format_message
+from core.responses import FormatOverride, format_message
 from core.utilities import format_table
 
 from .utilities import check_hierarchy
@@ -552,7 +552,7 @@ class ModerationModal(Modal):
                             msg_type = msg_type,
                             title    = title,
                             subtitle = subtitle,
-                            override = ResponseOverride(prefix = False),
+                            override = FormatOverride(prefix = False),
                         ),
                     ),
                 )

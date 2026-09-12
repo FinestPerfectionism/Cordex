@@ -45,7 +45,7 @@ from core.exceptions import (
     send_bad_request,
     send_unimplemented_command,
 )
-from core.responses import ResponseOverride, format_send
+from core.responses import FormatOverride, format_send
 from core.utilities import codeblock, format_command, format_now, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -221,7 +221,7 @@ class ErrorLogger(commands.Cog):
                     title     = "I'm sorry, Dave,",
                     subtitle  = "I'm afraid I can't do that",
                     footer    = "You are not authorized to run this command — Bad request",
-                    override  = ResponseOverride(prefix = False),
+                    override  = FormatOverride(prefix = False),
                     ephemeral = False,
                 )
             else:

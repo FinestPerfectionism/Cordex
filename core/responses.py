@@ -42,15 +42,17 @@ class PunctuationOverride:
         return cls(title = False, subtitle = False, footer = False)
 
 @final
-class ResponseOverride:
+class FormatOverride:
     def __init__(
         self,
         *,
         prefix      : bool                       = True,
+        emoji       : bool                       = True,
         punctuation : PunctuationOverride | None = None,
     ) -> None:
         super().__init__()
         self.prefix      = prefix
+        self.emoji       = emoji
         self.punctuation = punctuation or PunctuationOverride()
 
 def _emoji_match(msg_type : _MessageType) -> str:
@@ -93,21 +95,22 @@ def _apply_punctuation(text : str, default : str, *, setting : bool | None) -> s
 
     return text + default
 
-def _build_title(msg_type : _MessageType, title : str, config : ResponseOverride) -> str:
-    prefix         = _title_match(msg_type) if config.prefix else ""
-    default_punc   = "!" if msg_type in {"warning", "error"} else "."
-    clean_title    = _apply_punctuation(title, default_punc, setting = config.punctuation.title)
+def _build_title(msg_type : _MessageType, title : str, config : FormatOverride) -> str:
+    prefix       = _title_match(msg_type) if config.prefix else ""
+    emoji        = f"{_emoji_match(msg_type)} " if config.emoji else ""
+    default_punc =  "!" if msg_type in {"warning", "error"} else "."
+    clean_title  = _apply_punctuation(title, default_punc, setting = config.punctuation.title)
 
     if prefix:
-        return f"{_emoji_match(msg_type)} **{prefix} {clean_title}**"
-    return f"{_emoji_match(msg_type)} **{clean_title}**"
+        return f"{emoji}**{prefix} {clean_title}**"
+    return f"{emoji}**{clean_title}**"
 
-def _build_subtitle(subtitle : str | None, config : ResponseOverride) -> str | None:
+def _build_subtitle(subtitle : str | None, config : FormatOverride) -> str | None:
     if subtitle is None:
         return None
     return _apply_punctuation(subtitle, ".", setting = config.punctuation.subtitle)
 
-def _build_footer(footer : str | None, config : ResponseOverride) -> str | None:
+def _build_footer(footer : str | None, config : FormatOverride) -> str | None:
     if footer is None:
         return None
     return _apply_punctuation(footer, ".", setting = config.punctuation.footer)
@@ -120,11 +123,11 @@ def format_message(
     *,
     msg_type : _MessageType,
     title    : str,
-    subtitle : str              | None = None,
-    footer   : str              | None = None,
-    override : ResponseOverride | None = None,
+    subtitle : str            | None = None,
+    footer   : str            | None = None,
+    override : FormatOverride | None = None,
 ) -> str:
-    config = override or ResponseOverride()
+    config = override or FormatOverride()
     lines : list[str] = [_build_title(msg_type, title, config)]
 
     subtitle_text = _build_subtitle(subtitle, config)
@@ -148,7 +151,7 @@ async def format_send(
     ephemeral : bool                    = True,
     message   : Message          | None = None,
     mentions  : AllowedMentions  | None = None,
-    override  : ResponseOverride | None = None,
+    override  : FormatOverride   | None = None,
 ) -> Message | None:
     content = format_message(
         msg_type = msg_type,
