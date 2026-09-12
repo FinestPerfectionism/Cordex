@@ -34,9 +34,9 @@ from constants import (
     COLOR_RED,
     COLOR_WHITE,
     COLOR_YELLOW,
-    CONTESTED_EMOJI,
     DENIED_EMOJI,
     STANDSTILL_EMOJI,
+    WARNING_EMOJI,
 )
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
 from core.permissions import is_bot_owner
@@ -85,7 +85,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "ui"           : ui,
 
         "ACCEPTED_EMOJI"   : ACCEPTED_EMOJI,
-        "CONTESTED_EMOJI"  : CONTESTED_EMOJI,
+        "WARNING_EMOJI"  : WARNING_EMOJI,
         "DENIED_EMOJI"     : DENIED_EMOJI,
         "STANDSTILL_EMOJI" : STANDSTILL_EMOJI,
 
@@ -224,7 +224,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
             ret = await func()
     except Exception:
         value = stdout.getvalue()
-        await message.add_reaction(CONTESTED_EMOJI)
+        await message.add_reaction(WARNING_EMOJI)
         async with channel.typing():
             await ctx.send(codeblock(f"{value}{format_exc()}"), delete_after = 15)
     else:

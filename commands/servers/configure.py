@@ -18,7 +18,7 @@ from bot.ui import (
     green,
     red,
 )
-from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI, DENIED_EMOJI
+from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.moderation import QuarantineManager
 from core.paginator import NamedPaginator, PageData
@@ -350,7 +350,7 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
             missing.append("`Manage Roles`")
 
         self.warning = TextDisplay[Self](
-           f"**{CONTESTED_EMOJI} Warning,**\n"
+           f"**{WARNING_EMOJI} Warning,**\n"
             "I lack the following permissions:\n"
            f"{"\n".join(f"- {permission}" for permission in missing)}\n"
             "Settings will have no effect and nothing will be enforced!",
@@ -540,7 +540,7 @@ class _ConfigurationView(NamedPaginator):
             if issues:
                 formatted_issues = "\n".join(f"- {issue}" for issue in issues)
                 txt_quarantine = (
-                    f"{CONTESTED_EMOJI} **Quarantine Role Misconfigured**\n"
+                    f"{WARNING_EMOJI} **Quarantine Role Misconfigured**\n"
                     f"Quarantined members will receive the {quarantine.mention} role, but issues were detected:\n"
                     f"{formatted_issues}"
                 )

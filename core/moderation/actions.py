@@ -7,7 +7,7 @@ from discord.utils import format_dt, utcnow
 
 from bot import Cordex, log
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
-from constants import COLOR_BLACK, CONTESTED_EMOJI
+from constants import COLOR_BLACK, WARNING_EMOJI
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
@@ -93,13 +93,13 @@ class Actions:
         guild_name = f"'{self.guild.name}'"
 
         type_map : dict[str, str] = {
-            "Ban Add"           : f"# {CONTESTED_EMOJI} You have been banned in the server {guild_name}.",
-            "Ban Remove"        : f"# {CONTESTED_EMOJI} You have been un-banned the server {guild_name}.",
-            "Kick"              : f"# {CONTESTED_EMOJI} You have been kicked from the server {guild_name}.",
-            "Quarantine Add"    : f"# {CONTESTED_EMOJI} You have been placed in quarantine in the server {guild_name}.",
-            "Quarantine Remove" : f"# {CONTESTED_EMOJI} You have been removed from quarantine in the server {guild_name}.",
-            "Timeout Add"       : f"# {CONTESTED_EMOJI} You have been placed in timeout in the server {guild_name}.",
-            "Timeout Remove"    : f"# {CONTESTED_EMOJI} You have been removed from timeout in the server {guild_name}.",
+            "Ban Add"           : f"# {WARNING_EMOJI} You have been banned in the server {guild_name}.",
+            "Ban Remove"        : f"# {WARNING_EMOJI} You have been un-banned the server {guild_name}.",
+            "Kick"              : f"# {WARNING_EMOJI} You have been kicked from the server {guild_name}.",
+            "Quarantine Add"    : f"# {WARNING_EMOJI} You have been placed in quarantine in the server {guild_name}.",
+            "Quarantine Remove" : f"# {WARNING_EMOJI} You have been removed from quarantine in the server {guild_name}.",
+            "Timeout Add"       : f"# {WARNING_EMOJI} You have been placed in timeout in the server {guild_name}.",
+            "Timeout Remove"    : f"# {WARNING_EMOJI} You have been removed from timeout in the server {guild_name}.",
         }
 
         title  = type_map[action_type]

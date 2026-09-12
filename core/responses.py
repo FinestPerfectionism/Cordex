@@ -5,11 +5,11 @@ from discord.abc import Messageable
 
 from constants import (
     ACCEPTED_EMOJI,
-    CONTESTED_EMOJI,
     DENIED_EMOJI,
     FORUM_EMOJI,
     LOCKED_FORUM_EMOJI,
     STANDSTILL_EMOJI,
+    WARNING_EMOJI,
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -60,7 +60,7 @@ def _emoji_match(msg_type : _MessageType) -> str:
         case "information":
             return STANDSTILL_EMOJI
         case "warning":
-            return CONTESTED_EMOJI
+            return WARNING_EMOJI
         case "error":
             return DENIED_EMOJI
         case "lock":

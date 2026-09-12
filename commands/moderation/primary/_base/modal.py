@@ -20,7 +20,7 @@ from bot.ui import (
     grey,
     red,
 )
-from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI, DENIED_EMOJI
+from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 from core.exceptions import send_bad_argument
 from core.moderation import (
     Actions,
@@ -121,7 +121,7 @@ class ModerationModal(Modal):
 
         if action_type == "Purge":
             self.text = TextDisplay[Self](
-               f"{CONTESTED_EMOJI} **Use `Amount` alone, `Amount` + `Target`, or `Amount` + `Target` + `Force`.**\n"
+               f"{WARNING_EMOJI} **Use `Amount` alone, `Amount` + `Target`, or `Amount` + `Target` + `Force`.**\n"
                 "## Cases\n"
                 "### `Force = False (Default)`\n"
                 "Finds `n` messages from the channel and purges any from the target.\n"
