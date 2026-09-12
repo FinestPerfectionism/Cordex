@@ -7,8 +7,8 @@ from constants import (
     ACCEPTED_EMOJI,
     DENIED_EMOJI,
     FORUM_EMOJI,
+    INFO_EMOJI,
     LOCKED_FORUM_EMOJI,
-    STANDSTILL_EMOJI,
     WARNING_EMOJI,
 )
 
@@ -60,7 +60,7 @@ def _emoji_match(msg_type : _MessageType) -> str:
         case "success":
             return ACCEPTED_EMOJI
         case "information":
-            return STANDSTILL_EMOJI
+            return INFO_EMOJI
         case "warning":
             return WARNING_EMOJI
         case "error":

@@ -35,7 +35,7 @@ from constants import (
     COLOR_WHITE,
     COLOR_YELLOW,
     DENIED_EMOJI,
-    STANDSTILL_EMOJI,
+    INFO_EMOJI,
     WARNING_EMOJI,
 )
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
@@ -84,10 +84,10 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "discord"      : discord,
         "ui"           : ui,
 
-        "ACCEPTED_EMOJI"   : ACCEPTED_EMOJI,
-        "WARNING_EMOJI"    : WARNING_EMOJI,
-        "DENIED_EMOJI"     : DENIED_EMOJI,
-        "STANDSTILL_EMOJI" : STANDSTILL_EMOJI,
+        "ACCEPTED_EMOJI" : ACCEPTED_EMOJI,
+        "WARNING_EMOJI"  : WARNING_EMOJI,
+        "DENIED_EMOJI"   : DENIED_EMOJI,
+        "INFO_EMOJI"     : INFO_EMOJI,
 
         "COLOR_BLUE"    : COLOR_BLUE,
         "COLOR_GREEN"   : COLOR_GREEN,
