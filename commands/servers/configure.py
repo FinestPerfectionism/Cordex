@@ -1,3 +1,5 @@
+# pyright: reportIncompatibleMethodOverride = false
+
 from typing import Literal, Self, final, override
 
 from discord import ChannelType, Guild, Object, TextChannel
@@ -13,13 +15,23 @@ from bot.ui import (
     Modal,
     RoleSelect,
     TextDisplay,
+    green,
+    red,
 )
 from constants import ACCEPTED_EMOJI, CONTESTED_EMOJI, DENIED_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.moderation import QuarantineManager
 from core.paginator import NamedPaginator, PageData
 
-type Keys = Literal["edit", "delete", "logging", "quarantine", "enforce_channels", "enforce_roles"]
+type Keys = Literal[
+    "edit",
+    "delete",
+    "logging",
+    "quarantine",
+    "enforce_channels",
+    "enforce_roles",
+    "preview",
+]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /server configure Logic
@@ -33,6 +45,7 @@ async def _get_guild_config(interaction : Interaction, key : Keys) -> int | None
         "quarantine"       : "moderation_quarantine_role",
         "enforce_channels" : "moderation_quarantine_enforce_channels",
         "enforce_roles"    : "moderation_quarantine_enforce_roles",
+        "preview"          : "messages_preview",
     }
 
     fetched_key = key_dict[key]
@@ -55,6 +68,7 @@ async def _set_guild_config(interaction : Interaction, key : Keys, value : int) 
     key_dict : dict[Keys, str] = {
         "edit"             : "messages_edit_channel",
         "delete"           : "messages_delete_channel",
+        "preview"          : "messages_preview",
         "logging"          : "moderation_logging_channel",
         "quarantine"       : "moderation_quarantine_role",
         "enforce_channels" : "moderation_quarantine_enforce_channels",
@@ -191,6 +205,32 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
             self.default_values = previous
             await send_bad_operation(interaction, title = "update messages delete channel")
             raise
+
+@final
+class _MessagesPreviewButton(Button["_ConfigurationView"]):
+    def __init__(self, *, enabled : bool) -> None:
+        super().__init__(
+            label = "Preview Enabled" if enabled else "Preview Disabled",
+            style = green             if enabled else red,
+        )
+
+    @override
+    async def callback(self, interaction : Interaction) -> None:
+        if not self.view:
+            return
+
+        new_state = not self.view.preview
+
+        try:
+            await _set_guild_config(interaction, "preview", int(new_state))
+        except Exception:
+            await send_bad_operation(interaction, title = "update messages preview setting")
+            raise
+
+        self.view.preview = new_state
+        self.view.update_pages()
+
+        await interaction.response.edit_message(view = self.view)
 
 @final
 class _ModerationLoggingSelect(ChannelSelect["_ConfigurationView"]):
@@ -382,6 +422,7 @@ class _ConfigurationView(NamedPaginator):
         quarantine_role  : int | None,
         enforce_channels : bool,
         enforce_roles    : bool,
+        preview          : bool,
     ) -> None:
         self.guild            = guild
         self.edit_id          = edit_channel
@@ -390,6 +431,7 @@ class _ConfigurationView(NamedPaginator):
         self.quarantine_id    = quarantine_role
         self.enforce_channels = enforce_channels
         self.enforce_roles    = enforce_roles
+        self.preview          = preview
 
         self.edit_select            = _MessagesEditSelect()
         self.delete_select          = _MessagesDeleteSelect()
@@ -424,7 +466,7 @@ class _ConfigurationView(NamedPaginator):
             )
         else:
             txt_edit = (
-                f"{DENIED_EMOJI} **Messages Edit Channel Unset**\n"
+               f"{DENIED_EMOJI} **Messages Edit Channel Unset**\n"
                 "Set one with the select below."
             )
 
@@ -436,9 +478,22 @@ class _ConfigurationView(NamedPaginator):
             )
         else:
             txt_delete = (
-                f"{DENIED_EMOJI} **Messages Delete Channel Unset**\n"
+               f"{DENIED_EMOJI} **Messages Delete Channel Unset**\n"
                 "Set one with the select below."
             )
+
+        if self.preview:
+            txt_preview = (
+               f"{ACCEPTED_EMOJI} **Messages Preview Enabled**\n"
+                "Message previews will be displayed for message links."
+            )
+        else:
+            txt_preview = (
+               f"{DENIED_EMOJI} **Messages Preview Disabled**\n"
+                "Message previews will not be displayed for message links."
+            )
+
+        preview_button = _MessagesPreviewButton(enabled = self.preview)
 
         logging = self.guild.get_channel(self.logging_id) if self.logging_id else None
         if logging:
@@ -448,7 +503,7 @@ class _ConfigurationView(NamedPaginator):
             )
         else:
             txt_logging = (
-                f"{DENIED_EMOJI} **Logging Channel Unset**\n"
+               f"{DENIED_EMOJI} **Logging Channel Unset**\n"
                 "Set one with the select below."
             )
 
@@ -503,6 +558,7 @@ class _ConfigurationView(NamedPaginator):
                     ActionRow(self.edit_select),
                     TextDisplay(txt_delete),
                     ActionRow(self.delete_select),
+                    ButtonSection(txt_preview, button = preview_button),
                 ],
             ),
             PageData(
@@ -536,6 +592,7 @@ async def run_server_configure(interaction : Interaction) -> None:
     quarantine_role  = await _get_guild_config(interaction, "quarantine")
     enforce_channels = await _get_guild_config(interaction, "enforce_channels")
     enforce_roles    = await _get_guild_config(interaction, "enforce_roles")
+    preview          = await _get_guild_config(interaction, "preview")
 
     await interaction.response.send_message(
         view      = _ConfigurationView(
@@ -546,6 +603,7 @@ async def run_server_configure(interaction : Interaction) -> None:
             quarantine_role  = quarantine_role,
             enforce_channels = bool(enforce_channels),
             enforce_roles    = bool(enforce_roles),
+            preview          = bool(preview),
         ),
         ephemeral = True,
     )

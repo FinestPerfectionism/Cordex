@@ -31,13 +31,21 @@ class Preview(commands.Cog):
     async def _process_message_preview(self, message : Message) -> None:
         content = message.content
         author  = message.author
+        guild   = message.guild
 
         # ⸻ Block bots and the bot itself.
 
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Provide a preview for message links.
+        # ⸻ Provide a preview for message links,
+
+        if guild:
+            value = await self.bot.config(guild).get_messages_preview()
+            if not value:
+                return
+
+        # ⸻ ...but only if the guild (if any) wants it.
 
         @final
         class PreviewView(LayoutView):

@@ -115,3 +115,19 @@ class Config:
             return None
 
         return log_channel
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_messages_preview
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_messages_preview(self) -> bool:
+        async with self.bot.db.execute(
+            t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"messages_preview"}",
+        ) as cursor:
+            res = await cursor.fetchone()
+
+        if not res:
+            return False
+
+        value = cast("int | None", res[0])
+        return value is not None
