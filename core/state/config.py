@@ -34,9 +34,8 @@ class Config:
             t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"moderation_quarantine_role"}",
         ) as cursor:
             res = await cursor.fetchone()
-
-        if not res:
-            return None
+            if not res:
+                return None
 
         role_id = cast("int | None", res[0])
         if role_id is None:
@@ -53,9 +52,8 @@ class Config:
             t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"moderation_logging_channel"}",
         ) as cursor:
             res = await cursor.fetchone()
-
-        if not res:
-            return None
+            if not res:
+                return None
 
         channel_id = cast("int | None", res[0])
         if channel_id is None:
@@ -77,9 +75,8 @@ class Config:
             t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"messages_delete_channel"}",
         ) as cursor:
             res = await cursor.fetchone()
-
-        if not res:
-            return None
+            if not res:
+                return None
 
         channel_id = cast("int | None", res[0])
         if channel_id is None:
@@ -101,9 +98,8 @@ class Config:
             t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"messages_edit_channel"}",
         ) as cursor:
             res = await cursor.fetchone()
-
-        if not res:
-            return None
+            if not res:
+                return None
 
         channel_id = cast("int | None", res[0])
         if channel_id is None:
@@ -125,9 +121,8 @@ class Config:
             t"SELECT config_value FROM GuildConfig WHERE guild_id = {self.guild.id} AND config_key = {"messages_preview"}",
         ) as cursor:
             res = await cursor.fetchone()
-
-        if not res:
-            return False
+            if not res:
+                return False
 
         value = cast("int | None", res[0])
         return value is not None

@@ -138,17 +138,17 @@ def format_message(
     return "\n".join(lines)
 
 async def format_send(
-    target       : _SendTarget,
+    target    : _SendTarget,
     /,
     *,
-    msg_type     : _MessageType,
-    title        : str,
-    subtitle     : str              | None = None,
-    footer       : str              | None = None,
-    ephemeral    : bool                    = True,
-    message      : Message          | None = None,
-    mentions     : AllowedMentions  | None = None,
-    override     : ResponseOverride | None = None,
+    msg_type  : _MessageType,
+    title     : str,
+    subtitle  : str              | None = None,
+    footer    : str              | None = None,
+    ephemeral : bool                    = True,
+    message   : Message          | None = None,
+    mentions  : AllowedMentions  | None = None,
+    override  : ResponseOverride | None = None,
 ) -> Message | None:
     content = format_message(
         msg_type = msg_type,

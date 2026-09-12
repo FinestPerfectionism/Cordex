@@ -184,7 +184,7 @@ class Cordex(commands.Bot):
             },
         )
 
-    async def get_name_style(self, guild : Guild, /) -> NameStyleResult:
+    async def get_name_style(self, guild : Guild, /) -> NameStyleResult | None:
         class NameStylePayload(TypedDict):
             font_id   : int
             effect_id : int
@@ -196,8 +196,7 @@ class Cordex(commands.Bot):
         # ⸻ It's very unlikely that self.user is None, but pyright will complain anyway.
 
         if self.user is None:
-            error = "Client user is not logged in."
-            raise ValueError(error)
+            return None
 
         response = cast(
             "MemberNameStylePayload",
@@ -248,6 +247,8 @@ class Cordex(commands.Bot):
 
     @override
     async def setup_hook(self) -> None:
+        if self.user:
+            log.info("Logging in as %s, %s", self.user.name, self.user.id)
 
         # ⸻ AIOSQLite
 
@@ -258,7 +259,7 @@ class Cordex(commands.Bot):
 
         def read_schemas() -> tuple[str, str]:
             config_sql = Path("schemas/config.sql").read_text(encoding = "utf-8")
-            cases_sql = Path("schemas/cases.sql").read_text(encoding = "utf-8")
+            cases_sql  = Path("schemas/cases.sql").read_text(encoding = "utf-8")
             return config_sql, cases_sql
 
         config_schema, cases_schema = await to_thread(read_schemas)
