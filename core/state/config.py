@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 # Configuration State
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class Config:
     def __init__(self, bot : Cordex, guild : Guild) -> None:

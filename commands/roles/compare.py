@@ -13,6 +13,7 @@ from ._base import format_permission
 # /role compare Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_role_compare(
     interaction : Interaction,
     role_1      : Role,

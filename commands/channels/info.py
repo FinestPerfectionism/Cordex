@@ -35,8 +35,10 @@ from core.utilities import format_table
 # /channel info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def _is_private(target : GuildChannel) -> bool:
     return not target.permissions_for(target.guild.default_role).view_channel
+
 
 def _get_channel_emoji(target : GuildChannel) -> str | None:
 
@@ -76,6 +78,7 @@ def _get_channel_emoji(target : GuildChannel) -> str | None:
         return LOCKED_TEXT_EMOJI if private else TEXT_EMOJI
 
     return None
+
 
 async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
     await interaction.response.defer()

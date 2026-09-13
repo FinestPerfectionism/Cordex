@@ -9,6 +9,7 @@ from bot import Cordex
 # Style Enforcing
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class StyleEnforcer(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -18,6 +19,7 @@ class StyleEnforcer(commands.Cog):
     @commands.Cog.listener("on_guild_join")
     async def style_enforcer(self, guild : Guild) -> None:
         await self.bot.reset_name_style(guild)
+
 
 async def setup(bot : Cordex) -> None:
     cog = StyleEnforcer(bot)

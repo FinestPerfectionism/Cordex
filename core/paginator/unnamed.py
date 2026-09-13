@@ -30,6 +30,7 @@ type _ItemsOrStrList = list[str | Item[LayoutView]]
 # Unnamed Paginator
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class _PageJumpModal(Modal, title = "Jump to Page"):
     page_input : TextInput[Self]
@@ -97,6 +98,7 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
             await send_bad_operation(interaction, title = "jump to page")
             raise
 
+
 @final
 class _PageRow(ActionRow["UnnamedPaginator"]):
     def __init__(self, paginator : UnnamedPaginator) -> None:
@@ -158,6 +160,7 @@ class _PageRow(ActionRow["UnnamedPaginator"]):
     @button(label = ">>")
     async def btn_last(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
         await self.paginator.turn(interaction, len(self.paginator.pages) - 1)
+
 
 class UnnamedPaginator(LayoutView):
     def __init__(

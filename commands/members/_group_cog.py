@@ -15,6 +15,7 @@ from .info import run_member_info
 # Member Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 @guild_only
 class MemberCommands(
@@ -124,6 +125,7 @@ class MemberCommands(
         scope       : Scope  | None = "global",
     ) -> None:
         await run_member_info(interaction, member, scope)
+
 
 async def setup(bot : Cordex) -> None:
     cog = MemberCommands(bot)

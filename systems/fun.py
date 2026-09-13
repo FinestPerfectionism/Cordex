@@ -11,6 +11,7 @@ from bot import Cordex
 # Fun
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class Fun(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -43,6 +44,7 @@ class Fun(commands.Cog):
                     async with message.channel.typing():
                         await sleep(1)
                         await message.reply(content = choice(responses))
+
 
 async def setup(bot : Cordex) -> None:
     cog = Fun(bot)

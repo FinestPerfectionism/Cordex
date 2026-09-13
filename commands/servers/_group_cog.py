@@ -15,6 +15,7 @@ from .info import run_server_info
 # Server Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 @guild_only
 class ServerCommands(
@@ -72,6 +73,7 @@ class ServerCommands(
     )
     async def cmd_server_info(self, interaction : Interaction) -> None:
         await run_server_info(interaction)
+
 
 async def setup(bot : Cordex) -> None:
     cog = ServerCommands(bot)

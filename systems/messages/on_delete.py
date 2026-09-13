@@ -16,6 +16,7 @@ from ._base import attachments_display, channel_display, clean_and_truncate
 # Message Delete Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class MessageDeleteHandler(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -88,6 +89,7 @@ class MessageDeleteHandler(commands.Cog):
             view             = DeleteView(),
             allowed_mentions = AllowedMentions.none(),
         )
+
 
 async def setup(bot : Cordex) -> None:
     cog = MessageDeleteHandler(bot)

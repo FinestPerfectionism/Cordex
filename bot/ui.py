@@ -77,6 +77,7 @@ log = get_logger("Cordex")
 # LayoutView
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class LayoutView(BaseLayoutView):
     def __init__(self, *children : Item[LayoutView | Self], timeout : float | None = 600) -> None:
         super().__init__(timeout = timeout)
@@ -109,6 +110,7 @@ class LayoutView(BaseLayoutView):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Modal
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 class Modal(BaseModal):
     @override
@@ -143,6 +145,7 @@ class Modal(BaseModal):
 # TextDisplay
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class TextDisplay[V : LayoutView | Modal](BaseTextDisplay[V]):
     def __init__(self, content : str, /) -> None:
         super().__init__(content)
@@ -150,6 +153,7 @@ class TextDisplay[V : LayoutView | Modal](BaseTextDisplay[V]):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Container
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 class Container[V : LayoutView](BaseContainer[V]):
     def __init__(
@@ -195,6 +199,7 @@ class Container[V : LayoutView](BaseContainer[V]):
 # TextInput
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class TextInput[M : Modal](BaseTextInput[M]):
     def __init__(
         self,
@@ -233,20 +238,24 @@ link    = ButtonStyle.link
 large = SeparatorSpacing.large
 small = SeparatorSpacing.small
 
+
 @final
 class VisibleLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = large)
+
 
 @final
 class VisibleSmallSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = True, spacing = small)
 
+
 @final
 class HiddenLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
         super().__init__(visible = False, spacing = large)
+
 
 @final
 class HiddenSmallSeparator[V : LayoutView](Separator[V]):
@@ -257,10 +266,12 @@ class HiddenSmallSeparator[V : LayoutView](Separator[V]):
 # Section Variants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class ButtonSection[V : LayoutView](Section[V]):
     def __init__(self, *args : str | TextDisplay[V], button : Button[V]) -> None:
         super().__init__(*args, accessory = button)
         self.button : Button[V] = button
+
 
 class ThumbnailSection[V : LayoutView](Section[V]):
     def __init__(self, *args : str | TextDisplay[V], thumbnail : Thumbnail[V]) -> None:

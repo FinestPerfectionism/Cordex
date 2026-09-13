@@ -32,6 +32,7 @@ COLOR_PATTERN = re.compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
 # /bot-owner style set Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class _StyleModal(Modal, title = "Set Display Name Style"):
     def __init__(self, current_style : NameStyleResult) -> None:
@@ -189,6 +190,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
                 title    = "set display name style",
                 subtitle = codeblock(e),
             )
+
 
 async def run_bo_style_set(interaction : Interaction) -> None:
     if not interaction.guild:

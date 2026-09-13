@@ -57,10 +57,12 @@ log = get_logger("Cordex")
 # Context and Interaction Classes
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class _ContextKwargs(TypedDict, total = False):
     message : Message
     bot     : Cordex
     view    : StringView
+
 
 class _ContextClass(BaseContext["Cordex"]):
     def __init__(self, **kwargs : Unpack[_ContextKwargs]) -> None:
@@ -121,6 +123,7 @@ class _ContextClass(BaseContext["Cordex"]):
             return await self.send(msg)
         return await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
 
+
 class _Tree(CommandTree):
     @override
     async def interaction_check(self, interaction : Interaction) -> bool:
@@ -134,6 +137,7 @@ type ContextOrInteraction = Interaction | Context
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cordex Class
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 @final
 class Cordex(commands.Bot):

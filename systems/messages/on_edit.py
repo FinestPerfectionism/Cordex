@@ -25,6 +25,7 @@ from ._base import attachments_display, channel_display, clean_and_truncate
 # Message Edit Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class MessageEditHandler(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -113,6 +114,7 @@ class MessageEditHandler(commands.Cog):
             view             = EditView(),
             allowed_mentions = AllowedMentions.none(),
         )
+
 
 async def setup(bot : Cordex) -> None:
     cog = MessageEditHandler(bot)

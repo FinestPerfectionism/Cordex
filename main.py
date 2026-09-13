@@ -22,6 +22,8 @@ basic_config(
 TOKEN = getenv("TOKEN")
 
 bot = Cordex()
+
+
 async def _main() -> None:
     if not TOKEN:
         error = "TOKEN environment variable not set."

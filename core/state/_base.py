@@ -15,6 +15,7 @@ from aiosqlite.context import Result
 # State Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class Connection(AiosqliteConnection):
     @override
     def execute(

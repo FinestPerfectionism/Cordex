@@ -52,6 +52,7 @@ from core.utilities import codeblock, format_command, format_now, format_table
 # Errors Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class ErrorLogger(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -374,6 +375,7 @@ class ErrorLogger(commands.Cog):
                 traceback = traceback,
             ),
         )
+
 
 async def setup(bot : Cordex) -> None:
     cog = ErrorLogger(bot)

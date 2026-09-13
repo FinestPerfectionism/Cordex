@@ -8,12 +8,14 @@ from .responses import format_send
 # Exceptions Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class UnconfiguredQuarantine(CheckFailure):
     pass
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Unknown Error Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 async def send_unknown_error(target : Interaction) -> None:
     await format_send(
@@ -27,6 +29,7 @@ async def send_unknown_error(target : Interaction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Operation Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 async def send_bad_operation(
     target   : Interaction,
@@ -47,6 +50,7 @@ async def send_bad_operation(
 # Bad Request Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def send_bad_request(
     target   : Interaction,
     /,
@@ -65,6 +69,7 @@ async def send_bad_request(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 async def send_bad_argument(
     target   : Interaction,
@@ -98,8 +103,10 @@ async def send_bad_argument(
 # Unimplemented Command Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class UnimplementedCommand(CheckFailure):
     pass
+
 
 async def send_unimplemented_command(target : Interaction) -> None:
     await format_send(
@@ -114,8 +121,10 @@ async def send_unimplemented_command(target : Interaction) -> None:
 # Bad Permissions Command Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class BadPermissionsCommand(CheckFailure):
     pass
+
 
 async def send_bad_permissions_command(target : Interaction) -> None:
     await format_send(
@@ -129,6 +138,7 @@ async def send_bad_permissions_command(target : Interaction) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Permissions Argument Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 async def send_bad_permissions_argument(
     target   : Interaction,
@@ -154,8 +164,10 @@ async def send_bad_permissions_argument(
 # Bad Environment Guild Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class BadEnvironmentGuild(CheckFailure):
     pass
+
 
 async def send_bad_environment_guild(target : Interaction) -> None:
     await format_send(
@@ -170,6 +182,7 @@ async def send_bad_environment_guild(target : Interaction) -> None:
 # Bad Environment Channel Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def send_bad_environment_channel(target : Interaction) -> None:
     await format_send(
         target,
@@ -183,8 +196,10 @@ async def send_bad_environment_channel(target : Interaction) -> None:
 # Bad Environment DMs Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class BadEnvironmentDMs(CheckFailure):
     pass
+
 
 async def send_bad_environment_dms(target : Interaction) -> None:
     await format_send(

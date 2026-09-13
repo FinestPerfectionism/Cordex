@@ -27,6 +27,7 @@ from core.paginator import NamedPaginator, PageData
 # /server configure Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
     def __init__(self) -> None:
@@ -84,6 +85,7 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
             self.default_values = previous
             await send_bad_operation(interaction, title = "update messages edit channel")
             raise
+
 
 @final
 class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
@@ -143,6 +145,7 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
             await send_bad_operation(interaction, title = "update messages delete channel")
             raise
 
+
 @final
 class _MessagesPreviewButton(Button["_ConfigurationView"]):
     def __init__(self, *, enabled : bool) -> None:
@@ -173,6 +176,7 @@ class _MessagesPreviewButton(Button["_ConfigurationView"]):
         self.view.update_pages()
 
         await interaction.response.edit_message(view = self.view)
+
 
 @final
 class _ModerationLoggingSelect(ChannelSelect["_ConfigurationView"]):
@@ -232,6 +236,7 @@ class _ModerationLoggingSelect(ChannelSelect["_ConfigurationView"]):
             await send_bad_operation(interaction, title = "update logging channel")
             raise
 
+
 @final
 class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
     def __init__(self) -> None:
@@ -272,6 +277,7 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         self.view.update_pages()
 
         await interaction.response.edit_message(view = self.view)
+
 
 @final
 class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
@@ -342,6 +348,7 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
 
         await interaction.response.edit_message(view = self.view)
 
+
 @final
 class _ModerationQuarantineEnforceButton(Button["_ConfigurationView"]):
     def __init__(self) -> None:
@@ -353,6 +360,7 @@ class _ModerationQuarantineEnforceButton(Button["_ConfigurationView"]):
             return
 
         await interaction.response.send_modal(_ModerationQuarantineEnforceModal(self.view))
+
 
 @final
 class _ConfigurationView(NamedPaginator):
@@ -523,6 +531,7 @@ class _ConfigurationView(NamedPaginator):
         ]
 
         self.render()
+
 
 async def run_server_configure(interaction : Interaction) -> None:
 

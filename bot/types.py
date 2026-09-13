@@ -33,6 +33,7 @@ GuildMessagableChannel = TextChannel | StageChannel | VoiceChannel
 # NameStyleResult
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class NameStyleResult(NamedTuple):
     font_id   : DisplayNameFont
     effect_id : DisplayNameEffect

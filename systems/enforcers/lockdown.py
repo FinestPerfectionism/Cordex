@@ -12,6 +12,7 @@ from core.moderation import LockdownManager
 # Lockdown Enforcing
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class LockdownEnforcer(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -44,6 +45,7 @@ class LockdownEnforcer(commands.Cog):
     async def listener_lockdownenforce_channelcreate(self, channel : GuildChannel) -> None:
         manager = LockdownManager(self.bot, channel.guild)
         await manager.enforce()
+
 
 async def setup(bot : Cordex) -> None:
     cog = LockdownEnforcer(bot)

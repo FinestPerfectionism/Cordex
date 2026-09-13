@@ -16,6 +16,7 @@ from core.exceptions import BadEnvironmentGuild, UnconfiguredQuarantine
 # quarantine_cmd
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def quarantine_cmd[F]() -> Callable[[F], F]:
     async def predicate(interaction : Interaction) -> bool:
         if not interaction.guild:
@@ -37,6 +38,7 @@ def quarantine_cmd[F]() -> Callable[[F], F]:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # check_hierarchy
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 def check_hierarchy(
     actor      : Member,

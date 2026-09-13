@@ -50,6 +50,8 @@ from .primary.timeout import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 # ruff: disable[too-many-public-methods]
+
+
 @final
 @guild_only
 class ModerationCommands(
@@ -328,6 +330,7 @@ class ModerationCommands(
         await run_mod_cases_view(interaction)
 
 # ruff: enable[too-many-public-methods]
+
 
 async def setup(bot : Cordex) -> None:
     cog = ModerationCommands(bot)

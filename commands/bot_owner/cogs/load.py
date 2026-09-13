@@ -8,6 +8,7 @@ from core.utilities import codeblock
 # /bot-owner cog load Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_bo_cog_load(interaction : Interaction, cog : str) -> None:
     client = interaction.client
 

@@ -14,12 +14,14 @@ from core.utilities import truncate
 # clean_and_truncate
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def clean_and_truncate(text : str) -> str:
     return escape_markdown(truncate(text))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # channel_display
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 def channel_display(channel : GuildMessagable) -> str:
     if isinstance(channel, Thread):
@@ -33,6 +35,7 @@ def channel_display(channel : GuildMessagable) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # attachments_display
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 def attachments_display(attachments : list[Attachment]) -> str:
     return "\n".join(f"- {escape_markdown(f"{attachment.filename} | {attachment.url}")}" for attachment in attachments)

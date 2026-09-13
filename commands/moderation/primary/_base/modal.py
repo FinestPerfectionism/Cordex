@@ -49,6 +49,7 @@ type Targetable = User | Member | GuildMessagable
 # State
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class ModerationModal(Modal):
     def __init__(
@@ -578,6 +579,7 @@ class ModerationModal(Modal):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # send_moderation_modal
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 async def send_moderation_modal(
     interaction  : Interaction,

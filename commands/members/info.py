@@ -33,6 +33,7 @@ from ._base import Scope
 # /member info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_member_info(
     interaction : Interaction,
     member      : Member | None = None,

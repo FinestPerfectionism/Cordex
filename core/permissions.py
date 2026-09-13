@@ -16,6 +16,7 @@ from .exceptions import BadEnvironmentGuild, BadPermissionsCommand
 # @access_control
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def access_control[F](allowed_users : list[int] | None = None) -> Callable[[F], F]:
     users = allowed_users or []
 
@@ -37,8 +38,10 @@ def access_control[F](allowed_users : list[int] | None = None) -> Callable[[F], 
 # Specific Decorators
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def bot_owner_cmd[F]() -> Callable[[F], F]:
     return access_control(allowed_users = list(DEVELOPER_IDS))
+
 
 def guild_owner_cmd[F]() -> Callable[[F], F]:
     def predicate(interaction : Interaction) -> bool:
@@ -59,6 +62,7 @@ def guild_owner_cmd[F]() -> Callable[[F], F]:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permission Checks
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 def is_bot_owner(target : User | Member, /) -> bool:
     return target.id in DEVELOPER_IDS

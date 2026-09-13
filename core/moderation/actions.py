@@ -40,6 +40,7 @@ type ActionType = Literal[
     "Purge",
 ]
 
+
 @dataclass(frozen = True)
 class ActionResult[T = None]:
     failed  : bool
@@ -50,6 +51,7 @@ class ActionResult[T = None]:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Actions
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 @final
 class Actions:

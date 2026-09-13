@@ -20,6 +20,7 @@ from core.utilities import format_values
 
 EMOJI_PATTERN = re.compile(r"<(?P<animated>a?):(?P<name>[a-zA-Z0-9_]{2,32}):(?P<id>[0-9]{18,22})>")
 
+
 def _inaccessible_emoji_ids(text : str) -> list[str]:
     inaccessible_ids : list[str] = []
 
@@ -29,6 +30,7 @@ def _inaccessible_emoji_ids(text : str) -> list[str]:
             inaccessible_ids.append(match.group(0))
 
     return inaccessible_ids
+
 
 @final
 class _NoEmojiAccessView(View):
@@ -52,6 +54,7 @@ class _NoEmojiAccessView(View):
                 child.disabled = True
 
         await interaction.response.edit_message(view = self)
+
 
 async def emoji_inaccessible(
     interaction : Interaction,
@@ -80,12 +83,14 @@ async def emoji_inaccessible(
 # get_cogs
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def get_cogs() -> list[str]:
     return discover_cogs("commands", "systems", "core")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Raw Bot-Owner Check
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 async def check_if_bo(interaction : Interaction) -> bool:
     if is_bot_owner(interaction.user):

@@ -42,6 +42,7 @@ type CommandList = list[AnnotatedCommand]
 # /server commands Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def _build_sections(commands : CommandList) -> list[str | Item[LayoutView]]:
     mentions = [
         format_command(command.qualified_name)
@@ -56,6 +57,7 @@ def _build_sections(commands : CommandList) -> list[str | Item[LayoutView]]:
         )
         for i, (command, mention) in enumerate(zip(commands, mentions, strict = False), start = 1)
     ]
+
 
 def _fuzzy_search(query : str, commands : CommandList) -> CommandList:
     query_lower = query.strip().lower()
@@ -78,6 +80,7 @@ def _fuzzy_search(query : str, commands : CommandList) -> CommandList:
     scored.sort(key = itemgetter(0), reverse = True)
 
     return [cmd for score, cmd in scored if score >= 0.4]
+
 
 @final
 class _QueryModal(Modal, title = "Query"):
@@ -126,6 +129,7 @@ class _QueryModal(Modal, title = "Query"):
             await send_bad_operation(interaction, title = "query commands")
             raise
 
+
 @final
 class _ConfigModal(Modal):
     def __init__(self, command : AnnotatedCommand) -> None:
@@ -157,6 +161,7 @@ class _ConfigModal(Modal):
                 subtitle = {"allowed" : "Quarantine role cannot be used as a user/role command restriction."},
             )
 
+
 @final
 class _ConfigButton(Button[UnnamedPaginator]):
     def __init__(self, command : AnnotatedCommand) -> None:
@@ -166,6 +171,7 @@ class _ConfigButton(Button[UnnamedPaginator]):
     @override
     async def callback(self, interaction : Interaction) -> None:
         await interaction.response.send_modal(_ConfigModal(self._command))
+
 
 @final
 class _CategorySelect(Select[UnnamedPaginator]):
@@ -251,6 +257,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
         await interaction.response.edit_message(view = self.view)
 
+
 @final
 class _QueryButton(Button[UnnamedPaginator]):
     def __init__(self, cmds : CommandList) -> None:
@@ -260,6 +267,7 @@ class _QueryButton(Button[UnnamedPaginator]):
     @override
     async def callback(self, interaction : Interaction) -> None:
         await interaction.response.send_modal(_QueryModal(self._commands))
+
 
 async def run_server_commands(interaction : Interaction) -> None:
     await interaction.response.defer()

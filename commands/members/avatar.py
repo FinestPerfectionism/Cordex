@@ -13,6 +13,7 @@ from ._base import Scope
 # /member avatar Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_member_avatar(
     interaction : Interaction,
     member      : Member | None = None,

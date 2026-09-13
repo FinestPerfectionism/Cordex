@@ -24,6 +24,7 @@ from .members import run_role_members
 # /role info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_role_info(interaction : Interaction, role : Role) -> None:
     await interaction.response.defer()
 

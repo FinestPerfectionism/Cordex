@@ -11,6 +11,7 @@ from core.utilities import codeblock
 # /bot-owner message delete Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_bo_messages_delete(interaction : Interaction, message_id : str) -> None:
     await interaction.response.defer(ephemeral = True)
 
@@ -36,6 +37,7 @@ async def run_bo_messages_delete(interaction : Interaction, message_id : str) ->
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # 'Delete Message' Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 async def run_bo_messages_delete_menu(interaction : Interaction, message : Message) -> None:
     if not await check_if_bo(interaction):

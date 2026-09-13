@@ -17,6 +17,7 @@ from .permissions import PermissionsFilter, run_role_permissions
 # Role Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 @guild_only
 class RoleCommands(
@@ -147,6 +148,7 @@ class RoleCommands(
         role_2      : Role,
     ) -> None:
         await run_role_compare(interaction, role_1, role_2)
+
 
 async def setup(bot : Cordex) -> None:
     cog = RoleCommands(bot)

@@ -8,6 +8,7 @@ from bot import Interaction
 # /channel compare Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_channel_compare(
     interaction : Interaction,
     _channel_1  : GuildChannel | None = None,

@@ -20,6 +20,7 @@ from core.exceptions import send_bad_operation
 
 __all__ = ["NamedPaginator", "PageData"]
 
+
 @dataclass(slots = True)
 class PageData:
     name    : str
@@ -28,12 +29,14 @@ class PageData:
 
 type _ItemsList = list[Item[LayoutView]]
 
+
 class _InteractionCallback(Protocol):
     async def __call__(self, interaction : Interaction) -> None: ...
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Named Paginator
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 @final
 class _NameRow(ActionRow["NamedPaginator"]):
@@ -72,6 +75,7 @@ class _NameRow(ActionRow["NamedPaginator"]):
         async def callback(interaction : Interaction) -> None:
             await self.paginator.turn(interaction, index)
         return callback
+
 
 class NamedPaginator(LayoutView):
     def __init__(

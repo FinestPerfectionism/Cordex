@@ -14,6 +14,7 @@ from bot import Cordex, log
 # Lockdown Manager
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class LockdownManager:
     def __init__(self, bot : Cordex, guild : Guild) -> None:
@@ -61,6 +62,7 @@ class LockdownManager:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Quarantine Manager
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 @final
 class QuarantineManager:

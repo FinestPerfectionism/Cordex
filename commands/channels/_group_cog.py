@@ -17,6 +17,7 @@ from .sync import run_channel_sync
 # Channel Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 @guild_only
 class ChannelCommands(
@@ -129,6 +130,7 @@ class ChannelCommands(
         permissions_filter : str          | None = None,
     ) -> None:
         await run_channel_permissions(interaction, channel, permissions_filter)
+
 
 async def setup(bot : Cordex) -> None:
     cog = ChannelCommands(bot)

@@ -10,6 +10,7 @@ from discord import Color
 # Enums
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 class DisplayNameFont(Enum):
     bangers       = 1  # Unimplemented
     bio_rhyme     = 2  # Unimplemented
@@ -23,6 +24,7 @@ class DisplayNameFont(Enum):
     sinistre      = 10
     default       = 11
     zilla_slab    = 12
+
 
 class DisplayNameEffect(Enum):
     solid    = 1

@@ -11,6 +11,7 @@ from core.responses import format_send
 # /channel sync Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_channel_sync(
     interaction : Interaction,
     channel     : GuildChannel | None = None,

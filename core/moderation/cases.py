@@ -24,12 +24,14 @@ from constants import (
 # Action Payloads
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @dataclass
 class BaseRemovePayload:
     moderator : Member
     target    : Member
     reason    : str
     dm_user   : bool
+
 
 @dataclass
 class BaseAddPayload:
@@ -38,17 +40,20 @@ class BaseAddPayload:
     reason    : str
     dm_user   : bool
 
+
 @dataclass
 class LockdownAddPayload:
     moderator : Member
     target    : GuildMessagable
     reason    : str
 
+
 @dataclass
 class LockdownRemovePayload:
     moderator : Member
     target    : GuildMessagable
     reason    : str
+
 
 @dataclass
 class BanAddPayload(BaseAddPayload):
@@ -57,12 +62,14 @@ class BanAddPayload(BaseAddPayload):
 
 BanRemovePayload = BaseRemovePayload
 
+
 @dataclass
 class KickPayload:
     moderator : Member
     target    : Member
     reason    : str
     dm_user   : bool
+
 
 @dataclass
 class TimeoutAddPayload(BaseAddPayload):
@@ -74,6 +81,7 @@ TimeoutRemovePayload = BaseRemovePayload
 QuarantineAddPayload    = BaseAddPayload
 QuarantineRemovePayload = BaseRemovePayload
 
+
 @dataclass
 class PurgePayload:
     moderator : Member
@@ -83,6 +91,7 @@ class PurgePayload:
     amount    : int
     force     : bool
 
+
 @dataclass
 class BaseNotePayload:
     target  : Member
@@ -91,6 +100,7 @@ class BaseNotePayload:
 
 NoteAddPayload  = BaseNotePayload
 NoteEditPayload = BaseNotePayload
+
 
 @dataclass
 class NoteRemovePayload:
@@ -117,6 +127,7 @@ Payloads = (
 # Cases Class
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @dataclass(frozen = True)
 class CaseData:
     color : Color
@@ -138,6 +149,7 @@ CASE_MAP : dict[type, CaseData] = {
     NoteEditPayload         : CaseData(COLOR_BLUE,   "Note Edited"),
     NoteRemovePayload       : CaseData(COLOR_BLUE,   "Note Removed"),
 }
+
 
 @final
 class Cases:

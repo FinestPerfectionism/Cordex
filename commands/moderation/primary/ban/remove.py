@@ -8,6 +8,7 @@ from core.exceptions import send_bad_argument
 # /moderation ban remove Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_mod_primary_ban_remove(interaction : Interaction, target : User) -> None:
     guild = interaction.guild
     if not guild:

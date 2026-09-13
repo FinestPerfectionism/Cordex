@@ -18,6 +18,7 @@ type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 # @unimplemented
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def unimplemented[F]() -> Callable[[F], F]:
     def predicate(_interaction : Interaction) -> bool:
         raise UnimplementedCommand
@@ -32,12 +33,14 @@ def unimplemented[F]() -> Callable[[F], F]:
 # format_now
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def format_now(style : _Styles = "F", /) -> str:
     return format_dt(utcnow(), style)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_command
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 def format_command(path : str, /) -> str:
     parts : list[str] = path.strip().split()
@@ -63,6 +66,7 @@ def format_command(path : str, /) -> str:
 # format_table
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def format_table[K, V](table : dict[K, V], /, *, padding : int = 1) -> str:
     biggest_key = max([len(str(key)) for key in table], default = 0)
     width       = biggest_key + padding
@@ -77,6 +81,7 @@ def format_table[K, V](table : dict[K, V], /, *, padding : int = 1) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_values
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 def format_values(
     items    : list[str],
@@ -104,6 +109,7 @@ def format_values(
 # codeblock
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str:
     return (
        f"```{language or ""}\n"
@@ -114,6 +120,7 @@ def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # truncate
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 def truncate(text : str, /, *, length : int = 2000) -> str:
     return (text)[:length - 3] + "..." if len(text) > length else text

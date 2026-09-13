@@ -12,6 +12,7 @@ from core.moderation import QuarantineManager
 # Quarantine Enforcing
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class QuarantineEnforcer(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -84,6 +85,7 @@ class QuarantineEnforcer(commands.Cog):
 
         manager = QuarantineManager(self.bot, after.guild)
         await manager.enforce("Role")
+
 
 async def setup(bot : Cordex) -> None:
     cog = QuarantineEnforcer(bot)

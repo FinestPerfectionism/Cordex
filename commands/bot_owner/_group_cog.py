@@ -41,6 +41,7 @@ from .style import run_bo_style_reset, run_bo_style_set
 # Bot Owner Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class BotOwnerCommands(
     commands.GroupCog,
@@ -342,6 +343,7 @@ class BotOwnerCommands(
     @bot_owner_cmd()
     async def cmd_bo_style_set(self, interaction : Interaction) -> None:
         await run_bo_style_set(interaction)
+
 
 async def setup(bot : Cordex) -> None:
     cog = BotOwnerCommands(bot)

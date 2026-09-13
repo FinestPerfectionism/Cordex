@@ -22,6 +22,7 @@ MESSAGE_LINK_PATTERN = re.compile(r"https://discord(?:app)?\.com/channels/(\d+|@
 # Preview Handling
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 @final
 class Preview(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
@@ -128,6 +129,7 @@ class Preview(commands.Cog):
     @commands.Cog.listener("on_message_edit")
     async def listener_preview_onedit(self, _before : Message, after : Message) -> None:
         await self._process_message_preview(after)
+
 
 async def setup(bot : Cordex) -> None:
     cog = Preview(bot)

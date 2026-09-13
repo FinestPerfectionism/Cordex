@@ -48,6 +48,7 @@ verification_requirement_map = {
     VerificationLevel.highest : "Must be verified via phone number",
 }
 
+
 async def run_server_info(interaction : Interaction) -> None:
     await interaction.response.defer()
 

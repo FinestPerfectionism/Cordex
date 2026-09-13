@@ -13,6 +13,7 @@ from ._base import Scope
 # /member banner Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+
 async def run_member_banner(
     interaction : Interaction,
     member      : Member | None = None,
