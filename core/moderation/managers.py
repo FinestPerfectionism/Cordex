@@ -84,7 +84,7 @@ class QuarantineManager:
 
     async def get_members(self) -> set[Member] | None:
         async with self.bot.db.execute(
-            t"SELECT user_id FROM member_quarantines WHERE guild_id = {self.guild.id}",
+            t"SELECT member_id FROM Quarantines WHERE guild_id = {self.guild.id}",
         ) as cursor:
             rows = await cursor.fetchall()
             if not rows:
@@ -92,8 +92,8 @@ class QuarantineManager:
 
         members : set[Member] = set()
         for row in rows:
-            user_id = cast("int", row[0])
-            member  = self.guild.get_member(user_id)
+            member_id = cast("int", row[0])
+            member    = self.guild.get_member(member_id)
             if member:
                 members.add(member)
 

@@ -277,8 +277,8 @@ class Actions:
             roles_str     = ",".join(str(role.id) for role in current_roles)
 
             await self.bot.db.execute(
-                t"INSERT INTO member_quarantines (user_id, guild_id, old_roles) VALUES ({action.target.id}, {action.target.guild.id}, {roles_str}) "
-                t"ON CONFLICT (user_id, guild_id) DO UPDATE SET old_roles = excluded.old_roles",
+                t"INSERT INTO Quarantines (member_id, guild_id, old_roles) VALUES ({action.target.id}, {action.target.guild.id}, {roles_str}) "
+                t"ON CONFLICT (member_id, guild_id) DO UPDATE SET old_roles = excluded.old_roles",
             )
             await self.bot.db.commit()
 
@@ -335,7 +335,7 @@ class Actions:
             success = None
 
         async with self.bot.db.execute(
-            t"SELECT old_roles FROM member_quarantines WHERE user_id = {action.target.id} AND guild_id = {action.target.guild.id}",
+            t"SELECT old_roles FROM Quarantines WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
         ) as cursor:
             res = await cursor.fetchone()
 
@@ -343,7 +343,7 @@ class Actions:
         if res:
             roles_str = cast("str", res[0])
             await self.bot.db.execute(
-                t"DELETE FROM member_quarantines WHERE user_id = {action.target.id} AND guild_id = {action.target.guild.id}",
+                t"DELETE FROM Quarantines WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
             )
             await self.bot.db.commit()
 
@@ -496,26 +496,78 @@ class Actions:
     # note_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_add(self, _action : NoteAddPayload) -> None:
-        ...
+    async def note_add(self, action : NoteAddPayload) -> ActionResult:
+        try:
+            await self.bot.db.execute(
+                t"INSERT INTO Notes (member_id, guild_id, content) VALUES ({action.target.id}, {action.target.guild.id}, {action.content}) "
+                t"ON CONFLICT (member_id, guild_id) DO UPDATE SET content = excluded.content",
+            )
+            await self.bot.db.commit()
+        except HTTPException:
+            failed = True
+            self._log_failure("note add")
+        else:
+            failed = False
+
+        return ActionResult(
+            failed = failed,
+            dmed   = None,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # note_edit
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_edit(self, _action : NoteEditPayload) -> None:
-        ...
+    async def note_edit(self, action : NoteEditPayload) -> ActionResult:
+        try:
+            await self.bot.db.execute(
+                t"UPDATE Notes SET content = {action.content} WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
+            )
+            await self.bot.db.commit()
+        except HTTPException:
+            failed = True
+            self._log_failure("note edit")
+        else:
+            failed = False
+
+        return ActionResult(
+            failed = failed,
+            dmed   = None,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # note_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_view(self, _action : Member)  -> None:
-        ...
+    async def note_view(self, target : Member) -> str | None:
+        try:
+            async with self.bot.db.execute(
+                t"SELECT content FROM Notes WHERE member_id = {target.id} AND guild_id = {target.guild.id}",
+            ) as cursor:
+                res = await cursor.fetchone()
+        except HTTPException:
+            self._log_failure("note view")
+            return None
+        else:
+            return res[0] if res else None
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # note_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_remove(self, _action : NoteRemovePayload) -> None:
-        ...
+    async def note_remove(self, action : NoteRemovePayload) -> ActionResult:
+        try:
+            await self.bot.db.execute(
+                t"DELETE FROM Notes WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
+            )
+            await self.bot.db.commit()
+        except HTTPException:
+            failed = True
+            self._log_failure("note removal")
+        else:
+            failed = False
+
+        return ActionResult(
+            failed = failed,
+            dmed   = None,
+        )

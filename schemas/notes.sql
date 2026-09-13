@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS Quarantines (
+CREATE TABLE IF NOT EXISTS Notes (
     member_id INTEGER NOT NULL,
     guild_id INTEGER NOT NULL,
-    old_roles TEXT NOT NULL,
+    content TEXT NOT NULL,
     PRIMARY KEY (member_id, guild_id)
 );
