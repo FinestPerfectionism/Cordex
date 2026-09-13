@@ -261,14 +261,15 @@ class Cordex(commands.Bot):
 
         self.db = await connect(str(db_path))
 
-        def read_schemas() -> tuple[str, str]:
-            config_sql = Path("schemas/config.sql").read_text(encoding = "utf-8")
-            cases_sql  = Path("schemas/cases.sql").read_text(encoding = "utf-8")
-            return config_sql, cases_sql
+        def read_schemas() -> tuple[str, str, str]:
+            config_sql      = Path("schemas/config.sql").read_text(encoding = "utf-8")
+            cases_sql       = Path("schemas/cases.sql").read_text(encoding = "utf-8")
+            quarantines_sql = Path("schemas/quarantines.sql").read_text(encoding = "utf-8")
+            return config_sql, cases_sql, quarantines_sql
 
-        config_schema, cases_schema = await to_thread(read_schemas)
+        config_schema, cases_schema, quarantines_schema = await to_thread(read_schemas)
 
-        for schema in {config_schema, cases_schema}:
+        for schema in {config_schema, cases_schema, quarantines_schema}:
             await self.db.executescript(schema)
 
         await self.db.commit()

@@ -1,4 +1,4 @@
-from asyncio import gather
+from asyncio import Semaphore, gather
 from typing import final, override
 
 from discord import Guild, Member, Role
@@ -26,11 +26,14 @@ class QuarantineEnforcer(commands.Cog):
 
     @tasks.loop(minutes = 10)
     async def loop_quarantineenforce(self) -> None:
+        semaphore = Semaphore(5)
+
         async def run_enforcement(guild : Guild) -> None:
-            manager = QuarantineManager(self.bot, guild)
-            await manager.enforce("Channel")
-            await manager.enforce("Role")
-            await manager.enforce("Members")
+            async with semaphore:
+                manager = QuarantineManager(self.bot, guild)
+                await manager.enforce("Channel")
+                await manager.enforce("Role")
+                await manager.enforce("Members")
 
         await gather(*(run_enforcement(guild) for guild in self.bot.guilds))
 
@@ -90,8 +93,26 @@ class QuarantineEnforcer(commands.Cog):
         if before.roles == after.roles:
             return
 
+        quarantine_role = await self.bot.config(after.guild).get_moderation_quarantine_role()
+        if not quarantine_role:
+            return
+
+        if (quarantine_role in before.roles) == (quarantine_role in after.roles):
+            return
+
         manager = QuarantineManager(self.bot, after.guild)
         await manager.enforce("Members")
+
+    @commands.Cog.listener("on_member_join")
+    async def listener_quarantineenforce_memberjoin(self, member : Member) -> None:
+        manager = QuarantineManager(self.bot, member.guild)
+        quarantined_members = await manager.get_members()
+
+        if not quarantined_members:
+            return
+
+        if member in quarantined_members:
+            await manager.enforce("Members")
 
 
 async def setup(bot : Cordex) -> None:

@@ -1,5 +1,5 @@
 from asyncio import Semaphore, gather
-from typing import Literal, final
+from typing import Literal, cast, final
 
 from discord import Forbidden, Guild, HTTPException, Member
 from discord.abc import GuildChannel
@@ -82,8 +82,22 @@ class QuarantineManager:
     # get_members
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_members(self) -> list[Member] | None:
-        ...
+    async def get_members(self) -> set[Member] | None:
+        async with self.bot.db.execute(
+            t"SELECT user_id FROM member_quarantines WHERE guild_id = {self.guild.id}",
+        ) as cursor:
+            rows = await cursor.fetchall()
+            if not rows:
+                return None
+
+        members : set[Member] = set()
+        for row in rows:
+            user_id = cast("int", row[0])
+            member  = self.guild.get_member(user_id)
+            if member:
+                members.add(member)
+
+        return members
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce
@@ -159,7 +173,7 @@ class QuarantineManager:
                 return
 
             true_quarantined                   = await self.get_members()
-            expected_quarantined : set[Member] = set(true_quarantined or [])
+            expected_quarantined : set[Member] = true_quarantined or set()
             role_quarantined                   = set(quarantine_role.members)
 
             if role_quarantined == expected_quarantined:

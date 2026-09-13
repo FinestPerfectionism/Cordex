@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Literal, final
+from typing import Literal, cast, final
 
-from discord import Forbidden, Guild, HTTPException, Member, Message
+from discord import Forbidden, Guild, HTTPException, Member, Message, Role
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex, log
@@ -273,8 +273,17 @@ class Actions:
             success = None
 
         try:
-            await action.target.add_roles(
-                quarantine_role,
+            current_roles = [role for role in action.target.roles if not role.is_default()]
+            roles_str     = ",".join(str(role.id) for role in current_roles)
+
+            await self.bot.db.execute(
+                t"INSERT INTO member_quarantines (user_id, guild_id, old_roles) VALUES ({action.target.id}, {action.target.guild.id}, {roles_str}) "
+                t"ON CONFLICT (user_id, guild_id) DO UPDATE SET old_roles = excluded.old_roles",
+            )
+            await self.bot.db.commit()
+
+            await action.target.edit(
+                roles  = [quarantine_role],
                 reason = f"Quarantined by {action.moderator.name}: {action.reason}",
             )
         except Forbidden:
@@ -325,11 +334,37 @@ class Actions:
         else:
             success = None
 
-        try:
-            await action.target.remove_roles(
-                quarantine_role,
-                reason = f"Unquarantined by {action.moderator.name}: {action.reason}",
+        async with self.bot.db.execute(
+            t"SELECT old_roles FROM member_quarantines WHERE user_id = {action.target.id} AND guild_id = {action.target.guild.id}",
+        ) as cursor:
+            res = await cursor.fetchone()
+
+        roles : list[Role] | None = None
+        if res:
+            roles_str = cast("str", res[0])
+            await self.bot.db.execute(
+                t"DELETE FROM member_quarantines WHERE user_id = {action.target.id} AND guild_id = {action.target.guild.id}",
             )
+            await self.bot.db.commit()
+
+            roles = []
+            for role_id_str in roles_str.split(","):
+                if role_id_str:
+                    role = action.target.guild.get_role(int(role_id_str))
+                    if role:
+                        roles.append(role)
+
+        try:
+            if roles is not None:
+                await action.target.edit(
+                    roles  = roles,
+                    reason = f"Unquarantined by {action.moderator.name}: {action.reason}",
+                )
+            else:
+                await action.target.remove_roles(
+                    quarantine_role,
+                    reason = f"Unquarantined by {action.moderator.name}: {action.reason}",
+                )
         except Forbidden:
             failed = True
         except HTTPException:
