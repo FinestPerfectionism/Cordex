@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Self, final
+from typing import final
 
 from discord import AllowedMentions, Color, Guild, Member
 
@@ -15,6 +15,7 @@ from constants import (
     COLOR_RED,
     COLOR_YELLOW,
 )
+from core.utilities import format_now, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cases Management
@@ -169,16 +170,117 @@ class Cases:
 
         data = CASE_MAP[type(case)]
 
-        @final
-        class CaseView(LayoutView):
-            container = Container[Self](
-                TextDisplay(f"# {data.title}"),
+        view = LayoutView()
+        container = Container[view](
+            TextDisplay(f"# {data.title}"),
+            color = data.color,
+        )
+
+        if isinstance(case, PurgePayload):
+            if case.target is not None:
+                target_info = {
+                    "Target"    : case.target.mention,
+                    "Name"      : case.target.name,
+                    "Target ID" : case.target.id,
+                }
+
+                container.add_items(
+                    VisibleLargeSeparator(),
+                    TextDisplay(
+                        "## Target\n"
+                       f"{format_table(target_info)}",
+                    ),
+                )
+        else:
+            target = case.target
+            target_info = {
+                "Target"    : target.mention,
+                "Name"      : getattr(target, "name", str(target)),
+                "Target ID" : target.id,
+            }
+
+            container.add_items(
                 VisibleLargeSeparator(),
-                color = data.color,
+                TextDisplay(
+                    "## Target\n"
+                   f"{format_table(target_info)}",
+                ),
             )
 
+        if not isinstance(case, NoteAddPayload | NoteEditPayload | NoteRemovePayload):
+            moderator = case.moderator
+            moderator_info = {
+                "Moderator"      : moderator.mention,
+                "Moderator Name" : moderator.name,
+                "Moderator ID"   : moderator.id,
+            }
+
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    "## Moderator\n"
+                   f"{format_table(moderator_info)}",
+                ),
+            )
+
+        details : dict[str, object] = {}
+
+        if isinstance(case, BanAddPayload):
+            details["Message Delete History"] = f"{case.seconds_to_delete} seconds"
+        elif isinstance(case, TimeoutAddPayload):
+            details["Duration"] = f"{case.length} seconds"
+        elif isinstance(case, PurgePayload):
+            details["Channel"] = case.channel.mention
+            details["Amount"]  = case.amount
+            details["Forced"]  = case.force
+
+        if isinstance(case, BaseAddPayload | BaseRemovePayload | KickPayload):
+            details["DM Sent"] = case.dm_user
+
+        if details:
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    "## Details\n"
+                   f"{format_table(details)}",
+                ),
+            )
+
+        if isinstance(
+            case,
+            BaseAddPayload
+            | BaseRemovePayload
+            | LockdownAddPayload
+            | LockdownRemovePayload
+            | KickPayload
+            | PurgePayload,
+        ) and case.reason:
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    "## Reason\n"
+                   f"{case.reason}",
+                ),
+            )
+
+        if isinstance(case, NoteAddPayload | NoteEditPayload) and case.content:
+            container.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(
+                    "## Content\n"
+                   f"{case.content}",
+                ),
+            )
+
+        container.add_items(
+            VisibleLargeSeparator(),
+            TextDisplay(f"{format_now()} | {format_now("R")}"),
+        )
+
+        view.add_item(container)
+
         await log_channel.send(
-            view             = CaseView(),
+            view             = view,
             allowed_mentions = AllowedMentions.none(),
         )
 

@@ -27,7 +27,6 @@ from .cases import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-from .managers import LockdownManager, QuarantineManager
 
 type ActionType = Literal[
     "Ban Add",
@@ -44,7 +43,7 @@ type ActionType = Literal[
 @dataclass(frozen = True)
 class ActionResult[T = None]:
     failed  : bool
-    # logged  : bool
+    logged  : bool
     dmed    : bool | None
     data    : T    | None = None
 
@@ -61,9 +60,7 @@ class Actions:
         self.guild  = guild
         self.config = self.bot.config(guild)
 
-        self._cases              = Cases(bot, guild)
-        self._lockdown_manager   = LockdownManager(bot, guild)
-        self._quarantine_manager = QuarantineManager(bot, guild)
+        self._cases = Cases(bot, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure
@@ -176,8 +173,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = success,
         )
 
@@ -222,8 +227,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = success,
         )
 
@@ -250,8 +263,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = success,
         )
 
@@ -264,6 +285,7 @@ class Actions:
         if not quarantine_role:
             return ActionResult(
                 failed = True,
+                logged = False,
                 dmed   = False,
             )
 
@@ -294,8 +316,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = success,
         )
 
@@ -326,6 +356,7 @@ class Actions:
         if not quarantine_role:
             return ActionResult(
                 failed = True,
+                logged = False,
                 dmed   = False,
             )
 
@@ -373,8 +404,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = success,
         )
 
@@ -401,8 +440,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = success,
         )
 
@@ -447,8 +494,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = success,
         )
 
@@ -486,8 +541,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = None,
             data   = len(deleted),
         )
@@ -509,8 +572,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = None,
         )
 
@@ -530,8 +601,16 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = None,
         )
 
@@ -567,7 +646,15 @@ class Actions:
         else:
             failed = False
 
+        try:
+            await self._cases.create_case(action)
+        except Exception:
+            logged = False
+        else:
+            logged = True
+
         return ActionResult(
             failed = failed,
+            logged = logged,
             dmed   = None,
         )

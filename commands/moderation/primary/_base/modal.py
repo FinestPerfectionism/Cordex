@@ -515,12 +515,12 @@ class ModerationModal(Modal):
                     table["DMed Member"] = f"{DENIED_EMOJI} Fail."
                     statuses.append(False)
 
-                # if result.logged is True:
-                #     table["Logged"] = f"{ACCEPTED_EMOJI} Success."
-                #     statuses.append(True)
-                # elif result.logged is False:
-                #     table["Logged"] = f"{DENIED_EMOJI} Fail."
-                #     statuses.append(False)
+                if result.logged is True:
+                    table["Logged"] = f"{ACCEPTED_EMOJI} Success."
+                    statuses.append(True)
+                elif result.logged is False:
+                    table["Logged"] = f"{DENIED_EMOJI} Fail."
+                    statuses.append(False)
 
                 if modal.action_type == "Purge" and isinstance(result.data, int):
                     purge_line = f"Purged {result.data} message(s).\n"
