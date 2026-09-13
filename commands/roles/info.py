@@ -1,7 +1,15 @@
 from contextlib import suppress
 from typing import Self, final, override
 
-from discord import AllowedMentions, Asset, Member, Message, NotFound, Role
+from discord import (
+    AllowedMentions,
+    Asset,
+    HTTPException,
+    Member,
+    Message,
+    NotFound,
+    Role,
+)
 from discord.utils import format_dt
 
 from bot import Interaction
@@ -121,8 +129,13 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
                     item.disabled = True
 
             if self.message:
-                with suppress(NotFound):
+                try:
                     await self.message.edit(view = self)
+                except NotFound:
+                    pass
+                except HTTPException:
+                    with suppress(HTTPException):
+                        await self.message.delete()
 
     view = InfoView()
     view.message = await interaction.followup.send(

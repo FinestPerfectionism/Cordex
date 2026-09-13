@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Protocol, final, override
 from warnings import warn
 
-from discord import Color, Message, NotFound
+from discord import Color, HTTPException, Message, NotFound
 
 from bot import Interaction
 from bot.ui import (
@@ -146,8 +146,13 @@ class NamedPaginator(LayoutView):
                     item.disabled = True
 
         if self.message:
-            with suppress(NotFound):
+            try:
                 await self.message.edit(view = self)
+            except NotFound:
+                pass
+            except HTTPException:
+                with suppress(HTTPException):
+                    await self.message.delete()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_above
