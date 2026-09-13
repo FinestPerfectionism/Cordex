@@ -274,7 +274,7 @@ class Cordex(commands.Bot):
         cogs = await to_thread(
             discover_cogs,
             "commands",
-            "events",
+            "systems",
             "core",
         )
 

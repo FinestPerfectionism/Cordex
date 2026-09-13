@@ -81,7 +81,7 @@ async def emoji_inaccessible(
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 def get_cogs() -> list[str]:
-    return discover_cogs("commands", "events", "core")
+    return discover_cogs("commands", "systems", "core")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Raw Bot-Owner Check
