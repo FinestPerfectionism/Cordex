@@ -39,22 +39,18 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
     @override
     async def callback(self, interaction : Interaction) -> None:
         guild = interaction.guild
-
         if not guild:
             return
 
         channel = guild.get_channel(self.values[0].id)
-
         if not isinstance(channel, TextChannel):
             return
 
         me = guild.me
-
         if not me:
             return
 
         permissions = channel.permissions_for(me)
-
         if not permissions.send_messages:
             await send_bad_argument(
                 interaction,
@@ -98,22 +94,18 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
     @override
     async def callback(self, interaction : Interaction) -> None:
         guild = interaction.guild
-
         if not guild:
             return
 
         channel = guild.get_channel(self.values[0].id)
-
         if not isinstance(channel, TextChannel):
             return
 
         me = guild.me
-
         if not me:
             return
 
         permissions = channel.permissions_for(me)
-
         if not permissions.send_messages:
             await send_bad_argument(
                 interaction,
@@ -189,22 +181,18 @@ class _ModerationLoggingSelect(ChannelSelect["_ConfigurationView"]):
     @override
     async def callback(self, interaction : Interaction) -> None:
         guild = interaction.guild
-
         if not guild:
             return
 
         channel = guild.get_channel(self.values[0].id)
-
         if not isinstance(channel, TextChannel):
             return
 
         me = guild.me
-
         if not me:
             return
 
         permissions = channel.permissions_for(me)
-
         if not permissions.send_messages:
             await send_bad_argument(
                 interaction,
@@ -249,10 +237,11 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
 
         self.default_values = [Object(id = role.id)]
 
-        if not interaction.guild:
+        guild = interaction.guild
+        if not guild:
             return
 
-        if role >= interaction.guild.me.top_role:
+        if role >= guild.me.top_role:
             await send_bad_argument(
                 interaction,
                 title    = "set quarantine role",
@@ -262,10 +251,10 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         if not self.view:
             return
 
-        manager = QuarantineManager(interaction.client, interaction.guild)
+        manager = QuarantineManager(interaction.client, guild)
 
         try:
-            await interaction.client.config(interaction.guild).set_moderation_quarantine_role(role)
+            await interaction.client.config(guild).set_moderation_quarantine_role(role)
             await manager.enforce("Channel")
             await manager.enforce("Role")
         except Exception:
@@ -320,10 +309,11 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        if not interaction.guild:
+        guild = interaction.guild
+        if not guild:
             return
 
-        config = interaction.client.config(interaction.guild)
+        config = interaction.client.config(guild)
 
         try:
             await config.set_moderation_quarantine_enforce_channels(enabled = self._channels.value)
@@ -339,7 +329,7 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         self.view.enforce_roles    = roles
         self.view.update_pages()
 
-        manager = QuarantineManager(interaction.client, interaction.guild)
+        manager = QuarantineManager(interaction.client, guild)
 
         if channels:
             await manager.enforce("Channel")
@@ -537,10 +527,11 @@ async def run_server_configure(interaction : Interaction) -> None:
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-    if not interaction.guild:
+    guild = interaction.guild
+    if not guild:
         return
 
-    config = interaction.client.config(interaction.guild)
+    config = interaction.client.config(guild)
 
     edit_channel     = await config.get_messages_edit_logging_channel()
     delete_channel   = await config.get_messages_delete_logging_channel()
@@ -552,7 +543,7 @@ async def run_server_configure(interaction : Interaction) -> None:
 
     await interaction.response.send_message(
         view      = _ConfigurationView(
-            interaction.guild,
+            guild,
             edit_channel     = edit_channel.id    if edit_channel    else None,
             delete_channel   = delete_channel.id  if delete_channel  else None,
             logging_channel  = logging_channel.id if logging_channel else None,
