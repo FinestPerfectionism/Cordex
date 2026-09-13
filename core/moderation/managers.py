@@ -90,11 +90,17 @@ class QuarantineManager:
     type EnforceTypes = Literal["Channel", "Role"]
 
     async def enforce(self, enforce_type : EnforceTypes) -> None:
-        quarantine_role = await self.bot.config(self.guild).get_moderation_quarantine_role()
+        config = self.bot.config(self.guild)
+
+        quarantine_role = await config.get_moderation_quarantine_role()
         if not quarantine_role:
             return
 
         if enforce_type == "Channel":
+            wants_enforcement = await config.get_moderation_quarantine_enforce_channels()
+            if not wants_enforcement:
+                return
+
             semaphore = Semaphore(5)
 
             async def edit_channel(channel : GuildChannel) -> None:
@@ -124,6 +130,10 @@ class QuarantineManager:
             await gather(*(edit_channel(channel) for channel in self.guild.channels))
 
         if enforce_type == "Role":
+            wants_enforcement = await config.get_moderation_quarantine_enforce_roles()
+            if not wants_enforcement:
+                return
+
             me = self.guild.me
             if not me or not me.guild_permissions.manage_roles:
                 return

@@ -1,6 +1,6 @@
 # pyright: reportIncompatibleMethodOverride = false
 
-from typing import Literal, Self, final, override
+from typing import Self, final, override
 
 from discord import ChannelType, Guild, Object, TextChannel
 
@@ -23,72 +23,9 @@ from core.exceptions import send_bad_argument, send_bad_operation
 from core.moderation import QuarantineManager
 from core.paginator import NamedPaginator, PageData
 
-type Keys = Literal[
-    "edit",
-    "delete",
-    "logging",
-    "quarantine",
-    "enforce_channels",
-    "enforce_roles",
-    "preview",
-]
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /server configure Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-async def _get_guild_config(interaction : Interaction, key : Keys) -> int | None:
-    key_dict : dict[Keys, str] = {
-        "edit"             : "messages_edit_channel",
-        "delete"           : "messages_delete_channel",
-        "logging"          : "moderation_logging_channel",
-        "quarantine"       : "moderation_quarantine_role",
-        "enforce_channels" : "moderation_quarantine_enforce_channels",
-        "enforce_roles"    : "moderation_quarantine_enforce_roles",
-        "preview"          : "messages_preview",
-    }
-
-    fetched_key = key_dict[key]
-
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
-    if not interaction.guild:
-        return None
-
-    cursor = await interaction.client.db.execute(
-        t"SELECT config_value FROM GuildConfig WHERE guild_id = {interaction.guild.id} AND config_key = {fetched_key}",
-    )
-
-    row = await cursor.fetchone()
-    await cursor.close()
-
-    return row[0] if row else None
-
-async def _set_guild_config(interaction : Interaction, key : Keys, value : int) -> None:
-    key_dict : dict[Keys, str] = {
-        "edit"             : "messages_edit_channel",
-        "delete"           : "messages_delete_channel",
-        "preview"          : "messages_preview",
-        "logging"          : "moderation_logging_channel",
-        "quarantine"       : "moderation_quarantine_role",
-        "enforce_channels" : "moderation_quarantine_enforce_channels",
-        "enforce_roles"    : "moderation_quarantine_enforce_roles",
-    }
-
-    fetched_key = key_dict[key]
-
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
-    if not interaction.guild:
-        return
-
-    db = interaction.client.db
-
-    await db.execute(
-        t"INSERT INTO GuildConfig (guild_id, config_key, config_value) VALUES ({interaction.guild.id}, {fetched_key}, {value}) "
-        t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
-    )
-    await db.commit()
 
 @final
 class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
@@ -139,7 +76,7 @@ class _MessagesEditSelect(ChannelSelect["_ConfigurationView"]):
         self.default_values = [Object(id = channel.id)]
 
         try:
-            await _set_guild_config(interaction, "edit", channel.id)
+            await interaction.client.config(guild).set_messages_edit_logging_channel(channel)
             self.view.edit_id = channel.id
             self.view.update_pages()
             await interaction.response.edit_message(view = self.view)
@@ -197,7 +134,7 @@ class _MessagesDeleteSelect(ChannelSelect["_ConfigurationView"]):
         self.default_values = [Object(id = channel.id)]
 
         try:
-            await _set_guild_config(interaction, "delete", channel.id)
+            await interaction.client.config(guild).set_messages_delete_logging_channel(channel)
             self.view.delete_id = channel.id
             self.view.update_pages()
             await interaction.response.edit_message(view = self.view)
@@ -226,7 +163,7 @@ class _MessagesPreviewButton(Button["_ConfigurationView"]):
         new_state = not self.view.preview
 
         try:
-            await _set_guild_config(interaction, "preview", int(new_state))
+            await interaction.client.config(self.view.guild).set_messages_preview(enabled = new_state)
         except Exception:
             await send_bad_operation(interaction, title = "update messages preview setting")
             raise
@@ -286,7 +223,7 @@ class _ModerationLoggingSelect(ChannelSelect["_ConfigurationView"]):
         self.default_values = [Object(id = channel.id)]
 
         try:
-            await _set_guild_config(interaction, "logging", channel.id)
+            await interaction.client.config(guild).set_moderation_logging_channel(channel)
             self.view.logging_id = channel.id
             self.view.update_pages()
             await interaction.response.edit_message(view = self.view)
@@ -323,7 +260,7 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         manager = QuarantineManager(interaction.client, interaction.guild)
 
         try:
-            await _set_guild_config(interaction, "quarantine", role.id)
+            await interaction.client.config(interaction.guild).set_moderation_quarantine_role(role)
             await manager.enforce("Channel")
             await manager.enforce("Role")
         except Exception:
@@ -380,9 +317,11 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         if not interaction.guild:
             return
 
+        config = interaction.client.config(interaction.guild)
+
         try:
-            await _set_guild_config(interaction, "enforce_channels", int(self._channels.value))
-            await _set_guild_config(interaction, "enforce_roles", int(self._roles.value))
+            await config.set_moderation_quarantine_enforce_channels(enabled = self._channels.value)
+            await config.set_moderation_quarantine_enforce_roles(enabled = self._roles.value)
         except Exception:
             await send_bad_operation(interaction, title = "update quarantine enforcement")
             raise
@@ -592,24 +531,26 @@ async def run_server_configure(interaction : Interaction) -> None:
     if not interaction.guild:
         return
 
-    edit_channel     = await _get_guild_config(interaction, "edit")
-    delete_channel   = await _get_guild_config(interaction, "delete")
-    logging_channel  = await _get_guild_config(interaction, "logging")
-    quarantine_role  = await _get_guild_config(interaction, "quarantine")
-    enforce_channels = await _get_guild_config(interaction, "enforce_channels")
-    enforce_roles    = await _get_guild_config(interaction, "enforce_roles")
-    preview          = await _get_guild_config(interaction, "preview")
+    config = interaction.client.config(interaction.guild)
+
+    edit_channel     = await config.get_messages_edit_logging_channel()
+    delete_channel   = await config.get_messages_delete_logging_channel()
+    logging_channel  = await config.get_moderation_logging_channel()
+    quarantine_role  = await config.get_moderation_quarantine_role()
+    enforce_channels = await config.get_moderation_quarantine_enforce_channels()
+    enforce_roles    = await config.get_moderation_quarantine_enforce_roles()
+    preview          = await config.get_messages_preview()
 
     await interaction.response.send_message(
         view      = _ConfigurationView(
             interaction.guild,
-            edit_channel     = edit_channel,
-            delete_channel   = delete_channel,
-            logging_channel  = logging_channel,
-            quarantine_role  = quarantine_role,
-            enforce_channels = bool(enforce_channels),
-            enforce_roles    = bool(enforce_roles),
-            preview          = bool(preview),
+            edit_channel     = edit_channel.id    if edit_channel    else None,
+            delete_channel   = delete_channel.id  if delete_channel  else None,
+            logging_channel  = logging_channel.id if logging_channel else None,
+            quarantine_role  = quarantine_role.id if quarantine_role else None,
+            enforce_channels = enforce_channels,
+            enforce_roles    = enforce_roles,
+            preview          = preview,
         ),
         ephemeral = True,
     )
