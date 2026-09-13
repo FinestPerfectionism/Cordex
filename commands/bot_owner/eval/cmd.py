@@ -235,7 +235,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         if ret is None:
             if value:
                 async with channel.typing():
-                    await ctx.send(codeblock(value), delete_after = 15)
+                    await ctx.send(codeblock(value))
         else:
             async with channel.typing():
-                await ctx.send(codeblock(f"{value}{ret}"), delete_after = 15)
+                await ctx.send(codeblock(f"{value}{ret}"))
