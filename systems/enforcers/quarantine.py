@@ -1,7 +1,7 @@
 from asyncio import gather
 from typing import final, override
 
-from discord import Guild, Role
+from discord import Guild, Member, Role
 from discord.abc import GuildChannel
 from discord.ext import commands, tasks
 
@@ -30,6 +30,7 @@ class QuarantineEnforcer(commands.Cog):
             manager = QuarantineManager(self.bot, guild)
             await manager.enforce("Channel")
             await manager.enforce("Role")
+            await manager.enforce("Members")
 
         await gather(*(run_enforcement(guild) for guild in self.bot.guilds))
 
@@ -40,7 +41,6 @@ class QuarantineEnforcer(commands.Cog):
     @commands.Cog.listener("on_guild_channel_update")
     async def listener_quarantineenforce_channelupdate(self, before : GuildChannel, after : GuildChannel) -> None:
         quarantine_role = await self.bot.config(after.guild).get_moderation_quarantine_role()
-
         if not quarantine_role:
             return
 
@@ -71,7 +71,6 @@ class QuarantineEnforcer(commands.Cog):
     @commands.Cog.listener("on_guild_channel_create")
     async def listener_quarantineenforce_channelcreate(self, channel : GuildChannel) -> None:
         quarantine_role = await self.bot.config(channel.guild).get_moderation_quarantine_role()
-
         if not quarantine_role:
             return
 
@@ -85,6 +84,14 @@ class QuarantineEnforcer(commands.Cog):
 
         manager = QuarantineManager(self.bot, after.guild)
         await manager.enforce("Role")
+
+    @commands.Cog.listener("on_member_update")
+    async def listener_quarantineenforce_memberupdate(self, before : Member, after : Member) -> None:
+        if before.roles == after.roles:
+            return
+
+        manager = QuarantineManager(self.bot, after.guild)
+        await manager.enforce("Members")
 
 
 async def setup(bot : Cordex) -> None:

@@ -89,7 +89,7 @@ class QuarantineManager:
     # enforce
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    type EnforceTypes = Literal["Channel", "Role"]
+    type EnforceTypes = Literal["Channel", "Role", "Members"]
 
     async def enforce(self, enforce_type : EnforceTypes) -> None:
         config = self.bot.config(self.guild)
@@ -101,6 +101,10 @@ class QuarantineManager:
         if enforce_type == "Channel":
             wants_enforcement = await config.get_moderation_quarantine_enforce_channels()
             if not wants_enforcement:
+                return
+
+            me = self.guild.me
+            if not me or not me.guild_permissions.manage_channels:
                 return
 
             semaphore = Semaphore(5)
@@ -148,3 +152,40 @@ class QuarantineManager:
                     pass
                 except HTTPException:
                     self._log_failure("role quarantine enforcement")
+
+        if enforce_type == "Members":
+            me = self.guild.me
+            if not me or not me.guild_permissions.manage_roles:
+                return
+
+            true_quarantined                   = await self.get_members()
+            expected_quarantined : set[Member] = set(true_quarantined or [])
+            role_quarantined                   = set(quarantine_role.members)
+
+            if role_quarantined == expected_quarantined:
+                return
+
+            semaphore = Semaphore(5)
+
+            async def remove_role(member : Member) -> None:
+                async with semaphore:
+                    try:
+                        await member.remove_roles(quarantine_role, reason = "Quarantine enforce.")
+                    except Forbidden:
+                        pass
+                    except HTTPException:
+                        self._log_failure("member quarantine removal")
+
+            async def add_role(member : Member) -> None:
+                async with semaphore:
+                    try:
+                        await member.add_roles(quarantine_role, reason = "Quarantine enforce.")
+                    except Forbidden:
+                        pass
+                    except HTTPException:
+                        self._log_failure("member quarantine addition")
+
+            await gather(
+                *(remove_role(member) for member in (role_quarantined - expected_quarantined)),
+                *(add_role(member)    for member in (expected_quarantined - role_quarantined)),
+            )
