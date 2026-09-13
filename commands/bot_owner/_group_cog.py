@@ -3,12 +3,9 @@ from typing import final
 from discord import Forbidden, HTTPException, Message
 from discord.app_commands import (
     Choice,
-    ContextMenu,
     Group,
-    Range,
     autocomplete,
     describe,
-    rename,
 )
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
@@ -26,14 +23,6 @@ from .cogs import (
     run_bo_cog_unload,
 )
 from .eval import run_bo_eval
-from .messages import (
-    run_bo_messages_delete,
-    run_bo_messages_delete_menu,
-    run_bo_messages_edit,
-    run_bo_messages_edit_menu,
-    run_bo_messages_reply_menu,
-    run_bo_messages_send,
-)
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 from .style import run_bo_style_reset, run_bo_style_set
 
@@ -52,25 +41,6 @@ class BotOwnerCommands(
         super().__init__()
         self.bot  = bot
         self.tree = bot.tree
-
-        self.tree.add_command(
-            ContextMenu(
-                name     = "Reply to Message",
-                callback = self.menu_bo_messages_reply,
-            ),
-        )
-        self.tree.add_command(
-            ContextMenu(
-                name     = "Edit Message",
-                callback = self.menu_bo_messages_edit,
-            ),
-        )
-        self.tree.add_command(
-            ContextMenu(
-                name     = "Delete Message",
-                callback = self.menu_bo_messages_delete,
-            ),
-        )
 
     cog     : Group = Group(
         name        = "cog",
@@ -225,97 +195,6 @@ class BotOwnerCommands(
     @prefix_command(name = "eval")
     async def cmd_bo_eval(self, ctx : Context, *, body : str) -> None:
         await run_bo_eval(ctx, body)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner message send Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @message.command(
-        name        = "send",
-        description = "Make the bot send something.",
-    )
-    @describe(
-        text     = "The text to send.",
-        reply_id = "The ID of the message to reply to.",
-        ping     = "Whether to mention the user upon replying. Does nothing if reply-id is None.",
-    )
-    @rename(reply_id = "reply-id")
-    @bot_owner_cmd()
-    async def cmd_bo_messages_send(
-        self,
-        interaction : Interaction,
-        text        : str,
-        reply_id    : Range[str, 17, 19] | None = None,
-        *,
-        ping        : bool               | None = True,
-    ) -> None:
-        await run_bo_messages_send(
-            interaction,
-            text,
-            reply_id,
-            ping = ping,
-        )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Reply to Message — Message Menu
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def menu_bo_messages_reply(self, interaction : Interaction, message : Message) -> None:
-        await run_bo_messages_reply_menu(interaction, message)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner message edit Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @message.command(
-        name        = "edit",
-        description = "Make the bot edit one of its own messages.",
-    )
-    @describe(
-        text       = "The new text for the message.",
-        message_id = "The ID of the message to edit.",
-    )
-    @rename(message_id = "message-id")
-    @bot_owner_cmd()
-    async def cmd_bo_messages_edit(
-        self,
-        interaction : Interaction,
-        text        : str,
-        message_id  : Range[str, 17, 19],
-    ) -> None:
-        await run_bo_messages_edit(interaction, text, message_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Edit Message — Message Menu
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def menu_bo_messages_edit(self, interaction : Interaction, message : Message) -> None:
-        await run_bo_messages_edit_menu(interaction, message)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner message delete Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @message.command(
-        name        = "delete",
-        description = "Make the bot delete one of its own messages.",
-    )
-    @describe(message_id = "The ID of the message to delete.")
-    @rename(message_id = "message-id")
-    @bot_owner_cmd()
-    async def cmd_bo_messages_delete(
-        self,
-        interaction : Interaction,
-        message_id  : Range[str, 17, 19],
-    ) -> None:
-        await run_bo_messages_delete(interaction, message_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Delete Message — Message Menu
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def menu_bo_messages_delete(self, interaction : Interaction, message : Message) -> None:
-        await run_bo_messages_delete_menu(interaction, message)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner style reset Command
