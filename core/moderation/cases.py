@@ -274,7 +274,7 @@ class Cases:
 
         container.add_items(
             VisibleLargeSeparator(),
-            TextDisplay(f"{format_now()} | {format_now("R")}"),
+            TextDisplay(f"-# {format_now()} | {format_now("R")}"),
         )
 
         view.add_item(container)
