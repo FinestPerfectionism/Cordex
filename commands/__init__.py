@@ -1,5 +1,3 @@
-# ~~~ TODO: Add moderation/primary imports...
-
 from .bot_owner import (
     run_bo_cog_load,
     run_bo_cog_pullreload,
@@ -26,7 +24,27 @@ from .channels import (
     run_channel_sync,
 )
 from .members import run_member_avatar, run_member_banner, run_member_info
-from .moderation import run_mod_cases_query, run_mod_cases_view
+from .moderation import (
+    run_mod_cases_query,
+    run_mod_cases_view,
+    run_mod_primary_ban_add,
+    run_mod_primary_ban_remove,
+    run_mod_primary_ban_view,
+    run_mod_primary_kick,
+    run_mod_primary_lockdown_add,
+    run_mod_primary_lockdown_remove,
+    run_mod_primary_note_add,
+    run_mod_primary_note_edit,
+    run_mod_primary_note_remove,
+    run_mod_primary_note_view,
+    run_mod_primary_purge,
+    run_mod_primary_quarantine_add,
+    run_mod_primary_quarantine_remove,
+    run_mod_primary_quarantine_view,
+    run_mod_primary_timeout_add,
+    run_mod_primary_timeout_remove,
+    run_mod_primary_timeout_view,
+)
 from .roles import (
     run_role_compare,
     run_role_duplicate,
@@ -63,12 +81,28 @@ __all__ = [
     "run_channel_info",
     "run_channel_permissions",
     "run_channel_sync",
-    # ^^^ ⸻ moderation/primary goes here
     "run_member_avatar",
     "run_member_banner",
     "run_member_info",
     "run_mod_cases_query",
     "run_mod_cases_view",
+    "run_mod_primary_ban_add",
+    "run_mod_primary_ban_remove",
+    "run_mod_primary_ban_view",
+    "run_mod_primary_kick",
+    "run_mod_primary_lockdown_add",
+    "run_mod_primary_lockdown_remove",
+    "run_mod_primary_note_add",
+    "run_mod_primary_note_edit",
+    "run_mod_primary_note_remove",
+    "run_mod_primary_note_view",
+    "run_mod_primary_purge",
+    "run_mod_primary_quarantine_add",
+    "run_mod_primary_quarantine_remove",
+    "run_mod_primary_quarantine_view",
+    "run_mod_primary_timeout_add",
+    "run_mod_primary_timeout_remove",
+    "run_mod_primary_timeout_view",
     "run_role_compare",
     "run_role_duplicate",
     "run_role_info",
