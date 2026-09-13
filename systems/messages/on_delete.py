@@ -24,7 +24,7 @@ class MessageDeleteHandler(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener("on_message_delete")
-    async def listener_delete_onmessagedelete(self, message : Message) -> None:
+    async def listener_delete_messagedelete(self, message : Message) -> None:
         content     = message.content
         attachments = message.attachments
         author      = message.author

@@ -20,10 +20,25 @@ class Config:
         self.guild = guild
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # reset
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def reset(self) -> None:
+        await self.bot.db.execute(t"DELETE FROM GuildConfig WHERE guild_id = {self.guild.id}")
+        await self.bot.db.commit()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_command_allowed
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def get_command_allowed(self) -> list[Role | Member]:
+        ...
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # set_command_allowed
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def set_command_allowed(self) -> None:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

@@ -123,11 +123,11 @@ class Preview(commands.Cog):
                 )
 
     @commands.Cog.listener("on_message")
-    async def listener_preview_onmessage(self, message : Message) -> None:
+    async def listener_preview_message(self, message : Message) -> None:
         await self._process_message_preview(message)
 
     @commands.Cog.listener("on_message_edit")
-    async def listener_preview_onedit(self, _before : Message, after : Message) -> None:
+    async def listener_preview_messageedit(self, _before : Message, after : Message) -> None:
         await self._process_message_preview(after)
 
 

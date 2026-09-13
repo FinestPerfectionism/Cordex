@@ -33,7 +33,7 @@ class MessageEditHandler(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener("on_message_edit")
-    async def listener_delete_onmessageedit(self, before : Message, after : Message) -> None:
+    async def listener_delete_messageedit(self, before : Message, after : Message) -> None:
         author  = before.author
         guild   = before.guild
         channel = before.channel

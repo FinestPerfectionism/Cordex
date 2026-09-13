@@ -19,7 +19,7 @@ class Fun(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener("on_message")
-    async def listener_fun_onmessage(self, message : Message) -> None:
+    async def listener_fun_message(self, message : Message) -> None:
         content   = message.content.lower()
         reference = message.reference
         author    = message.author

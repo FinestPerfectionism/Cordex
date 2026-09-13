@@ -1,5 +1,6 @@
 from typing import final
 
+from discord import Guild
 from discord.ext import commands
 
 from bot import Cordex
@@ -16,8 +17,8 @@ class ConfigEnforcer(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener("on_guild_leave")
-    async def listener_config_onguildleave() -> None:
-        ...
+    async def listener_config_guildleave(self, guild : Guild) -> None:
+        await self.bot.config(guild).reset()
 
 
 async def setup(bot : Cordex) -> None:
