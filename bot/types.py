@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 # Bot Types
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type LambdaInter = Callable[["Interaction"], Awaitable[None]]
+type LambdaInter = Callable[["Interaction"], Awaitable[None]]  # ruff: ignore[quoted-type-alias]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # AnnotatedCommand

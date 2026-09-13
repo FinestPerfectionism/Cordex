@@ -4,7 +4,7 @@ from typing import Literal
 from discord.app_commands import check
 from discord.utils import format_dt, utcnow
 
-from bot import Interaction, bot
+from bot import Cordex, Interaction
 
 from .exceptions import UnimplementedCommand
 
@@ -51,7 +51,7 @@ def format_command(path : str, /) -> str:
     root_name : str        = parts[0]
     root_id   : int | None = None
 
-    commands = bot.get_app_commands_cache()
+    commands = Cordex().get_app_commands_cache()
 
     for cmd in commands:
         if cmd.name == root_name:
@@ -67,16 +67,19 @@ def format_command(path : str, /) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def format_table[K, V](table : dict[K, V], /, *, padding : int = 1) -> str:
+def format_table[K, V](table : dict[K, V], /, *, padding : int = 1, code : bool = False) -> str:
     biggest_key = max([len(str(key)) for key in table], default = 0)
     width       = biggest_key + padding
 
     rows = [
+        f"{key!s:>{width}}: {value}"
+        if code else
         f"`{key!s:>{width}}:` {value}"
         for key, value in table.items()
     ]
 
-    return "\n".join(rows)
+    output = "\n".join(rows)
+    return codeblock(output) if code else output
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_values
