@@ -50,7 +50,7 @@ async def run_role_permissions(
     @final
     class PermissionsView(LayoutView):
         container = Container[Self](
-            TextDisplay(f"### {filter_mention}{p}ermissions for {role_mention},"),
+            TextDisplay(f"### {filter_mention}{p}ermissions for {role_mention}"),
             VisibleLargeSeparator(),
             TextDisplay("\n".join(lines) if lines else "No permissions found."),
             color = role.color if role.color.value else COLOR_GREY,

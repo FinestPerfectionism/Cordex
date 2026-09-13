@@ -53,7 +53,7 @@ async def run_role_members(
     # ⸻ Build the paginator.
 
     view = UnnamedPaginator(
-        f"### {person_label} {role_label} {mention},",
+        f"### {person_label} {role_label} {mention}",
         [f"- {member.mention} | {member.id}" for member in filtered] if filtered else ["No members found."],
         data_name = person_label.lower(),
         per_page  = 15,
