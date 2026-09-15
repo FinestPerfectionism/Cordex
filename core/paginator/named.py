@@ -103,6 +103,14 @@ class NamedPaginator(LayoutView):
             error = "data must contain more than one page"
             raise ValueError(error)
 
+        for page in data:
+            if page.name in {"<", "<<", ">", ">>"}:
+                warn(
+                    f"Prefer UnnamedPaginator over NamedPaginator if using unnamed button '{page.name}'.",
+                    category   = UserWarning,
+                    stacklevel = 2,
+                )
+
         self.pages        : list[PageData] = data or [PageData("No content available.", None, ["No content available."])]
         self.current_page : int            = 0
         self._name_rows   : list[_NameRow] = [
