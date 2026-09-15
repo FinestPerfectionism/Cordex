@@ -3,7 +3,7 @@ from discord import Attachment, Thread
 from discord.utils import escape_markdown
 
 from bot.types import GuildMessagable
-from constants import ARROW_EMOJI
+from constants import RIGHTWARDS_ARROW_EMOJI
 from core.utilities import truncate
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -28,7 +28,7 @@ def channel_display(channel : GuildMessagable) -> str:
         parent = channel.parent
 
         if parent is not None:
-            return f"{parent.mention} {ARROW_EMOJI} {channel.mention} | {parent.id} {ARROW_EMOJI} {channel.id}"
+            return f"{parent.mention} {RIGHTWARDS_ARROW_EMOJI} {channel.mention} | {parent.id} {RIGHTWARDS_ARROW_EMOJI} {channel.id}"
 
     return f"{channel.mention} | {channel.id}"
 

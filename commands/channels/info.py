@@ -13,7 +13,6 @@ from constants import (
     ACTIVE_STAGE_EMOJI,
     ACTIVE_VOICE_EMOJI,
     ANNOUNCEMENT_EMOJI,
-    ARROW_EMOJI,
     COLOR_GREY,
     FORUM_EMOJI,
     LOCKED_ANNOUNCEMENT_EMOJI,
@@ -23,6 +22,7 @@ from constants import (
     LOCKED_TEXT_EMOJI,
     LOCKED_VOICE_EMOJI,
     MEDIA_EMOJI,
+    RIGHTWARDS_ARROW_EMOJI,
     RULES_EMOJI,
     STAGE_EMOJI,
     TEXT_EMOJI,
@@ -105,7 +105,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
     # ⸻ Build the view.
 
     if thread_target:
-        emoji_display = f"| {channel_type_emoji} {ARROW_EMOJI} {THREAD_EMOJI} " if channel_type_emoji else f"| {THREAD_EMOJI} "
+        emoji_display = f"| {channel_type_emoji} {RIGHTWARDS_ARROW_EMOJI} {THREAD_EMOJI} " if channel_type_emoji else f"| {THREAD_EMOJI} "
         header_text   = f"### {thread_target.mention} {emoji_display}| {thread_target.id}"
     else:
         emoji_display = f"| {channel_type_emoji} " if channel_type_emoji else ""
