@@ -25,7 +25,7 @@ from constants import (
     PET_CORDEX_EMOJI,
 )
 from core.permissions import is_bot_owner
-from core.utilities import codeblock, format_table, format_values
+from core.utilities import codeblock, format_table
 
 from ._base import Scope
 
@@ -60,11 +60,7 @@ async def run_member_info(
     )
 
     joins = "Unknown"
-    roles = format_values(
-        [role.name for role in target.roles if not role.is_default()],
-        wrap     = "`",
-        use_conj = False,
-    )
+    roles = ", ".join(f"`{role.name}`" for role in target.roles if not role.is_default())
 
     # ⸻ Is the user special in anyway?
 

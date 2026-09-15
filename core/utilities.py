@@ -87,20 +87,19 @@ def format_table[K, V](table : dict[K, V], /, *, padding : int = 1, code : bool 
 
 
 def format_values(
-    items    : list[str],
+    items   : list[str],
     /,
     *,
-    divider  : str  = ", ",
-    use_conj : bool = True,
-    conj     : str  = "and",
-    wrap     : str  = "",
+    divider : str  = ", ",
+    conj    : str  = "and",
+    wrap    : str  = "",
 ) -> str:
     if not items:
         return ""
 
     items = [f"{wrap}{item}{wrap}" for item in items]
 
-    if not use_conj or len(items) == 1:
+    if len(items) == 1:
         return divider.join(items)
 
     if len(items) == 2:
