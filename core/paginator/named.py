@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Protocol, final, override
 from warnings import warn
 
-from discord import Color, HTTPException, Message, NotFound
+from discord import Color, Emoji, HTTPException, Message, NotFound, PartialEmoji
 
 from bot import Interaction
 from bot.ui import (
@@ -24,6 +24,7 @@ __all__ = ["NamedPaginator", "PageData"]
 @dataclass(slots = True)
 class PageData:
     name    : str
+    emoji   : str | Emoji | PartialEmoji | None
     content : list[str | Item[LayoutView]]
 
 
@@ -59,9 +60,9 @@ class _NameRow(ActionRow["NamedPaginator"]):
             is_current = index == self.paginator.current_page
 
             button : Button[LayoutView] = (
-                Button(label = page.name, style = blurple, disabled = is_current)
+                Button(label = page.name, emoji = page.emoji, style = blurple, disabled = is_current)
                 if is_current else
-                Button(label = page.name)
+                Button(label = page.name, emoji = page.emoji)
             )
             button.callback = self._make_callback(index)
 
@@ -102,7 +103,7 @@ class NamedPaginator(LayoutView):
             error = "data must contain more than one page"
             raise ValueError(error)
 
-        self.pages        : list[PageData] = data or [PageData("No content available.", ["No content available."])]
+        self.pages        : list[PageData] = data or [PageData("No content available.", None, ["No content available."])]
         self.current_page : int            = 0
         self._name_rows   : list[_NameRow] = [
             _NameRow(self, range(i, min(i + 5, len(self.pages))))
