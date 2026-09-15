@@ -61,7 +61,9 @@ class BanAddPayload(BaseAddPayload):
     seconds_to_delete : int
 
 
-BanRemovePayload = BaseRemovePayload
+@dataclass
+class BanRemovePayload(BaseRemovePayload):
+    pass
 
 
 @dataclass
@@ -77,10 +79,19 @@ class TimeoutAddPayload(BaseAddPayload):
     length : int
 
 
-TimeoutRemovePayload = BaseRemovePayload
+@dataclass
+class TimeoutRemovePayload(BaseRemovePayload):
+    pass
 
-QuarantineAddPayload    = BaseAddPayload
-QuarantineRemovePayload = BaseRemovePayload
+
+@dataclass
+class QuarantineAddPayload(BaseAddPayload):
+    pass
+
+
+@dataclass
+class QuarantineRemovePayload(BaseRemovePayload):
+    pass
 
 
 @dataclass
@@ -99,8 +110,14 @@ class BaseNotePayload:
     content : str
 
 
-NoteAddPayload  = BaseNotePayload
-NoteEditPayload = BaseNotePayload
+@dataclass
+class NoteAddPayload(BaseNotePayload):
+    pass
+
+
+@dataclass
+class NoteEditPayload(BaseNotePayload):
+    pass
 
 
 @dataclass
