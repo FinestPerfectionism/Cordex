@@ -562,8 +562,7 @@ class Actions:
     async def note_add(self, action : NoteAddPayload) -> ActionResult:
         try:
             await self.bot.db.execute(
-                t"INSERT INTO Notes (member_id, guild_id, content) VALUES ({action.target.id}, {action.target.guild.id}, {action.content}) "
-                t"ON CONFLICT (member_id, guild_id) DO UPDATE SET content = excluded.content",
+                t"INSERT INTO Notes (member_id, guild_id, content) VALUES ({action.target.id}, {action.target.guild.id}, {action.content})",
             )
             await self.bot.db.commit()
         except HTTPException:
@@ -592,7 +591,7 @@ class Actions:
     async def note_edit(self, action : NoteEditPayload) -> ActionResult:
         try:
             await self.bot.db.execute(
-                t"UPDATE Notes SET content = {action.content} WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
+                t"UPDATE Notes SET content = {action.content} WHERE note_id = {action.note_id} AND guild_id = {action.target.guild.id}",
             )
             await self.bot.db.commit()
         except HTTPException:
@@ -618,10 +617,10 @@ class Actions:
     # note_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_view(self, target : Member) -> str | None:
+    async def note_view(self, target : Member, note_id : int) -> str | None:
         try:
             async with self.bot.db.execute(
-                t"SELECT content FROM Notes WHERE member_id = {target.id} AND guild_id = {target.guild.id}",
+                t"SELECT content FROM Notes WHERE note_id = {note_id} AND member_id = {target.id} AND guild_id = {target.guild.id}",
             ) as cursor:
                 res = await cursor.fetchone()
         except HTTPException:
@@ -637,7 +636,7 @@ class Actions:
     async def note_remove(self, action : NoteRemovePayload) -> ActionResult:
         try:
             await self.bot.db.execute(
-                t"DELETE FROM Notes WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
+                t"DELETE FROM Notes WHERE note_id = {action.note_id} AND guild_id = {action.target.guild.id}",
             )
             await self.bot.db.commit()
         except HTTPException:

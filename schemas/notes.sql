@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS Notes (
+    note_id INTEGER PRIMARY KEY AUTOINCREMENT,
     member_id INTEGER NOT NULL,
     guild_id INTEGER NOT NULL,
-    content TEXT NOT NULL,
-    PRIMARY KEY (member_id, guild_id)
+    content TEXT NOT NULL
 );

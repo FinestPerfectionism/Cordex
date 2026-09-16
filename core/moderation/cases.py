@@ -107,6 +107,7 @@ class PurgePayload:
 @dataclass
 class BaseNotePayload:
     target  : Member
+    note_id : int
     content : str
 
 
@@ -122,7 +123,8 @@ class NoteEditPayload(BaseNotePayload):
 
 @dataclass
 class NoteRemovePayload:
-    target : Member
+    target  : Member
+    note_id : int
 
 
 Payloads = (
