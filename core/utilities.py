@@ -90,9 +90,9 @@ def format_values(
     items   : list[str],
     /,
     *,
-    divider : str  = ", ",
-    conj    : str  = "and",
-    wrap    : str  = "",
+    divider : str = ", ",
+    conj    : str = "and",
+    wrap    : str = "",
 ) -> str:
     if not items:
         return ""
@@ -125,4 +125,4 @@ def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str
 
 
 def truncate(text : str, /, *, length : int = 2000) -> str:
-    return (text)[:length - 3] + "..." if len(text) > length else text
+    return text[:length - 3] + "..." if len(text) > length else text
