@@ -126,7 +126,7 @@ class _ContextClass(BaseContext["Cordex"]):
 
 class _Tree(CommandTree):
     @override
-    async def interaction_check(self, interaction : Interaction) -> bool:
+    async def interaction_check(self, interaction : Interaction) -> bool:  # pyright: ignore[reportIncompatibleMethodOverride]
         return True
 
 
