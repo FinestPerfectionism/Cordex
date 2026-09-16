@@ -1,5 +1,4 @@
 from collections.abc import Iterable
-from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, Self, final, override
 from warnings import warn
 
@@ -66,8 +65,6 @@ __all__ = [
 
 if TYPE_CHECKING:
     from .bot import Interaction
-
-log = get_logger("Cordex")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot UI
