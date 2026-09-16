@@ -1,27 +1,10 @@
-from asyncio import (
-    AbstractEventLoop,
-    InvalidStateError,
-    Task,
-    create_task,
-    get_running_loop,
-)
-from collections.abc import Coroutine
+from asyncio import AbstractEventLoop, get_running_loop
 from secrets import randbelow
 from sys import exc_info
 from traceback import format_exception
 from typing import final, override
 
-from aiohttp import ClientError
-from discord import (
-    AllowedMentions,
-    Forbidden,
-    Guild,
-    HTTPException,
-    Member,
-    NotFound,
-    TextChannel,
-    User,
-)
+from discord import AllowedMentions, Guild, Member, TextChannel, User
 from discord.app_commands import AppCommandError, BotMissingPermissions
 from discord.ext import commands
 
@@ -58,8 +41,6 @@ class ErrorLogger(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         self.bot = bot
         self.bot.tree.error(self.command_error_handler)
-
-        self.tasks : set[Task[object]] = set()
 
     @override
     async def cog_load(self) -> None:
@@ -271,84 +252,6 @@ class ErrorLogger(commands.Cog):
     @commands.Cog.listener("on_command_error")
     async def prefix_command_error_handler(self, _ctx : Context, _error : commands.CommandError) -> None:
         pass  # ⸻ Literally just pass since only eval uses prefix and we shouldn't care.
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Extension Errors
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @commands.Cog.listener("on_extension_error")
-    async def extension_error_handler(
-        self,
-        extension : str,
-        error     : commands.ExtensionError,
-    ) -> None:
-        traceback = "".join(format_exception(type(error), error, error.__traceback__))
-
-        await self._send_error(
-            title     =  "Extension Error",
-            error     = f"{extension}: {error}",
-            traceback = traceback,
-        )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # HTTP Errors
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def guard_http(self, coro : Coroutine[object, object, object]) -> object:
-        try:
-            return await coro
-        except (
-            Forbidden,
-            NotFound,
-            HTTPException,
-            ClientError,
-        ) as e:
-            traceback = "".join(format_exception(type(e), e, e.__traceback__))
-
-            await self._send_error(
-                title     = "HTTP / REST Error",
-                error     = str(e),
-                traceback = traceback,
-            )
-            raise
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Task Errors
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    def create_task(
-        self,
-        coro : Coroutine[object, object, object],
-        *,
-        name : str,
-    ) -> Task[object]:
-        task = create_task(coro, name = name)
-        self.tasks.add(task)
-        task.add_done_callback(self.tasks.discard)
-        task.add_done_callback(self.task_done)
-        return task
-
-    def task_done(self, task : Task[object]) -> None:
-        if task.cancelled():
-            return
-        try:
-            exc = task.exception()
-        except InvalidStateError:
-            return
-
-        if exc is None:
-            return
-
-        traceback = "".join(format_exception(type(exc), exc, exc.__traceback__))
-
-        self.create_task(
-            self._send_error(
-                title     = "Background Task Error",
-                error     = str(exc),
-                traceback = traceback,
-            ),
-            name = "task_error_reporter",
-        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Loop Exception Errors
