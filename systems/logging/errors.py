@@ -32,13 +32,14 @@ from core.responses import FormatOverride, format_send
 from core.utilities import codeblock, format_command, format_now, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Errors Handling
+# Errors Logging
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 @final
 class ErrorLogger(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
+        super().__init__()
         self.bot = bot
         self.bot.tree.error(self.command_error_handler)
 
