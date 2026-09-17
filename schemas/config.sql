@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS GuildConfig (
+CREATE TABLE IF NOT EXISTS Config (
     guild_id INTEGER NOT NULL,
     config_key TEXT NOT NULL,
     config_value INTEGER,
