@@ -1,7 +1,5 @@
-from asyncio import gather
 from typing import final, override
 
-from discord import Guild
 from discord.abc import GuildChannel
 from discord.ext import commands, tasks
 
@@ -26,11 +24,9 @@ class LockdownEnforcer(commands.Cog):
 
     @tasks.loop(minutes = 10)
     async def loop_lockdownenforce(self) -> None:
-        async def run_enforcement(guild : Guild) -> None:
+        for guild in self.bot.guilds:
             manager = LockdownManager(self.bot, guild)
             await manager.enforce()
-
-        await gather(*(run_enforcement(guild) for guild in self.bot.guilds))
 
     @loop_lockdownenforce.before_loop
     async def beforeloop_lockdowneenforce(self) -> None:

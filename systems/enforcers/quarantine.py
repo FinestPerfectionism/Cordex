@@ -1,7 +1,7 @@
-from asyncio import Semaphore, gather
+from asyncio import Semaphore
 from typing import final, override
 
-from discord import Guild, Member, Role
+from discord import Member, Role
 from discord.abc import GuildChannel
 from discord.ext import commands, tasks
 
@@ -28,14 +28,12 @@ class QuarantineEnforcer(commands.Cog):
     async def loop_quarantineenforce(self) -> None:
         semaphore = Semaphore(5)
 
-        async def run_enforcement(guild : Guild) -> None:
+        for guild in self.bot.guilds:
             async with semaphore:
                 manager = QuarantineManager(self.bot, guild)
                 await manager.enforce("Channel")
                 await manager.enforce("Role")
                 await manager.enforce("Members")
-
-        await gather(*(run_enforcement(guild) for guild in self.bot.guilds))
 
     @loop_quarantineenforce.before_loop
     async def beforeloop_quarantineenforce(self) -> None:

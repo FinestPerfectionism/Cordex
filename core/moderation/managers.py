@@ -1,4 +1,4 @@
-from asyncio import Semaphore, gather
+from asyncio import Semaphore
 from typing import Literal, cast, final
 
 from discord import Forbidden, Guild, HTTPException, Member
@@ -43,7 +43,7 @@ class LockdownManager:
     async def enforce(self) -> None:
         semaphore = Semaphore(5)
 
-        async def edit_channel(_channel : GuildChannel) -> None:
+        for _channel in self.guild.channels:
             async with semaphore:
                 try:
                     # await channel.set_permissions(
@@ -56,8 +56,6 @@ class LockdownManager:
                     pass
                 except HTTPException:
                     self._log_failure("channel quarantine enforcement")
-
-        await gather(*(edit_channel(channel) for channel in self.guild.channels))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Quarantine Manager
@@ -123,7 +121,7 @@ class QuarantineManager:
 
             semaphore = Semaphore(5)
 
-            async def edit_channel(channel : GuildChannel) -> None:
+            for channel in self.guild.channels:
                 async with semaphore:
                     overwrites = channel.overwrites_for(quarantine_role)
 
@@ -146,8 +144,6 @@ class QuarantineManager:
                         pass
                     except HTTPException:
                         self._log_failure("channel quarantine enforcement")
-
-            await gather(*(edit_channel(channel) for channel in self.guild.channels))
 
         if enforce_type == "Role":
             wants_enforcement = await config.get_moderation_quarantine_enforce_roles()
@@ -181,7 +177,7 @@ class QuarantineManager:
 
             semaphore = Semaphore(5)
 
-            async def remove_role(member : Member) -> None:
+            for member in (role_quarantined - expected_quarantined):
                 async with semaphore:
                     try:
                         await member.remove_roles(quarantine_role, reason = "Quarantine enforce.")
@@ -190,7 +186,7 @@ class QuarantineManager:
                     except HTTPException:
                         self._log_failure("member quarantine removal")
 
-            async def add_role(member : Member) -> None:
+            for member in (expected_quarantined - role_quarantined):
                 async with semaphore:
                     try:
                         await member.add_roles(quarantine_role, reason = "Quarantine enforce.")
@@ -198,8 +194,3 @@ class QuarantineManager:
                         pass
                     except HTTPException:
                         self._log_failure("member quarantine addition")
-
-            await gather(
-                *(remove_role(member) for member in (role_quarantined - expected_quarantined)),
-                *(add_role(member)    for member in (expected_quarantined - role_quarantined)),
-            )
