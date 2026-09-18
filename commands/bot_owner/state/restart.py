@@ -31,7 +31,7 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
     client.restarting = True
 
     confirm_msg = await interaction.followup.send(
-       f"{COG_EMOJI} **Restarting bot.\n"
+       f"{COG_EMOJI} **Restarting bot.**\n"
         "Restarting bot...",
     )
 
