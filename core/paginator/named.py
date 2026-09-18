@@ -24,8 +24,8 @@ __all__ = ["NamedPaginator", "PageData"]
 @dataclass(slots = True)
 class PageData:
     name    : str
-    emoji   : str | Emoji | PartialEmoji | None
     content : list[str | Item[LayoutView]]
+    emoji   : str | Emoji | PartialEmoji | None = None
 
 
 type _ItemsList = list[Item[LayoutView]]
@@ -111,7 +111,7 @@ class NamedPaginator(LayoutView):
                     stacklevel = 2,
                 )
 
-        self.pages        : list[PageData] = data or [PageData("No content available.", None, ["No content available."])]
+        self.pages        : list[PageData] = data or [PageData("No content available.", ["No content available."])]
         self.current_page : int            = 0
         self._name_rows   : list[_NameRow] = [
             _NameRow(self, range(i, min(i + 5, len(self.pages))))
