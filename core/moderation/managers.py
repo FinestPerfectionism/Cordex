@@ -26,8 +26,9 @@ class LockdownManager:
     # _log_failure
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def _log_failure(self, msg : str, /) -> None:
-        log.exception("Failure during %s in guild %s, %s", msg, self.guild.name, self.guild.id)
+    def _log_failure(self, msg : str, /, *, rate_limited : bool = False) -> None:
+        rate_limited_msg = " — Rate-limited" if rate_limited else ""
+        log.exception("Failure during %s in guild %s, %s%s", msg, self.guild.name, self.guild.id, rate_limited_msg)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_channels
@@ -54,8 +55,11 @@ class LockdownManager:
                     ...
                 except Forbidden:
                     pass
-                except HTTPException:
-                    self._log_failure("channel quarantine enforcement")
+                except HTTPException as e:
+                    rate_limited = e.status == 429
+                    self._log_failure("channel lockdown enforcement", rate_limited = rate_limited)
+                    if rate_limited:
+                        raise
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Quarantine Manager
@@ -73,8 +77,9 @@ class QuarantineManager:
     # _log_failure
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def _log_failure(self, msg : str, /) -> None:
-        log.exception("Failure during %s in guild %s, %s", msg, self.guild.name, self.guild.id)
+    def _log_failure(self, msg : str, /, *, rate_limited : bool = False) -> None:
+        rate_limited_msg = " — Rate-limited" if rate_limited else ""
+        log.exception("Failure during %s in guild %s, %s%s", msg, self.guild.name, self.guild.id, rate_limited_msg)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_members
@@ -142,8 +147,11 @@ class QuarantineManager:
                         )
                     except Forbidden:
                         pass
-                    except HTTPException:
-                        self._log_failure("channel quarantine enforcement")
+                    except HTTPException as e:
+                        rate_limited = e.status == 429
+                        self._log_failure("channel quarantine enforcement", rate_limited = rate_limited)
+                        if rate_limited:
+                            raise
 
         if enforce_type == "Role":
             wants_enforcement = await config.get_moderation_quarantine_enforce_roles()
@@ -160,8 +168,11 @@ class QuarantineManager:
                     await quarantine_role.edit(position = my_role.position - 1)
                 except Forbidden:
                     pass
-                except HTTPException:
-                    self._log_failure("role quarantine enforcement")
+                except HTTPException as e:
+                    rate_limited = e.status == 429
+                    self._log_failure("role quarantine enforcement", rate_limited = rate_limited)
+                    if rate_limited:
+                        raise
 
         if enforce_type == "Members":
             me = self.guild.me
@@ -183,8 +194,11 @@ class QuarantineManager:
                         await member.remove_roles(quarantine_role, reason = "Quarantine enforce.")
                     except Forbidden:
                         pass
-                    except HTTPException:
-                        self._log_failure("member quarantine removal")
+                    except HTTPException as e:
+                        rate_limited = e.status == 429
+                        self._log_failure("member quarantine removal", rate_limited = rate_limited)
+                        if rate_limited:
+                            raise
 
             for member in (expected_quarantined - role_quarantined):
                 async with semaphore:
@@ -192,5 +206,8 @@ class QuarantineManager:
                         await member.add_roles(quarantine_role, reason = "Quarantine enforce.")
                     except Forbidden:
                         pass
-                    except HTTPException:
-                        self._log_failure("member quarantine addition")
+                    except HTTPException as e:
+                        rate_limited = e.status == 429
+                        self._log_failure("member quarantine addition", rate_limited = rate_limited)
+                        if rate_limited:
+                            raise
