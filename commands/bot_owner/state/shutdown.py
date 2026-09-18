@@ -1,6 +1,6 @@
 
 from bot import Interaction
-from core.responses import format_send
+from constants import COG_EMOJI
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /bot-owner state shutdown Logic
@@ -8,10 +8,8 @@ from core.responses import format_send
 
 
 async def run_bo_state_shutdown(interaction : Interaction) -> None:
-    await format_send(
-        interaction,
-        msg_type = "information",
-        title    = "Shutting down bot",
-        subtitle = "Shutting down bot...",
+    await interaction.response.send_message(
+       f"{COG_EMOJI} **Shutting down bot.**\n"
+        "Shutting down bot...",
     )
     await interaction.client.close()

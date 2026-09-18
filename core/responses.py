@@ -3,20 +3,13 @@ from typing import Literal, Self, final
 from discord import AllowedMentions, Interaction, Message
 from discord.abc import Messageable
 
-from constants import (
-    ACCEPTED_EMOJI,
-    DENIED_EMOJI,
-    FORUM_EMOJI,
-    INFO_EMOJI,
-    LOCKED_FORUM_EMOJI,
-    WARNING_EMOJI,
-)
+from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Response Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type _MessageType = Literal["success", "warning", "error", "information", "lock", "unlock"]
+type _MessageType = Literal["success", "warning", "error"]
 type _SendTarget = Interaction | Messageable
 
 
@@ -62,24 +55,16 @@ def _emoji_match(msg_type : _MessageType) -> str:
     match msg_type:
         case "success":
             return ACCEPTED_EMOJI
-        case "information":
-            return INFO_EMOJI
         case "warning":
             return WARNING_EMOJI
         case "error":
             return DENIED_EMOJI
-        case "lock":
-            return LOCKED_FORUM_EMOJI
-        case "unlock":
-            return FORUM_EMOJI
 
 
 def _title_match(msg_type : _MessageType) -> str:
     match msg_type:
         case "success":
             return "Successfully"
-        case "information" | "lock" | "unlock":
-            return ""
         case "warning" | "error":
             return "Failed to"
 

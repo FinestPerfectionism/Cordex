@@ -5,6 +5,7 @@ from sys import argv, executable, stderr, stdout
 from discord import CustomActivity, DiscordException, Status
 
 from bot import Interaction, log
+from constants import COG_EMOJI
 from core.exceptions import send_bad_operation
 from core.responses import format_send
 from core.utilities import codeblock
@@ -29,11 +30,9 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
 
     client.restarting = True
 
-    confirm_msg = await format_send(
-        interaction,
-        msg_type = "information",
-        title    = "Restarting bot.",
-        subtitle = "Restarting bot...",
+    confirm_msg = await interaction.followup.send(
+       f"{COG_EMOJI} **Restarting bot.\n"
+        "Restarting bot...",
     )
 
     log.info("Attempting a restart.")
