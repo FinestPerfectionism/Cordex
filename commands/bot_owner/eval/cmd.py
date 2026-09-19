@@ -14,16 +14,6 @@ from discord.utils import format_dt, get, utcnow
 
 import constants
 from bot import Context, ContextOrInteraction, Cordex, Interaction, ui
-from bot.ui import (
-    ButtonSection,
-    Container,
-    HiddenLargeSeparator,
-    HiddenSmallSeparator,
-    LayoutView,
-    ThumbnailSection,
-    VisibleLargeSeparator,
-    VisibleSmallSeparator,
-)
 from constants import (
     ACCEPTED_EMOJI,
     COLOR_BLACK,
@@ -123,10 +113,10 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "TextInput"         : ui.TextInput,
 
         "View"           : ui.View,
-        "LayoutView"     : LayoutView,
+        "LayoutView"     : ui.LayoutView,
         "Modal"          : ui.Modal,
 
-        "Container"     : Container,
+        "Container"     : ui.Container,
         "Section"       : ui.Section,
         "Separator"     : ui.Separator,
         "ActionRow"     : ui.ActionRow,
@@ -137,19 +127,19 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "FileUpload"    : ui.FileUpload,
         "Label"         : ui.Label,
 
-        "ButtonSection"    : ButtonSection,
-        "ThumbnailSection" : ThumbnailSection,
-        "BSec"             : ButtonSection,
-        "TSec"             : ThumbnailSection,
+        "ButtonSection"    : ui.ButtonSection,
+        "ThumbnailSection" : ui.ThumbnailSection,
+        "BSec"             : ui.ButtonSection,
+        "TSec"             : ui.ThumbnailSection,
 
-        "VisibleLargeSeparator" : VisibleLargeSeparator,
-        "VisibleSmallSeparator" : VisibleSmallSeparator,
-        "HiddenLargeSeparator"  : HiddenLargeSeparator,
-        "HiddenSmallSeparator"  : HiddenSmallSeparator,
-        "VLSep"                 : VisibleLargeSeparator,
-        "VSSep"                 : VisibleSmallSeparator,
-        "HLSep"                 : HiddenLargeSeparator,
-        "HSSep"                 : HiddenSmallSeparator,
+        "VisibleLargeSeparator" : ui.VisibleLargeSeparator,
+        "VisibleSmallSeparator" : ui.VisibleSmallSeparator,
+        "HiddenLargeSeparator"  : ui.HiddenLargeSeparator,
+        "HiddenSmallSeparator"  : ui.HiddenSmallSeparator,
+        "VLSep"                 : ui.VisibleLargeSeparator,
+        "VSSep"                 : ui.VisibleSmallSeparator,
+        "HLSep"                 : ui.HiddenLargeSeparator,
+        "HSSep"                 : ui.HiddenSmallSeparator,
 
         "RadioGroup"    : ui.RadioGroup,
         "Checkbox"      : ui.Checkbox,
@@ -192,7 +182,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
             format_message(
                 msg_type = "error",
                 title    = "run command",
-                subtitle = "`body`: This is a required argument was omitted.",
+                subtitle = "`body`: This is a required argument that was omitted.",
                 footer   = "Bad argument",
             ),
         )
