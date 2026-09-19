@@ -110,21 +110,21 @@ async def run_member_info(
 
     # ⸻ Build the view.
 
+    user_info = format_table(
+        {
+            "Name"       : escape_markdown(target.global_name or target.name),
+            "Nickname"   : escape_markdown(target.nick or "None"),
+            "Username"   : escape_markdown(f"{target.name}{f"#{target.discriminator}" if target.discriminator != "0" else ""}"),
+            "Joined at"  : f"{format_dt(target.joined_at, style = "F")} | {format_dt(target.joined_at, style = "R")}" if target.joined_at else "Unknown",
+            "Created at" : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
+        },
+    )
+
     @final
     class InfoView(LayoutView):
         container = Container[Self](
             TextDisplay(f"### {target.mention} {f"| {BIG_BOT_EMOJI} " if target.bot else ""}| {target.id}"),
             color = target.color if target.color.value else COLOR_GREY,
-        )
-
-        user_info = format_table(
-            {
-                "Name"       : escape_markdown(target.global_name or target.name),
-                "Nickname"   : escape_markdown(target.nick or "None"),
-                "Username"   : escape_markdown(f"{target.name}{f"#{target.discriminator}" if target.discriminator != "0" else ""}"),
-                "Joined at"  : f"{format_dt(target.joined_at, style = "F")} | {format_dt(target.joined_at, style = "R")}" if target.joined_at else "Unknown",
-                "Created at" : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
-            },
         )
 
         if avatar:
@@ -133,26 +133,20 @@ async def run_member_info(
             container.add_text(user_info)
 
         if roles:
-            container.add_item(
-                TextDisplay(
-                    "**Roles**\n"
-                   f"{roles}",
-                ),
+            container.add_text(
+                "**Roles**\n"
+               f"{roles}",
             )
 
         if characteristics:
-            container.add_item(
-                TextDisplay(
-                    "**Characteristics**\n"
-                   f"{characteristics}",
-                ),
+            container.add_text(
+                "**Characteristics**\n"
+               f"{characteristics}",
             )
 
-        container.add_item(
-            TextDisplay(
-                "**Join Order**\n"
-                f"{joins}",
-            ),
+        container.add_text(
+            "**Join Order**\n"
+           f"{joins}",
         )
 
         if banner:

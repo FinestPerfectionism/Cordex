@@ -100,26 +100,26 @@ async def run_server_info(interaction : Interaction) -> None:
     else:
         server_type_emoji = None
 
+    guild_info = format_table(
+        {
+            "Owner"         : f"{owner.mention} | {owner.id}",
+            "Icon"          : f"[Icon Link]({guild.icon.url})" if guild.icon else "None",
+            "Verification"  : f"{verification_level} | {verification_requirement}",
+            "2FA"           :  "Enabled" if guild.mfa_level else "Disabled",
+            "Roles"         : f"{len(guild.roles)}",
+            "Members"       : f"{humans} humans, {bots} bots | {member_total} total",
+            "Channels"      : channel_text,
+            "Server Boosts" : f"Level {boost_level} | {boost_count} boosts total",
+            "Vanity Link"   : guild.vanity_url or "None",
+            "Created at"    : f"{format_dt(guild.created_at, style = "F")} | {format_dt(guild.created_at, style = "R")}",
+        },
+    )
+
     @final
     class InfoView(LayoutView):
         container = Container[Self](
             TextDisplay(f"### {guild.name} {f"| {server_type_emoji} " if server_type_emoji else ""}| {guild.id}"),
             color = owner.color if owner.color.value else COLOR_GREY,
-        )
-
-        guild_info = format_table(
-            {
-                "Owner"         : f"{owner.mention} | {owner.id}",
-                "Icon"          : f"[Icon Link]({guild.icon.url})" if guild.icon else "None",
-                "Verification"  : f"{verification_level} | {verification_requirement}",
-                "2FA"           :  "Enabled" if guild.mfa_level else "Disabled",
-                "Roles"         : f"{len(guild.roles)}",
-                "Members"       : f"{humans} humans, {bots} bots | {member_total} total",
-                "Channels"      : channel_text,
-                "Server Boosts" : f"Level {boost_level} | {boost_count} boosts total",
-                "Vanity Link"   : guild.vanity_url or "None",
-                "Created at"    : f"{format_dt(guild.created_at, style = "F")} | {format_dt(guild.created_at, style = "R")}",
-            },
         )
 
         if guild.icon:

@@ -62,7 +62,7 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
 
     # ⸻ Gradient checks.
 
-    enhanced_role = bool("ENHANCED_ROLE_COLORS" in guild.features and role.secondary_color)
+    enhanced_role = "ENHANCED_ROLE_COLORS" in guild.features and role.secondary_color
 
     color = (
         f"{role.color}-{role.secondary_color}-{role.tertiary_color} | Holographic"
@@ -72,21 +72,19 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
 
     # ⸻ Build the view.
 
-    table = TextDisplay["InfoView"](
-        format_table(
-            {
-                "Appearance"        : color,
-                "Hoisted"           :  "Yes" if role.hoist else "No",
-                "Mentionable"       :  "Yes" if role.mentionable else "No",
-                "Number of Members" : f"{len(role.members)}",
-                "Created at"        : f"{format_dt(role.created_at, style = "F")} | {format_dt(role.created_at, style = "R")}",
-            },
-        ),
+    table = format_table(
+        {
+            "Appearance"        : color,
+            "Hoisted"           :  "Yes" if role.hoist else "No",
+            "Mentionable"       :  "Yes" if role.mentionable else "No",
+            "Number of Members" : f"{len(role.members)}",
+            "Created at"        : f"{format_dt(role.created_at, style = "F")} | {format_dt(role.created_at, style = "R")}",
+        },
     )
 
-    hierarchy = TextDisplay["InfoView"](
-        f"**Relative Hierarchy**\n"
-        f"{codeblock(hierarchy_lines, language = None)}",
+    hierarchy = (
+        "**Relative Hierarchy**\n"
+       f"{codeblock(hierarchy_lines, language = None)}"
     )
 
     icon_url = role.display_icon.url if isinstance(role.display_icon, Asset) else None
@@ -112,12 +110,12 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
             if icon_url:
                 container.add_item(ThumbnailSection(table, thumbnail = Thumbnail(icon_url)))
             else:
-                container.add_item(table)
+                container.add_text(table)
 
             if diff:
-                container.add_item(TextDisplay(diff))
+                container.add_text(diff)
 
-            container.add_item(hierarchy)
+            container.add_text(hierarchy)
             container.add_item(MemberRow())
 
             self.add_item(container)
