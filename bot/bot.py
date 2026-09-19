@@ -1,6 +1,6 @@
 # pyright: reportImportCycles = false
 
-# ⸻ It's going to complain about 'Interaction' in ui.py and types.py.
+# ⸻ It's going to complain about 'Interaction'.
 
 from asyncio import to_thread
 from inspect import getsource

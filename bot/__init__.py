@@ -1,3 +1,5 @@
+# pyright: reportImportCycles = false
+
 from .bot import Context, ContextOrInteraction, Cordex, Interaction, log
 
 __all__ = (
