@@ -1,6 +1,7 @@
-from discord import __version__
 from platform import python_version
 from typing import Self, final
+
+from discord import __version__
 
 from bot import Interaction
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator

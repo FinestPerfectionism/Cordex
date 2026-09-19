@@ -29,6 +29,7 @@ class AboutCommand(commands.Cog):
     async def cmd_about(self, interaction : Interaction) -> None:
         await run_about(interaction)
 
+
 """
 async def setup(bot : Cordex) -> None:
     cog = AboutCommand(bot)

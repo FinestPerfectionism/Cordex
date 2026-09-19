@@ -161,6 +161,10 @@ class Cordex(commands.Bot):
 
         self.developers : list[User] = [user for user in (self.get_user(dev_id) for dev_id in DEVELOPER_IDS) if user]
 
+    @property
+    def id(self) -> int | None:
+        return self.user.id if self.user else None
+
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Configuration
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
