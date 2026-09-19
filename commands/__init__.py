@@ -1,3 +1,4 @@
+from .about import run_about
 from .bot_owner import (
     run_bo_cog_load,
     run_bo_cog_pullreload,
@@ -54,6 +55,7 @@ from .servers import (
 )
 
 __all__ = [
+    "run_about",
     "run_bo_cog_load",
     "run_bo_cog_pullreload",
     "run_bo_cog_reload",
