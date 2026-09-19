@@ -17,7 +17,7 @@ from types import (
 )
 from typing import Self, TypedDict, Unpack, cast, final, override
 
-from discord import Embed, File, Guild, Intents, Message, Status
+from discord import Embed, File, Guild, Intents, Message, Status, User
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand, CommandTree
 from discord.ext import commands
@@ -29,7 +29,7 @@ from discord.ext.commands.view import (  # pyright: ignore[reportMissingTypeStub
 )
 from discord.http import Route
 
-from constants import DENIED_EMOJI, DisplayNameEffect, DisplayNameFont
+from constants import DENIED_EMOJI, DEVELOPER_IDS, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
 from core.state import Config, Connection, connect
 
@@ -150,12 +150,16 @@ class Cordex(commands.Bot):
             status                  = Status.online,
             tree_cls                = _Tree,
         )
+        self.version : float = 1.0
+
         self.db : Connection
 
         self._commands_cache     : list[AnnotatedCommand] = []
         self._app_commands_cache : list[AppCommand]       = []
 
         self.restarting : bool = False
+
+        self.developers : list[User] = [user for user in (self.get_user(dev_id) for dev_id in DEVELOPER_IDS) if user]
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Configuration
