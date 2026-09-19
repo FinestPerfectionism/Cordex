@@ -30,8 +30,6 @@ class AboutCommand(commands.Cog):
         await run_about(interaction)
 
 
-"""
 async def setup(bot : Cordex) -> None:
     cog = AboutCommand(bot)
     await bot.add_cog(cog)
-"""
