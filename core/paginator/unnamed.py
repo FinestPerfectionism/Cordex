@@ -305,8 +305,7 @@ class UnnamedPaginator(LayoutView):
 
         # ⸻ Add all items above.
 
-        for item in self._above_items:
-            self.add_item(item)
+        self.append_items(self._above_items)
 
         page_items : _ItemsList = []
 
@@ -351,13 +350,11 @@ class UnnamedPaginator(LayoutView):
         if self._container:
             self.add_item(Container(*items, color = self._color))
         else:
-            for item in items:
-                self.add_item(item)
+            self.append_items(items)
 
         # ⸻ Add all items below.
 
-        for item in self._below_items:
-            self.add_item(item)
+        self.append_items(self._below_items)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # turn
