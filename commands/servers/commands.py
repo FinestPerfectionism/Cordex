@@ -4,7 +4,7 @@ from typing import Self, final, override
 
 from discord import SelectOption
 
-from bot import Interaction
+from bot import Cordex, Interaction
 from bot.types import AnnotatedCommand
 from bot.ui import (
     ActionRow,
@@ -43,9 +43,9 @@ type CommandList = list[AnnotatedCommand]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def _build_sections(commands : CommandList) -> list[str | Item[LayoutView]]:
+def _build_sections(bot : Cordex, commands : CommandList) -> list[str | Item[LayoutView]]:
     mentions = [
-        format_command(command.qualified_name)
+        format_command(bot, command.qualified_name)
         for command in commands
     ]
 
@@ -114,7 +114,7 @@ class _QueryModal(Modal, title = "Query"):
 
         paginator = UnnamedPaginator(
             f"# {SEARCH_EMOJI} Search Results",
-            _build_sections(matches),
+            _build_sections(interaction.client, matches),
             data_name = "Commands",
             per_page  = 10,
             container = True,
@@ -253,7 +253,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
         for option in self.options:
             option.default = (option.value == value)
 
-        self.view.update_data(title, _build_sections(filtered))
+        self.view.update_data(title, _build_sections(interaction.client, filtered))
 
         await interaction.response.edit_message(view = self.view)
 
@@ -281,7 +281,7 @@ async def run_server_commands(interaction : Interaction) -> None:
     ]
     commands.sort(key = lambda c : c.qualified_name)
 
-    sections = _build_sections(commands)
+    sections = _build_sections(interaction.client, commands)
 
     # ⸻ Build the view,
 

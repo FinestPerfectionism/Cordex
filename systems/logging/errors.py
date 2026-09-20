@@ -124,7 +124,7 @@ class ErrorLogger(commands.Cog):
 
             table = format_table(
                 {
-                    "Command"      : format_command(qualified_name),
+                    "Command"      : format_command(interaction.client, qualified_name),
                     "Command Name" : qualified_name,
                     "Command ID"   : str(command_id),
                 },

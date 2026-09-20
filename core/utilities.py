@@ -42,7 +42,7 @@ def format_now(style : _Styles = "F", /) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def format_command(path : str, /) -> str:
+def format_command(bot : Cordex, path : str, /) -> str:
     parts : list[str] = path.strip().split()
 
     if not parts:
@@ -51,7 +51,7 @@ def format_command(path : str, /) -> str:
     root_name : str        = parts[0]
     root_id   : int | None = None
 
-    commands = Cordex().get_api_commands_cache()
+    commands = bot.get_api_commands_cache()
 
     for cmd in commands:
         if cmd.name == root_name:
