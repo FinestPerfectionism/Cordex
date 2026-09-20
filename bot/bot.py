@@ -112,6 +112,36 @@ class _ContextClass(BaseContext["Cordex"]):
 
         return await self.send_button(func)
 
+    async def show_attrs(
+        self,
+        target   : object,
+        /,
+        *,
+        tall     : bool | None = None,
+        dunders  : bool        = False,
+        privates : bool        = False,
+    ) -> Message:
+        def _filter(attr : str) -> bool:
+            if attr.startswith("__") and attr.endswith("__"):
+                return dunders
+            if attr.startswith("_"):
+                return privates
+            return True
+
+        attrs = [attr for attr in dir(target) if _filter(attr)]
+
+        if tall is None:
+            estimated_length = sum(len(a) for a in attrs) + (2 * (len(attrs) - 1))
+            tall = estimated_length > 80
+
+        joiner = ",\n" if tall else ", "
+
+        return await self.send(
+            "```py"
+           f"{joiner.join(attrs)}"
+            "```",
+        )
+
     async def show_def(self, target : InspectableObject, /) -> Message:
         source = getsource(target)
         msg    = (

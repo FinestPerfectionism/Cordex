@@ -39,7 +39,7 @@ from core.utilities import (
     truncate,
 )
 
-from .tools import format_dict, show_attrs
+from .tools import format_dict
 
 type Lambda = Callable[[], Awaitable[object]]
 
@@ -91,7 +91,6 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "get"            : get,
         "codeblock"      : codeblock,
         "truncate"       : truncate,
-        "show_attrs"     : show_attrs,
         "format_dt"      : format_dt,
         "format_now"     : format_now,
         "format_command" : format_command,
