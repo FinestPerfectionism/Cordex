@@ -122,7 +122,11 @@ class _ContextClass(BaseContext["Cordex"]):
 
         if len(msg) < 2000:
             return await self.send(msg)
-        return await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
+
+        module   = getattr(target, "__module__", "global").replace(".", "/")
+        qualname = getattr(target, "__qualname__", "object").replace(".", "/")
+        filename = f"{module}/{qualname}.py"
+        return await self.send(file = File(BytesIO(source.encode()), filename = filename))
 
     async def reference_delete(self) -> None:
         if self.message.reference and self.message.reference.message_id:
