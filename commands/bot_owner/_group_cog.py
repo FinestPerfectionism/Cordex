@@ -9,6 +9,7 @@ from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
 
 from bot import Context, Cordex, Interaction
 from core.permissions import bot_owner_cmd
+from core.state import unrestrictable
 
 from .eval import run_bo_eval
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
@@ -20,6 +21,7 @@ from .style import run_bo_style_reset, run_bo_style_set
 
 
 @final
+@unrestrictable
 class BotOwnerCommands(
     commands.GroupCog,
     name        = "bot-owner",

@@ -4,6 +4,7 @@ from discord.app_commands import command
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.state import unrestrictable
 
 from .about import run_about
 
@@ -26,6 +27,7 @@ class AboutCommand(commands.Cog):
         name        = "about",
         description = "View information about me.",
     )
+    @unrestrictable
     async def cmd_about(self, interaction : Interaction) -> None:
         await run_about(interaction)
 
