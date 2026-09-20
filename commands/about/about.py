@@ -33,7 +33,7 @@ async def run_about(interaction : Interaction) -> None:
                         "Version"    : client.version,
                         "Guilds"     : len(client.guilds),
                         "Members"    : sum(guild.member_count or 0 for guild in client.guilds),
-                        "Commands"   : len(client.get_app_commands_cache()),
+                        "Commands"   : len(client.get_commands_cache()),
                         "Latency"    : client.latency * 100,
                         "Python"     : python_version(),
                         "Discord.py" : DISCORD_VERSION,

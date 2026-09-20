@@ -196,7 +196,7 @@ class Cordex(commands.Bot):
         self.db : Connection
 
         self._commands_cache     : list[AnnotatedCommand] = []
-        self._app_commands_cache : list[AppCommand]       = []
+        self._api_commands_cache : list[AppCommand]       = []
 
         self.restarting : bool = False
 
@@ -341,7 +341,7 @@ class Cordex(commands.Bot):
         # ⸻ Cache
 
         self.build_commands_cache()
-        await self.build_app_commands_cache()
+        await self.build_api_commands_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Commands Cache
@@ -350,23 +350,24 @@ class Cordex(commands.Bot):
     def build_commands_cache(self) -> None:
         self._commands_cache = list(self.tree.walk_commands())
 
-    async def build_app_commands_cache(self) -> None:
-        self._app_commands_cache = await self.tree.fetch_commands()
+    async def build_api_commands_cache(self) -> None:
+        self._api_commands_cache = await self.tree.fetch_commands()
 
     def get_commands_cache(self) -> list[AnnotatedCommand]:
         if not self._commands_cache:
             self.build_commands_cache()
         return self._commands_cache
 
-    def get_app_commands_cache(self) -> list[AppCommand]:
-        return self._app_commands_cache
+    def get_api_commands_cache(self) -> list[AppCommand]:
+        return self._api_commands_cache
 
-    async def rebuild_commands_cache(self) -> None:
+    def rebuild_commands_cache(self) -> None:
         self._commands_cache.clear()
-        self._app_commands_cache.clear()
-
         self.build_commands_cache()
-        await self.build_app_commands_cache()
+
+    async def rebuild_api_commands_cache(self) -> None:
+        self._api_commands_cache.clear()
+        await self.build_api_commands_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # close
