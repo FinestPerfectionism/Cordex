@@ -1,12 +1,7 @@
 from typing import final
 
 from discord import Forbidden, HTTPException, Message
-from discord.app_commands import (
-    Choice,
-    Group,
-    autocomplete,
-    describe,
-)
+from discord.app_commands import Group, describe
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     command as prefix_command,
@@ -15,13 +10,6 @@ from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
 from bot import Context, Cordex, Interaction
 from core.permissions import bot_owner_cmd
 
-from ._base import get_cogs
-from .cogs import (
-    run_bo_cog_load,
-    run_bo_cog_pullreload,
-    run_bo_cog_reload,
-    run_bo_cog_unload,
-)
 from .eval import run_bo_eval
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 from .style import run_bo_style_reset, run_bo_style_set
@@ -42,10 +30,6 @@ class BotOwnerCommands(
         self.bot  = bot
         self.tree = bot.tree
 
-    cog     : Group = Group(
-        name        = "cog",
-        description = "Bot owner cog commands.",
-    )
     message : Group = Group(
         name        = "message",
         description = "Bot owner message commands.",
@@ -85,72 +69,6 @@ class BotOwnerCommands(
                 pass
 
             await self.bot.process_commands(after)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Cog Autocomplete
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def _cog_autocomplete(self, _interaction : Interaction, current : str) -> list[Choice[str]]:
-        return [
-            Choice(name = cog, value = cog)
-            for cog in get_cogs()
-            if current.lower() in cog.lower()
-            and cog != "commands.bot_owner._group_cog"
-        ][:25]
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner cog pull-reload Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @cog.command(
-        name        = "pull-reload",
-        description = "Pull from main, then reload all cogs.",
-    )
-    @bot_owner_cmd()
-    async def cmd_bo_cog_pullreload(self, interaction : Interaction) -> None:
-        await run_bo_cog_pullreload(interaction)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner cog reload Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @cog.command(
-        name        = "reload",
-        description = "Reload a cog or all cogs.",
-    )
-    @describe(cog = "The cog to reload. Leave empty to reload all cogs.")
-    @autocomplete(cog = _cog_autocomplete)
-    @bot_owner_cmd()
-    async def cmd_bo_cog_reload(self, interaction : Interaction, cog : str | None) -> None:
-        await run_bo_cog_reload(interaction, cog)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner cog load Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @cog.command(
-        name        = "load",
-        description = "Load a cog.",
-    )
-    @describe(cog = "The cog to load.")
-    @autocomplete(cog = _cog_autocomplete)
-    @bot_owner_cmd()
-    async def cmd_bo_cog_load(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cog_load(interaction, cog)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner cog unload Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @cog.command(
-        name        = "unload",
-        description = "Unload a cog.",
-    )
-    @describe(cog = "The cog to unload.")
-    @autocomplete(cog = _cog_autocomplete)
-    @bot_owner_cmd()
-    async def cmd_bo_cog_unload(self, interaction : Interaction, cog : str) -> None:
-        await run_bo_cog_unload(interaction, cog)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner state shutdown Command

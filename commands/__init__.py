@@ -1,9 +1,5 @@
 from .about import run_about
 from .bot_owner import (
-    run_bo_cog_load,
-    run_bo_cog_pullreload,
-    run_bo_cog_reload,
-    run_bo_cog_unload,
     run_bo_eval,
     run_bo_state_restart,
     run_bo_state_shutdown,
@@ -56,10 +52,6 @@ from .servers import (
 
 __all__ = [
     "run_about",
-    "run_bo_cog_load",
-    "run_bo_cog_pullreload",
-    "run_bo_cog_reload",
-    "run_bo_cog_unload",
     "run_bo_eval",
     "run_bo_state_restart",
     "run_bo_state_shutdown",
