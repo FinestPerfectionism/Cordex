@@ -200,7 +200,7 @@ class Cordex(commands.Bot):
 
         self.restarting : bool = False
 
-        self.developers : list[User] = [user for user in (self.get_user(dev_id) for dev_id in DEVELOPER_IDS) if user]
+        self.developers : list[User] = []
 
     @property
     def id(self) -> int | None:
@@ -302,6 +302,8 @@ class Cordex(commands.Bot):
     async def setup_hook(self) -> None:
         if self.user:
             log.info("Logging in as %s, %s", self.user.name, self.user.id)
+
+        self.developers = [user for developer_id in DEVELOPER_IDS if (user := await self.fetch_user(developer_id))]
 
         # ⸻ AIOSQLite
 
