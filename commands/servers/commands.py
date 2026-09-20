@@ -1,3 +1,5 @@
+# pyright: reportIncompatibleMethodOverride = false
+
 from difflib import SequenceMatcher
 from operator import itemgetter
 from typing import Self, final, override
@@ -275,9 +277,8 @@ async def run_server_commands(interaction : Interaction) -> None:
     # ⸻ Grab the commands from the cache and then sort them.
 
     commands = [
-        command for command in interaction.client.get_commands_cache()
-        if isinstance(command, AnnotatedCommand) and
-        not command.qualified_name.startswith("bot-owner")
+        command for command in interaction.client.get_commands_cache() if not
+        command.qualified_name.startswith("bot-owner")
     ]
     commands.sort(key = lambda c : c.qualified_name)
 
