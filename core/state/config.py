@@ -1,8 +1,11 @@
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast, final
 
-from discord import Guild, Member, Role
+from discord import Guild, Member, Role, User
 
 from bot.types import GuildMessagable
+
+from .restrictions import Restriction
 
 if TYPE_CHECKING:
     from bot import Cordex
@@ -31,15 +34,49 @@ class Config:
     # get_command_allowed
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_command_allowed(self) -> list[Role | Member]:
-        ...
+    async def get_command_allowed(self, command_name : str, /) -> list[Role | Member]:
+        restriction = self.bot.get_restriction(self.guild.id, command_name)
+        if restriction is None:
+            return []
+
+        roles   = [role for role_id in sorted(restriction.role_ids) if (role := self.guild.get_role(role_id)) is not None]
+        members = [member for user_id in sorted(restriction.user_ids) if (member := self.guild.get_member(user_id)) is not None]
+
+        return [*roles, *members]
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # set_command_allowed
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_command_allowed(self) -> None:
-        ...
+    async def set_command_allowed(self, command_name : str, allowed : Sequence[Role | Member | User], /) -> None:
+        role_ids = frozenset(target.id for target in allowed if isinstance(target, Role))
+        user_ids = frozenset(target.id for target in allowed if not isinstance(target, Role))
+
+        try:
+            await self.bot.db.execute(
+                t"DELETE FROM CommandRestrictions WHERE guild_id = {self.guild.id} AND command_name = {command_name}",
+            )
+
+            for role_id in role_ids:
+                await self.bot.db.execute(
+                    t"INSERT INTO CommandRestrictions (guild_id, command_name, target_type, target_id) VALUES ({self.guild.id}, {command_name}, {"role"}, {role_id})",
+                )
+
+            for user_id in user_ids:
+                await self.bot.db.execute(
+                    t"INSERT INTO CommandRestrictions (guild_id, command_name, target_type, target_id) VALUES ({self.guild.id}, {command_name}, {"user"}, {user_id})",
+                )
+
+            await self.bot.db.commit()
+        except Exception:
+            await self.bot.db.rollback()
+            raise
+
+        self.bot.set_restriction(
+            self.guild.id,
+            command_name,
+            Restriction(user_ids, role_ids) if (role_ids or user_ids) else None,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_moderation_quarantine_role

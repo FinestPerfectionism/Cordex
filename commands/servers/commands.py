@@ -1,10 +1,11 @@
 # pyright: reportIncompatibleMethodOverride = false
 
+from collections.abc import Sequence
 from difflib import SequenceMatcher
 from operator import itemgetter
 from typing import Self, final, override
 
-from discord import SelectOption
+from discord import Member, Role, SelectOption
 
 from bot import Cordex, Interaction
 from bot.types import AnnotatedCommand
@@ -36,6 +37,8 @@ from constants import (
 )
 from core.exceptions import send_bad_argument, send_bad_operation, send_bad_request
 from core.paginator import UnnamedPaginator
+from core.responses import format_send
+from core.state import is_restrictable
 from core.utilities import format_command
 
 type CommandList = list[AnnotatedCommand]
@@ -134,15 +137,27 @@ class _QueryModal(Modal, title = "Query"):
 
 @final
 class _ConfigModal(Modal):
-    def __init__(self, command : AnnotatedCommand) -> None:
+    def __init__(self, command : AnnotatedCommand, allowed : Sequence[Role | Member]) -> None:
         super().__init__(title = f"Configuring /{command.qualified_name}")
+        self._command = command
 
-        self.current_allowed = TextDisplay[Self]("...")
+        mentions = "- \n".join(target.mention for target in allowed) or "*Everyone*"
 
-        self._allowed = MentionableSelect[Self](placeholder = "Enter up to 25 users/roles...", max_values = 25)
+        self.current_allowed = TextDisplay[Self](
+            f"**Currently allowed:**\n"
+            f"{mentions}",
+        )
+
+        self._allowed = MentionableSelect[Self](
+            placeholder    = "Enter up to 25 users/roles...",
+            min_values     = 0,
+            max_values     = 25,
+            default_values = allowed,
+            required       = False,
+        )
         self.allowed  = Label[Self](
             text        = "Allowed",
-            description = "The users/roles allowed to run the command. Uses OR logic.",
+            description = "The users/roles allowed to run the command. Uses OR logic. Leave empty to allow everyone.",
             component   = self._allowed,
         )
 
@@ -152,16 +167,53 @@ class _ConfigModal(Modal):
     async def on_submit(self, interaction : Interaction) -> None:
         allowed = self._allowed.values
 
-        guild = interaction.guild
+        client = interaction.client
+        guild  = interaction.guild
         if not guild:
             return
 
-        quarantine_role = await interaction.client.config(guild).get_moderation_quarantine_role()
+        config = client.config(guild)
+        quarantine_role = await config.get_moderation_quarantine_role()
         if quarantine_role in allowed:
             await send_bad_argument(
                 interaction,
-                subtitle = {"allowed" : "Quarantine role cannot be used as a user/role command restriction."},
+                subtitle = {"allowed" : "The quarantine role cannot be used as a command restriction."},
             )
+            return
+
+        if guild.default_role in allowed:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"allowed" : "The @everyone role cannot be used as a command restriction."},
+            )
+            return
+
+        try:
+            await config.set_command_allowed(self._command.qualified_name, allowed)
+        except Exception:
+            await send_bad_operation(interaction, title = "configure command")
+            raise
+
+        name = format_command(client, self._command.qualified_name)
+
+        if allowed:
+            mentions = "\n".join(target.mention for target in allowed)
+
+            title    = f"set restrictions for {name}"
+            subtitle = (
+                "Allowed:\n"
+               f"{mentions}"
+            )
+        else:
+            title    = f"removed restrictions for {name}"
+            subtitle = None
+
+        await format_send(
+            interaction,
+            msg_type = "success",
+            title    = title,
+            subtitle = subtitle,
+        )
 
 
 @final
@@ -172,7 +224,13 @@ class _ConfigButton(Button[UnnamedPaginator]):
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_modal(_ConfigModal(self._command))
+        guild = interaction.guild
+        if not guild:
+            return
+
+        allowed = await interaction.client.config(guild).get_command_allowed(self._command.qualified_name)
+
+        await interaction.response.send_modal(_ConfigModal(self._command, allowed))
 
 
 @final
@@ -276,10 +334,7 @@ async def run_server_commands(interaction : Interaction) -> None:
 
     # ⸻ Grab the commands from the cache and then sort them.
 
-    commands = [
-        command for command in interaction.client.get_commands_cache() if not
-        command.qualified_name.startswith("bot-owner")
-    ]
+    commands = [command for command in interaction.client.get_commands_cache() if is_restrictable(command)]
     commands.sort(key = lambda c : c.qualified_name)
 
     sections = _build_sections(interaction.client, commands)

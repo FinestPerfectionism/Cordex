@@ -18,9 +18,9 @@ from types import (
 )
 from typing import Self, TypedDict, Unpack, cast, final, override
 
-from discord import Embed, File, Guild, Intents, Message, Status, User
+from discord import Embed, File, Guild, Intents, Member, Message, Status, User
 from discord import Interaction as BaseInteraction
-from discord.app_commands import AppCommand, CommandTree
+from discord.app_commands import AppCommand, Command, CommandTree
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     Context as BaseContext,
@@ -32,7 +32,7 @@ from discord.http import Route
 
 from constants import DENIED_EMOJI, DEVELOPER_IDS, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
-from core.state import Config, Connection, connect
+from core.state import Config, Connection, Restriction, connect, is_restrictable
 
 from .types import AnnotatedCommand, LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
@@ -168,7 +168,30 @@ class _ContextClass(BaseContext["Cordex"]):
 class _Tree(CommandTree):
     @override
     async def interaction_check(self, interaction : Interaction) -> bool:  # pyright: ignore[reportIncompatibleMethodOverride]
-        return True
+        command = interaction.command
+        guild   = interaction.guild
+        user    = interaction.user
+
+        if not isinstance(command, Command) or guild is None or not isinstance(user, Member):
+            return True
+
+        if not is_restrictable(command):
+            return True
+
+        restriction = interaction.client.get_restriction(guild.id, command.qualified_name)
+        if restriction is None:
+            return True
+
+        if user.id == guild.owner_id or user.id in DEVELOPER_IDS or restriction.allows(user):
+            return True
+
+        await interaction.response.send_message(
+           f"{DENIED_EMOJI} **Failed to run command!**\n"
+            "You are not authorized to run this command.\n"
+            "-# Bad request.",
+            ephemeral = True,
+        )
+        return False
 
 
 type Context              = _ContextClass
@@ -195,8 +218,9 @@ class Cordex(commands.Bot):
 
         self.db : Connection
 
-        self._commands_cache     : list[AnnotatedCommand] = []
-        self._api_commands_cache : list[AppCommand]       = []
+        self._commands_cache     : list[AnnotatedCommand]             = []
+        self._api_commands_cache : list[AppCommand]                   = []
+        self._restrictions_cache : dict[tuple[int, str], Restriction] = {}
 
         self.restarting : bool = False
 
@@ -313,11 +337,12 @@ class Cordex(commands.Bot):
         self.db = await connect(str(db_path))
 
         def read_schemas() -> tuple[str, ...]:
-            config_sql      = Path("schemas/config.sql").read_text(encoding = "utf-8")
-            cases_sql       = Path("schemas/cases.sql").read_text(encoding = "utf-8")
-            quarantines_sql = Path("schemas/quarantines.sql").read_text(encoding = "utf-8")
-            notes_sql       = Path("schemas/notes.sql").read_text(encoding = "utf-8")
-            return config_sql, cases_sql, quarantines_sql, notes_sql
+            config_sql       = Path("schemas/config.sql").read_text(encoding = "utf-8")
+            cases_sql        = Path("schemas/cases.sql").read_text(encoding = "utf-8")
+            quarantines_sql  = Path("schemas/quarantines.sql").read_text(encoding = "utf-8")
+            notes_sql        = Path("schemas/notes.sql").read_text(encoding = "utf-8")
+            restrictions_sql = Path("schemas/command_restrictions.sql").read_text(encoding = "utf-8")
+            return config_sql, cases_sql, quarantines_sql, notes_sql, restrictions_sql
 
         for schema in await to_thread(read_schemas):
             await self.db.executescript(schema)
@@ -344,6 +369,7 @@ class Cordex(commands.Bot):
 
         self.build_commands_cache()
         await self.build_api_commands_cache()
+        await self.build_restrictions_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Commands Cache
@@ -370,6 +396,47 @@ class Cordex(commands.Bot):
     async def rebuild_api_commands_cache(self) -> None:
         self._api_commands_cache.clear()
         await self.build_api_commands_cache()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Restrictions Cache
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def build_restrictions_cache(self) -> None:
+        grouped : dict[tuple[int, str], tuple[set[int], set[int]]] = {}
+
+        async with self.db.execute(
+            t"SELECT guild_id, command_name, target_type, target_id FROM CommandRestrictions",
+        ) as cursor:
+            rows = await cursor.fetchall()
+
+        for row in rows:
+            guild_id     = cast("int", row[0])
+            command_name = cast("str", row[1])
+            target_type  = cast("str", row[2])
+            target_id    = cast("int", row[3])
+
+            users, roles = grouped.setdefault((guild_id, command_name), (set(), set()))
+
+            if target_type == "role":
+                roles.add(target_id)
+            else:
+                users.add(target_id)
+
+        self._restrictions_cache = {
+            key : Restriction(frozenset(users), frozenset(roles))
+            for key, (users, roles) in grouped.items()
+        }
+
+    def get_restriction(self, guild_id : int, command_name : str, /) -> Restriction | None:
+        return self._restrictions_cache.get((guild_id, command_name))
+
+    def set_restriction(self, guild_id : int, command_name : str, restriction : Restriction | None, /) -> None:
+        key = (guild_id, command_name)
+
+        if restriction is None:
+            self._restrictions_cache.pop(key, None)
+        else:
+            self._restrictions_cache[key] = restriction
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # close

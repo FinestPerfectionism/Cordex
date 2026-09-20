@@ -6,7 +6,7 @@ from discord.app_commands import check
 from bot import Interaction
 from constants import DEVELOPER_IDS
 
-from .exceptions import BadEnvironmentGuild, BadPermissionsCommand
+from .exceptions import BadPermissionsCommand
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permissions Management
@@ -41,23 +41,6 @@ def access_control[F](allowed_users : list[int] | None = None) -> Callable[[F], 
 
 def bot_owner_cmd[F]() -> Callable[[F], F]:
     return access_control(allowed_users = list(DEVELOPER_IDS))
-
-
-def guild_owner_cmd[F]() -> Callable[[F], F]:
-    def predicate(interaction : Interaction) -> bool:
-        if not interaction.guild:
-            raise BadEnvironmentGuild
-
-        if interaction.user == interaction.guild.owner:
-            return True
-
-        raise BadPermissionsCommand
-
-    def decorator(func : F) -> F:
-        check(predicate)(func)
-        return func
-
-    return decorator
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permission Checks
