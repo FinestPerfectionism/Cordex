@@ -392,9 +392,8 @@ class _ConfigurationView(NamedPaginator):
             self.quarantine_select.default_values = [Object(id = self.quarantine_id)]
 
         initial_pages = [
-            PageData(name = "Messages",      content = []),
-            PageData(name = "Moderation",    content = []),
-            PageData(name = "Configurators", content = []),
+            PageData(name = "Messages",   content = []),
+            PageData(name = "Moderation", content = []),
         ]
 
         super().__init__(initial_pages, container = True)
@@ -513,10 +512,6 @@ class _ConfigurationView(NamedPaginator):
                     ButtonSection(txt_quarantine, button = self.quarantine_enforce_btn),
                     ActionRow(self.quarantine_select),
                 ],
-            ),
-            PageData(
-                name    = "Configurators",
-                content = ["# Configurators", "This page doesn't display anything right now. :["],
             ),
         ]
 
