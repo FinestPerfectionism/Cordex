@@ -45,12 +45,13 @@ def unrestrictable[T : AnnotatedCommand | Group | Callable[..., object]](target 
 
 def unrestrictable(target : object, /) -> object:
     if isclass(target):
-        cls_target = target
-        for attr_name in dir(cls_target):
+        cls_vars = vars(target)
+
+        for attr_name in cls_vars:
             if attr_name.startswith("__"):
                 continue
 
-            attr = cast("object", getattr(cls_target, attr_name))
+            attr = cast("object", cls_vars[attr_name])
 
             if isinstance(attr, Group):
                 attr.extras[_UNRESTRICTABLE_KEY] = True
@@ -62,7 +63,7 @@ def unrestrictable(target : object, /) -> object:
             ) or isinstance(attr, Callable):
                 unrestrictable(cast("Callable[..., object]", attr))
 
-        return cls_target
+        return target
 
     unwrapped = cast("object", getattr(target, "__discord_app_commands_unwrap__", target) or target)
 

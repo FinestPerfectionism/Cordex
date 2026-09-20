@@ -330,7 +330,7 @@ class _QueryButton(Button[UnnamedPaginator]):
 
 
 async def run_server_commands(interaction : Interaction) -> None:
-    await interaction.response.defer()
+    await interaction.response.defer(ephemeral = True)
 
     # ⸻ Grab the commands from the cache and then sort them.
 
