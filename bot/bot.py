@@ -3,6 +3,7 @@
 # ⸻ It's going to complain about 'Interaction'.
 
 from asyncio import to_thread
+from contextlib import suppress
 from inspect import getsource
 from io import BytesIO
 from logging import getLogger as get_logger
@@ -122,6 +123,12 @@ class _ContextClass(BaseContext["Cordex"]):
         if len(msg) < 2000:
             return await self.send(msg)
         return await self.send(file = File(BytesIO(source.encode()), filename = "def.py"))
+
+    async def reference_delete(self) -> None:
+        if self.message.reference and self.message.reference.message_id:
+            with suppress(Exception):
+                reference_message = await self.channel.fetch_message(self.message.reference.message_id)
+                await reference_message.delete()
 
 
 class _Tree(CommandTree):
