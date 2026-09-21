@@ -16,8 +16,7 @@ from bot.ui import (
     link,
 )
 from constants import COLOR_GREY
-from core.permissions import is_bot_owner
-from core.utilities import format_table
+from core.utilities import format_table, is_bot_owner
 
 from ._base import attachments_display, channel_display, clean_and_truncate
 

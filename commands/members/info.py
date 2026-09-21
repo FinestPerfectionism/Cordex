@@ -24,8 +24,7 @@ from constants import (
     PARTNER_EMOJI,
     PET_CORDEX_EMOJI,
 )
-from core.permissions import is_bot_owner
-from core.utilities import codeblock, format_table
+from core.utilities import codeblock, format_table, is_bot_owner
 
 from ._base import Scope
 

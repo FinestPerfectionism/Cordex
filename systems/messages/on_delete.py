@@ -7,8 +7,7 @@ from bot import Cordex
 from bot.types import GuildMessagable
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_RED
-from core.permissions import is_bot_owner
-from core.utilities import format_now, format_table
+from core.utilities import format_now, format_table, is_bot_owner
 
 from ._base import attachments_display, channel_display, clean_and_truncate
 

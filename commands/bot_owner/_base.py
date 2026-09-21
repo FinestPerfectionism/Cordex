@@ -1,6 +1,6 @@
 from bot import Interaction
 from core.exceptions import send_bad_permissions_command
-from core.permissions import is_bot_owner
+from core.utilities import is_bot_owner
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Commands Base

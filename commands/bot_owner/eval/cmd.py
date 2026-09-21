@@ -28,7 +28,6 @@ from constants import (
     WARNING_EMOJI,
 )
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
-from core.permissions import is_bot_owner
 from core.responses import format_message, format_send
 from core.utilities import (
     codeblock,
@@ -36,6 +35,7 @@ from core.utilities import (
     format_now,
     format_table,
     format_values,
+    is_bot_owner,
     truncate,
 )
 
