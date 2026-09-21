@@ -61,7 +61,10 @@ class MessageEditHandler(commands.Cog):
 
         # ⸻ Block evaluations.
 
-        if after_content.startswith(".eval") and is_bot_owner(author):
+        if (
+            before_content.startswith(".eval") or
+            after_content.startswith(".eval")
+        ) and is_bot_owner(author):
             return
 
         # ⸻ Edit message logging.
