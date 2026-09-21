@@ -61,8 +61,9 @@ async def run_server_info(interaction : Interaction) -> None:
     owner = guild.owner
 
     if not owner:
-        if guild.owner_id is not None:
-            owner = await guild.fetch_member(guild.owner_id)
+        owner_id = guild.owner_id
+        if owner_id is not None:
+            owner = guild.get_member(owner_id) or await guild.fetch_member(owner_id)
         else:
             await send_bad_operation(interaction, subtitle = "Fetching the guild owner failed repeatedly")
             return
@@ -126,6 +127,7 @@ async def run_server_info(interaction : Interaction) -> None:
             container.add_item(ThumbnailSection(guild_info, thumbnail = Thumbnail(guild.icon.url)))
         else:
             container.add_text(guild_info)
+
         if guild.banner:
             container.add_item(MediaGallery(MediaGalleryItem(guild.banner.url)))
 
