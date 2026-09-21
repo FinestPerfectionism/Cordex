@@ -14,7 +14,8 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
     try:
         log.info("Attempting a tree sync.")
         synced = await client.tree.sync()
-        await client.rebuild_commands_cache()
+        client.rebuild_commands_cache()
+        await client.rebuild_api_commands_cache()
         await format_send(
             interaction,
             msg_type = "success",
@@ -28,6 +29,5 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
             title    = "sync app command tree",
             subtitle = codeblock(e),
         )
-        return
     else:
         log.info("Tree sync complete. %s commands synced.", len(synced))
