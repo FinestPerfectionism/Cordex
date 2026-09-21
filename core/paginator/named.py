@@ -105,7 +105,7 @@ class NamedPaginator(LayoutView):
     /
     *
     color : Color | None = None
-        The color of the container. Dependent on the 'container' parameter.
+        The color of the container. Dependent on the `container` parameter.
     container : bool = False
         Whether the paginator should be in a Container.
     force : bool = False

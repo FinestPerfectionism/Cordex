@@ -22,6 +22,19 @@ type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 
 
 def is_bot_owner(target : User | Member, /) -> bool:
+    """
+    Check if a user or member is a bot owner.
+
+    Parameters
+    ----------
+    target : User | Member
+        The user or member to check.
+
+    Returns
+    -------
+    bool
+        Whether the user or member was a bot owner or not.
+    """
     return target.id in DEVELOPER_IDS
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -30,6 +43,14 @@ def is_bot_owner(target : User | Member, /) -> bool:
 
 
 def unimplemented[F]() -> Callable[[F], F]:
+    """
+    Mark a command as unimplemented.
+
+    Returns
+    -------
+    Callable[[F], F]
+        The decorator function.
+    """
     def predicate(_interaction : Interaction) -> bool:
         raise UnimplementedCommand
 
@@ -45,6 +66,19 @@ def unimplemented[F]() -> Callable[[F], F]:
 
 
 def format_now(style : _Styles = "F", /) -> str:
+    """
+    Format `utcnow` into a discord timestamp.
+
+    Parameters
+    ----------
+    style : ["f", "F", "d", "D", "t", "T", "s", "S", "R"]
+        The style of the timestamp to create.
+
+    Returns
+    -------
+    str
+        The timestamp.
+    """
     return format_dt(utcnow(), style)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -53,6 +87,22 @@ def format_now(style : _Styles = "F", /) -> str:
 
 
 def format_command(bot : Cordex, path : str, /) -> str:
+    """
+    Format a command path into a clickable mention.
+
+    Parameters
+    ----------
+    bot : Cordex
+        The bot.
+    path : str
+        The path of the command to format.
+    /
+
+    Returns
+    -------
+    str
+        The formatted command.
+    """
     parts : list[str] = path.strip().split()
 
     if not parts:
@@ -78,6 +128,25 @@ def format_command(bot : Cordex, path : str, /) -> str:
 
 
 def format_table[K, V](table : dict[K, V], /, *, padding : int = 1, code : bool = False) -> str:
+    """
+    Format a dictionary into a table.
+
+    Parameters
+    ----------
+    table : dict[K, V]
+        The table to format.
+    /
+    *
+    padding : int = 1
+        The spacing to apply on the left side of the table.
+    code : bool = False
+        Whether the entire table should be in a codeblock.
+
+    Returns
+    -------
+    str
+        The formatted table.
+    """
     biggest_key = max([len(str(key)) for key in table], default = 0)
     width       = biggest_key + padding
 
@@ -104,6 +173,27 @@ def format_values(
     conj    : str = "and",
     wrap    : str = "",
 ) -> str:
+    """
+    Format a list of items into a readable, oxford-comma style string.
+
+    Parameters
+    ----------
+    items : list[str]
+        The list of strings to format.
+    /
+    *
+    divider : str = ", "
+        The divider between every item.
+    conj : str = "and"
+        The conjunction to use before the very last item.
+    wrap : str = ""
+        The string to wrap every item in.
+
+    Returns
+    -------
+    str
+        The formatted values.
+    """
     if not items:
         return ""
 
@@ -123,6 +213,23 @@ def format_values(
 
 
 def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str:
+    """
+    Format a string or exception into a codbelock.
+
+    Parameters
+    ----------
+    code : str | Exception
+        The string or exception to place in a codeblock.
+    /
+    *
+    language : str | None = "py"
+        The language of the codeblock to use for markdown.
+
+    Returns
+    -------
+    str
+        The text in a codeblock.
+    """
     return (
        f"```{language or ""}\n"
        f"{code}\n"
@@ -134,10 +241,32 @@ def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def truncate(text : str, /, *, length : int = 2000) -> str:
-    if not len(text) > length:
+def truncate(text : str, /, *, limit : int = 2000) -> str:
+    """
+    Truncate a block of text by replacing the last 3 characters before the limit with an ellipsis (...).
+
+    If `text` ends with three backticks, then it will replace the three characters *before* said bacticks to prevent codeblocks from breaking.
+
+    Parameters
+    ----------
+    text : str
+        The text to truncate.
+    /
+    *
+    limit : int = 2000
+        The limit to truncate at.
+
+    Returns
+    -------
+    str
+        The truncated text.
+    """
+    if not len(text) > limit:
         return text
 
+    if limit < 3 or (text.endswith("```") and limit < 6):
+        return "..."
+
     if text.endswith("```"):
-        return text[: length - 6] + "..." + text[-3 :]
-    return text[: length - 3] + "..."
+        return text[: limit - 6] + "..." + text[-3 :]
+    return text[: limit - 3] + "..."
