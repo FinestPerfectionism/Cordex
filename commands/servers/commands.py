@@ -141,7 +141,7 @@ class _ConfigModal(Modal):
         super().__init__(title = f"Configuring /{command.qualified_name}")
         self._command = command
 
-        mentions = "- \n".join(target.mention for target in allowed) or "*Everyone*"
+        mentions = "\n".join(f"- {target.mention}" for target in allowed) or "*Everyone*"
 
         self.current_allowed = TextDisplay[Self](
             f"**Currently allowed:**\n"
