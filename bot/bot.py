@@ -32,7 +32,6 @@ from discord.http import Route
 
 from constants import DENIED_EMOJI, DEVELOPER_IDS, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
-from core.permissions import is_bot_owner
 from core.state import Config, Connection, Restriction, connect, is_restrictable
 
 from .types import AnnotatedCommand, LambdaInter, NameStyleResult
@@ -170,6 +169,7 @@ class _Tree(CommandTree):
     @override
     async def interaction_check(self, interaction : Interaction) -> bool:  # pyright: ignore[reportIncompatibleMethodOverride]
         command = interaction.command
+        client  = interaction.client
         guild   = interaction.guild
         user    = interaction.user
 
@@ -182,14 +182,15 @@ class _Tree(CommandTree):
         if not is_restrictable(command):
             return True
 
-        restriction = interaction.client.get_restriction(guild.id, command.qualified_name)
+        restriction = client.get_restriction(guild.id, command.qualified_name)
         if not restriction:
             return True
 
         if user == guild.owner:
             return True
 
-        if is_bot_owner(user):
+        user_is_bot_owner = user in client.developers
+        if user_is_bot_owner:
             return True
 
         if restriction.allows(user):

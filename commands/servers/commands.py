@@ -214,7 +214,7 @@ class _ConfigModal(Modal):
             msg_type = "success",
             title    = title,
             subtitle = subtitle,
-            override = FormatOverride(punctuation = PunctuationOverride(subtitle = False))
+            override = FormatOverride(punctuation = PunctuationOverride(subtitle = False)),
         )
 
 

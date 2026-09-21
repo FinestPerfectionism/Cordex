@@ -1,10 +1,12 @@
 from collections.abc import Callable
 from typing import Literal
 
+from discord import Member, User
 from discord.app_commands import check
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex, Interaction
+from constants import DEVELOPER_IDS
 
 from .exceptions import UnimplementedCommand
 
@@ -13,6 +15,14 @@ type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Utilities Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# is_bot_owner
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+def is_bot_owner(target : User | Member, /) -> bool:
+    return target.id in DEVELOPER_IDS
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # @unimplemented

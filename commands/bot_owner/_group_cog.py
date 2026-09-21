@@ -1,18 +1,34 @@
+from collections.abc import Callable
 from typing import final
 
 from discord import Forbidden, HTTPException, Message
-from discord.app_commands import Group, describe
+from discord.app_commands import Group, check, describe
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     command as prefix_command,
 )
 
 from bot import Context, Cordex, Interaction
-from core.permissions import bot_owner_cmd
+from core.exceptions import BadPermissionsCommand
+from core.utilities import is_bot_owner
 
 from .eval import run_bo_eval
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 from .style import run_bo_style_reset, run_bo_style_set
+
+
+def bot_owner_cmd[F]() -> Callable[[F], F]:
+    def predicate(interaction : Interaction) -> bool:
+        if is_bot_owner(interaction.user):
+            return True
+
+        raise BadPermissionsCommand
+
+    def decorator(func : F) -> F:
+        check(predicate)(func)
+        return func
+
+    return decorator
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
