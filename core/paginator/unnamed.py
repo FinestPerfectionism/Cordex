@@ -1,3 +1,6 @@
+# ruff: file-ignore[private-member-access]
+# pyright: reportPrivateUsage = false
+
 from contextlib import suppress
 from typing import Self, final, override
 from warnings import warn
@@ -72,7 +75,7 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
             # ⸻ Success..?
 
             if 0 <= page < len(self.paginator.pages):
-                await self.paginator.turn(interaction, page)
+                await self.paginator._turn(interaction, page)
 
             # ⸻ Must be within the bounds of 1 and the highest page!
 
@@ -143,11 +146,11 @@ class _PageRow(ActionRow["UnnamedPaginator"]):
 
     @button(label = "<<")
     async def btn_first(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        await self.paginator.turn(interaction, 0)
+        await self.paginator._turn(interaction, 0)
 
     @button(label = "<")
     async def btn_backward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        await self.paginator.turn(interaction, self.paginator.current_page - 1)
+        await self.paginator._turn(interaction, self.paginator.current_page - 1)
 
     @button(label = "1 / 1", style = green)
     async def btn_page(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
@@ -155,14 +158,44 @@ class _PageRow(ActionRow["UnnamedPaginator"]):
 
     @button(label = ">")
     async def btn_forward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        await self.paginator.turn(interaction, self.paginator.current_page + 1)
+        await self.paginator._turn(interaction, self.paginator.current_page + 1)
 
     @button(label = ">>")
     async def btn_last(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
-        await self.paginator.turn(interaction, len(self.paginator.pages) - 1)
+        await self.paginator._turn(interaction, len(self.paginator.pages) - 1)
 
 
 class UnnamedPaginator(LayoutView):
+    """
+    Paginate a list of data cleanly using buttons.
+
+    Parameters
+    ----------
+    title : str
+        The title of the paginator.
+    data : ItemsOrStrList
+        The data to paginate.
+    /
+    *
+    data_name : str
+        The name of the data.
+    per_page : int = 5
+        The amount of data to display per page. Defaults to 5.
+    color : Color | None = None
+        The color of the container. Dependent on the 'container' parameter.
+    container : bool = False
+        Whether the paginator should be in a Container.
+    force : bool = False
+        Whether multiple strings passed into data will be concatenated with newlines instead of TextDisplays.
+    timeout : int | None = 600
+        The amount of seconds to pass before timing out, disabling all buttons and selects. If None, the paginator will never time out.
+
+    Raises
+    ------
+    ValueError
+        You passed 'color' without passing 'container'
+    """
+
     def __init__(
         self,
         title     : str,
@@ -251,6 +284,14 @@ class UnnamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_above(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items above the paginator.
+
+        Parameters
+        ----------
+        *items : Item[LayoutView]
+            The items to add above the paginator.
+        """
         self._above_items.extend(items)
         self._render()
 
@@ -259,6 +300,14 @@ class UnnamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_over(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items over the title of the paginator.
+
+        Parameters
+        ----------
+        *items : Item[LayoutView]
+            The items to add over the title of the paginator.
+        """
         self._over_items.extend(items)
         self._render()
 
@@ -267,6 +316,14 @@ class UnnamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_under(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items under the footer of the paginator.
+
+        Parameters
+        ----------
+        *items : Item[LayoutView]
+            The items to add under the footer of the paginator.
+        """
         self._under_items.extend(items)
         self._render()
 
@@ -275,6 +332,14 @@ class UnnamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_below(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items below the paginator.
+
+        Parameters
+        ----------
+        *items : Item[LayoutView]
+            The items to add below the paginator.
+        """
         self._below_items.extend(items)
         self._render()
 
@@ -283,6 +348,16 @@ class UnnamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def update_data(self, title : str, data : _ItemsOrStrList) -> None:
+        """
+        Update the Paginator's data then re-render it.
+
+        Parameters
+        ----------
+        title : str
+            The paginator's new title.
+        data : ItemsOrStrList
+            The paginator's new data.
+        """
         self._title       = title
         self._data        = data
         self.current_page = 0
@@ -360,7 +435,7 @@ class UnnamedPaginator(LayoutView):
     # turn
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def turn(self, interaction : Interaction, target : int) -> None:
+    async def _turn(self, interaction : Interaction, target : int) -> None:
         if 0 <= target < len(self.pages):
             previous_page = self.current_page
 
