@@ -141,11 +141,12 @@ class _ConfigModal(Modal):
         super().__init__(title = f"Configuring /{command.qualified_name}")
         self._command = command
 
-        mentions = "\n".join(f"- {target.mention}" for target in allowed) or "*Everyone*"
+        mentions = "\n".join(f"- {target.mention}" for target in allowed) or "- @Everyone"
 
         self.current_allowed = TextDisplay[Self](
-            f"**Currently allowed:**\n"
-            f"{mentions}",
+           f"**Currently allowed:**\n"
+           f"{mentions}\n\n"
+            "Please note that the guild owner and bot owners are *always* allowed to run commands.",
         )
 
         self._allowed = MentionableSelect[Self](
