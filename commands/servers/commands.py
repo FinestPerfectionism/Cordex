@@ -37,7 +37,7 @@ from constants import (
 )
 from core.exceptions import send_bad_argument, send_bad_operation, send_bad_request
 from core.paginator import UnnamedPaginator
-from core.responses import format_send
+from core.responses import FormatOverride, PunctuationOverride, format_send
 from core.state import is_restrictable
 from core.utilities import format_command
 
@@ -214,6 +214,7 @@ class _ConfigModal(Modal):
             msg_type = "success",
             title    = title,
             subtitle = subtitle,
+            override = FormatOverride(punctuation = PunctuationOverride(subtitle = False))
         )
 
 
