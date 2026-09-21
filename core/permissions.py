@@ -13,17 +13,13 @@ from .exceptions import BadPermissionsCommand
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# @access_control
+# Bot Owner Command Decorator
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def access_control[F](allowed_users : list[int] | None = None) -> Callable[[F], F]:
-    users = allowed_users or []
-
+def bot_owner_cmd[F]() -> Callable[[F], F]:
     def predicate(interaction : Interaction) -> bool:
-        user = interaction.user
-
-        if user.id in users:
+        if is_bot_owner(interaction.user):
             return True
 
         raise BadPermissionsCommand
@@ -33,14 +29,6 @@ def access_control[F](allowed_users : list[int] | None = None) -> Callable[[F], 
         return func
 
     return decorator
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Specific Decorators
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-def bot_owner_cmd[F]() -> Callable[[F], F]:
-    return access_control(allowed_users = list(DEVELOPER_IDS))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Permission Checks
