@@ -32,6 +32,7 @@ from discord.http import Route
 
 from constants import DENIED_EMOJI, DEVELOPER_IDS, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
+from core.permissions import is_bot_owner
 from core.state import Config, Connection, Restriction, connect, is_restrictable
 
 from .types import AnnotatedCommand, LambdaInter, NameStyleResult
@@ -172,17 +173,26 @@ class _Tree(CommandTree):
         guild   = interaction.guild
         user    = interaction.user
 
-        if not isinstance(command, Command) or guild is None or not isinstance(user, Member):
+        if not isinstance(command, Command):
+            return True
+
+        if guild is None or not isinstance(user, Member):
             return True
 
         if not is_restrictable(command):
             return True
 
         restriction = interaction.client.get_restriction(guild.id, command.qualified_name)
-        if restriction is None:
+        if not restriction:
             return True
 
-        if user.id == guild.owner_id or user.id in DEVELOPER_IDS or restriction.allows(user):
+        if user == guild.owner:
+            return True
+
+        if is_bot_owner(user):
+            return True
+
+        if restriction.allows(user):
             return True
 
         await interaction.response.send_message(
