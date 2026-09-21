@@ -8,7 +8,6 @@ from bot import Cordex, Interaction
 from core.utilities import unimplemented
 
 from .compare import run_channel_compare
-from .duplicate import run_channel_duplicate
 from .info import run_channel_info
 from .permissions import run_channel_permissions
 from .sync import run_channel_sync
@@ -60,23 +59,6 @@ class ChannelCommands(
         channel     : GuildChannel | None = None,
     ) -> None:
         await run_channel_sync(interaction, channel)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /channel duplicate Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @command(
-        name        = "duplicate",
-        description = "Duplicate a channel or category.",
-    )
-    @describe(channel = "The channel to duplicate. Defaults to the current one.")
-    @unimplemented()
-    async def cmd_channel_duplicate(
-        self,
-        interaction : Interaction,
-        channel     : GuildChannel | None = None,
-    ) -> None:
-        await run_channel_duplicate(interaction, channel)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /channel compare Command

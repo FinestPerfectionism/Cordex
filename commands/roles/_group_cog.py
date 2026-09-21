@@ -5,10 +5,8 @@ from discord.app_commands import Choice, choices, command, describe, guild_only,
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.utilities import unimplemented
 
 from .compare import run_role_compare
-from .duplicate import run_role_duplicate
 from .info import run_role_info
 from .members import PersonFilter, RoleFilter, run_role_members
 from .permissions import PermissionsFilter, run_role_permissions
@@ -28,23 +26,6 @@ class RoleCommands(
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /role duplicate Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @command(
-        name        = "duplicate",
-        description = "Duplicate a role.",
-    )
-    @describe(role = "The role to duplicate.")
-    @unimplemented()
-    async def cmd_role_duplicate(
-        self,
-        interaction : Interaction,
-        role        : Role,
-    ) -> None:
-        await run_role_duplicate(interaction, role)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role info Command

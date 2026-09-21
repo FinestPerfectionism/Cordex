@@ -263,13 +263,13 @@ class _CategorySelect(Select[UnnamedPaginator]):
                 SelectOption(
                     label       = "Role Commands",
                     value       = "role",
-                    description = "Role commands. Children: compare, duplicate, info, members, permissions",
+                    description = "Role commands. Children: compare, info, members, permissions",
                     emoji       = MEMBERS_EMOJI,
                 ),
                 SelectOption(
                     label       = "Channel Commands",
                     value       = "channel",
-                    description = "Channel commands. Children: compare, duplicate, info, permissions, sync",
+                    description = "Channel commands. Children: compare, info, permissions, sync",
                     emoji       = TEXT_EMOJI,
                 ),
                 SelectOption(

@@ -9,7 +9,6 @@ from .bot_owner import (
 )
 from .channels import (
     run_channel_compare,
-    run_channel_duplicate,
     run_channel_info,
     run_channel_permissions,
     run_channel_sync,
@@ -38,7 +37,6 @@ from .moderation import (
 )
 from .roles import (
     run_role_compare,
-    run_role_duplicate,
     run_role_info,
     run_role_members,
     run_role_permissions,
@@ -59,7 +57,6 @@ __all__ = [
     "run_bo_style_reset",
     "run_bo_style_set",
     "run_channel_compare",
-    "run_channel_duplicate",
     "run_channel_info",
     "run_channel_permissions",
     "run_channel_sync",
@@ -86,7 +83,6 @@ __all__ = [
     "run_mod_primary_timeout_remove",
     "run_mod_primary_timeout_view",
     "run_role_compare",
-    "run_role_duplicate",
     "run_role_info",
     "run_role_members",
     "run_role_permissions",
