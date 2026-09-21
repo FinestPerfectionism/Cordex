@@ -100,12 +100,12 @@ def format_values(
     items = [f"{wrap}{item}{wrap}" for item in items]
 
     if len(items) == 1:
-        return divider.join(items)
+        return items[0]
 
     if len(items) == 2:
         return f"{items[0]} {conj} {items[1]}"
 
-    return f"{divider.join(items[:-1])}{divider} {conj} {items[-1]}"
+    return f"{divider.join(items[:-1])}{divider.rstrip()} {conj} {items[-1]}"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # codeblock
@@ -125,4 +125,9 @@ def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str
 
 
 def truncate(text : str, /, *, length : int = 2000) -> str:
-    return text[:length - 3] + "..." if len(text) > length else text
+    if not len(text) > length:
+        return text
+
+    if text.endswith("```"):
+        return text[: length - 6] + "..." + text[-3 :]
+    return text[: length - 3] + "..."
