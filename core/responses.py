@@ -100,7 +100,12 @@ def _build_title(msg_type : _MessageType, title : str, config : FormatOverride) 
 def _build_subtitle(subtitle : str | None, config : FormatOverride) -> str | None:
     if subtitle is None:
         return None
-    return _apply_punctuation(subtitle, ".", setting = config.punctuation.subtitle)
+
+    setting = config.punctuation.subtitle
+    if setting is None and subtitle.endswith("```"):
+        setting = False
+
+    return _apply_punctuation(subtitle, ".", setting = setting)
 
 
 def _build_footer(footer : str | None, config : FormatOverride) -> str | None:
