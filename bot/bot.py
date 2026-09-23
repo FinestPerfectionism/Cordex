@@ -216,6 +216,8 @@ type ContextOrInteraction = Interaction | Context
 
 @final
 class Cordex(commands.Bot):
+    """The main bot class."""
+
     def __init__(self) -> None:
         super().__init__(
             chunk_guilds_at_startup = True,

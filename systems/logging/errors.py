@@ -38,15 +38,17 @@ from core.utilities import codeblock, format_command, format_now, format_table
 
 @final
 class ErrorLogger(commands.Cog):
+    """Logs when Cordex errors."""
+
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
-        self.bot.tree.error(self.command_error_handler)
+        self.bot.tree.error(self._command_error_handler)
 
     @override
     async def cog_load(self) -> None:
         loop = get_running_loop()
-        loop.set_exception_handler(self.loop_exception_handler)
+        loop.set_exception_handler(self._loop_exception_handler)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Central Error Sender
@@ -164,7 +166,7 @@ class ErrorLogger(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.Cog.listener("on_error")
-    async def error_handler(
+    async def _error_handler(
         self,
         event     : str,
         *_args    : str,
@@ -191,7 +193,7 @@ class ErrorLogger(commands.Cog):
     # Command Errors
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def command_error_handler(
+    async def _command_error_handler(
         self,
         interaction : Interaction,
         error       : AppCommandError,
@@ -251,14 +253,14 @@ class ErrorLogger(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.Cog.listener("on_command_error")
-    async def prefix_command_error_handler(self, _ctx : Context, _error : commands.CommandError) -> None:
+    async def _prefix_command_error_handler(self, _ctx : Context, _error : commands.CommandError) -> None:
         pass  # ⸻ Literally just pass since only eval uses prefix and we shouldn't care.
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Loop Exception Errors
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def loop_exception_handler(
+    def _loop_exception_handler(
         self,
         loop    : AbstractEventLoop,
         context : dict[str, object],
@@ -281,6 +283,6 @@ class ErrorLogger(commands.Cog):
         )
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = ErrorLogger(bot)
     await bot.add_cog(cog)

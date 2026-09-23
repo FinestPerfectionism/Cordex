@@ -14,12 +14,14 @@ from bot import Cordex
 
 @final
 class Fun(commands.Cog):
+    """Who doesn't like a little bit of fun? Responds to message greeting the bot with a couple of greetings."""
+
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
     @commands.Cog.listener("on_message")
-    async def listener_fun_message(self, message : Message) -> None:
+    async def _listener_fun_message(self, message : Message) -> None:
         content   = message.content.lower()
         reference = message.reference
         author    = message.author
@@ -46,6 +48,6 @@ class Fun(commands.Cog):
                         await message.reply(content = choice(responses))
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = Fun(bot)
     await bot.add_cog(cog)

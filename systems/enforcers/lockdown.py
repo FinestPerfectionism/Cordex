@@ -13,36 +13,38 @@ from core.moderation import LockdownManager
 
 @final
 class LockdownEnforcer(commands.Cog):
+    """Enforces lockdowns by ensuring specific channel permissions."""
+
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
-        self.loop_lockdownenforce.start()
+        self._loop_lockdownenforce.start()
 
     @override
     async def cog_unload(self) -> None:
-        self.loop_lockdownenforce.cancel()
+        self._loop_lockdownenforce.cancel()
 
     @tasks.loop(minutes = 10)
-    async def loop_lockdownenforce(self) -> None:
+    async def _loop_lockdownenforce(self) -> None:
         for guild in self.bot.guilds:
             manager = LockdownManager(self.bot, guild)
             await manager.enforce()
 
-    @loop_lockdownenforce.before_loop
-    async def beforeloop_lockdowneenforce(self) -> None:
+    @_loop_lockdownenforce.before_loop
+    async def _beforeloop_lockdowneenforce(self) -> None:
         await self.bot.wait_until_ready()
 
     @commands.Cog.listener("on_guild_channel_update")
-    async def listener_lockdownenforce_channelupdate(self, _before : GuildChannel, after : GuildChannel) -> None:
+    async def _listener_lockdownenforce_channelupdate(self, _before : GuildChannel, after : GuildChannel) -> None:
         manager = LockdownManager(self.bot, after.guild)
         await manager.enforce()
 
     @commands.Cog.listener("on_guild_channel_create")
-    async def listener_lockdownenforce_channelcreate(self, channel : GuildChannel) -> None:
+    async def _listener_lockdownenforce_channelcreate(self, channel : GuildChannel) -> None:
         manager = LockdownManager(self.bot, channel.guild)
         await manager.enforce()
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = LockdownEnforcer(bot)
     await bot.add_cog(cog)

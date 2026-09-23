@@ -14,6 +14,16 @@ log = get_logger("Cordex")
 
 
 def discover_cogs(*package_names : str, priority : list[str] | None = None) -> list[str]:
+    """
+    Recursively searches files and loads Discord.py 'cogs'.
+
+    Parameters
+    ----------
+    *package_names : str
+        ...
+    priority : list[str] | None = None
+        ...
+    """
     seen : set[str] = set()
 
     for package_name in package_names:

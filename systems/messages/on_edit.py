@@ -21,18 +21,20 @@ from core.utilities import format_table, is_bot_owner
 from ._base import attachments_display, channel_display, clean_and_truncate
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Message Edit Handling
+# Message Edit Logging
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 @final
-class MessageEditHandler(commands.Cog):
+class MessageEditLogging(commands.Cog):
+    """Logs message editing for guilds with it enabled."""
+
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
     @commands.Cog.listener("on_message_edit")
-    async def listener_delete_messageedit(self, before : Message, after : Message) -> None:
+    async def _listener_delete_messageedit(self, before : Message, after : Message) -> None:
         author  = before.author
         guild   = before.guild
         channel = before.channel
@@ -118,6 +120,6 @@ class MessageEditHandler(commands.Cog):
         )
 
 
-async def setup(bot : Cordex) -> None:
-    cog = MessageEditHandler(bot)
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
+    cog = MessageEditLogging(bot)
     await bot.add_cog(cog)
