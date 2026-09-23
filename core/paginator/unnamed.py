@@ -33,30 +33,27 @@ type _ItemsOrStrList = list[str | Item[LayoutView]]
 
 @final
 class _PageJumpModal(Modal, title = "Jump to Page"):
-    page_input : TextInput[Self]
-
     def __init__(self, paginator : UnnamedPaginator) -> None:
         super().__init__()
         self.paginator = paginator
 
         max_digits = len(str(len(paginator.pages)))
 
-        self.page_input = TextInput(
+        self._page_input = TextInput[Self](
             placeholder = "ex: 5",
             min_length  = 1,
             max_length  = max_digits,
         )
-        self.add_item(
-            Label(
-                text        = "Enter a page number.",
-                description = "Enter a positive integer greater than or equal to one.",
-                component   = self.page_input,
-            ),
+        self.page_input  = Label[Self](
+            text        = "Enter a page number.",
+            description = "Enter a positive integer greater than or equal to one.",
+            component   = self._page_input,
         )
+        self.add_item(self.page_input)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        page = int(self.page_input.value) - 1
+        page = int(self._page_input.value) - 1
 
         # ⸻ You're already on this page!
 
