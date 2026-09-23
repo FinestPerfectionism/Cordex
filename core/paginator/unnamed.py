@@ -171,9 +171,9 @@ class UnnamedPaginator(LayoutView):
 
     Parameters
     ----------
-    title : str
+    title : `str`
         The title of the paginator.
-    data : ItemsOrStrList
+    data : ItemsOrStrList`
         The data to paginate.
     /
     *

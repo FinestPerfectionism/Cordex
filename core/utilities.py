@@ -27,12 +27,12 @@ def is_bot_owner(target : User | Member, /) -> bool:
 
     Parameters
     ----------
-    target : User | Member
+    target : `User | Member`
         The user or member to check.
 
     Returns
     -------
-    bool
+    `bool`
         Whether the user or member was a bot owner or not.
     """
     return target.id in DEVELOPER_IDS
@@ -48,7 +48,7 @@ def unimplemented[F]() -> Callable[[F], F]:
 
     Returns
     -------
-    Callable[[F], F]
+    `Callable[[F], F]`
         The decorator function.
     """
     def predicate(_interaction : Interaction) -> bool:
@@ -71,13 +71,13 @@ def format_now(style : _Styles = "F", /) -> str:
 
     Parameters
     ----------
-    style : ["f", "F", "d", "D", "t", "T", "s", "S", "R"]
+    style : `["f", "F", "d", "D", "t", "T", "s", "S", "R"]`
         The style of the timestamp to create.
 
     Returns
     -------
-    str
-        The timestamp.
+    `str`
+        The formatted timestamp.
     """
     return format_dt(utcnow(), style)
 
@@ -92,15 +92,15 @@ def format_command(bot : Cordex, path : str, /) -> str:
 
     Parameters
     ----------
-    bot : Cordex
+    bot : `Cordex`
         The bot.
-    path : str
+    path : `str`
         The path of the command to format.
     /
 
     Returns
     -------
-    str
+    `str`
         The formatted command.
     """
     parts : list[str] = path.strip().split()
@@ -133,18 +133,18 @@ def format_table[K, V](table : dict[K, V], /, *, padding : int = 1, code : bool 
 
     Parameters
     ----------
-    table : dict[K, V]
+    table : `dict[K, V]`
         The table to format.
     /
     *
-    padding : int = 1
+    padding : `int = 1`
         The spacing to apply on the left side of the table.
-    code : bool = False
+    code : `bool = False`
         Whether the entire table should be in a codeblock.
 
     Returns
     -------
-    str
+    `str`
         The formatted table.
     """
     biggest_key = max([len(str(key)) for key in table], default = 0)
@@ -178,20 +178,20 @@ def format_values(
 
     Parameters
     ----------
-    items : list[str]
+    items : `list[str]`
         The list of strings to format.
     /
     *
-    divider : str = ", "
+    divider : `str = ", "`
         The divider between every item.
-    conj : str = "and"
+    conj : `str = "and"`
         The conjunction to use before the very last item.
-    wrap : str = ""
+    wrap : `str = ""`
         The string to wrap every item in.
 
     Returns
     -------
-    str
+    `str`
         The formatted values.
     """
     if not items:
@@ -218,16 +218,16 @@ def codeblock(code : str | Exception, /, *, language : str | None = "py") -> str
 
     Parameters
     ----------
-    code : str | Exception
+    code : `str | Exception`
         The string or exception to place in a codeblock.
     /
     *
-    language : str | None = "py"
+    language : `str | None = "py"`
         The language of the codeblock to use for markdown.
 
     Returns
     -------
-    str
+    `str`
         The text in a codeblock.
     """
     return (
@@ -249,16 +249,16 @@ def truncate(text : str, /, *, limit : int = 2000) -> str:
 
     Parameters
     ----------
-    text : str
+    text : `str`
         The text to truncate.
     /
     *
-    limit : int = 2000
+    limit : `int = 2000`
         The limit to truncate at.
 
     Returns
     -------
-    str
+    `str`
         The truncated text.
     """
     if not len(text) > limit:

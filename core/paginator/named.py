@@ -31,11 +31,11 @@ class PageData:
 
     Parameters
     ----------
-    name : str
+    name : `str`
         The name of the page. Displayed on the page's button.
-    content : list[str | Item[LayoutView]]
+    content : `list[str | Item[LayoutView]]`
         The content of the page.
-    emoji : str | Emoji | PartialEmoji | None = None
+    emoji : `str | Emoji | PartialEmoji | None = None`
         The emoji displayed on the page's button.
     """
 
@@ -100,17 +100,17 @@ class NamedPaginator(LayoutView):
 
     Parameters
     ----------
-    data : list[PageData]
+    data : `list[PageData]`
         The list of pages.
     /
     *
-    color : Color | None = None
+    color : `Color | None = None`
         The color of the container. Dependent on the `container` parameter.
-    container : bool = False
+    container : `bool = False`
         Whether the paginator should be in a Container.
-    force : bool = False
+    force : `bool = False`
         Whether multiple strings passed into data will be concatenated with newlines instead of TextDisplays.
-    timeout : int | None = 600
+    timeout : `int | None = 600`
         The amount of seconds to pass before timing out, disabling all buttons and selects. If None, the paginator will never time out.
 
     Raises
@@ -215,7 +215,7 @@ class NamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add above the paginator.
         """
         self._above_items.extend(items)
@@ -231,7 +231,7 @@ class NamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add over the title of the paginator.
         """
         self._over_items.extend(items)
@@ -247,7 +247,7 @@ class NamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add under the footer of the paginator.
         """
         self._under_items.extend(items)
@@ -263,7 +263,7 @@ class NamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add below the paginator.
         """
         self._below_items.extend(items)
