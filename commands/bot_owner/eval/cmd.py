@@ -72,6 +72,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "commands"     : commands,
         "app_commands" : app_commands,
         "discord"      : discord,
+        "dui"          : discord.ui,
         "ui"           : ui,
 
         "ACCEPTED_EMOJI" : ACCEPTED_EMOJI,
