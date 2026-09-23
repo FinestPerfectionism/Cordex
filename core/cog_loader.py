@@ -14,8 +14,7 @@ log = get_logger("Cordex")
 
 
 def discover_cogs(*package_names : str, priority : list[str] | None = None) -> list[str]:
-    seen : set[str]  = set()
-    cogs : list[str] = []
+    seen : set[str] = set()
 
     for package_name in package_names:
         try:
@@ -24,21 +23,10 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
             log.exception("Failed to import package %s", package_name)
             continue
 
-        if callable(getattr(package, "setup", None)):
-            seen.add(package_name)
-            cogs.append(package_name)
+        modules_to_check = [package_name] + [info.name for info in walk_packages(package.__path__, f"{package.__name__}.")]
 
-        for module_info in walk_packages(
-            package.__path__,
-            prefix = f"{package.__name__}.",
-        ):
-            name       = module_info.name
-            short_name = name.split(".")[-1]
-
-            if name in seen:
-                continue
-
-            if short_name == "_base":
+        for name in modules_to_check:
+            if name in seen or name.endswith("._base"):
                 continue
 
             try:
@@ -49,15 +37,11 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
 
             if callable(getattr(module, "setup", None)):
                 seen.add(name)
-                cogs.append(name)
 
     if priority:
-        priority_set = set(priority)
+        priority_set   = set(priority)
+        ordered_cogs   = [module_name for module_name in priority if module_name in seen]
+        remaining_cogs = sorted([module_name for module_name in seen if module_name not in priority_set])
+        return ordered_cogs + remaining_cogs
 
-        ordered_cogs   = [m for m in priority if m in seen]
-        remaining_cogs = [m for m in cogs if m not in priority_set]
-        cogs           = ordered_cogs + sorted(remaining_cogs)
-    else:
-        cogs = sorted(cogs)
-
-    return cogs
+    return sorted(seen)
