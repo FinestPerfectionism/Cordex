@@ -25,7 +25,6 @@ from core.exceptions import (
     send_bad_environment_guild,
     send_bad_operation,
     send_bad_permissions_command,
-    send_bad_request,
     send_unimplemented_command,
 )
 from core.responses import FormatOverride, format_send
@@ -227,7 +226,7 @@ class ErrorLogger(commands.Cog):
             return
 
         if isinstance(error, BotMissingPermissions):
-            await send_bad_request(
+            await send_bad_operation(
                 interaction,
                 subtitle = "This command requires certain permissions to run that I lack",
             )
