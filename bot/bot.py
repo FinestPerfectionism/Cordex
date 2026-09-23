@@ -281,7 +281,7 @@ class Cordex(commands.Bot):
         class MemberNameStylePayload(TypedDict):
             display_name_styles : NameStylePayload
 
-        # ⸻ It's very unlikely that self.user is None, but pyright will complain anyway.
+        # ⸻ self.user is never None, but pyright will complain anyway.
 
         if self.user is None:
             return None

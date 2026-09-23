@@ -139,6 +139,11 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
 
         current_style = await interaction.client.get_name_style(interaction.guild)
 
+        # ⸻ current_style is never None, but pyright will complain anyway.
+
+        if current_style is None:
+            return
+
         font_enum   = DisplayNameFont[font_value]     if font_value   is not None else current_style.font_id
         effect_enum = DisplayNameEffect[effect_value] if effect_value is not None else current_style.effect_id
 
@@ -197,5 +202,10 @@ async def run_bo_style_set(interaction : Interaction) -> None:
         await send_bad_environment_guild(interaction)
         return
 
+    # ⸻ style is never None, but pyright will complain anyway.
+
     style = await interaction.client.get_name_style(interaction.guild)
+    if not style:
+        return
+
     await interaction.response.send_modal(_StyleModal(style))
