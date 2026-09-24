@@ -20,7 +20,8 @@ from typing import Self, TypedDict, Unpack, cast, final, override
 
 from discord import Embed, File, Guild, Intents, Member, Message, Status, User
 from discord import Interaction as BaseInteraction
-from discord.app_commands import AppCommand, Command, CommandTree
+from discord.app_commands import AppCommand as APICommand
+from discord.app_commands import CommandTree, ContextMenu
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     Context as BaseContext,
@@ -173,7 +174,7 @@ class _Tree(CommandTree):
         guild   = interaction.guild
         user    = interaction.user
 
-        if not isinstance(command, Command):
+        if isinstance(command, ContextMenu | None):
             return True
 
         if guild is None or not isinstance(user, Member):
@@ -231,7 +232,7 @@ class Cordex(commands.Bot):
         self.db : Connection
 
         self._commands_cache     : list[AnnotatedCommand]             = []
-        self._api_commands_cache : list[AppCommand]                   = []
+        self._api_commands_cache : list[APICommand]                   = []
         self._restrictions_cache : dict[tuple[int, str], Restriction] = {}
 
         self.restarting : bool = False
@@ -398,7 +399,7 @@ class Cordex(commands.Bot):
             self.build_commands_cache()
         return self._commands_cache
 
-    def get_api_commands_cache(self) -> list[AppCommand]:
+    def get_api_commands_cache(self) -> list[APICommand]:
         return self._api_commands_cache
 
     def rebuild_commands_cache(self) -> None:
