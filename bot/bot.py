@@ -219,6 +219,7 @@ class Cordex(commands.Bot):
     def __init__(self) -> None:
         super().__init__(
             chunk_guilds_at_startup = True,
+            case_insensitive        = True,
             command_prefix          = commands.when_mentioned_or("."),
             help_command            = None,
             intents                 = Intents.all(),
