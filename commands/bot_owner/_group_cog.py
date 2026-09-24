@@ -1,7 +1,8 @@
 from collections.abc import Callable
+from contextlib import suppress
 from typing import final
 
-from discord import Forbidden, HTTPException, Message
+from discord import Forbidden, HTTPException, Member, Message, Reaction, User
 from discord.app_commands import Group, check, describe
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
@@ -60,7 +61,7 @@ class BotOwnerCommands(
     )
 
     @commands.Cog.listener("on_message_edit")
-    async def cmd_eval_listener(self, before : Message, after : Message) -> None:
+    async def listener_cmdeval_messageedit(self, before : Message, after : Message) -> None:
         author = before.author
 
         # ⸻ Block bots and the bot itself.
@@ -85,6 +86,17 @@ class BotOwnerCommands(
                 pass
 
             await self.bot.process_commands(after)
+
+    @commands.Cog.listener("on_reaction_add")
+    async def listener_cmdeval_reactionadd(self, reaction : Reaction, user : Member | User) -> None:
+        message = reaction.message
+
+        if not is_bot_owner(user):
+            return
+
+        if str(reaction.emoji) == "🗑️" and message.author == self.bot.user:
+            with suppress(Exception):
+                await message.delete()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /bot-owner state shutdown Command
