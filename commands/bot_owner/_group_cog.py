@@ -47,10 +47,6 @@ class BotOwnerCommands(
         self.bot  = bot
         self.tree = bot.tree
 
-    message : Group = Group(
-        name        = "message",
-        description = "Bot owner message commands.",
-    )
     state   : Group = Group(
         name        = "state",
         description = "Bot owner state commands.",
