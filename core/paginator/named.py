@@ -1,3 +1,6 @@
+# ruff: file-ignore[private-member-access]
+# pyright: reportPrivateUsage = false
+
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import Protocol, final, override
@@ -23,6 +26,19 @@ __all__ = ["NamedPaginator", "PageData"]
 
 @dataclass(slots = True)
 class PageData:
+    """
+    A page to be used in a NamedPaginator.
+
+    Parameters
+    ----------
+    name : `str`
+        The name of the page. Displayed on the page's button.
+    content : `list[str | Item[LayoutView]]`
+        The content of the page.
+    emoji : `str | Emoji | PartialEmoji | None = None`
+        The emoji displayed on the page's button.
+    """
+
     name    : str
     content : list[str | Item[LayoutView]]
     emoji   : str | Emoji | PartialEmoji | None = None
@@ -74,11 +90,37 @@ class _NameRow(ActionRow["NamedPaginator"]):
 
     def _make_callback(self, index : int) -> _InteractionCallback:
         async def callback(interaction : Interaction) -> None:
-            await self.paginator.turn(interaction, index)
+            await self.paginator._turn(interaction, index)
         return callback
 
 
 class NamedPaginator(LayoutView):
+    """
+    Paginate a list of pages cleanly using buttons.
+
+    Parameters
+    ----------
+    data : `list[PageData]`
+        The list of pages.
+    /
+    *
+    color : `Color | None = None`
+        The color of the container. Dependent on the `container` parameter.
+    container : `bool = False`
+        Whether the paginator should be in a Container.
+    force : `bool = False`
+        Whether multiple strings passed into data will be concatenated with newlines instead of TextDisplays.
+    timeout : `int | None = 600`
+        The amount of seconds to pass before timing out, disabling all buttons and selects. If None, the paginator will never time out.
+
+    Raises
+    ------
+    ValueError
+        You passed only one page.
+    ValueError
+        You passed 'color' without passing 'container'.
+    """
+
     def __init__(
         self,
         data      : list[PageData],
@@ -168,6 +210,14 @@ class NamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_above(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items above the paginator.
+
+        Parameters
+        ----------
+        *items : `Item[LayoutView]`
+            The items to add above the paginator.
+        """
         self._above_items.extend(items)
         self.render()
 
@@ -176,6 +226,14 @@ class NamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_over(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items over the title of the paginator.
+
+        Parameters
+        ----------
+        *items : `Item[LayoutView]`
+            The items to add over the title of the paginator.
+        """
         self._over_items.extend(items)
         self.render()
 
@@ -184,6 +242,14 @@ class NamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_under(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items under the footer of the paginator.
+
+        Parameters
+        ----------
+        *items : `Item[LayoutView]`
+            The items to add under the footer of the paginator.
+        """
         self._under_items.extend(items)
         self.render()
 
@@ -192,6 +258,14 @@ class NamedPaginator(LayoutView):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def add_below(self, *items : Item[LayoutView]) -> None:
+        """
+        Add items below the paginator.
+
+        Parameters
+        ----------
+        *items : `Item[LayoutView]`
+            The items to add below the paginator.
+        """
         self._below_items.extend(items)
         self.render()
 
@@ -199,7 +273,7 @@ class NamedPaginator(LayoutView):
     # render
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def render(self) -> None:
+    def render(self) -> None:  # TODO(FinestPerfectionism): Make render private. See #1. # ruff: ignore[undocumented-public-method]
         self.clear_items()
 
         # ⸻ Add all items above.
@@ -262,7 +336,7 @@ class NamedPaginator(LayoutView):
     # turn
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def turn(self, interaction : Interaction, target : int) -> None:
+    async def _turn(self, interaction : Interaction, target : int) -> None:
         if 0 <= target < len(self.pages):
             previous_page = self.current_page
 

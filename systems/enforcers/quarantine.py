@@ -15,17 +15,19 @@ from core.moderation import QuarantineManager
 
 @final
 class QuarantineEnforcer(commands.Cog):
+    """Enforces quarantines by ensuring specific channel and role permissions and quarantine role members."""
+
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
-        self.loop_quarantineenforce.start()
+        self._loop_quarantineenforce.start()
 
     @override
     async def cog_unload(self) -> None:
-        self.loop_quarantineenforce.cancel()
+        self._loop_quarantineenforce.cancel()
 
     @tasks.loop(minutes = 10)
-    async def loop_quarantineenforce(self) -> None:
+    async def _loop_quarantineenforce(self) -> None:
         semaphore = Semaphore(5)
 
         for guild in self.bot.guilds:
@@ -39,12 +41,12 @@ class QuarantineEnforcer(commands.Cog):
                     if e.status == 429:
                         break
 
-    @loop_quarantineenforce.before_loop
-    async def beforeloop_quarantineenforce(self) -> None:
+    @_loop_quarantineenforce.before_loop
+    async def _beforeloop_quarantineenforce(self) -> None:
         await self.bot.wait_until_ready()
 
     @commands.Cog.listener("on_guild_channel_update")
-    async def listener_quarantineenforce_channelupdate(self, before : GuildChannel, after : GuildChannel) -> None:
+    async def _listener_quarantineenforce_channelupdate(self, before : GuildChannel, after : GuildChannel) -> None:
         quarantine_role = await self.bot.config(after.guild).get_moderation_quarantine_role()
         if not quarantine_role:
             return
@@ -74,7 +76,7 @@ class QuarantineEnforcer(commands.Cog):
         await manager.enforce("Channel")
 
     @commands.Cog.listener("on_guild_channel_create")
-    async def listener_quarantineenforce_channelcreate(self, channel : GuildChannel) -> None:
+    async def _listener_quarantineenforce_channelcreate(self, channel : GuildChannel) -> None:
         quarantine_role = await self.bot.config(channel.guild).get_moderation_quarantine_role()
         if not quarantine_role:
             return
@@ -83,7 +85,7 @@ class QuarantineEnforcer(commands.Cog):
         await manager.enforce("Channel")
 
     @commands.Cog.listener("on_guild_role_update")
-    async def listener_quarantineenforce_roleupdate(self, before : Role, after : Role) -> None:
+    async def _listener_quarantineenforce_roleupdate(self, before : Role, after : Role) -> None:
         if before.position == after.position:
             return
 
@@ -91,7 +93,7 @@ class QuarantineEnforcer(commands.Cog):
         await manager.enforce("Role")
 
     @commands.Cog.listener("on_member_update")
-    async def listener_quarantineenforce_memberupdate(self, before : Member, after : Member) -> None:
+    async def _listener_quarantineenforce_memberupdate(self, before : Member, after : Member) -> None:
         if before.roles == after.roles:
             return
 
@@ -106,7 +108,7 @@ class QuarantineEnforcer(commands.Cog):
         await manager.enforce("Members")
 
     @commands.Cog.listener("on_member_join")
-    async def listener_quarantineenforce_memberjoin(self, member : Member) -> None:
+    async def _listener_quarantineenforce_memberjoin(self, member : Member) -> None:
         manager = QuarantineManager(self.bot, member.guild)
         quarantined_members = await manager.get_members()
 
@@ -117,6 +119,6 @@ class QuarantineEnforcer(commands.Cog):
             await manager.enforce("Members")
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = QuarantineEnforcer(bot)
     await bot.add_cog(cog)

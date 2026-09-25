@@ -12,18 +12,20 @@ from core.utilities import format_now, format_table, is_bot_owner
 from ._base import attachments_display, channel_display, clean_and_truncate
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Message Delete Handling
+# Message Delete Logging
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 @final
-class MessageDeleteHandler(commands.Cog):
+class MessageDeleteLogging(commands.Cog):
+    """Logs message deletion for guilds with it enabled."""
+
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
     @commands.Cog.listener("on_message_delete")
-    async def listener_delete_messagedelete(self, message : Message) -> None:
+    async def _listener_delete_messagedelete(self, message : Message) -> None:
         content     = message.content
         attachments = message.attachments
         author      = message.author
@@ -90,6 +92,6 @@ class MessageDeleteHandler(commands.Cog):
         )
 
 
-async def setup(bot : Cordex) -> None:
-    cog = MessageDeleteHandler(bot)
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
+    cog = MessageDeleteLogging(bot)
     await bot.add_cog(cog)

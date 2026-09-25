@@ -25,6 +25,8 @@ MESSAGE_LINK_PATTERN = re.compile(r"https://discord(?:app)?\.com/channels/(\d+|@
 
 @final
 class Preview(commands.Cog):
+    """Provides message previews for Discord message links."""
+
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
@@ -123,14 +125,14 @@ class Preview(commands.Cog):
                 )
 
     @commands.Cog.listener("on_message")
-    async def listener_preview_message(self, message : Message) -> None:
+    async def _listener_preview_message(self, message : Message) -> None:
         await self._process_message_preview(message)
 
     @commands.Cog.listener("on_message_edit")
-    async def listener_preview_messageedit(self, _before : Message, after : Message) -> None:
+    async def _listener_preview_messageedit(self, _before : Message, after : Message) -> None:
         await self._process_message_preview(after)
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = Preview(bot)
     await bot.add_cog(cog)
