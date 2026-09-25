@@ -15,6 +15,7 @@ from bot.ui import (
     Container,
     Item,
     LayoutView,
+    Select,
     TextDisplay,
     VisibleLargeSeparator,
     blurple,
@@ -193,7 +194,7 @@ class NamedPaginator(LayoutView):
 
         if self.timeout is not None:
             for item in self.walk_children():
-                if isinstance(item, Button):
+                if isinstance(item, Button | Select):
                     item.disabled = True
 
         if self.message:
@@ -278,8 +279,7 @@ class NamedPaginator(LayoutView):
 
         # ⸻ Add all items above.
 
-        for item in self._above_items:
-            self.add_item(item)
+        self.append_items(self._above_items)
 
         page = self.pages[self.current_page]
 
@@ -324,13 +324,11 @@ class NamedPaginator(LayoutView):
         if self._container:
             self.add_item(Container(*items, color = self._color))
         else:
-            for item in items:
-                self.add_item(item)
+            self.append_items(items)
 
         # ⸻ Add all items below.
 
-        for item in self._below_items:
-            self.add_item(item)
+        self.append_items(self._below_items)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # turn

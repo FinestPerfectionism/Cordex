@@ -18,6 +18,7 @@ from bot.ui import (
     Button,
     Container,
     LayoutView,
+    Select,
     TextDisplay,
     Thumbnail,
     ThumbnailSection,
@@ -123,7 +124,7 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
         @override
         async def on_timeout(self) -> None:
             for item in self.walk_children():
-                if isinstance(item, Button):
+                if isinstance(item, Button | Select):
                     item.disabled = True
 
             if self.message:

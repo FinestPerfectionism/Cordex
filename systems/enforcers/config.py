@@ -23,6 +23,6 @@ class ConfigEnforcer(commands.Cog):
         await self.bot.config(guild).reset()
 
 
-async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
+async def setup(bot : Cordex) -> None:
     cog = ConfigEnforcer(bot)
     await bot.add_cog(cog)

@@ -16,6 +16,7 @@ from bot.ui import (
     Label,
     LayoutView,
     Modal,
+    Select,
     TextDisplay,
     TextInput,
     VisibleLargeSeparator,
@@ -257,7 +258,7 @@ class UnnamedPaginator(LayoutView):
 
         if self.timeout is not None:
             for item in self.walk_children():
-                if isinstance(item, Button):
+                if isinstance(item, Button | Select):
                     item.disabled = True
 
         if self.message:

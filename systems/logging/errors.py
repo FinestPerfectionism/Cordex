@@ -282,6 +282,6 @@ class ErrorLogger(commands.Cog):
         )
 
 
-async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
+async def setup(bot : Cordex) -> None:
     cog = ErrorLogger(bot)
     await bot.add_cog(cog)

@@ -133,6 +133,6 @@ class Preview(commands.Cog):
         await self._process_message_preview(after)
 
 
-async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
+async def setup(bot : Cordex) -> None:
     cog = Preview(bot)
     await bot.add_cog(cog)

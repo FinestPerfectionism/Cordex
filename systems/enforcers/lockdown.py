@@ -45,6 +45,6 @@ class LockdownEnforcer(commands.Cog):
         await manager.enforce()
 
 
-async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
+async def setup(bot : Cordex) -> None:
     cog = LockdownEnforcer(bot)
     await bot.add_cog(cog)
