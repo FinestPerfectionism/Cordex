@@ -235,7 +235,7 @@ class Cordex(commands.Bot):
             status                  = Status.online,
             tree_cls                = _Tree,
         )
-        self.version : float = 1.0
+        self.version = "0.9.0"
 
         self.db : Connection
 

@@ -30,7 +30,7 @@ async def run_about(interaction : Interaction) -> None:
                 format_table(
                     {
                        f"Owner{s}"     : ", ".join(owner.name for owner in owners),
-                        "Bot Version"  : client.version,
+                        "Bot Version"  : f"v{client.version}",
                         "Guilds"       : len(client.guilds),
                         "Unique Users" : len(client.users),
                         "Commands"     : len(client.get_commands_cache()),
