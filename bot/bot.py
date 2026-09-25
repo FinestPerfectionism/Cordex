@@ -137,11 +137,19 @@ class _ContextClass(BaseContext["Cordex"]):
 
         joiner = ",\n" if tall else ", "
 
-        return await self.send(
-            "```py"
-           f"{joiner.join(attrs)}"
-            "```",
+        output = (
+            "```py\n"
+           f"{joiner.join(attrs)}\n"
+            "```"
         )
+
+        if len(output) < 2000:
+            return await self.send(output)
+
+        module   = getattr(target, "__module__", "global")
+        qualname = getattr(target, "__qualname__", "object")
+        filename = f"{module}.{qualname}"
+        return await self.send(file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
 
     async def show_def(self, target : InspectableObject, /) -> Message:
         source = getsource(target)
@@ -154,9 +162,9 @@ class _ContextClass(BaseContext["Cordex"]):
         if len(msg) < 2000:
             return await self.send(msg)
 
-        module   = getattr(target, "__module__", "global").replace(".", "/")
-        qualname = getattr(target, "__qualname__", "object").replace(".", "/")
-        filename = f"{module}/{qualname}.py"
+        module   = getattr(target, "__module__", "global")
+        qualname = getattr(target, "__qualname__", "object")
+        filename = f"{module}.{qualname}"
         return await self.send(file = File(BytesIO(source.encode()), filename = filename))
 
     async def reference_delete(self) -> None:
