@@ -4,6 +4,7 @@ from discord import Member, User
 from discord.app_commands import (
     AppCommandError,
     Group,
+    allowed_installs,
     command,
     describe,
     guild_only,
@@ -54,10 +55,11 @@ from .primary.timeout import (
 
 @final
 @guild_only
+@allowed_installs(guilds = True, users = False)
 class ModerationCommands(
     commands.GroupCog,
     name        = "moderation",
-    description = "Moderators only — Moderation commands.",
+    description = "Moderation commands.",
 ):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()

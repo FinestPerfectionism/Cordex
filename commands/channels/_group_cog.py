@@ -1,7 +1,15 @@
 from typing import final
 
 from discord.abc import GuildChannel
-from discord.app_commands import Choice, choices, command, describe, guild_only, rename
+from discord.app_commands import (
+    Choice,
+    allowed_installs,
+    choices,
+    command,
+    describe,
+    guild_only,
+    rename,
+)
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -19,6 +27,7 @@ from .sync import run_channel_sync
 
 @final
 @guild_only
+@allowed_installs(guilds = True, users = False)
 class ChannelCommands(
     commands.GroupCog,
     name        = "channel",

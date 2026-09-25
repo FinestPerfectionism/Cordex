@@ -1,6 +1,6 @@
 from typing import final
 
-from discord.app_commands import command, guild_only
+from discord.app_commands import allowed_installs, command, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -17,6 +17,7 @@ from .info import run_server_info
 
 @final
 @guild_only
+@allowed_installs(guilds = True, users = False)
 class ServerCommands(
     commands.GroupCog,
     name        = "server",

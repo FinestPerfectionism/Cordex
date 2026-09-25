@@ -1,7 +1,15 @@
 from typing import final
 
 from discord import Role
-from discord.app_commands import Choice, choices, command, describe, guild_only, rename
+from discord.app_commands import (
+    Choice,
+    allowed_installs,
+    choices,
+    command,
+    describe,
+    guild_only,
+    rename,
+)
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -18,6 +26,7 @@ from .permissions import PermissionsFilter, run_role_permissions
 
 @final
 @guild_only
+@allowed_installs(guilds = True, users = False)
 class RoleCommands(
     commands.GroupCog,
     name        = "role",

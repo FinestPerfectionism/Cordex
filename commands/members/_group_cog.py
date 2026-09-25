@@ -1,7 +1,14 @@
 from typing import final
 
 from discord import Member
-from discord.app_commands import Choice, choices, command, describe, guild_only
+from discord.app_commands import (
+    Choice,
+    allowed_installs,
+    choices,
+    command,
+    describe,
+    guild_only,
+)
 from discord.ext import commands
 
 from bot import Cordex, Interaction
@@ -18,6 +25,7 @@ from .info import run_member_info
 
 @final
 @guild_only
+@allowed_installs(guilds = True, users = False)
 class MemberCommands(
     commands.GroupCog,
     name        = "member",
