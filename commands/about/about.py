@@ -29,14 +29,14 @@ async def run_about(interaction : Interaction) -> None:
             TextDisplay(
                 format_table(
                     {
-                       f"Owner{s}"       : ", ".join(owner.name for owner in owners),
-                        "Bot Version"    : client.version,
-                        "Guilds"         : len(client.guilds),
-                        "Unique Members" : len({member.id for guild in client.guilds for member in guild.members}),
-                        "Commands"       : len(client.get_commands_cache()),
-                        "Latency"        : f"{client.latency * 1000:.2f}",
-                        "Python"         : python_version(),
-                        "Discord.py"     : DISCORD_VERSION,
+                       f"Owner{s}"     : ", ".join(owner.name for owner in owners),
+                        "Bot Version"  : client.version,
+                        "Guilds"       : len(client.guilds),
+                        "Unique Users" : len(client.users),
+                        "Commands"     : len(client.get_commands_cache()),
+                        "Latency"      : f"{client.latency * 1000:.2f}",
+                        "Python"       : python_version(),
+                        "Discord.py"   : DISCORD_VERSION,
                     },
                 ),
             ),
