@@ -23,6 +23,6 @@ class StyleEnforcer(commands.Cog):
         await self.bot.reset_name_style(guild)
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = StyleEnforcer(bot)
     await bot.add_cog(cog)

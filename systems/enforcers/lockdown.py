@@ -13,7 +13,7 @@ from core.moderation import LockdownManager
 
 @final
 class LockdownEnforcer(commands.Cog):
-    """Enforces lockdowns by ensuring specific channel permissions."""
+    """Enforces lockdowns by ensuring specific channel permissions are configured properly."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
@@ -45,6 +45,6 @@ class LockdownEnforcer(commands.Cog):
         await manager.enforce()
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = LockdownEnforcer(bot)
     await bot.add_cog(cog)

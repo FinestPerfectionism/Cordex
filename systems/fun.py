@@ -48,6 +48,6 @@ class Fun(commands.Cog):
                         await message.reply(content = choice(responses))
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = Fun(bot)
     await bot.add_cog(cog)

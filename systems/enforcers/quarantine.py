@@ -15,7 +15,7 @@ from core.moderation import QuarantineManager
 
 @final
 class QuarantineEnforcer(commands.Cog):
-    """Enforces quarantines by ensuring specific channel and role permissions and quarantine role members."""
+    """Enforces quarantines by ensuring specific channel and role permissions are configured properly and quarantine role members remain in proper state."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
@@ -119,6 +119,6 @@ class QuarantineEnforcer(commands.Cog):
             await manager.enforce("Members")
 
 
-async def setup(bot : Cordex) -> None:
+async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = QuarantineEnforcer(bot)
     await bot.add_cog(cog)
