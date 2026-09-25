@@ -3,7 +3,7 @@ from typing import cast, final, override
 from discord import Guild
 from discord.ext import commands, tasks
 
-from bot import Cordex
+from bot import Cordex, log
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Configuration Enforcing
@@ -33,9 +33,19 @@ class ConfigEnforcer(commands.Cog):
         configured_guild_ids = await self.get_configured_guilds()
         true_guild_ids       = {guild.id for guild in self.bot.guilds}
 
+        reset = 0
         for guild_id in configured_guild_ids:
             if guild_id not in true_guild_ids:
-                await self.bot.config(self.bot.get_guild(guild_id) or await self.bot.fetch_guild(guild_id)).reset()
+                guild = await self.bot.fetch_guild(guild_id)
+
+                log.info("Found a configuration for a guild I am not in: %s. for Attempting a configuration reset.", guild.name)
+                try:
+                    await self.bot.config(guild).reset()
+                except Exception:
+                    log.exception("An exception occurred during this configuration reset. Moving on.")
+
+        if reset > 0:
+            log.info("Configuration reset complete. %s guilds reset.")
 
     @_loop_configenforce.before_loop
     async def _beforeloop_configenforce(self) -> None:
