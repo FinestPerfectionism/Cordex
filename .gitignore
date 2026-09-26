@@ -10,3 +10,4 @@ uv.lock
 replit.nix
 *.db
 pyproject.toml
+ruff.toml
