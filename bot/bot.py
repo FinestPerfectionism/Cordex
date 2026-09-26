@@ -146,9 +146,9 @@ class _ContextClass(BaseContext["Cordex"]):
         if len(output) < 2000:
             return await self.send(output)
 
-        module   = getattr(target, "__module__", "global")
-        qualname = getattr(target, "__qualname__", "object")
-        filename = f"{module}.{qualname}"
+        module   = getattr(target, "__module__", "global").replace(".", "-")
+        qualname = getattr(target, "__qualname__", "object").replace(".", "-")
+        filename = f"{module}-{qualname}.py"
         return await self.send(file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
 
     async def show_def(self, target : InspectableObject, /) -> Message:
@@ -162,9 +162,9 @@ class _ContextClass(BaseContext["Cordex"]):
         if len(msg) < 2000:
             return await self.send(msg)
 
-        module   = getattr(target, "__module__", "global")
-        qualname = getattr(target, "__qualname__", "object")
-        filename = f"{module}.{qualname}"
+        module   = getattr(target, "__module__", "global").replace(".", "-")
+        qualname = getattr(target, "__qualname__", "object").replace(".", "-")
+        filename = f"{module}-{qualname}.py"
         return await self.send(file = File(BytesIO(source.encode()), filename = filename))
 
     async def reference_delete(self) -> None:
