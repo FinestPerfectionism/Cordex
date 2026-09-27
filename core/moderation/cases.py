@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import final
 
-from discord import AllowedMentions, Color, Guild, Member
+from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Member
 
-from bot import Cordex
+from bot import Cordex, log
 from bot.types import GuildMessagable
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import (
@@ -179,13 +179,21 @@ class Cases:
         self.guild = guild
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # _log_failure
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def _log_failure(self, msg : str, /, *, rate_limited : bool = False) -> None:
+        rate_limited_msg = " — Rate-limited" if rate_limited else ""
+        log.exception("Failure during %s in guild %s, %s%s", msg, self.guild.name, self.guild.id, rate_limited_msg)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # create_case
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def create_case(self, case : Payloads) -> None:
+    async def create_case(self, case : Payloads) -> bool:
         log_channel = await self.bot.config(self.guild).get_moderation_logging_channel()
         if not log_channel:
-            return
+            return False
 
         data = CASE_MAP[type(case)]
 
@@ -298,10 +306,18 @@ class Cases:
 
         view.add_item(container)
 
-        await log_channel.send(
-            view             = view,
-            allowed_mentions = AllowedMentions.none(),
-        )
+        try:
+            await log_channel.send(
+                view             = view,
+                allowed_mentions = AllowedMentions.none(),
+            )
+        except Forbidden:
+            return False
+        except HTTPException:
+            self._log_failure("case logging")
+            return False
+        else:
+            return True
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_case

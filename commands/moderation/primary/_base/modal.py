@@ -30,6 +30,7 @@ from core.moderation import (
     KickPayload,
     PurgePayload,
     QuarantineAddPayload,
+    QuarantineManager,
     QuarantineRemovePayload,
     TimeoutAddPayload,
     TimeoutRemovePayload,
@@ -353,7 +354,7 @@ class ModerationModal(Modal):
                 f"{format_table(action_table)}"
             )
 
-        class Edit(ActionRow["ModerationView"]):
+        class EditOrExecuteRow(ActionRow["ModerationView"]):
             @button(label = "Edit", style = grey)
             async def btn_edit(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
                 view = self.view
@@ -525,7 +526,7 @@ class ModerationModal(Modal):
                 if modal.action_type == "Purge" and isinstance(result.data, int):
                     purge_line = f"Purged {result.data} message(s).\n"
                 else:
-                    purge_line = None
+                    purge_line = ""
 
                 subtitle = (
                     f"{purge_line}"
@@ -566,7 +567,7 @@ class ModerationModal(Modal):
                 self.add_items(
                     TextDisplay(summary),
                     VisibleLargeSeparator(),
-                    Edit(),
+                    EditOrExecuteRow(),
                 )
 
         view = ModerationView()
@@ -590,7 +591,8 @@ async def send_moderation_modal(
     client = interaction.client
     user   = interaction.user
 
-    if not interaction.guild or not isinstance(user, Member):
+    guild = interaction.guild
+    if not guild or not isinstance(user, Member):
         return
 
     check_target = purge_target if action_type == "Purge" else target
@@ -635,10 +637,28 @@ async def send_moderation_modal(
                 subtitle = {"target" : f"{check_target.mention} is higher in the hierarchy than you."},
             )
             return
+
         if check_target == client.user:
             await send_bad_argument(
                 interaction,
                 subtitle = {"target" : f"{check_target.mention} cannot be moderated."},
+            )
+            return
+
+        manager = QuarantineManager(client, guild)
+        quarantined_members = await manager.get_members()
+
+        if action_type == "Quarantine Remove" and check_target not in quarantined_members:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : f"{check_target.mention} is not quarantined."},
+            )
+            return
+
+        if action_type == "Quarantine Add" and check_target in quarantined_members:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : f"{check_target.mention} is already quarantined."},
             )
             return
 

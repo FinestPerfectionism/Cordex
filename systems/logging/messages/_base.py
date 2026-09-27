@@ -1,4 +1,3 @@
-
 from discord import Attachment, Thread
 from discord.utils import escape_markdown
 

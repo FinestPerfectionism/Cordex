@@ -34,7 +34,7 @@ class LockdownManager:
     # get_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_channels(self) -> list[GuildChannel] | None:
+    async def get_channels(self) -> list[GuildChannel]:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -85,22 +85,18 @@ class QuarantineManager:
     # get_members
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_members(self) -> set[Member] | None:
+    async def get_members(self) -> set[Member]:
         async with self.bot.db.execute(
             t"SELECT member_id FROM Quarantines WHERE guild_id = {self.guild.id}",
         ) as cursor:
             rows = await cursor.fetchall()
             if not rows:
-                return None
+                return set()
 
-        members : set[Member] = set()
-        for row in rows:
-            member_id = cast("int", row[0])
-            member    = self.guild.get_member(member_id)
-            if member:
-                members.add(member)
-
-        return members
+        return {
+            member for row in rows
+            if (member := self.guild.get_member(cast("int", row[0])))
+        }
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce

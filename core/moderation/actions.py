@@ -173,12 +173,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -227,12 +222,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -263,12 +253,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -316,12 +301,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -404,12 +384,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -440,12 +415,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -494,12 +464,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -541,12 +506,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -571,12 +531,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -600,12 +555,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
@@ -645,12 +595,7 @@ class Actions:
         else:
             failed = False
 
-        try:
-            await self._cases.create_case(action)
-        except Exception:
-            logged = False
-        else:
-            logged = True
+        logged = await self._cases.create_case(action)
 
         return ActionResult(
             failed = failed,
