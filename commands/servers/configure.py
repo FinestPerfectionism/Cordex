@@ -251,6 +251,8 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         if not self.view:
             return
 
+        await interaction.response.defer()
+
         manager = QuarantineManager(interaction.client, guild)
 
         try:
@@ -265,7 +267,7 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
         self.view.quarantine_id = role.id
         self.view.update_pages()
 
-        await interaction.response.edit_message(view = self.view)
+        await interaction.edit_original_response(view = self.view)
 
 
 @final
