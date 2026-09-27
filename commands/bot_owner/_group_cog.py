@@ -71,13 +71,11 @@ class BotOwnerCommands(
             try:
                 await after.clear_reactions()
             except Forbidden:
-                try:
+                with suppress(HTTPException):
                     message = await after.channel.fetch_message(after.id)
                     for reaction in message.reactions:
                         if reaction.me:
                             await reaction.remove(self.bot.user)
-                except HTTPException:
-                    pass
             except HTTPException:
                 pass
 

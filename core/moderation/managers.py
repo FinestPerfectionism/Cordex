@@ -34,7 +34,7 @@ class LockdownManager:
     # get_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_channels(self) -> list[GuildChannel]:
+    async def get_channels(self) -> set[GuildChannel]:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -50,7 +50,7 @@ class LockdownManager:
                     # await channel.set_permissions(
                     #     ...,
                     #     overwrite = ...,
-                    #     reason    = "Lockdown enforce.",
+                    #     reason    = "Lockdown enforcement.",
                     # )
                     ...
                 except Forbidden:
@@ -111,7 +111,12 @@ class QuarantineManager:
         if not quarantine_role:
             return
 
+        # ⸻ Channel
+
         if enforce_type == "Channel":
+
+            # ⸻
+
             wants_enforcement = await config.get_moderation_quarantine_enforce_channels()
             if not wants_enforcement:
                 return
@@ -139,7 +144,7 @@ class QuarantineManager:
                         await channel.set_permissions(
                             quarantine_role,
                             overwrite = overwrites,
-                            reason    = "Quarantine enforce.",
+                            reason    = "Quarantine enforcement.",
                         )
                     except Forbidden:
                         pass
@@ -148,6 +153,8 @@ class QuarantineManager:
                         self._log_failure("channel quarantine enforcement", rate_limited = rate_limited)
                         if rate_limited:
                             raise
+
+        # ⸻ Role
 
         if enforce_type == "Role":
             wants_enforcement = await config.get_moderation_quarantine_enforce_roles()
@@ -170,24 +177,30 @@ class QuarantineManager:
                     if rate_limited:
                         raise
 
+        # ⸻ Members
+
         if enforce_type == "Members":
             me = self.guild.me
             if not me or not me.guild_permissions.manage_roles:
                 return
 
-            true_quarantined                   = await self.get_members()
-            expected_quarantined : set[Member] = true_quarantined or set()
-            role_quarantined                   = set(quarantine_role.members)
+            true_quarantined     = await self.get_members()
+            expected_quarantined = true_quarantined or set()
+            role_quarantined     = set(quarantine_role.members)
+
+            # ⸻ Role members matches quarantined members. Exit.
 
             if role_quarantined == expected_quarantined:
                 return
 
             semaphore = Semaphore(5)
 
+            # ⸻ Some role members have the quarantine role but are not quarantined. Remove the role.
+
             for member in (role_quarantined - expected_quarantined):
                 async with semaphore:
                     try:
-                        await member.remove_roles(quarantine_role, reason = "Quarantine enforce.")
+                        await member.remove_roles(quarantine_role, reason = "Quarantine enforcement.")
                     except Forbidden:
                         pass
                     except HTTPException as e:
@@ -196,10 +209,12 @@ class QuarantineManager:
                         if rate_limited:
                             raise
 
+            # ⸻ Some quarantined members are missing the quarantine role. Add the role.
+
             for member in (expected_quarantined - role_quarantined):
                 async with semaphore:
                     try:
-                        await member.add_roles(quarantine_role, reason = "Quarantine enforce.")
+                        await member.add_roles(quarantine_role, reason = "Quarantine enforcement.")
                     except Forbidden:
                         pass
                     except HTTPException as e:
