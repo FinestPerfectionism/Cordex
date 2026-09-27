@@ -274,3 +274,12 @@ class ThumbnailSection[V : LayoutView](Section[V]):
     def __init__(self, *args : str | TextDisplay[V], thumbnail : Thumbnail[V]) -> None:
         super().__init__(*args, accessory = thumbnail)
         self.thumbnail : Thumbnail[V] = thumbnail
+
+
+def FallbackThumbnailSection[V : LayoutView](  # ruff: ignore[invalid-function-name]
+    content   : str,
+    /,
+    *,
+    thumbnail : Thumbnail[V] | None,
+) -> ThumbnailSection[V] | TextDisplay[V]:
+    return ThumbnailSection(content, thumbnail = thumbnail) if thumbnail else TextDisplay(content)
