@@ -6,10 +6,10 @@ from discord.ext import commands
 from bot import Cordex
 from bot.ui import (
     Container,
-    FallbackThumbnailSection,
     LayoutView,
     TextDisplay,
     Thumbnail,
+    ThumbnailSection,
 )
 from constants import BOT_GUILD_LOG_CHANNEL_ID, COLOR_RED
 from core.utilities import format_now, format_table
@@ -33,23 +33,23 @@ class GuildRemoveLogging(commands.Cog):
         if not owner:
             return
 
+        info = format_table(
+            {
+                "Owner"          : f"{owner.mention} | {owner.id}",
+                "Members"        : len(guild.members),
+                "Current Guilds" : len(self.bot.guilds),
+                "Current Users"  : len(self.bot.users),
+            },
+        )
+
         @final
         class RemoveView(LayoutView):
-            container = Container[Self](
-                TextDisplay(f"# Left Guild | {format_now("F")}"),
-                FallbackThumbnailSection(
-                    format_table(
-                        {
-                            "Owner"          : f"{owner.mention} | {owner.id}",
-                            "Members"        : len(guild.members),
-                            "Current Guilds" : len(self.bot.guilds),
-                            "Current Users"  : len(self.bot.users),
-                        },
-                    ),
-                    thumbnail = Thumbnail[Self](guild.icon.url) if guild.icon else None,
-                ),
-                color = COLOR_RED,
-            )
+            container = Container[Self](TextDisplay(f"# Left Guild | {format_now("F")}"), color = COLOR_RED)
+
+            if guild.icon:
+                container.add_item(ThumbnailSection(info, thumbnail = Thumbnail[Self](guild.icon.url)))
+            else:
+                container.add_text(info)
 
         log_channel = self.bot.get_channel(BOT_GUILD_LOG_CHANNEL_ID) or await self.bot.fetch_channel(BOT_GUILD_LOG_CHANNEL_ID)
 
