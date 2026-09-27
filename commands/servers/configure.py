@@ -324,6 +324,8 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
             await send_bad_operation(interaction, title = "update quarantine enforcement")
             raise
 
+        await interaction.response.defer()
+
         channels = self._channels.value
         roles    = self._roles.value
 
@@ -338,7 +340,7 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         if roles:
             await manager.enforce("Role")
 
-        await interaction.response.edit_message(view = self.view)
+        await interaction.edit_original_response(view = self.view)
 
 
 @final
