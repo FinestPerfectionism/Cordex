@@ -25,11 +25,6 @@ class Restriction:
         return any(role.id in self.role_ids for role in member.roles)
 
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Unrestrictable Commands
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
 def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:  # codespell:ignore
     if isinstance(command, Group):
         return False
@@ -41,18 +36,13 @@ def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[Gro
     return not command.extras.get("unrestrictable", False)
 
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Required-Configuration Commands
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-def requires_configuration[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:
-    command.extras["requires_configuration"] = True
+def requires_restriction[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:
+    command.extras["requires_restriction"] = True
     return command
 
 
-def is_configuration_required[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:
-    if isinstance(command, Group):
+def is_restriction_required[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:
+    if type(command) is Group:
         return False
 
-    return bool(command.extras.get("requires_configuration", False))
+    return command.extras.get("requires_restriction", False) is True

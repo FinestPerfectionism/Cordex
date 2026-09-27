@@ -38,8 +38,8 @@ from core.state import (
     Connection,
     Restriction,
     connect,
-    is_configuration_required,
     is_restrictable,
+    is_restriction_required,
 )
 
 from .types import AnnotatedCommand, LambdaInter, NameStyleResult
@@ -198,18 +198,18 @@ class _Tree(CommandTree):
         if not is_restrictable(command):
             return True
 
+        if user == guild.owner:
+            return True
+
         restriction = client.get_restriction(guild.id, command.qualified_name)
         if restriction is None:
-            if is_configuration_required(command):
+            if is_restriction_required(command):
                 await interaction.response.send_message(
                    f"{DENIED_EMOJI} **Failed to run command!**\n"
-                    "This command hasn't been configured.\n",
+                    "This command requires restriction, but none have been configured.\n",
                     ephemeral = True,
                 )
                 return False
-            return True
-
-        if user == guild.owner:
             return True
 
         user_is_bot_owner = user in client.developers

@@ -39,7 +39,7 @@ from constants import (
 from core.exceptions import send_bad_argument, send_bad_operation, send_bad_request
 from core.paginator import UnnamedPaginator
 from core.responses import FormatOverride, PunctuationOverride, format_send
-from core.state import is_configuration_required, is_restrictable
+from core.state import is_restrictable, is_restriction_required
 from core.utilities import format_command
 
 type CommandList = list[AnnotatedCommand]
@@ -150,16 +150,22 @@ class _ConfigModal(Modal):
             "Please note that the guild owner and bot owners are *always* allowed to run commands.",
         )
 
+        configuration_required = is_restriction_required(command)
+
+        description = "The users/roles allowed to run the command. Uses OR logic."
+        if not configuration_required:
+            description += " Leave empty to allow everyone."
+
         self._allowed = MentionableSelect[Self](
             placeholder    = "Enter up to 25 users/roles...",
-            min_values     = 0,
+            min_values     = 1 if configuration_required else 0,
             max_values     = 25,
             default_values = allowed,
-            required       = False,
+            required       = configuration_required,
         )
         self.allowed  = Label[Self](
             text        = "Allowed",
-            description = "The users/roles allowed to run the command. Uses OR logic. Leave empty to allow everyone.",
+            description = description,
             component   = self._allowed,
         )
 
@@ -187,13 +193,6 @@ class _ConfigModal(Modal):
             await send_bad_argument(
                 interaction,
                 subtitle = {"allowed" : "The @everyone role cannot be used as a command restriction."},
-            )
-            return
-
-        if not allowed and is_configuration_required(self._command):
-            await send_bad_argument(
-                interaction,
-                subtitle = {"allowed" : "This command requires configuration and cannot have its restrictions cleared."},
             )
             return
 
@@ -303,7 +302,7 @@ class _GroupConfigModal(Modal):
                 if not force and client.get_restriction(guild.id, command.qualified_name) is not None:
                     continue
 
-                if not allowed and is_configuration_required(command):
+                if not allowed and is_restriction_required(command):
                     continue
 
                 await config.set_command_allowed(command.qualified_name, allowed)
