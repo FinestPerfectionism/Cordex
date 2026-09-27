@@ -13,6 +13,7 @@ from discord.app_commands import (
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.state import requires_configuration
 from core.utilities import unimplemented
 
 from .compare import run_channel_compare
@@ -57,6 +58,7 @@ class ChannelCommands(
     # /channel sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "sync",
         description = "Sync a channel's permissions to it's category. Defaults to the current one.",
@@ -73,6 +75,7 @@ class ChannelCommands(
     # /channel compare Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "compare",
         description = "List all differing permissions for two selected channels.",
@@ -98,6 +101,7 @@ class ChannelCommands(
     # /channel permissions Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "permissions",
         description = "List permissions for a selected channel.",

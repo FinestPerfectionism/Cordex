@@ -39,3 +39,20 @@ def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[Gro
         return False
 
     return not command.extras.get("unrestrictable", False)
+
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Required-Configuration Commands
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+def requires_configuration[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:
+    command.extras["requires_configuration"] = True
+    return command
+
+
+def is_configuration_required[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:
+    if isinstance(command, Group):
+        return False
+
+    return bool(command.extras.get("requires_configuration", False))

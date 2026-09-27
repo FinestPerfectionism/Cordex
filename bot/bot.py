@@ -33,7 +33,14 @@ from discord.http import Route
 
 from constants import DENIED_EMOJI, DEVELOPER_IDS, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
-from core.state import Config, Connection, Restriction, connect, is_restrictable
+from core.state import (
+    Config,
+    Connection,
+    Restriction,
+    connect,
+    is_configuration_required,
+    is_restrictable,
+)
 
 from .types import AnnotatedCommand, LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
@@ -192,7 +199,14 @@ class _Tree(CommandTree):
             return True
 
         restriction = client.get_restriction(guild.id, command.qualified_name)
-        if not restriction:
+        if restriction is None:
+            if is_configuration_required(command):
+                await interaction.response.send_message(
+                   f"{DENIED_EMOJI} **Failed to run command!**\n"
+                    "This command hasn't been configured.\n",
+                    ephemeral = True,
+                )
+                return False
             return True
 
         if user == guild.owner:

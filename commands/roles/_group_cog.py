@@ -13,6 +13,7 @@ from discord.app_commands import (
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.state import requires_configuration
 
 from .compare import run_role_compare
 from .info import run_role_info
@@ -92,6 +93,7 @@ class RoleCommands(
     # /role permissions Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "permissions",
         description = "List permissions for a selected role.",
@@ -119,6 +121,7 @@ class RoleCommands(
     # /role compare Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "compare",
         description = "List all differing permissions for two selected roles.",

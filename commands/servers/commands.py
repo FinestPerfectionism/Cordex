@@ -13,6 +13,7 @@ from bot.ui import (
     ActionRow,
     Button,
     ButtonSection,
+    Checkbox,
     Container,
     Item,
     Label,
@@ -38,7 +39,7 @@ from constants import (
 from core.exceptions import send_bad_argument, send_bad_operation, send_bad_request
 from core.paginator import UnnamedPaginator
 from core.responses import FormatOverride, PunctuationOverride, format_send
-from core.state import is_restrictable
+from core.state import is_configuration_required, is_restrictable
 from core.utilities import format_command
 
 type CommandList = list[AnnotatedCommand]
@@ -189,6 +190,13 @@ class _ConfigModal(Modal):
             )
             return
 
+        if not allowed and is_configuration_required(self._command):
+            await send_bad_argument(
+                interaction,
+                subtitle = {"allowed" : "This command requires configuration and cannot have its restrictions cleared."},
+            )
+            return
+
         try:
             await config.set_command_allowed(self._command.qualified_name, allowed)
         except Exception:
@@ -233,6 +241,107 @@ class _ConfigButton(Button[UnnamedPaginator]):
         allowed = await interaction.client.config(guild).get_command_allowed(self._command.qualified_name)
 
         await interaction.response.send_modal(_ConfigModal(self._command, allowed))
+
+
+@final
+class _GroupConfigModal(Modal):
+    def __init__(self, commands : CommandList, group_name : str) -> None:
+        super().__init__(title = f"Configuring {group_name}")
+        self._commands = commands
+
+        self._allowed = MentionableSelect[Self](
+            placeholder = "Enter up to 25 users/roles...",
+            min_values  = 0,
+            max_values  = 25,
+            required    = False,
+        )
+        self.allowed  = Label[Self](
+            text        = "Allowed",
+            description = "The users/roles allowed to run these commands. Uses OR logic. Leave empty to allow everyone.",
+            component   = self._allowed,
+        )
+
+        self._force = Checkbox[Self](default = True)
+        self.force  = Label[Self](
+            text        = "Force",
+            description = "Whether to overwrite commands that are already restricted.",
+            component   = self._force,
+        )
+
+        self.add_items(self.allowed, self.force)
+
+    @override
+    async def on_submit(self, interaction : Interaction) -> None:
+        allowed = self._allowed.values
+        force   = self._force.value
+
+        client = interaction.client
+        guild  = interaction.guild
+        if not guild:
+            return
+
+        config = client.config(guild)
+        quarantine_role = await config.get_moderation_quarantine_role()
+        if quarantine_role in allowed:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"allowed" : "The quarantine role cannot be used as a command restriction."},
+            )
+            return
+
+        if guild.default_role in allowed:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"allowed" : "The @everyone role cannot be used as a command restriction."},
+            )
+            return
+
+        affected : CommandList = []
+
+        try:
+            for command in self._commands:
+                if not force and client.get_restriction(guild.id, command.qualified_name) is not None:
+                    continue
+
+                if not allowed and is_configuration_required(command):
+                    continue
+
+                await config.set_command_allowed(command.qualified_name, allowed)
+                affected.append(command)
+        except Exception:
+            await send_bad_operation(interaction, title = "configure group")
+            raise
+
+        if not affected:
+            subtitle = "No commands in this group were affected."
+        if len(affected) == len(self._commands):
+            subtitle = "Every command in this group was affected."
+        else:
+            mentions = "\n".join(format_command(client, command.qualified_name) for command in affected)
+            subtitle = (
+                "Affected commands:\n"
+               f"{mentions}"
+            )
+
+        await format_send(
+            interaction,
+            msg_type = "success",
+            title    = "configured group",
+            subtitle = subtitle,
+            override = FormatOverride(punctuation = PunctuationOverride(subtitle = False)),
+        )
+
+
+@final
+class _GroupConfigButton(Button[UnnamedPaginator]):
+    def __init__(self, commands : CommandList, group_name : str) -> None:
+        self._commands   = commands
+        self._group_name = group_name
+        super().__init__(emoji = PENCIL_EMOJI)
+
+    @override
+    async def callback(self, interaction : Interaction) -> None:
+        await interaction.response.send_modal(_GroupConfigModal(self._commands, self._group_name))
 
 
 @final
@@ -291,23 +400,29 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
         match value:
             case "moderation":
-                filtered = [c for c in self._commands if c.qualified_name.startswith("moderation")]
-                title    = f"# {MODERATION_EMOJI} Moderation Commands"
+                filtered   = [c for c in self._commands if c.qualified_name.startswith("moderation")]
+                title      = f"# {MODERATION_EMOJI} Moderation Commands"
+                group_name = "Moderation Commands"
             case "server":
-                filtered = [c for c in self._commands if c.qualified_name.startswith("server")]
-                title    = f"# {EMOJI_EMOJI} Server Commands"
+                filtered   = [c for c in self._commands if c.qualified_name.startswith("server")]
+                title      = f"# {EMOJI_EMOJI} Server Commands"
+                group_name = "Server Commands"
             case "role":
-                filtered = [c for c in self._commands if c.qualified_name.startswith("role")]
-                title    = f"# {PENCIL_EMOJI} Role Commands"
+                filtered   = [c for c in self._commands if c.qualified_name.startswith("role")]
+                title      = f"# {PENCIL_EMOJI} Role Commands"
+                group_name = "Role Commands"
             case "channel":
-                filtered = [c for c in self._commands if c.qualified_name.startswith("channel")]
-                title    = f"# {TEXT_EMOJI} Channel Commands"
+                filtered   = [c for c in self._commands if c.qualified_name.startswith("channel")]
+                title      = f"# {TEXT_EMOJI} Channel Commands"
+                group_name = "Channel Commands"
             case "member":
-                filtered = [c for c in self._commands if c.qualified_name.startswith("member")]
-                title    = f"# {MEMBER_EMOJI} Member Commands"
+                filtered   = [c for c in self._commands if c.qualified_name.startswith("member")]
+                title      = f"# {MEMBER_EMOJI} Member Commands"
+                group_name = "Member Commands"
             case _:
-                filtered = self._commands
-                title    = f"# {HORIZONTAL_SETTINGS} All Commands"
+                filtered   = self._commands
+                title      = f"# {HORIZONTAL_SETTINGS} All Commands"
+                group_name = None
 
         if not self.view:
             return
@@ -315,6 +430,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
         for option in self.options:
             option.default = (option.value == value)
 
+        self.view.set_title_button(_GroupConfigButton(filtered, group_name) if group_name is not None else None)
         self.view.update_data(title, _build_sections(interaction.client, filtered))
 
         await interaction.response.edit_message(view = self.view)

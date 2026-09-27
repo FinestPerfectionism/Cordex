@@ -4,6 +4,7 @@ from discord.app_commands import allowed_installs, command, guild_only
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.state import requires_configuration
 
 from .commands import run_server_commands
 from .configure import run_server_configure
@@ -31,6 +32,7 @@ class ServerCommands(
     # /server commands Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "commands",
         description = "Configure guild commands.",
@@ -42,6 +44,7 @@ class ServerCommands(
     # /server configure Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "configure",
         description = "Configure guild settings.",
@@ -53,6 +56,7 @@ class ServerCommands(
     # /server health Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @requires_configuration
     @command(
         name        = "health",
         description = "Run a health check on this guild.",

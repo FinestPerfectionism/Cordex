@@ -11,6 +11,7 @@ from bot import Interaction
 from bot.ui import (
     ActionRow,
     Button,
+    ButtonSection,
     Container,
     Item,
     Label,
@@ -29,6 +30,7 @@ __all__ = ["UnnamedPaginator"]
 
 type _ItemsList      = list[Item[LayoutView]]
 type _ItemsOrStrList = list[str | Item[LayoutView]]
+type _TitleButton    = Button[UnnamedPaginator]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Unnamed Paginator
@@ -225,10 +227,11 @@ class UnnamedPaginator(LayoutView):
         self.current_page : int                   = 0
         self._page_row    : _PageRow | None       = _PageRow(self) if len(self.pages) >= 2 else None
 
-        self._above_items : _ItemsList = []
-        self._over_items  : _ItemsList = []
-        self._under_items : _ItemsList = []
-        self._below_items : _ItemsList = []
+        self._above_items  : _ItemsList          = []
+        self._over_items   : _ItemsList          = []
+        self._under_items  : _ItemsList          = []
+        self._below_items  : _ItemsList          = []
+        self._title_button : _TitleButton | None = None
 
         # ⸻ color is dependent on container.
 
@@ -342,6 +345,14 @@ class UnnamedPaginator(LayoutView):
         self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # set_title_button
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    def set_title_button(self, title_button : _TitleButton | None, /) -> None:
+        self._title_button = title_button
+        self._render()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # update_data
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -403,9 +414,17 @@ class UnnamedPaginator(LayoutView):
             if accumulated:
                 page_items.append(TextDisplay("\n".join(accumulated)))
 
+        title_button = self._title_button
+
+        title_item : Item[LayoutView] = (
+            ButtonSection(self._title, button = title_button)
+            if title_button is not None else
+            TextDisplay(self._title)
+        )
+
         items : _ItemsList = [
             *self._over_items,
-            TextDisplay(self._title),
+            title_item,
             VisibleLargeSeparator(),
             *page_items,
             VisibleLargeSeparator(),
