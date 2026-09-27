@@ -1,4 +1,3 @@
-from asyncio import Semaphore
 from typing import final, override
 
 from discord import HTTPException, Member, Role
@@ -28,18 +27,15 @@ class QuarantineEnforcer(commands.Cog):
 
     @tasks.loop(minutes = 10)
     async def _loop_quarantineenforce(self) -> None:
-        semaphore = Semaphore(5)
-
         for guild in self.bot.guilds:
-            async with semaphore:
-                manager = QuarantineManager(self.bot, guild)
-                try:
-                    await manager.enforce("Channel")
-                    await manager.enforce("Role")
-                    await manager.enforce("Members")
-                except HTTPException as e:
-                    if e.status == 429:
-                        break
+            manager = QuarantineManager(self.bot, guild)
+            try:
+                await manager.enforce("Channel")
+                await manager.enforce("Role")
+                await manager.enforce("Members")
+            except HTTPException as e:
+                if e.status == 429:
+                    break
 
     @_loop_quarantineenforce.before_loop
     async def _beforeloop_quarantineenforce(self) -> None:

@@ -1,4 +1,3 @@
-from asyncio import Semaphore
 from typing import Literal, cast, final
 
 from discord import Forbidden, Guild, HTTPException, Member
@@ -42,24 +41,21 @@ class LockdownManager:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def enforce(self) -> None:
-        semaphore = Semaphore(5)
-
         for _channel in self.guild.channels:
-            async with semaphore:
-                try:
-                    # await channel.set_permissions(
-                    #     ...,
-                    #     overwrite = ...,
-                    #     reason    = "Lockdown enforcement.",
-                    # )
-                    ...
-                except Forbidden:
-                    pass
-                except HTTPException as e:
-                    rate_limited = e.status == 429
-                    self._log_failure("channel lockdown enforcement", rate_limited = rate_limited)
-                    if rate_limited:
-                        raise
+            try:
+                # await channel.set_permissions(
+                #     ...,
+                #     overwrite = ...,
+                #     reason    = "Lockdown enforcement.",
+                # )
+                ...
+            except Forbidden:
+                pass
+            except HTTPException as e:
+                rate_limited = e.status == 429
+                self._log_failure("channel lockdown enforcement", rate_limited = rate_limited)
+                if rate_limited:
+                    raise
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Quarantine Manager
@@ -125,34 +121,31 @@ class QuarantineManager:
             if not me or not me.guild_permissions.manage_channels:
                 return
 
-            semaphore = Semaphore(5)
-
             for channel in self.guild.channels:
-                async with semaphore:
-                    overwrites = channel.overwrites_for(quarantine_role)
+                overwrites = channel.overwrites_for(quarantine_role)
 
-                    overwrites.update(
-                        send_messages_in_threads = False,
-                        create_instant_invite    = False,
-                        send_messages            = False,
-                        create_public_threads    = False,
-                        create_private_threads   = False,
-                        read_messages            = False,
+                overwrites.update(
+                    send_messages_in_threads = False,
+                    create_instant_invite    = False,
+                    send_messages            = False,
+                    create_public_threads    = False,
+                    create_private_threads   = False,
+                    read_messages            = False,
+                )
+
+                try:
+                    await channel.set_permissions(
+                        quarantine_role,
+                        overwrite = overwrites,
+                        reason    = "Quarantine enforcement.",
                     )
-
-                    try:
-                        await channel.set_permissions(
-                            quarantine_role,
-                            overwrite = overwrites,
-                            reason    = "Quarantine enforcement.",
-                        )
-                    except Forbidden:
-                        pass
-                    except HTTPException as e:
-                        rate_limited = e.status == 429
-                        self._log_failure("channel quarantine enforcement", rate_limited = rate_limited)
-                        if rate_limited:
-                            raise
+                except Forbidden:
+                    pass
+                except HTTPException as e:
+                    rate_limited = e.status == 429
+                    self._log_failure("channel quarantine enforcement", rate_limited = rate_limited)
+                    if rate_limited:
+                        raise
 
         # ⸻ Role
 
@@ -193,32 +186,28 @@ class QuarantineManager:
             if role_quarantined == expected_quarantined:
                 return
 
-            semaphore = Semaphore(5)
-
             # ⸻ Some role members have the quarantine role but are not quarantined. Remove the role.
 
             for member in (role_quarantined - expected_quarantined):
-                async with semaphore:
-                    try:
-                        await member.remove_roles(quarantine_role, reason = "Quarantine enforcement.")
-                    except Forbidden:
-                        pass
-                    except HTTPException as e:
-                        rate_limited = e.status == 429
-                        self._log_failure("member quarantine removal", rate_limited = rate_limited)
-                        if rate_limited:
-                            raise
+                try:
+                    await member.remove_roles(quarantine_role, reason = "Quarantine enforcement.")
+                except Forbidden:
+                    pass
+                except HTTPException as e:
+                    rate_limited = e.status == 429
+                    self._log_failure("member quarantine removal", rate_limited = rate_limited)
+                    if rate_limited:
+                        raise
 
             # ⸻ Some quarantined members are missing the quarantine role. Add the role.
 
             for member in (expected_quarantined - role_quarantined):
-                async with semaphore:
-                    try:
-                        await member.add_roles(quarantine_role, reason = "Quarantine enforcement.")
-                    except Forbidden:
-                        pass
-                    except HTTPException as e:
-                        rate_limited = e.status == 429
-                        self._log_failure("member quarantine addition", rate_limited = rate_limited)
-                        if rate_limited:
-                            raise
+                try:
+                    await member.add_roles(quarantine_role, reason = "Quarantine enforcement.")
+                except Forbidden:
+                    pass
+                except HTTPException as e:
+                    rate_limited = e.status == 429
+                    self._log_failure("member quarantine addition", rate_limited = rate_limited)
+                    if rate_limited:
+                        raise

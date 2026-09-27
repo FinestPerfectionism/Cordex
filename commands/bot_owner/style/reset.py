@@ -1,4 +1,3 @@
-
 from bot import Interaction
 from core.exceptions import send_bad_operation
 from core.responses import format_send
@@ -9,13 +8,7 @@ from core.utilities import codeblock
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_style_reset(
-    interaction : Interaction,
-    *,
-    branded     : bool | None = True,
-) -> None:
-    if branded is None:
-        branded = True
+async def run_bo_style_reset(interaction : Interaction, *, branded : bool | None = True) -> None:
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
@@ -23,7 +16,7 @@ async def run_bo_style_reset(
         return
 
     try:
-        await interaction.client.reset_name_style(interaction.guild, branded = branded)
+        await interaction.client.reset_name_style(interaction.guild, branded = branded or True)
         await format_send(
             interaction,
             msg_type = "success",
