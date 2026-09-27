@@ -504,7 +504,7 @@ class ModerationModal(Modal):
                 table : dict[str, str] = {}
                 statuses : list[bool] = []
 
-                footer = None
+                notes : list[str] = []
                 if not result.failed:
                     table[modal.action_type] = f"{ACCEPTED_EMOJI} Success."
                     statuses.append(True)
@@ -518,6 +518,7 @@ class ModerationModal(Modal):
                 elif result.dmed is False:
                     table["DMed Member"] = f"{DENIED_EMOJI} Failure."
                     statuses.append(False)
+                    notes.append("**DMed Member:** This failed because the target has their DMs closed.")
 
                 if result.logged is True:
                     table["Logged"] = f"{ACCEPTED_EMOJI} Success."
@@ -527,7 +528,7 @@ class ModerationModal(Modal):
                     statuses.append(False)
 
                     if not await client.config(guild).get_moderation_logging_channel():
-                        footer = "This server has not set up a logging channel for moderation, so the action couldn't be logged"
+                        notes.append("**Logged:** This server has not set up a logging channel for moderation.")
 
                 if modal.action_type == "Purge" and isinstance(result.data, int):
                     purge_line = f"Purged {result.data} message(s).\n"
@@ -538,6 +539,8 @@ class ModerationModal(Modal):
                     f"{purge_line}"
                     f"{format_table(table)}"
                 )
+
+                footer = "\n".join(notes)
 
                 if all(statuses):
                     msg_type = "success"
@@ -561,7 +564,13 @@ class ModerationModal(Modal):
                             title    = title,
                             subtitle = subtitle,
                             footer   = footer,
-                            override = FormatOverride(prefix = False, punctuation = PunctuationOverride(title = False)),
+                            override = FormatOverride(
+                                prefix      = False,
+                                punctuation = PunctuationOverride(
+                                    title  = False,
+                                    footer = False,
+                                ),
+                            ),
                         ),
                     ),
                 )
