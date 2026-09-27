@@ -35,7 +35,7 @@ from core.moderation import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-from core.responses import FormatOverride, format_message
+from core.responses import FormatOverride, PunctuationOverride, format_message
 from core.utilities import format_table
 
 from .utilities import check_hierarchy
@@ -378,14 +378,16 @@ class ModerationModal(Modal):
 
             @button(label = "Execute", style = red)
             async def btn_execute(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
+                client = interaction.client
+                moderator = interaction.user
+
                 await interaction.response.defer(ephemeral = True)
 
                 guild = interaction.guild
-                if not guild or not isinstance(interaction.user, Member):
+                if not guild or not isinstance(moderator, Member):
                     return
 
-                actions   = Actions(interaction.client, guild)
-                moderator = interaction.user
+                actions = Actions(client, guild)
 
                 match modal.action_type:
                     case "Ban Add":
@@ -502,26 +504,30 @@ class ModerationModal(Modal):
                 table : dict[str, str] = {}
                 statuses : list[bool] = []
 
+                footer = None
                 if not result.failed:
                     table[modal.action_type] = f"{ACCEPTED_EMOJI} Success."
                     statuses.append(True)
                 else:
-                    table[modal.action_type] = f"{DENIED_EMOJI} Fail."
+                    table[modal.action_type] = f"{DENIED_EMOJI} Failure."
                     statuses.append(False)
 
                 if result.dmed is True:
                     table["DMed Member"] = f"{ACCEPTED_EMOJI} Success."
                     statuses.append(True)
                 elif result.dmed is False:
-                    table["DMed Member"] = f"{DENIED_EMOJI} Fail."
+                    table["DMed Member"] = f"{DENIED_EMOJI} Failure."
                     statuses.append(False)
 
                 if result.logged is True:
                     table["Logged"] = f"{ACCEPTED_EMOJI} Success."
                     statuses.append(True)
                 elif result.logged is False:
-                    table["Logged"] = f"{DENIED_EMOJI} Fail."
+                    table["Logged"] = f"{DENIED_EMOJI} Failure."
                     statuses.append(False)
+
+                    if not await client.config(guild).get_moderation_logging_channel():
+                        footer = "This server has not set up a logging channel for moderation, so the action couldn't be logged"
 
                 if modal.action_type == "Purge" and isinstance(result.data, int):
                     purge_line = f"Purged {result.data} message(s).\n"
@@ -541,11 +547,11 @@ class ModerationModal(Modal):
                     msg_type = "error"
 
                 if all(statuses):
-                    title = f"The {modal.name} was successful"
+                    title = f"The {modal.name} was successful."
                 elif any(statuses):
-                    title = f"The {modal.name} was partially successful"
+                    title = f"The {modal.name} was partially successful."
                 else:
-                    title = f"The {modal.name} failed"
+                    title = f"The {modal.name} failed."
 
                 result_view = LayoutView()
                 result_view.add_item(
@@ -554,7 +560,8 @@ class ModerationModal(Modal):
                             msg_type = msg_type,
                             title    = title,
                             subtitle = subtitle,
-                            override = FormatOverride(prefix = False),
+                            footer   = footer,
+                            override = FormatOverride(prefix = False, punctuation = PunctuationOverride(title = False)),
                         ),
                     ),
                 )
