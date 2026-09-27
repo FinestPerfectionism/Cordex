@@ -13,16 +13,19 @@ log = get_logger("Cordex")
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def discover_cogs(*package_names : str, priority : list[str] | None = None) -> list[str]:
+def discover_cogs(*package_names : str) -> list[str]:
     """
     Recursively searches files and loads Discord.py 'cogs' by finding all files with a callable `setup` function.
 
     Parameters
     ----------
     *package_names : `str`
-        ...
-    priority : `list[str] | None = None`
-        ...
+        The names of the packages to search for cogs.
+
+    Returns
+    -------
+    `list[str]`
+        The list of discovered cog names.
     """
     seen : set[str] = set()
 
@@ -47,11 +50,5 @@ def discover_cogs(*package_names : str, priority : list[str] | None = None) -> l
 
             if callable(getattr(module, "setup", None)):
                 seen.add(name)
-
-    if priority:
-        priority_set   = set(priority)
-        ordered_cogs   = [module_name for module_name in priority if module_name in seen]
-        remaining_cogs = sorted([module_name for module_name in seen if module_name not in priority_set])
-        return ordered_cogs + remaining_cogs
 
     return sorted(seen)

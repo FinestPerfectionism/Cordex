@@ -36,12 +36,12 @@ def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[Gro
     return not command.extras.get("unrestrictable", False)
 
 
-def requires_restriction[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:
+def requires_restriction[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:  # codespell:ignore
     command.extras["requires_restriction"] = True
     return command
 
 
-def is_restriction_required[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:
+def is_restriction_required[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:  # codespell:ignore
     if type(command) is Group:
         return False
 
