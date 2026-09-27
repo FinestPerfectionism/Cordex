@@ -1,4 +1,4 @@
-from typing import cast, final, override
+from typing import final, override
 
 from discord import Guild
 from discord.ext import commands, tasks
@@ -19,10 +19,10 @@ class ConfigEnforcer(commands.Cog):
         self.bot = bot
         self._loop_configenforce.start()
 
-    async def get_configured_guilds(self) -> set[int]:
+    async def _get_configured_guilds(self) -> set[int]:
         async with self.bot.db.execute(t"SELECT DISTINCT guild_id FROM Config;") as cursor:
             rows = await cursor.fetchall()
-            return {cast("int", row[0]) for row in rows}
+            return {row[0] for row in rows}
 
     @override
     async def cog_unload(self) -> None:
@@ -30,7 +30,7 @@ class ConfigEnforcer(commands.Cog):
 
     @tasks.loop(minutes = 10)
     async def _loop_configenforce(self) -> None:
-        configured_guild_ids = await self.get_configured_guilds()
+        configured_guild_ids = await self._get_configured_guilds()
         true_guild_ids       = {guild.id for guild in self.bot.guilds}
 
         reset = 0
