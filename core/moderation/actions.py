@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Literal, cast, final
 
-from discord import Forbidden, Guild, HTTPException, Member, Message, Role
+from discord import Forbidden, Guild, HTTPException, Message, Role
 from discord.utils import format_dt, utcnow
 
 from bot import Cordex, log
@@ -18,9 +18,6 @@ from .cases import (
     KickPayload,
     LockdownAddPayload,
     LockdownRemovePayload,
-    NoteAddPayload,
-    NoteEditPayload,
-    NoteRemovePayload,
     PurgePayload,
     QuarantineAddPayload,
     QuarantineRemovePayload,
@@ -526,92 +523,4 @@ class Actions:
             logged = logged,
             dmed   = None,
             data   = len(deleted),
-        )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # note_add
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def note_add(self, action : NoteAddPayload) -> _ActionResult:
-        try:
-            await self.bot.db.execute(
-                t"INSERT INTO Notes (member_id, guild_id, content) VALUES ({action.target.id}, {action.target.guild.id}, {action.content})",
-            )
-            await self.bot.db.commit()
-        except HTTPException:
-            failed = True
-            self._log_failure("note add")
-        else:
-            failed = False
-
-        logged = await self.cases.create_case(action)
-
-        return _ActionResult(
-            failed = failed,
-            logged = logged,
-            dmed   = None,
-        )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # note_edit
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def note_edit(self, action : NoteEditPayload) -> _ActionResult:
-        try:
-            await self.bot.db.execute(
-                t"UPDATE Notes SET content = {action.content} WHERE note_id = {action.note_id} AND guild_id = {action.target.guild.id}",
-            )
-            await self.bot.db.commit()
-        except HTTPException:
-            failed = True
-            self._log_failure("note edit")
-        else:
-            failed = False
-
-        logged = await self.cases.create_case(action)
-
-        return _ActionResult(
-            failed = failed,
-            logged = logged,
-            dmed   = None,
-        )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # note_view
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def note_view(self, target : Member, note_id : int) -> str | None:
-        try:
-            async with self.bot.db.execute(
-                t"SELECT content FROM Notes WHERE note_id = {note_id} AND member_id = {target.id} AND guild_id = {target.guild.id}",
-            ) as cursor:
-                res = await cursor.fetchone()
-        except HTTPException:
-            self._log_failure("note view")
-            return None
-        else:
-            return res[0] if res else None
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # note_remove
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def note_remove(self, action : NoteRemovePayload) -> _ActionResult:
-        try:
-            await self.bot.db.execute(
-                t"DELETE FROM Notes WHERE note_id = {action.note_id} AND guild_id = {action.target.guild.id}",
-            )
-            await self.bot.db.commit()
-        except HTTPException:
-            failed = True
-            self._log_failure("note removal")
-        else:
-            failed = False
-
-        logged = await self.cases.create_case(action)
-
-        return _ActionResult(
-            failed = failed,
-            logged = logged,
-            dmed   = None,
         )

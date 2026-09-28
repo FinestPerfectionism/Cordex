@@ -377,9 +377,8 @@ class Cordex(commands.Bot):
             config_sql       = Path("schemas/config.sql").read_text(encoding = "utf-8")
             cases_sql        = Path("schemas/cases.sql").read_text(encoding = "utf-8")
             quarantines_sql  = Path("schemas/quarantines.sql").read_text(encoding = "utf-8")
-            notes_sql        = Path("schemas/notes.sql").read_text(encoding = "utf-8")
             restrictions_sql = Path("schemas/command_restrictions.sql").read_text(encoding = "utf-8")
-            return config_sql, cases_sql, quarantines_sql, notes_sql, restrictions_sql
+            return config_sql, cases_sql, quarantines_sql, restrictions_sql
 
         for schema in await to_thread(read_schemas):
             await self.db.executescript(schema)

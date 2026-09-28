@@ -1,23 +1,19 @@
-from typing import cast, final, override
+from typing import final, override
 
 from discord import Member, User
 from discord.app_commands import (
     AppCommandError,
-    Choice,
     Group,
     allowed_installs,
-    autocomplete,
     command,
     describe,
     guild_only,
-    rename,
 )
 from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
 
 from bot import Cordex, Interaction
 from core.exceptions import UnconfiguredQuarantine, send_bad_operation
-from core.moderation import NoteManager
 from core.state import requires_restriction
 from core.utilities import unimplemented
 
@@ -32,12 +28,6 @@ from .primary.kick import run_mod_primary_kick
 from .primary.lockdown import (
     run_mod_primary_lockdown_add,
     run_mod_primary_lockdown_remove,
-)
-from .primary.note import (
-    run_mod_primary_note_add,
-    run_mod_primary_note_edit,
-    run_mod_primary_note_remove,
-    run_mod_primary_note_view,
 )
 from .primary.purge import run_mod_primary_purge
 from .primary.quarantine import (
@@ -54,8 +44,6 @@ from .primary.timeout import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Group Commands
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-# ruff: disable[too-many-public-methods]
 
 
 @final
@@ -78,10 +66,6 @@ class ModerationCommands(
         name        = "lockdown",
         description = "Moderation lockdown commands",
     )
-    note       : Group = Group(
-        name        = "note",
-        description = "Moderation note commands",
-    )
     quarantine : Group = Group(
         name        = "quarantine",
         description = "Moderation quarantine commands",
@@ -94,33 +78,6 @@ class ModerationCommands(
         name        = "cases",
         description = "Moderation case commands",
     )
-
-    async def _note_autocomplete(self, interaction : Interaction, current : str) -> list[Choice[int]]:
-        guild = interaction.guild
-        if not guild:
-            return []
-
-        manager = NoteManager(interaction.client, guild)
-        notes = await manager.get_notes()
-
-        lower = current.lower()
-        namespace = interaction.namespace
-        if not namespace:
-            return [
-                Choice(name = f'#{note.note_id} {note.target.name} | "{note.content}"', value = note.note_id)
-                for note in notes
-                if lower in note.content.lower() or lower in note.target.name.lower()
-            ][:25]
-
-        target = cast("Member", namespace.target)
-        if target:
-            return [
-                Choice(name = f'#{note.note_id} {note.target.name} | "{note.content}"', value = note.note_id)
-                for note in notes
-                if note.target == target and lower in note.content.lower()
-            ][:25]
-
-        return []
 
     @override
     async def cog_app_command_error(self, interaction : Interaction, error : AppCommandError) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -309,62 +266,6 @@ class ModerationCommands(
         await run_mod_primary_purge(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation note add Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @note.command(
-        name        = "add",
-        description = "Add a note to a member.",
-    )
-    @rename(note_id = "id")
-    @autocomplete(note_id = _note_autocomplete)
-    async def cmd_mod_primary_note_add(self, interaction : Interaction, target : Member, note_id : int) -> None:
-        await run_mod_primary_note_add(interaction, target, note_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation note view Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @note.command(
-        name        = "view",
-        description = "View a member's notes.",
-    )
-    @rename(note_id = "id")
-    @autocomplete(note_id = _note_autocomplete)
-    async def cmd_mod_primary_note_view(self, interaction : Interaction, target : Member, note_id : int) -> None:
-        await run_mod_primary_note_view(interaction, target, note_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation note edit Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @note.command(
-        name        = "edit",
-        description = "Edit a member's notes.",
-    )
-    @rename(note_id = "id")
-    @autocomplete(note_id = _note_autocomplete)
-    async def cmd_mod_primary_note_edit(self, interaction : Interaction, target : Member, note_id : int) -> None:
-        await run_mod_primary_note_edit(interaction, target, note_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /moderation note remove Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @note.command(
-        name        = "remove",
-        description = "Remove a note from a member.",
-    )
-    @rename(note_id = "id")
-    @autocomplete(note_id = _note_autocomplete)
-    async def cmd_mod_primary_note_remove(self, interaction : Interaction, target : Member, note_id : int) -> None:
-        await run_mod_primary_note_remove(interaction, target, note_id)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation cases query Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -389,8 +290,6 @@ class ModerationCommands(
     @unimplemented()
     async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
         await run_mod_cases_view(interaction)
-
-# ruff: enable[too-many-public-methods]
 
 
 async def setup(bot : Cordex) -> None:

@@ -6,16 +6,13 @@ from .cases import (
     KickPayload,
     LockdownAddPayload,
     LockdownRemovePayload,
-    NoteAddPayload,
-    NoteEditPayload,
-    NoteRemovePayload,
     PurgePayload,
     QuarantineAddPayload,
     QuarantineRemovePayload,
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-from .managers import LockdownManager, NoteManager, QuarantineManager
+from .managers import LockdownManager, QuarantineManager
 
 __all__ = [
     "ActionType",
@@ -27,10 +24,6 @@ __all__ = [
     "LockdownAddPayload",
     "LockdownManager",
     "LockdownRemovePayload",
-    "NoteAddPayload",
-    "NoteEditPayload",
-    "NoteManager",
-    "NoteRemovePayload",
     "PurgePayload",
     "QuarantineAddPayload",
     "QuarantineManager",

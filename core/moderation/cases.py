@@ -249,69 +249,6 @@ class PurgePayload:
     force     : bool
 
 
-@dataclass
-class NoteAddPayload:
-    """
-    Represents a note add action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the note add.
-    target : `Member`
-        The target member of the note add.
-    content : `str`
-        The content of the note.
-    """
-
-    moderator : Member
-    target    : Member
-    content   : str
-
-
-@dataclass
-class NoteEditPayload:
-    """
-    Represents a note edit action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the note edit.
-    target : `Member`
-        The target member of the note edit.
-    note_id : `int`
-        The unique identifier for the note.
-    content : `str`
-        The content of the note.
-    """
-
-    moderator : Member
-    target    : Member
-    note_id   : int
-    content   : str
-
-
-@dataclass
-class NoteRemovePayload:
-    """
-    Represents a note remove action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the note remove.
-    target : `Member`
-        The target member of the note remove.
-    note_id : `int`
-        The unique identifier for the note.
-    """
-
-    moderator : Member
-    target    : Member
-    note_id   : int
-
-
 Payloads = (
     LockdownAddPayload
     | LockdownRemovePayload
@@ -323,9 +260,6 @@ Payloads = (
     | TimeoutAddPayload
     | TimeoutRemovePayload
     | PurgePayload
-    | NoteAddPayload
-    | NoteEditPayload
-    | NoteRemovePayload
 )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -350,9 +284,6 @@ CASE_MAP : dict[type, _CaseData] = {
     TimeoutAddPayload       : _CaseData(COLOR_YELLOW, "Member Timeout Added"),
     TimeoutRemovePayload    : _CaseData(COLOR_GREEN,  "Member Timeout Removed"),
     PurgePayload            : _CaseData(COLOR_BLUE,   "Messages Purged"),
-    NoteAddPayload          : _CaseData(COLOR_BLUE,   "Note Added"),
-    NoteEditPayload         : _CaseData(COLOR_BLUE,   "Note Edited"),
-    NoteRemovePayload       : _CaseData(COLOR_BLUE,   "Note Removed"),
 }
 
 
@@ -445,21 +376,20 @@ class Cases:
                 ),
             )
 
-        if not isinstance(case, NoteAddPayload | NoteEditPayload | NoteRemovePayload):
-            moderator = case.moderator
-            moderator_info = {
-                "Moderator"      : moderator.mention,
-                "Moderator Name" : moderator.name,
-                "Moderator ID"   : moderator.id,
-            }
+        moderator = case.moderator
+        moderator_info = {
+            "Moderator"      : moderator.mention,
+            "Moderator Name" : moderator.name,
+            "Moderator ID"   : moderator.id,
+        }
 
-            container.add_items(
-                VisibleLargeSeparator(),
-                TextDisplay(
-                    "## Moderator\n"
-                   f"{format_table(moderator_info)}",
-                ),
-            )
+        container.add_items(
+            VisibleLargeSeparator(),
+            TextDisplay(
+                "## Moderator\n"
+               f"{format_table(moderator_info)}",
+            ),
+        )
 
         details : dict[str, object] = {}
 
@@ -484,31 +414,13 @@ class Cases:
                 ),
             )
 
-        if isinstance(
-            case,
-            _BaseAddPayload
-            | _BaseRemovePayload
-            | LockdownAddPayload
-            | LockdownRemovePayload
-            | KickPayload
-            | PurgePayload,
-        ) and case.reason:
-            container.add_items(
-                VisibleLargeSeparator(),
-                TextDisplay(
-                    "## Reason\n"
-                   f"{case.reason}",
-                ),
-            )
-
-        if isinstance(case, NoteAddPayload | NoteEditPayload) and case.content:
-            container.add_items(
-                VisibleLargeSeparator(),
-                TextDisplay(
-                    "## Content\n"
-                   f"{case.content}",
-                ),
-            )
+        container.add_items(
+            VisibleLargeSeparator(),
+            TextDisplay(
+                "## Reason\n"
+               f"{case.reason}",
+            ),
+        )
 
         container.add_items(
             VisibleLargeSeparator(),
