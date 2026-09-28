@@ -12,27 +12,131 @@ from discord import Color
 
 
 class DisplayNameFont(Enum):
-    bangers       = 1  # Unimplemented
-    bio_rhyme     = 2  # Unimplemented
-    cherry_bomb   = 3
-    chicle        = 4
-    compagnon     = 5  # Unimplemented
+    """
+    Represents the available display name style fonts a Discord user can have.
+
+    `bangers`, `bio_rhyme`, `compagnon`, and `ribes` are not available for both bot and human users as they are deprecated; they are only listed here for consistency.
+
+    Attributes
+    ----------
+    cherry_bomb : `int`
+        Sakura font.
+    chicle : `int`
+        Jellybean font.
+    museo_moderno : `int`
+        Modern font.
+    neo_castel : `int`
+        Medieval font.
+    pixelify : `int`
+        8Bit font.
+    sinistre : `int`
+        Vampyre font.
+    default : `int`
+        Discord's GG Sans font.
+    zilla_slab : `int`
+        Tempo font.
+    playpen_sans : `int`
+        Monkey Bars font.
+    orbitron : `int`
+        Mainframe font.
+    new_rocker : `int`
+        Headbang font.
+    kalam : `int`
+        Journal font.
+    """
+
+    # bangers = 1
+
+    # bio_rhyme = 2
+
+    cherry_bomb = 3
+    """Sakura font."""
+
+    chicle = 4
+    """Jellybean font."""
+
+    # compagnon = 5
+
     museo_moderno = 6
-    neo_castel    = 7
-    pixelify      = 8
-    ribes         = 9  # Unimplemented
-    sinistre      = 10
-    default       = 11
-    zilla_slab    = 12
+    """Modern font."""
+
+    neo_castel = 7
+    """Medieval font."""
+
+    pixelify = 8
+    """8Bit font."""
+
+    # ribes = 9
+
+    sinistre = 10
+    """Vampyre font."""
+
+    default = 11
+    """Discord's GG Sans font."""
+
+    zilla_slab = 12
+    """Tempo font."""
+
+    playpen_sans = 13  # Unavailable
+    """Not available for bot users. Monkey Bars font."""
+
+    orbitron = 14  # Unavailable
+    """Not available for bot users. Mainframe font."""
+
+    new_rocker = 15  # Unavailable
+    """Not available for bot users. Headbang font."""
+
+    kalam = 16  # Unavailable
+    """Not available for bot users. Journal font."""
 
 
 class DisplayNameEffect(Enum):
-    solid    = 1
+    """
+    Represents the available display name style effects a Discord user can have.
+
+    Attributes
+    ----------
+    solid : `int`
+        Solid effect. Takes one color along side it.
+    gradient : `int`
+        Gradient effect. Takes two colors along side it.
+    neon : `int`
+        Neon effect. Takes one color along side it.
+    toon : `int`
+        Toon effect. Takes one color along side it.
+    pop : `int`
+        Pop effect. Takes one color along side it.
+    glow : `int`
+        Not available for both bot and human users. Takes five colors along side it.
+    prism : `int`
+        Not available for bot users. Takes five colors along side it.
+    gummy : `int`
+        Not available for bot users. Takes four colors along side it, but said colors may or not be restricted to a set of specific colors, as this is the case for human users.
+    """
+
+    solid = 1
+    """Solid effect. Takes one color along side it."""
+
     gradient = 2
-    neon     = 3
-    toon     = 4
-    pop      = 5
-    glow     = 6  # Unimplemented
+    """Gradient effect. Takes two colors along side it."""
+
+    neon = 3
+    """Neon effect. Takes one color along side it."""
+
+    toon = 4
+    """Toon effect. Takes one color along side it."""
+
+    pop = 5
+    """Pop effect. Takes one color along side it."""
+
+    glow = 6  # Unavailable
+    """Not available for both bot and human users. Takes five colors along side it."""
+
+    prism = 7  # Unavailable
+    """Not available for bot users. Takes five colors along side it."""
+
+    gummy = 8  # Unavailable
+    """Not available for bot users. Takes four colors along side it, but said colors may or not be restricted to a set of specific colors, as this is the case for human users."""
 
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

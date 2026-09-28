@@ -149,7 +149,7 @@ class UnimplementedCommand(CheckFailure):
     """The exception raised when a command is unimplemented."""
 
 
-async def send_unimplemented_command(target : Interaction) -> None:
+async def send_unimplemented_command(target : Interaction, /) -> None:
     """
     Warn a user when they run a command that is not implemented.
 
@@ -176,7 +176,7 @@ class BadPermissionsCommand(CheckFailure):
     """The exception raised when a user runs a command they are not authorized to use."""
 
 
-async def send_bad_permissions_command(target : Interaction) -> None:
+async def send_bad_permissions_command(target : Interaction, /) -> None:
     """
     Warn a user when they run a command when they are not authorized to do so.
 
@@ -203,7 +203,7 @@ class BadEnvironmentGuild(CheckFailure):
     """The exception raised when a user runs a command in DMs when they must do so in a guild."""
 
 
-async def send_bad_environment_guildonly(target : Interaction) -> None:
+async def send_bad_environment_guildonly(target : Interaction, /) -> None:
     """
     Warn a user when they run a command in DMs when they must do so in a guild.
 
@@ -230,7 +230,7 @@ class BadEnvironmentDMs(CheckFailure):
     """The exception raised when a user runs a command in guild when they must do so in DMs."""
 
 
-async def send_bad_environment_dmsonly(target : Interaction) -> None:
+async def send_bad_environment_dmsonly(target : Interaction, /) -> None:
     """
     Warn a user when they run a command in a guild when they must do so in DMs.
 
