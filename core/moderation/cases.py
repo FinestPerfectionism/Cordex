@@ -27,7 +27,7 @@ from core.utilities import format_now, format_table
 
 
 @dataclass
-class BaseRemovePayload:
+class _BaseRemovePayload:
     moderator : Member
     target    : Member
     reason    : str
@@ -35,7 +35,7 @@ class BaseRemovePayload:
 
 
 @dataclass
-class BaseAddPayload:
+class _BaseAddPayload:
     moderator : Member
     target    : Member
     reason    : str
@@ -43,31 +43,101 @@ class BaseAddPayload:
 
 
 @dataclass
-class LockdownAddPayload:
+class _BaseLockdownPayload:
     moderator : Member
     target    : GuildMessagable
     reason    : str
 
 
 @dataclass
-class LockdownRemovePayload:
-    moderator : Member
-    target    : GuildMessagable
-    reason    : str
+class LockdownAddPayload(_BaseLockdownPayload):
+    """
+    Represents a lockdown add action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the lockdown add.
+    target : `GuildMessagable`
+        The target channel of the lockdown add.
+    reason : `str`
+        The reason for the lockdown add.
+    """
 
 
 @dataclass
-class BanAddPayload(BaseAddPayload):
+class LockdownRemovePayload(_BaseLockdownPayload):
+    """
+    Represents a lockdown remove action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the lockdown remove.
+    target : `GuildMessagable`
+        The target channel of the lockdown remove.
+    reason : `str`
+        The reason for the lockdown remove.
+    """
+
+
+@dataclass
+class BanAddPayload(_BaseAddPayload):
+    """
+    Represents a ban add action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the ban add.
+    target : `Member`
+        The target member of the ban add.
+    reason : `str`
+        The reason for the ban add.
+    dm_user : `bool`
+        Whether the user was direct messaged.
+    seconds_to_delete : `int`
+        The duration in seconds of messages to delete.
+    """
+
     seconds_to_delete : int
 
 
 @dataclass
-class BanRemovePayload(BaseRemovePayload):
-    pass
+class BanRemovePayload(_BaseRemovePayload):
+    """
+    Represents a ban remove action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the ban remove.
+    target : `Member`
+        The target member of the ban remove.
+    reason : `str`
+        The reason for the ban remove.
+    dm_user : `bool`
+        Whether the user was direct messaged.
+    """
 
 
 @dataclass
 class KickPayload:
+    """
+    Represents a kick action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the kick.
+    target : `Member`
+        The target member of the kick.
+    reason : `str`
+        The reason for the kick.
+    dm_user : `bool`
+        Whether the user was direct messaged.
+    """
+
     moderator : Member
     target    : Member
     reason    : str
@@ -75,27 +145,102 @@ class KickPayload:
 
 
 @dataclass
-class TimeoutAddPayload(BaseAddPayload):
+class TimeoutAddPayload(_BaseAddPayload):
+    """
+    Represents a timeout add action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the timeout add.
+    target : `Member`
+        The target member of the timeout add.
+    reason : `str`
+        The reason for the timeout add.
+    dm_user : `bool`
+        Whether the user was direct messaged.
+    length : `int`
+        The duration of the timeout in seconds.
+    """
+
     length : int
 
 
 @dataclass
-class TimeoutRemovePayload(BaseRemovePayload):
-    pass
+class TimeoutRemovePayload(_BaseRemovePayload):
+    """
+    Represents a timeout remove action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the timeout remove.
+    target : `Member`
+        The target member of the timeout remove.
+    reason : `str`
+        The reason for the timeout remove.
+    dm_user : `bool`
+        Whether the user was direct messaged.
+    """
 
 
 @dataclass
-class QuarantineAddPayload(BaseAddPayload):
-    pass
+class QuarantineAddPayload(_BaseAddPayload):
+    """
+    Represents a quarantine add action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the quarantine add.
+    target : `Member`
+        The target member of the quarantine add.
+    reason : `str`
+        The reason for the quarantine add.
+    dm_user : `bool`
+        Whether the user was direct messaged.
+    """
 
 
 @dataclass
-class QuarantineRemovePayload(BaseRemovePayload):
-    pass
+class QuarantineRemovePayload(_BaseRemovePayload):
+    """
+    Represents a quarantine remove action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the quarantine remove.
+    target : `Member`
+        The target member of the quarantine remove.
+    reason : `str`
+        The reason for the quarantine remove.
+    dm_user : `bool`
+        Whether the user was direct messaged.
+    """
 
 
 @dataclass
 class PurgePayload:
+    """
+    Represents a purge action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the purge.
+    target : `Member | None`
+        The optional target member whose messages were purged.
+    reason : `str`
+        The reason for the purge.
+    channel : `GuildMessagable`
+        The target channel of the purge.
+    amount : `int`
+        The amount of messages purged.
+    force : `bool`
+        Whether the purge was forced.
+    """
+
     moderator : Member
     target    : Member | None
     reason    : str
@@ -105,26 +250,67 @@ class PurgePayload:
 
 
 @dataclass
-class BaseNotePayload:
-    target  : Member
-    note_id : int
-    content : str
+class _BaseNotePayload:
+    moderator : Member
+    target    : Member
+    note_id   : int
+    content   : str
 
 
 @dataclass
-class NoteAddPayload(BaseNotePayload):
-    pass
+class NoteAddPayload(_BaseNotePayload):
+    """
+    Represents a note add action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the note add.
+    target : `Member`
+        The target member of the note add.
+    note_id : `int`
+        The unique identifier for the note.
+    content : `str`
+        The content of the note.
+    """
 
 
 @dataclass
-class NoteEditPayload(BaseNotePayload):
-    pass
+class NoteEditPayload(_BaseNotePayload):
+    """
+    Represents a note edit action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the note edit.
+    target : `Member`
+        The target member of the note edit.
+    note_id : `int`
+        The unique identifier for the note.
+    content : `str`
+        The content of the note.
+    """
 
 
 @dataclass
 class NoteRemovePayload:
-    target  : Member
-    note_id : int
+    """
+    Represents a note remove action.
+
+    Parameters
+    ----------
+    moderator : `Member`
+        The moderator responsible for the note remove.
+    target : `Member`
+        The target member of the note remove.
+    note_id : `int`
+        The unique identifier for the note.
+    """
+
+    moderator : Member
+    target    : Member
+    note_id   : int
 
 
 Payloads = (
@@ -149,30 +335,41 @@ Payloads = (
 
 
 @dataclass(frozen = True)
-class CaseData:
+class _CaseData:
     color : Color
     title : str
 
 
-CASE_MAP : dict[type, CaseData] = {
-    LockdownAddPayload      : CaseData(COLOR_GREY,   "Lockdown Added"),
-    LockdownRemovePayload   : CaseData(COLOR_GREEN,  "Lockdown Removed"),
-    BanAddPayload           : CaseData(COLOR_BLACK,  "Member Ban Added"),
-    BanRemovePayload        : CaseData(COLOR_GREEN,  "Member Ban Removed"),
-    KickPayload             : CaseData(COLOR_RED,    "Member Kicked"),
-    QuarantineAddPayload    : CaseData(COLOR_ORANGE, "Member Quarantine Added"),
-    QuarantineRemovePayload : CaseData(COLOR_GREEN,  "Member Quarantine Removed"),
-    TimeoutAddPayload       : CaseData(COLOR_YELLOW, "Member Timeout Added"),
-    TimeoutRemovePayload    : CaseData(COLOR_GREEN,  "Member Timeout Removed"),
-    PurgePayload            : CaseData(COLOR_BLUE,   "Messages Purged"),
-    NoteAddPayload          : CaseData(COLOR_BLUE,   "Note Added"),
-    NoteEditPayload         : CaseData(COLOR_BLUE,   "Note Edited"),
-    NoteRemovePayload       : CaseData(COLOR_BLUE,   "Note Removed"),
+CASE_MAP : dict[type, _CaseData] = {
+    LockdownAddPayload      : _CaseData(COLOR_GREY,   "Lockdown Added"),
+    LockdownRemovePayload   : _CaseData(COLOR_GREEN,  "Lockdown Removed"),
+    BanAddPayload           : _CaseData(COLOR_BLACK,  "Member Ban Added"),
+    BanRemovePayload        : _CaseData(COLOR_GREEN,  "Member Ban Removed"),
+    KickPayload             : _CaseData(COLOR_RED,    "Member Kicked"),
+    QuarantineAddPayload    : _CaseData(COLOR_ORANGE, "Member Quarantine Added"),
+    QuarantineRemovePayload : _CaseData(COLOR_GREEN,  "Member Quarantine Removed"),
+    TimeoutAddPayload       : _CaseData(COLOR_YELLOW, "Member Timeout Added"),
+    TimeoutRemovePayload    : _CaseData(COLOR_GREEN,  "Member Timeout Removed"),
+    PurgePayload            : _CaseData(COLOR_BLUE,   "Messages Purged"),
+    NoteAddPayload          : _CaseData(COLOR_BLUE,   "Note Added"),
+    NoteEditPayload         : _CaseData(COLOR_BLUE,   "Note Edited"),
+    NoteRemovePayload       : _CaseData(COLOR_BLUE,   "Note Removed"),
 }
 
 
 @final
 class Cases:
+    """
+    Represents a guild's cases.
+
+    Parameters
+    ----------
+    bot : Cordex
+        The bot instance.
+    guild : Guild
+        The guild the cases belong to.
+    """
+
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
         self.bot   = bot
@@ -191,6 +388,19 @@ class Cases:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def create_case(self, case : Payloads) -> bool:
+        """
+        Create and log a case based off of a payload.
+
+        Parameters
+        ----------
+        case : `Payloads`
+            The payload to create the case for.
+
+        Returns
+        -------
+        `bool`
+            Whether the case creation was successful or not.
+        """
         log_channel = await self.bot.config(self.guild).get_moderation_logging_channel()
         if not log_channel:
             return False
@@ -261,7 +471,7 @@ class Cases:
             details["Amount"]  = case.amount
             details["Forced"]  = case.force
 
-        if isinstance(case, BaseAddPayload | BaseRemovePayload | KickPayload):
+        if isinstance(case, _BaseAddPayload | _BaseRemovePayload | KickPayload):
             details["DM Sent"] = case.dm_user
 
         if details:
@@ -275,8 +485,8 @@ class Cases:
 
         if isinstance(
             case,
-            BaseAddPayload
-            | BaseRemovePayload
+            _BaseAddPayload
+            | _BaseRemovePayload
             | LockdownAddPayload
             | LockdownRemovePayload
             | KickPayload

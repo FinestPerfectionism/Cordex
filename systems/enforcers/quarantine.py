@@ -30,7 +30,7 @@ class QuarantineEnforcer(commands.Cog):
         for guild in self.bot.guilds:
             manager = QuarantineManager(self.bot, guild)
             try:
-                await manager.enforce("Channel")
+                await manager.enforce("Channels")
                 await manager.enforce("Role")
                 await manager.enforce("Members")
             except HTTPException as e:
@@ -69,7 +69,7 @@ class QuarantineEnforcer(commands.Cog):
             return
 
         manager = QuarantineManager(self.bot, after.guild)
-        await manager.enforce("Channel")
+        await manager.enforce("Channels")
 
     @commands.Cog.listener("on_guild_channel_create")
     async def _listener_quarantineenforce_channelcreate(self, channel : GuildChannel) -> None:
@@ -78,7 +78,7 @@ class QuarantineEnforcer(commands.Cog):
             return
 
         manager = QuarantineManager(self.bot, channel.guild)
-        await manager.enforce("Channel")
+        await manager.enforce("Channels")
 
     @commands.Cog.listener("on_guild_role_update")
     async def _listener_quarantineenforce_roleupdate(self, before : Role, after : Role) -> None:

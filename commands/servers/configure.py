@@ -257,7 +257,7 @@ class _ModerationQuarantineRoleSelect(RoleSelect["_ConfigurationView"]):
 
         try:
             await interaction.client.config(guild).set_moderation_quarantine_role(role)
-            await manager.enforce("Channel")
+            await manager.enforce("Channels")
             await manager.enforce("Role")
         except Exception:
             self.default_values = previous
@@ -336,7 +336,7 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         manager = QuarantineManager(interaction.client, guild)
 
         if channels:
-            await manager.enforce("Channel")
+            await manager.enforce("Channels")
         if roles:
             await manager.enforce("Role")
 

@@ -1,6 +1,6 @@
 from typing import Literal, cast, final
 
-from discord import Forbidden, Guild, HTTPException, Member
+from discord import Forbidden, Guild, HTTPException, Member, Permissions
 from discord.abc import GuildChannel
 
 from bot import Cordex, log
@@ -16,6 +16,17 @@ from bot import Cordex, log
 
 @final
 class LockdownManager:
+    """
+    A manager for lockdown operations that don't pertain to primary moderation actions.
+
+    Parameters
+    ----------
+    bot : Cordex
+        The bot instance.
+    guild : Guild
+        The guild the manager belongs to.
+    """
+
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
         self.bot   = bot
@@ -33,8 +44,15 @@ class LockdownManager:
     # get_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_channels(self) -> set[GuildChannel]:
-        ...
+    async def get_channels(self) -> set[GuildChannel]:  # pyright: ignore[reportReturnType]
+        """
+        Fetch every lockdowned channel found in the database.
+
+        Returns
+        -------
+        `set[GuildChannel]`
+            Every lockdowned channel found in the database.
+        """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce
@@ -64,6 +82,17 @@ class LockdownManager:
 
 @final
 class QuarantineManager:
+    """
+    A manager for quarantine operations that don't pertain to primary moderation actions.
+
+    Parameters
+    ----------
+    bot : Cordex
+        The bot instance.
+    guild : Guild
+        The guild the manager belongs to.
+    """
+
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
         self.bot   = bot
@@ -82,6 +111,14 @@ class QuarantineManager:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def get_members(self) -> set[Member]:
+        """
+        Fetch every quarantined member found in the database.
+
+        Returns
+        -------
+        `set[Member]`
+            Every quarantined member found in the database.
+        """
         async with self.bot.db.execute(
             t"SELECT member_id FROM Quarantines WHERE guild_id = {self.guild.id}",
         ) as cursor:
@@ -98,21 +135,37 @@ class QuarantineManager:
     # enforce
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    type EnforceTypes = Literal["Channel", "Role", "Members"]
+    type EnforceTypes = Literal["Channels", "Role", "Members"]
 
     async def enforce(self, enforce_type : EnforceTypes) -> None:
+        """
+        Enforces quarantine operations.
+
+        - Channels: Ensures the quarantine role has certain permissions disabled in every guild channel.quarantine channel enforcement.
+        - Role: Ensures the quarantine role has all permissions set to false and that the role is below the bot's top role.
+        - Members: Ensures the quarantine role doesn't contain members that are not quarantined, and that quarantined members have the quarantine role.
+
+        The channels and role types will have no effect if the guild has not configured quarantine enforcement for those types. The members type will always run as it is not configurable (always enabled).
+
+        Parameters
+        ----------
+        enforce_type : `Literal["Channels", "Role", "Members"]`
+            The type of quarantine enforcement to execute.
+
+        Raises
+        ------
+        HTTPException
+            The enforcement caused a ratelimit.
+        """
         config = self.bot.config(self.guild)
 
         quarantine_role = await config.get_moderation_quarantine_role()
         if not quarantine_role:
             return
 
-        # ⸻ Channel
+        # ⸻ Channels
 
-        if enforce_type == "Channel":
-
-            # ⸻
-
+        if enforce_type == "Channels":
             wants_enforcement = await config.get_moderation_quarantine_enforce_channels()
             if not wants_enforcement:
                 return
@@ -159,6 +212,17 @@ class QuarantineManager:
                 return
 
             my_role = me.top_role
+            if quarantine_role.permissions.value != 0:
+                try:
+                    await quarantine_role.edit(permissions = Permissions.none())
+                except Forbidden:
+                    pass
+                except HTTPException as e:
+                    rate_limited = e.status == 429
+                    self._log_failure("role quarantine enforcement", rate_limited = rate_limited)
+                    if rate_limited:
+                        raise
+
             if my_role.position > 1 and quarantine_role.position != my_role.position - 1:
                 try:
                     await quarantine_role.edit(position = my_role.position - 1)
@@ -195,7 +259,7 @@ class QuarantineManager:
                     pass
                 except HTTPException as e:
                     rate_limited = e.status == 429
-                    self._log_failure("member quarantine removal", rate_limited = rate_limited)
+                    self._log_failure("member quarantine enforcement (removal)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
 
@@ -208,6 +272,6 @@ class QuarantineManager:
                     pass
                 except HTTPException as e:
                     rate_limited = e.status == 429
-                    self._log_failure("member quarantine addition", rate_limited = rate_limited)
+                    self._log_failure("member quarantine enforcement (addition)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
