@@ -5,7 +5,14 @@ from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Mem
 
 from bot import Cordex, log
 from bot.types import GuildMessagable
-from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
+from bot.ui import (
+    Container,
+    LayoutView,
+    TextDisplay,
+    Thumbnail,
+    ThumbnailSection,
+    VisibleLargeSeparator,
+)
 from constants import (
     COLOR_BLACK,
     COLOR_BLUE,
@@ -340,56 +347,60 @@ class Cases:
         data = CASE_MAP[type(case)]
 
         view = LayoutView()
-        container = Container[view](
-            TextDisplay(f"# {data.title}"),
-            color = data.color,
-        )
+        container = Container[view](TextDisplay(f"# {data.title}"), color = data.color)
 
         if isinstance(case, PurgePayload):
             if case.target is not None:
-                target_info = {
-                    "Target"    : case.target.mention,
-                    "Name"      : case.target.name,
-                    "Target ID" : case.target.id,
+                target = case.target
+                target_table = {
+                    "Target"    : target.mention,
+                    "Name"      : target.name,
+                    "Target ID" : target.id,
                 }
-
-                container.add_items(
-                    VisibleLargeSeparator(),
-                    TextDisplay(
-                        "## Target\n"
-                       f"{format_table(target_info)}",
-                    ),
+                target_info  = (
+                    "## Target\n"
+                   f"{format_table(target_table)}"
                 )
+
+                container.add_item(VisibleLargeSeparator())
+                if target.guild_avatar:
+                    container.add_item(ThumbnailSection(target_info, thumbnail = Thumbnail[view](target.guild_avatar.url)))
+                else:
+                    container.add_text(target_info)
         else:
             target = case.target
-            target_info = {
+            target_table = {
                 "Target"    : target.mention,
-                "Name"      : getattr(target, "name", str(target)),
+                "Name"      : target.name,
                 "Target ID" : target.id,
             }
-
-            container.add_items(
-                VisibleLargeSeparator(),
-                TextDisplay(
-                    "## Target\n"
-                   f"{format_table(target_info)}",
-                ),
+            target_info  = (
+                "## Target\n"
+               f"{format_table(target_table)}"
             )
 
+            container.add_item(VisibleLargeSeparator())
+            if isinstance(target, Member) and target.guild_avatar:
+                container.add_item(ThumbnailSection(target_info, thumbnail = Thumbnail[view](target.guild_avatar.url)))
+            else:
+                container.add_text(target_info)
+
         moderator = case.moderator
-        moderator_info = {
+        moderator_table = {
             "Moderator"      : moderator.mention,
             "Moderator Name" : moderator.name,
             "Moderator ID"   : moderator.id,
         }
-
-        container.add_items(
-            VisibleLargeSeparator(),
-            TextDisplay(
-                "## Moderator\n"
-               f"{format_table(moderator_info)}",
-            ),
+        moderator_info  = (
+            "## Moderator\n"
+           f"{format_table(moderator_table)}"
         )
+
+        container.add_item(VisibleLargeSeparator())
+        if moderator.guild_avatar:
+            container.add_item(ThumbnailSection(moderator_info, thumbnail = Thumbnail[view](moderator.guild_avatar.url)))
+        else:
+            container.add_text(moderator_info)
 
         details : dict[str, object] = {}
 

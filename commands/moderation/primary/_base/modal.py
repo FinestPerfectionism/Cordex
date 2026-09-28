@@ -540,7 +540,7 @@ class ModerationModal(Modal):
                     f"{format_table(table)}"
                 )
 
-                footer = "\n".join(notes)
+                footer = "\n-#".join(notes)
 
                 if all(statuses):
                     msg_type = "success"
