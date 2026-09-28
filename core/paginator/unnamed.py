@@ -186,14 +186,14 @@ class UnnamedPaginator(LayoutView):
     container : bool = False
         Whether the paginator should be in a Container.
     force : bool = False
-        Whether multiple strings passed into data will be concatenated with newlines instead of TextDisplays.
+        Whether multiple strings passed into data will be concatenated with newlines instead of `TextDisplay`s.
     timeout : int | None = 600
         The amount of seconds to pass before timing out, disabling all buttons and selects. If None, the paginator will never time out.
 
     Raises
     ------
     ValueError
-        You passed 'color' without passing 'container'
+        You passed `color` without passing `container`.
     """
 
     def __init__(
@@ -290,7 +290,7 @@ class UnnamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add above the paginator.
         """
         self._above_items.extend(items)
@@ -306,7 +306,7 @@ class UnnamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add over the title of the paginator.
         """
         self._over_items.extend(items)
@@ -322,7 +322,7 @@ class UnnamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add under the footer of the paginator.
         """
         self._under_items.extend(items)
@@ -338,7 +338,7 @@ class UnnamedPaginator(LayoutView):
 
         Parameters
         ----------
-        *items : Item[LayoutView]
+        *items : `Item[LayoutView]`
             The items to add below the paginator.
         """
         self._below_items.extend(items)
@@ -348,8 +348,17 @@ class UnnamedPaginator(LayoutView):
     # set_title_button
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def set_title_button(self, title_button : _TitleButton | None, /) -> None:
-        self._title_button = title_button
+    def set_title_button(self, button : _TitleButton | None, /) -> None:
+        """
+        Set the accessory button in the title.
+
+        Parameters
+        ----------
+        button : `TitleButton | None`
+            The button to put in the title, or no button if `None`.
+        /
+        """
+        self._title_button = button
         self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -358,7 +367,7 @@ class UnnamedPaginator(LayoutView):
 
     def update_data(self, title : str, data : _ItemsOrStrList) -> None:
         """
-        Update the Paginator's data then re-render it.
+        Update the paginator's data then re-render it.
 
         Parameters
         ----------

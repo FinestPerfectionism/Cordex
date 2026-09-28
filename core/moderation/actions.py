@@ -7,7 +7,7 @@ from discord.utils import format_dt, utcnow
 
 from bot import Cordex, log
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
-from constants import COLOR_BLACK, WARNING_EMOJI
+from constants import COLOR_BLACK, COLOR_ORANGE, COLOR_YELLOW, WARNING_EMOJI
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
@@ -40,8 +40,8 @@ type ActionType = Literal[
 ]
 
 
-@dataclass(frozen = True)
-class ActionResult[T = None]:
+@dataclass(frozen = True, slots = True)
+class _ActionResult[T = None]:
     failed  : bool
     logged  : bool
     dmed    : bool | None
@@ -54,13 +54,26 @@ class ActionResult[T = None]:
 
 @final
 class Actions:
+    """
+    A class for executing moderation actions.
+
+    Parameters
+    ----------
+    bot : Cordex
+        The bot instance.
+    guild : Guild
+        The guild in which moderation actions are being executed.
+    """
+
+    __slots__ = ("bot", "cases", "config", "guild")
+
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
         self.bot    = bot
         self.guild  = guild
         self.config = self.bot.config(guild)
 
-        self._cases = Cases(bot, guild)
+        self.cases = Cases(bot, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure
@@ -93,7 +106,7 @@ class Actions:
 
         type_map : dict[str, str] = {
             "Ban Add"           : f"# {WARNING_EMOJI} You have been banned in the server {guild_name}.",
-            "Ban Remove"        : f"# {WARNING_EMOJI} You have been un-banned the server {guild_name}.",
+            "Ban Remove"        : f"# {WARNING_EMOJI} You have been un-banned from the server {guild_name}.",
             "Kick"              : f"# {WARNING_EMOJI} You have been kicked from the server {guild_name}.",
             "Quarantine Add"    : f"# {WARNING_EMOJI} You have been placed in quarantine in the server {guild_name}.",
             "Quarantine Remove" : f"# {WARNING_EMOJI} You have been removed from quarantine in the server {guild_name}.",
@@ -113,7 +126,7 @@ class Actions:
         view.add_items(
             TextDisplay[LayoutView](
                 f"{title}\n"
-                f"-# You were moderated in the server {guild_name} by at {format_now()}!\n",
+                f"-# You were moderated at {format_now()}!\n",
             ),
             VisibleLargeSeparator[LayoutView](),
             TextDisplay[LayoutView](
@@ -140,21 +153,21 @@ class Actions:
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_add(self, _action : LockdownAddPayload) -> ActionResult:
+    async def lockdown_add(self, _action : LockdownAddPayload) -> _ActionResult:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_remove(self, _action : LockdownRemovePayload) -> ActionResult:
+    async def lockdown_remove(self, _action : LockdownRemovePayload) -> _ActionResult:
         ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_add(self, action : BanAddPayload) -> ActionResult:
+    async def ban_add(self, action : BanAddPayload) -> _ActionResult:
         if action.dm_user:
             success = await self._dm_target("Ban Add", action)
         else:
@@ -173,9 +186,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = success,
@@ -203,7 +216,7 @@ class Actions:
     # ban_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_remove(self, action : BanRemovePayload) -> ActionResult:
+    async def ban_remove(self, action : BanRemovePayload) -> _ActionResult:
         if action.dm_user:
             success = await self._dm_target("Ban Remove", action)
         else:
@@ -222,9 +235,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = success,
@@ -234,7 +247,7 @@ class Actions:
     # kick
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def kick(self, action : KickPayload) -> ActionResult:
+    async def kick(self, action : KickPayload) -> _ActionResult:
         if action.dm_user:
             success = await self._dm_target("Kick", action)
         else:
@@ -253,9 +266,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = success,
@@ -265,10 +278,10 @@ class Actions:
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_add(self, action : QuarantineAddPayload) -> ActionResult:
+    async def quarantine_add(self, action : QuarantineAddPayload) -> _ActionResult:
         quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
-            return ActionResult(
+            return _ActionResult(
                 failed = True,
                 logged = False,
                 dmed   = False,
@@ -301,9 +314,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = success,
@@ -321,7 +334,7 @@ class Actions:
                     [],
                     data_name = "Quarantines",
                     per_page  = 10,
-                    color     = COLOR_BLACK,
+                    color     = COLOR_ORANGE,
                     container = True,
                 )
 
@@ -331,10 +344,10 @@ class Actions:
     # quarantine_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_remove(self, action : QuarantineRemovePayload) -> ActionResult:
+    async def quarantine_remove(self, action : QuarantineRemovePayload) -> _ActionResult:
         quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
-            return ActionResult(
+            return _ActionResult(
                 failed = True,
                 logged = False,
                 dmed   = False,
@@ -384,9 +397,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = success,
@@ -396,7 +409,7 @@ class Actions:
     # timeout_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_add(self, action : TimeoutAddPayload) -> ActionResult:
+    async def timeout_add(self, action : TimeoutAddPayload) -> _ActionResult:
         if action.dm_user:
             success = await self._dm_target("Timeout Add", action)
         else:
@@ -415,9 +428,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = success,
@@ -435,7 +448,7 @@ class Actions:
                     [],
                     data_name = "Timeouts",
                     per_page  = 10,
-                    color     = COLOR_BLACK,
+                    color     = COLOR_YELLOW,
                     container = True,
                 )
 
@@ -445,7 +458,7 @@ class Actions:
     # timeout_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_remove(self, action : TimeoutRemovePayload) -> ActionResult:
+    async def timeout_remove(self, action : TimeoutRemovePayload) -> _ActionResult:
         if action.dm_user:
             success = await self._dm_target("Timeout Remove", action)
         else:
@@ -464,9 +477,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = success,
@@ -476,7 +489,7 @@ class Actions:
     # purge
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def purge(self, action : PurgePayload) -> ActionResult[int]:
+    async def purge(self, action : PurgePayload) -> _ActionResult[int]:
         target  = action.target
         reason  = action.reason
         channel = action.channel
@@ -506,9 +519,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = None,
@@ -519,7 +532,7 @@ class Actions:
     # note_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_add(self, action : NoteAddPayload) -> ActionResult:
+    async def note_add(self, action : NoteAddPayload) -> _ActionResult:
         try:
             await self.bot.db.execute(
                 t"INSERT INTO Notes (member_id, guild_id, content) VALUES ({action.target.id}, {action.target.guild.id}, {action.content})",
@@ -531,9 +544,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = None,
@@ -543,7 +556,7 @@ class Actions:
     # note_edit
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_edit(self, action : NoteEditPayload) -> ActionResult:
+    async def note_edit(self, action : NoteEditPayload) -> _ActionResult:
         try:
             await self.bot.db.execute(
                 t"UPDATE Notes SET content = {action.content} WHERE note_id = {action.note_id} AND guild_id = {action.target.guild.id}",
@@ -555,9 +568,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = None,
@@ -583,7 +596,7 @@ class Actions:
     # note_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def note_remove(self, action : NoteRemovePayload) -> ActionResult:
+    async def note_remove(self, action : NoteRemovePayload) -> _ActionResult:
         try:
             await self.bot.db.execute(
                 t"DELETE FROM Notes WHERE note_id = {action.note_id} AND guild_id = {action.target.guild.id}",
@@ -595,9 +608,9 @@ class Actions:
         else:
             failed = False
 
-        logged = await self._cases.create_case(action)
+        logged = await self.cases.create_case(action)
 
-        return ActionResult(
+        return _ActionResult(
             failed = failed,
             logged = logged,
             dmed   = None,

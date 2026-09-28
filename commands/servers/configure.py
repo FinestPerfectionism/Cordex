@@ -519,8 +519,6 @@ class _ConfigurationView(NamedPaginator):
             ),
         ]
 
-        self.render()
-
 
 async def run_server_configure(interaction : Interaction) -> None:
 

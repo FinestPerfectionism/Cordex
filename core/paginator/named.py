@@ -154,12 +154,12 @@ class NamedPaginator(LayoutView):
                     stacklevel = 2,
                 )
 
-        self.pages        : list[PageData] = data or [PageData("No content available.", ["No content available."])]
+        self._pages       : list[PageData] = data or [PageData("No content available.", ["No content available."])]
         self.current_page : int            = 0
         self._name_rows   : list[_NameRow] = [
-            _NameRow(self, range(i, min(i + 5, len(self.pages))))
-            for i in range(0, len(self.pages), 5)
-        ] if len(self.pages) >= 2 else []
+            _NameRow(self, range(i, min(i + 5, len(self._pages))))
+            for i in range(0, len(self._pages), 5)
+        ] if len(self._pages) >= 2 else []
 
         self._above_items : _ItemsList = []
         self._over_items  : _ItemsList = []
@@ -174,7 +174,17 @@ class NamedPaginator(LayoutView):
 
         # ⸻ Render.
 
-        self.render()
+        self._render()
+
+    @property
+    def pages(self) -> list[PageData]:
+        """The pages in the paginator."""
+        return self._pages
+
+    @pages.setter
+    def pages(self, value : list[PageData]) -> None:
+        self._pages = value
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # on_timeout
@@ -220,7 +230,7 @@ class NamedPaginator(LayoutView):
             The items to add above the paginator.
         """
         self._above_items.extend(items)
-        self.render()
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_over
@@ -236,7 +246,7 @@ class NamedPaginator(LayoutView):
             The items to add over the title of the paginator.
         """
         self._over_items.extend(items)
-        self.render()
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_under
@@ -252,7 +262,7 @@ class NamedPaginator(LayoutView):
             The items to add under the footer of the paginator.
         """
         self._under_items.extend(items)
-        self.render()
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_below
@@ -268,13 +278,13 @@ class NamedPaginator(LayoutView):
             The items to add below the paginator.
         """
         self._below_items.extend(items)
-        self.render()
+        self._render()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # render
+    # _render
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def render(self) -> None:  # TODO(FinestPerfectionism): Make render private. See #1. # ruff: ignore[undocumented-public-method]
+    def _render(self) -> None:
         self.clear_items()
 
         # ⸻ Add all items above.
@@ -339,7 +349,7 @@ class NamedPaginator(LayoutView):
             previous_page = self.current_page
 
             self.current_page = target
-            self.render()
+            self._render()
 
             try:
                 if interaction.response.is_done():
@@ -348,7 +358,7 @@ class NamedPaginator(LayoutView):
                     await interaction.response.edit_message(view = self)
             except Exception:
                 self.current_page = previous_page
-                self.render()
+                self._render()
 
                 await send_bad_operation(interaction, title = "turn page")
                 raise

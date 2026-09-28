@@ -367,8 +367,10 @@ class Cases:
     bot : Cordex
         The bot instance.
     guild : Guild
-        The guild the cases belong to.
+        The guild in which cases are being handled.
     """
+
+    __slots__ = ("bot", "guild")
 
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
@@ -533,12 +535,26 @@ class Cases:
     # get_case
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_case(self) -> None:
-        ...
+    async def get_case(self, _case : int) -> None:
+        """
+        Get a case.
+
+        Parameters
+        ----------
+        _case : `int`
+            The ID of the case to get.
+        """
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # edit_case
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def edit_case(self) -> None:
-        ...
+    async def edit_case(self, _case : int) -> None:
+        """
+        Edits a case.
+
+        Parameters
+        ----------
+        _case : `int`
+            The ID of the case to edit.
+        """

@@ -20,7 +20,7 @@ from constants import (
 )
 from core.exceptions import (
     send_bad_argument,
-    send_bad_environment_guild,
+    send_bad_environment_guildonly,
     send_bad_operation,
 )
 from core.responses import format_send
@@ -199,7 +199,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
 
 async def run_bo_style_set(interaction : Interaction) -> None:
     if not interaction.guild:
-        await send_bad_environment_guild(interaction)
+        await send_bad_environment_guildonly(interaction)
         return
 
     # ⸻ style is never None, but pyright will complain anyway.

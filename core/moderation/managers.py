@@ -24,8 +24,10 @@ class LockdownManager:
     bot : Cordex
         The bot instance.
     guild : Guild
-        The guild the manager belongs to.
+        The guild where lockdown is being managed.
     """
+
+    __slots__ = ("bot", "guild")
 
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
@@ -59,6 +61,14 @@ class LockdownManager:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def enforce(self) -> None:
+        """
+        Enforces quarantine operations by ensuring channels in lockdown have the proper permission overwrites.
+
+        Raises
+        ------
+        HTTPException
+            The enforcement caused a ratelimit.
+        """
         for _channel in self.guild.channels:
             try:
                 # await channel.set_permissions(
@@ -90,8 +100,10 @@ class QuarantineManager:
     bot : Cordex
         The bot instance.
     guild : Guild
-        The guild the manager belongs to.
+        The guild where quarantine is being managed.
     """
+
+    __slots__ = ("bot", "guild")
 
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()

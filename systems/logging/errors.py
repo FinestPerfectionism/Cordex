@@ -21,8 +21,8 @@ from core.exceptions import (
     BadPermissionsCommand,
     UnconfiguredQuarantine,
     UnimplementedCommand,
-    send_bad_environment_dms,
-    send_bad_environment_guild,
+    send_bad_environment_dmsonly,
+    send_bad_environment_guildonly,
     send_bad_operation,
     send_bad_permissions_command,
     send_unimplemented_command,
@@ -213,11 +213,11 @@ class ErrorLogger(commands.Cog):
             return
 
         if isinstance(error, BadEnvironmentGuild):
-            await send_bad_environment_guild(interaction)
+            await send_bad_environment_guildonly(interaction)
             return
 
         if isinstance(error, BadEnvironmentDMs):
-            await send_bad_environment_dms(interaction)
+            await send_bad_environment_dmsonly(interaction)
             return
 
         if isinstance(error, UnimplementedCommand):

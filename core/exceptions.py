@@ -10,21 +10,8 @@ from .responses import format_send
 
 
 class UnconfiguredQuarantine(CheckFailure):
-    pass
+    """The exception raised when a user tries to run a quarantine command, but the server has not configured quarantine."""
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Unknown Error Exception
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-async def send_unknown_error(target : Interaction) -> None:
-    await format_send(
-        target,
-        msg_type = "error",
-        title    = "run command",
-        subtitle = "An unknown exception occurred during this interaction",
-        footer   = "Unknown error",
-    )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Operation Exception
@@ -37,13 +24,30 @@ async def send_bad_operation(
     *,
     title    : str = "run command",
     subtitle : str = "An exception occurred during this interaction",
+    footer   : str = "Bad operation",
 ) -> None:
+    """
+    Warn a user when an operation executed fails.
+
+    Parameters
+    ----------
+    target : `Interaction`
+        The interaction context to send the warning with.
+    /
+    *
+    title : `str = "run command"`
+        The title of the error.
+    subtitle : `str = "An exception occurred during this interaction"`
+        The subtitle of the error.
+    footer : `str = "Bad operation"`
+        The footer of the error.
+    """
     await format_send(
         target,
         msg_type = "error",
         title    = title,
         subtitle = subtitle,
-        footer   = "Bad operation",
+        footer   = footer,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -57,13 +61,30 @@ async def send_bad_request(
     *,
     title    : str = "run command",
     subtitle : str = "The requested operation is invalid",
+    footer   : str = "Bad request",
 ) -> None:
+    """
+    Warn a user when they request an invalid operation.
+
+    Parameters
+    ----------
+    target : `Interaction`
+        The interaction context to send the warning with.
+    /
+    *
+    title : `str = "run command"`
+        The title of the warning.
+    subtitle : `str = "The requested operation is invalid"`
+        The subtitle of the warning.
+    footer : `str = "Bad request"`
+        The footer of the warning.
+    """
     await format_send(
         target,
         msg_type = "warning",
         title    = title,
         subtitle = subtitle,
-        footer   = "Bad request",
+        footer   = footer,
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -79,23 +100,43 @@ async def send_bad_argument(
     subtitle : dict[str | tuple[str, ...] | None, str],
     footer   : str = "Bad argument",
 ) -> None:
-    lines : list[str] = []
+    """
+    Warn a user when they pass one or more invalid arguments.
 
-    for arg, notice in subtitle.items():
-        match arg:
+    Parameters
+    ----------
+    target : `Interaction`
+        The interaction context to send the warning with.
+    /
+    *
+    title : `str = "run command"`
+        The title of the warning.
+    subtitle : `dict[str | tuple[str, ...] | None, str]`
+        The subtitle of the warning.
+
+        - If `dict[str, str]` is passed, it will appear as "`Key`: Value".
+        - If `dict[tuple[str, ...], str]` is passed, it will appear as "`Key1, Key2, ...`: Value".
+        - If `dict[None, str]` is passed, it will appear as "Value".
+
+    footer : `str = "Bad argument"`
+        The footer of the warning.
+    """
+    issues : list[str] = []
+
+    for argument, notice in subtitle.items():
+        match argument:
             case None:
-                lines.append(notice)
-            case tuple() as args:
-                joined_args = ", ".join(f"`{a}`" for a in args)
-                lines.append(f"{joined_args}: {notice}")
+                issues.append(notice)
+            case tuple() as arguments:
+                issues.append(f"{", ".join(f"`{arg}`" for arg in arguments)}: {notice}")
             case _:
-                lines.append(f"`{arg}`: {notice}")
+                issues.append(f"`{argument}`: {notice}")
 
     await format_send(
         target,
         msg_type = "warning",
         title    = title,
-        subtitle = "\n".join(lines),
+        subtitle = "\n".join(issues),
         footer   = footer,
     )
 
@@ -105,10 +146,19 @@ async def send_bad_argument(
 
 
 class UnimplementedCommand(CheckFailure):
-    pass
+    """The exception raised when a command is unimplemented."""
 
 
 async def send_unimplemented_command(target : Interaction) -> None:
+    """
+    Warn a user when they run a command that is not implemented.
+
+    Parameters
+    ----------
+    target : `Interaction`
+        The interaction context to send the warning with.
+    /
+    """
     await format_send(
         target,
         msg_type = "error",
@@ -123,10 +173,19 @@ async def send_unimplemented_command(target : Interaction) -> None:
 
 
 class BadPermissionsCommand(CheckFailure):
-    pass
+    """The exception raised when a user runs a command they are not authorized to use."""
 
 
 async def send_bad_permissions_command(target : Interaction) -> None:
+    """
+    Warn a user when they run a command when they are not authorized to do so.
+
+    Parameters
+    ----------
+    target : `Interaction`
+        The interaction context to send the warning with.
+    /
+    """
     await format_send(
         target,
         msg_type = "error",
@@ -136,40 +195,24 @@ async def send_bad_permissions_command(target : Interaction) -> None:
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Bad Permissions Argument Exception
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-async def send_bad_permissions_argument(
-    target   : Interaction,
-    subtitle : list[str],
-    /,
-) -> None:
-    args = [f"`{arg}`" for arg in subtitle]
-
-    text = f"You are not authorized to use the following arguments: {", ".join(args)}"
-
-    if len(args) == 1:
-        text = f"You are not authorized to use the {args[0]} argument"
-
-    await format_send(
-        target,
-        msg_type = "error",
-        title    = "run command",
-        subtitle = text,
-        footer   = "Bad request",
-    )
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Environment Guild Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 class BadEnvironmentGuild(CheckFailure):
-    pass
+    """The exception raised when a user runs a command in DMs when they must do so in a guild."""
 
 
-async def send_bad_environment_guild(target : Interaction) -> None:
+async def send_bad_environment_guildonly(target : Interaction) -> None:
+    """
+    Warn a user when they run a command in DMs when they must do so in a guild.
+
+    Parameters
+    ----------
+    target : `Interaction`
+        The interaction context to send the warning with.
+    /
+    """
     await format_send(
         target,
         msg_type = "warning",
@@ -179,29 +222,24 @@ async def send_bad_environment_guild(target : Interaction) -> None:
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Bad Environment Channel Exception
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-async def send_bad_environment_channel(target : Interaction) -> None:
-    await format_send(
-        target,
-        msg_type = "warning",
-        title    = "run command",
-        subtitle = "This command cannot be run in this channel or thread",
-        footer   = "Bad environment",
-    )
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Environment DMs Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 class BadEnvironmentDMs(CheckFailure):
-    pass
+    """The exception raised when a user runs a command in guild when they must do so in DMs."""
 
 
-async def send_bad_environment_dms(target : Interaction) -> None:
+async def send_bad_environment_dmsonly(target : Interaction) -> None:
+    """
+    Warn a user when they run a command in a guild when they must do so in DMs.
+
+    Parameters
+    ----------
+    target : `Interaction`
+        The interaction context to send the warning with.
+    /
+    """
     await format_send(
         target,
         msg_type = "warning",
