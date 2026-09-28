@@ -59,9 +59,9 @@ class Actions:
 
     Parameters
     ----------
-    bot : Cordex
+    bot : `Cordex`
         The bot instance.
-    guild : Guild
+    guild : `Guild`
         The guild in which moderation actions are being executed.
     """
 
@@ -171,7 +171,7 @@ class Actions:
         if action.dm_user:
             success = await self._dm_target("Ban Add", action)
         else:
-            success = None
+            success = False
 
         try:
             await action.target.ban(
@@ -220,7 +220,7 @@ class Actions:
         if action.dm_user:
             success = await self._dm_target("Ban Remove", action)
         else:
-            success = None
+            success = False
 
         try:
             await self.guild.unban(
@@ -251,7 +251,7 @@ class Actions:
         if action.dm_user:
             success = await self._dm_target("Kick", action)
         else:
-            success = None
+            success = False
 
         try:
             await self.guild.kick(
@@ -290,7 +290,7 @@ class Actions:
         if action.dm_user:
             success = await self._dm_target("Quarantine Add", action)
         else:
-            success = None
+            success = False
 
         try:
             current_roles = [role for role in action.target.roles if not role.is_default()]
@@ -356,7 +356,7 @@ class Actions:
         if action.dm_user:
             success = await self._dm_target("Quarantine Remove", action)
         else:
-            success = None
+            success = False
 
         async with self.bot.db.execute(
             t"SELECT old_roles FROM Quarantines WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
@@ -413,7 +413,7 @@ class Actions:
         if action.dm_user:
             success = await self._dm_target("Timeout Add", action)
         else:
-            success = None
+            success = False
 
         try:
             await action.target.edit(
@@ -462,7 +462,7 @@ class Actions:
         if action.dm_user:
             success = await self._dm_target("Timeout Remove", action)
         else:
-            success = None
+            success = False
 
         try:
             await action.target.edit(

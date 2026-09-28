@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Literal, cast, final
 
 from discord import Forbidden, Guild, HTTPException, Member, Permissions
@@ -21,9 +22,9 @@ class LockdownManager:
 
     Parameters
     ----------
-    bot : Cordex
+    bot : `Cordex`
         The bot instance.
-    guild : Guild
+    guild : `Guild`
         The guild where lockdown is being managed.
     """
 
@@ -97,9 +98,9 @@ class QuarantineManager:
 
     Parameters
     ----------
-    bot : Cordex
+    bot : `Cordex`
         The bot instance.
-    guild : Guild
+    guild : `Guild`
         The guild where quarantine is being managed.
     """
 
@@ -287,3 +288,82 @@ class QuarantineManager:
                     self._log_failure("member quarantine enforcement (addition)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Note Manager
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+@dataclass(frozen = True, slots = True)
+class Note:
+    """
+    Represents a note.
+
+    Parameters
+    ----------
+    guild : `Guild`
+        The guild where the note belongs.
+    target : `Member`
+        The target member of the note.
+    note_id : `int`
+        The unique identifier for the note.
+    content : `str`
+        The content of the note.
+    """
+
+    guild   : Guild
+    target  : Member
+    note_id : int
+    content : str
+
+
+@final
+class NoteManager:
+    """
+    A manager for note operations that don't pertain to primary moderation actions.
+
+    Parameters
+    ----------
+    bot : `Cordex`
+        The bot instance.
+    guild : `Guild`
+        The guild where notes are being managed.
+    """
+
+    __slots__ = ("bot", "guild")
+
+    def __init__(self, bot : Cordex, guild : Guild) -> None:
+        super().__init__()
+        self.bot   = bot
+        self.guild = guild
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_notes
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_notes(self) -> set[Note]:
+        """
+        Fetch every note found in the database.
+
+        Returns
+        -------
+        `set[Note]`
+            Every note found in the database.
+        """
+        async with self.bot.db.execute(
+            t"SELECT note_id, member_id, content FROM Notes WHERE guild_id = {self.guild.id}",
+        ) as cursor:
+            rows = await cursor.fetchall()
+            if not rows:
+                return set()
+
+        return {
+            Note(
+                note_id = cast("int", row[0]),
+                member  = member,
+                guild   = self.guild,
+                content = cast("str", row[2]),
+            )
+            for row in rows
+            if (member := self.guild.get_member(cast("int", row[1])))
+        }

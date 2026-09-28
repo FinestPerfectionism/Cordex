@@ -250,15 +250,7 @@ class PurgePayload:
 
 
 @dataclass
-class _BaseNotePayload:
-    moderator : Member
-    target    : Member
-    note_id   : int
-    content   : str
-
-
-@dataclass
-class NoteAddPayload(_BaseNotePayload):
+class NoteAddPayload:
     """
     Represents a note add action.
 
@@ -268,15 +260,17 @@ class NoteAddPayload(_BaseNotePayload):
         The moderator responsible for the note add.
     target : `Member`
         The target member of the note add.
-    note_id : `int`
-        The unique identifier for the note.
     content : `str`
         The content of the note.
     """
 
+    moderator : Member
+    target    : Member
+    content   : str
+
 
 @dataclass
-class NoteEditPayload(_BaseNotePayload):
+class NoteEditPayload:
     """
     Represents a note edit action.
 
@@ -291,6 +285,11 @@ class NoteEditPayload(_BaseNotePayload):
     content : `str`
         The content of the note.
     """
+
+    moderator : Member
+    target    : Member
+    note_id   : int
+    content   : str
 
 
 @dataclass
@@ -364,9 +363,9 @@ class Cases:
 
     Parameters
     ----------
-    bot : Cordex
+    bot : `Cordex`
         The bot instance.
-    guild : Guild
+    guild : `Guild`
         The guild in which cases are being handled.
     """
 

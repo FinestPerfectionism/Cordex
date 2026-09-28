@@ -1,20 +1,24 @@
-from typing import final, override
+from typing import cast, final, override
 
 from discord import Member, User
 from discord.app_commands import (
     AppCommandError,
+    Choice,
     Group,
     allowed_installs,
+    autocomplete,
     command,
     describe,
     guild_only,
+    rename,
 )
 from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
 
 from bot import Cordex, Interaction
 from core.exceptions import UnconfiguredQuarantine, send_bad_operation
-from core.state.restrictions import requires_restriction
+from core.moderation import NoteManager
+from core.state import requires_restriction
 from core.utilities import unimplemented
 
 from .cases import run_mod_cases_query, run_mod_cases_view
@@ -90,6 +94,33 @@ class ModerationCommands(
         name        = "cases",
         description = "Moderation case commands",
     )
+
+    async def _note_autocomplete(self, interaction : Interaction, current : str) -> list[Choice[int]]:
+        guild = interaction.guild
+        if not guild:
+            return []
+
+        manager = NoteManager(interaction.client, guild)
+        notes = await manager.get_notes()
+
+        lower = current.lower()
+        namespace = interaction.namespace
+        if not namespace:
+            return [
+                Choice(name = f'#{note.note_id} {note.target.name} | "{note.content}"', value = note.note_id)
+                for note in notes
+                if lower in note.content.lower() or lower in note.target.name.lower()
+            ][:25]
+
+        target = cast("Member", namespace.target)
+        if target:
+            return [
+                Choice(name = f'#{note.note_id} {note.target.name} | "{note.content}"', value = note.note_id)
+                for note in notes
+                if note.target == target and lower in note.content.lower()
+            ][:25]
+
+        return []
 
     @override
     async def cog_app_command_error(self, interaction : Interaction, error : AppCommandError) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
@@ -286,8 +317,10 @@ class ModerationCommands(
         name        = "add",
         description = "Add a note to a member.",
     )
-    async def cmd_mod_primary_note_add(self, interaction : Interaction) -> None:
-        await run_mod_primary_note_add(interaction)
+    @rename(note_id = "id")
+    @autocomplete(note_id = _note_autocomplete)
+    async def cmd_mod_primary_note_add(self, interaction : Interaction, target : Member, note_id : int) -> None:
+        await run_mod_primary_note_add(interaction, target, note_id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation note view Command
@@ -298,8 +331,10 @@ class ModerationCommands(
         name        = "view",
         description = "View a member's notes.",
     )
-    async def cmd_mod_primary_note_view(self, interaction : Interaction) -> None:
-        await run_mod_primary_note_view(interaction)
+    @rename(note_id = "id")
+    @autocomplete(note_id = _note_autocomplete)
+    async def cmd_mod_primary_note_view(self, interaction : Interaction, target : Member, note_id : int) -> None:
+        await run_mod_primary_note_view(interaction, target, note_id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation note edit Command
@@ -310,8 +345,10 @@ class ModerationCommands(
         name        = "edit",
         description = "Edit a member's notes.",
     )
-    async def cmd_mod_primary_note_edit(self, interaction : Interaction) -> None:
-        await run_mod_primary_note_edit(interaction)
+    @rename(note_id = "id")
+    @autocomplete(note_id = _note_autocomplete)
+    async def cmd_mod_primary_note_edit(self, interaction : Interaction, target : Member, note_id : int) -> None:
+        await run_mod_primary_note_edit(interaction, target, note_id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation note remove Command
@@ -322,8 +359,10 @@ class ModerationCommands(
         name        = "remove",
         description = "Remove a note from a member.",
     )
-    async def cmd_mod_primary_note_remove(self, interaction : Interaction) -> None:
-        await run_mod_primary_note_remove(interaction)
+    @rename(note_id = "id")
+    @autocomplete(note_id = _note_autocomplete)
+    async def cmd_mod_primary_note_remove(self, interaction : Interaction, target : Member, note_id : int) -> None:
+        await run_mod_primary_note_remove(interaction, target, note_id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation cases query Command

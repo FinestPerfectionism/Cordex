@@ -1,3 +1,5 @@
+from discord import Member
+
 from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -5,5 +7,5 @@ from bot import Interaction
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_note_add(_interaction : Interaction) -> None:
+async def run_mod_primary_note_add(_interaction : Interaction, _target : Member, _note_id : int) -> None:
     ...

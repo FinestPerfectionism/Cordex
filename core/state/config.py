@@ -22,9 +22,9 @@ class Config:
 
     Parameters
     ----------
-    bot : Cordex
+    bot : `Cordex`
         The bot instance.
-    guild : Guild
+    guild : `Guild`
         The guild the configuration belongs to.
     """
 
