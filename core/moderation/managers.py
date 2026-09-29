@@ -46,15 +46,26 @@ class LockdownManager:
     # get_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_channels(self) -> set[GuildChannel]:  # pyright: ignore[reportReturnType]
+    async def get_channels(self) -> set[GuildChannel]:
         """
-        Fetch every lockdowned channel found in the database.
+        Fetch every channel in lockdown found in the database.
 
         Returns
         -------
         `set[GuildChannel]`
-            Every lockdowned channel found in the database.
+            Every channel in lockdown found in the database.
         """
+        async with self.bot.db.execute(
+            t"SELECT channel_id FROM Lockdowns WHERE guild_id = {self.guild.id}",
+        ) as cursor:
+            rows = await cursor.fetchall()
+            if not rows:
+                return set()
+
+        return {
+            channel for row in rows
+            if (channel := self.guild.get_channel(cast("int", row[0])))
+        }
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce

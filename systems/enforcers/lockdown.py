@@ -35,13 +35,11 @@ class LockdownEnforcer(commands.Cog):
         await self.bot.wait_until_ready()
 
     @commands.Cog.listener("on_guild_channel_update")
-    async def _listener_lockdownenforce_channelupdate(self, _before : GuildChannel, after : GuildChannel) -> None:
-        manager = LockdownManager(self.bot, after.guild)
-        await manager.enforce()
+    async def _listener_lockdownenforce_channelupdate(self, before : GuildChannel, after : GuildChannel) -> None:
+        if before.overwrites == after.overwrites:
+            return
 
-    @commands.Cog.listener("on_guild_channel_create")
-    async def _listener_lockdownenforce_channelcreate(self, channel : GuildChannel) -> None:
-        manager = LockdownManager(self.bot, channel.guild)
+        manager = LockdownManager(self.bot, after.guild)
         await manager.enforce()
 
 

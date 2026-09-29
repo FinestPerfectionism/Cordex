@@ -151,14 +151,22 @@ class Actions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def lockdown_add(self, _action : LockdownAddPayload) -> _ActionResult:
-        ...
+        return _ActionResult(
+            failed = failed,
+            logged = logged,
+            dmed   = None,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def lockdown_remove(self, _action : LockdownRemovePayload) -> _ActionResult:
-        ...
+        return _ActionResult(
+            failed = failed,
+            logged = logged,
+            dmed   = None,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_add
