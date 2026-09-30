@@ -152,7 +152,7 @@ class Actions:
     async def lockdown_add(self, _action : LockdownAddPayload) -> None:  # _ActionResult:
         # return _ActionResult(
         #     failed = failed,
-        #     logged = logged,
+        #     logged = case.successful,
         #     dmed   = None,
         # )
         ...
@@ -164,7 +164,7 @@ class Actions:
     async def lockdown_remove(self, _action : LockdownRemovePayload) -> None:  # _ActionResult:
         # return _ActionResult(
         #     failed = failed,
-        #     logged = logged,
+        #     logged = case.successful,
         #     dmed   = None,
         # )
         ...
@@ -192,11 +192,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = success,
         )
 
@@ -241,11 +241,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = success,
         )
 
@@ -272,11 +272,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = success,
         )
 
@@ -320,11 +320,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = success,
         )
 
@@ -403,11 +403,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = success,
         )
 
@@ -434,11 +434,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = success,
         )
 
@@ -483,11 +483,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = success,
         )
 
@@ -525,11 +525,11 @@ class Actions:
         else:
             failed = False
 
-        logged = await self.cases.create_case(action)
+        case = await self.cases.create_case(action)
 
         return _ActionResult(
             failed = failed,
-            logged = logged,
+            logged = case.successful,
             dmed   = None,
             data   = len(deleted),
         )
