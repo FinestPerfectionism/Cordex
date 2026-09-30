@@ -3,8 +3,9 @@
 # ⸻ It's going to complain about 'Interaction'.
 
 from asyncio import to_thread
+from collections.abc import Callable
 from contextlib import suppress
-from inspect import getsource
+from inspect import getattr_static, getsource
 from io import BytesIO
 from logging import getLogger as get_logger
 from pathlib import Path
@@ -124,6 +125,7 @@ class _ContextClass(BaseContext["Cordex"]):
     async def show_attrs(
         self,
         target   : object,
+        check    : Callable[[object], bool],
         /,
         *,
         tall     : bool | None = None,
@@ -137,7 +139,11 @@ class _ContextClass(BaseContext["Cordex"]):
                 return privates
             return True
 
-        attrs = [attr for attr in dir(target) if _filter(attr)]
+        attrs = [
+            attr for attr in dir(target)
+            if _filter(attr) and
+            check(getattr_static(target, attr))
+        ]
 
         if tall is None:
             estimated_length = sum(len(a) for a in attrs) + (2 * (len(attrs) - 1))
