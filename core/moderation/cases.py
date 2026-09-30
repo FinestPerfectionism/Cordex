@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import final
+from datetime import UTC, datetime
+from typing import cast, final
 
 from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Member
 
@@ -24,250 +25,23 @@ from constants import (
 )
 from core.utilities import format_now, format_table
 
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Cases Management
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Action Payloads
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-@dataclass
-class _BaseRemovePayload:
-    moderator : Member
-    target    : Member
-    reason    : str
-    dm_user   : bool
-
-
-@dataclass
-class _BaseAddPayload:
-    moderator : Member
-    target    : Member
-    reason    : str
-    dm_user   : bool
-
-
-@dataclass
-class _BaseLockdownPayload:
-    moderator : Member
-    target    : GuildMessagable
-    reason    : str
-
-
-@dataclass
-class LockdownAddPayload(_BaseLockdownPayload):
-    """
-    Represents a lockdown add action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the lockdown add.
-    target : `GuildMessagable`
-        The target channel of the lockdown add.
-    reason : `str`
-        The reason for the lockdown add.
-    """
-
-
-@dataclass
-class LockdownRemovePayload(_BaseLockdownPayload):
-    """
-    Represents a lockdown remove action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the lockdown remove.
-    target : `GuildMessagable`
-        The target channel of the lockdown remove.
-    reason : `str`
-        The reason for the lockdown remove.
-    """
-
-
-@dataclass
-class BanAddPayload(_BaseAddPayload):
-    """
-    Represents a ban add action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the ban add.
-    target : `Member`
-        The target member of the ban add.
-    reason : `str`
-        The reason for the ban add.
-    dm_user : `bool`
-        Whether the user was direct messaged.
-    seconds_to_delete : `int`
-        The duration in seconds of messages to delete.
-    """
-
-    seconds_to_delete : int
-
-
-@dataclass
-class BanRemovePayload(_BaseRemovePayload):
-    """
-    Represents a ban remove action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the ban remove.
-    target : `Member`
-        The target member of the ban remove.
-    reason : `str`
-        The reason for the ban remove.
-    dm_user : `bool`
-        Whether the user was direct messaged.
-    """
-
-
-@dataclass
-class KickPayload:
-    """
-    Represents a kick action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the kick.
-    target : `Member`
-        The target member of the kick.
-    reason : `str`
-        The reason for the kick.
-    dm_user : `bool`
-        Whether the user was direct messaged.
-    """
-
-    moderator : Member
-    target    : Member
-    reason    : str
-    dm_user   : bool
-
-
-@dataclass
-class TimeoutAddPayload(_BaseAddPayload):
-    """
-    Represents a timeout add action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the timeout add.
-    target : `Member`
-        The target member of the timeout add.
-    reason : `str`
-        The reason for the timeout add.
-    dm_user : `bool`
-        Whether the user was direct messaged.
-    length : `int`
-        The duration of the timeout in seconds.
-    """
-
-    length : int
-
-
-@dataclass
-class TimeoutRemovePayload(_BaseRemovePayload):
-    """
-    Represents a timeout remove action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the timeout remove.
-    target : `Member`
-        The target member of the timeout remove.
-    reason : `str`
-        The reason for the timeout remove.
-    dm_user : `bool`
-        Whether the user was direct messaged.
-    """
-
-
-@dataclass
-class QuarantineAddPayload(_BaseAddPayload):
-    """
-    Represents a quarantine add action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the quarantine add.
-    target : `Member`
-        The target member of the quarantine add.
-    reason : `str`
-        The reason for the quarantine add.
-    dm_user : `bool`
-        Whether the user was direct messaged.
-    """
-
-
-@dataclass
-class QuarantineRemovePayload(_BaseRemovePayload):
-    """
-    Represents a quarantine remove action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the quarantine remove.
-    target : `Member`
-        The target member of the quarantine remove.
-    reason : `str`
-        The reason for the quarantine remove.
-    dm_user : `bool`
-        Whether the user was direct messaged.
-    """
-
-
-@dataclass
-class PurgePayload:
-    """
-    Represents a purge action.
-
-    Parameters
-    ----------
-    moderator : `Member`
-        The moderator responsible for the purge.
-    target : `Member | None`
-        The optional target member whose messages were purged.
-    reason : `str`
-        The reason for the purge.
-    channel : `GuildMessagable`
-        The target channel of the purge.
-    amount : `int`
-        The amount of messages purged.
-    force : `bool`
-        Whether the purge was forced.
-    """
-
-    moderator : Member
-    target    : Member | None
-    reason    : str
-    channel   : GuildMessagable
-    amount    : int
-    force     : bool
-
-
-Payloads = (
-    LockdownAddPayload
-    | LockdownRemovePayload
-    | BanAddPayload
-    | BanRemovePayload
-    | KickPayload
-    | QuarantineAddPayload
-    | QuarantineRemovePayload
-    | TimeoutAddPayload
-    | TimeoutRemovePayload
-    | PurgePayload
+from .payloads import (
+    BanAddPayload,
+    BanRemovePayload,
+    KickPayload,
+    LockdownAddPayload,
+    LockdownRemovePayload,
+    Payloads,
+    PurgePayload,
+    QuarantineAddPayload,
+    QuarantineRemovePayload,
+    TimeoutAddPayload,
+    TimeoutRemovePayload,
 )
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Moderation Cases Management
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cases Class
@@ -294,10 +68,72 @@ CASE_MAP : dict[type, _CaseData] = {
 }
 
 
-@final
-class Cases:
+@dataclass(frozen = True, slots = True)
+class _CreateCaseResult:
+    successful : bool
+    case       : Case | None
+
+
+@dataclass(frozen = True, slots = True)
+class Case:
     """
-    Represents a guild's cases.
+    Represents a moderation case.
+
+    Parameters
+    ----------
+    id : `int`
+        The ID of the case.
+    action_type : `str`
+        The type of the case.
+    moderator : `Member`
+        The moderator of the case.
+    target : `Member | None`
+        The target of the case.
+    reason : `str`
+        The reason for the action in the case.
+    channel : `GuildMessagable | None`
+        The channel purged in the case. Only populated in purge cases.
+    created_at : `datetime`
+        The datetime of when the case was created.
+    dm_user : `bool | None`
+        Whether the user was DMed upon the action in the case.
+        Only populated in member-type cases.
+    seconds_to_delete : `int | None`
+        The seconds to delete upon ban in the case.
+        Only populated in ban cases.
+    timeout_length : `int | None`
+        The length of the timeout.
+        Only populated in timeout cases.
+    purge_amount : `int | None`
+        The amount of messages purged in the case.
+        Only populated in purge cases.
+    purge_force : bool | None`
+        Whether the channel was force purged in the case.
+        Only populated in purge cases.
+    expired : `bool`
+    related_case_id : `int | None`
+    """
+
+    id                : int
+    action_type       : str
+    moderator         : Member
+    target            : Member          | None
+    reason            : str
+    channel           : GuildMessagable | None
+    created_at        : datetime
+    dm_user           : bool            | None
+    seconds_to_delete : int             | None
+    timeout_length    : int             | None
+    purge_amount      : int             | None
+    purge_force       : bool            | None
+    expired           : bool
+    related_case_id   : int             | None
+
+
+@final
+class CasesManager:
+    """
+    A manager for cases operations.
 
     Parameters
     ----------
@@ -326,14 +162,15 @@ class Cases:
     # create_case
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def create_case(self, case : Payloads) -> bool:
+    async def create_case(self, payload : Payloads, /) -> _CreateCaseResult:
         """
         Create and log a case based off of a payload.
 
         Parameters
         ----------
-        case : `Payloads`
+        payload : `Payloads`
             The payload to create the case for.
+        /
 
         Returns
         -------
@@ -342,16 +179,21 @@ class Cases:
         """
         log_channel = await self.bot.config(self.guild).get_moderation_logging_channel()
         if not log_channel:
-            return False
+            return _CreateCaseResult(
+                successful = False,
+                case       = None,
+            )
 
-        data = CASE_MAP[type(case)]
+        data = CASE_MAP[type(payload)]
 
         view = LayoutView()
         container = Container[view](TextDisplay(f"# {data.title}"), color = data.color)
 
-        if isinstance(case, PurgePayload):
-            if case.target is not None:
-                target = case.target
+        # ⸻ Add the target information.
+
+        if isinstance(payload, PurgePayload):
+            if payload.target is not None:
+                target = payload.target
                 target_table = {
                     "Target"    : target.mention,
                     "Name"      : target.name,
@@ -368,7 +210,7 @@ class Cases:
                 else:
                     container.add_text(target_info)
         else:
-            target = case.target
+            target = payload.target
             target_table = {
                 "Target"    : target.mention,
                 "Name"      : target.name,
@@ -385,7 +227,9 @@ class Cases:
             else:
                 container.add_text(target_info)
 
-        moderator = case.moderator
+        # ⸻ Add the moderator information.
+
+        moderator = payload.moderator
         moderator_table = {
             "Moderator"      : moderator.mention,
             "Moderator Name" : moderator.name,
@@ -402,19 +246,32 @@ class Cases:
         else:
             container.add_text(moderator_info)
 
+        # ⸻ Case details.
+
         details : dict[str, object] = {}
 
-        if isinstance(case, BanAddPayload):
-            details["Message Delete History"] = f"{case.seconds_to_delete} seconds"
-        elif isinstance(case, TimeoutAddPayload):
-            details["Duration"] = f"{case.length} seconds"
-        elif isinstance(case, PurgePayload):
-            details["Channel"] = case.channel.mention
-            details["Amount"]  = case.amount
-            details["Forced"]  = case.force
+        if isinstance(payload, BanAddPayload):
+            details["Message Delete History"] = f"{payload.seconds_to_delete} seconds"
+        elif isinstance(payload, TimeoutAddPayload):
+            details["Duration"] = f"{payload.length} seconds"
+        elif isinstance(payload, PurgePayload):
+            details["Channel"] = payload.channel.mention
+            details["Amount"]  = payload.amount
+            details["Forced"]  = payload.force
 
-        if isinstance(case, _BaseAddPayload | _BaseRemovePayload | KickPayload):
-            details["DM Sent"] = case.dm_user
+        if isinstance(
+            payload,
+            BanAddPayload
+            | QuarantineAddPayload
+            | KickPayload
+            | TimeoutAddPayload
+            | BanRemovePayload
+            | QuarantineRemovePayload
+            | TimeoutRemovePayload,
+        ):
+            details["DM Sent"] = payload.dm_user
+
+        # ⸻ Add the case details.
 
         if details:
             container.add_items(
@@ -425,13 +282,17 @@ class Cases:
                 ),
             )
 
+        # ⸻ Add the reason.
+
         container.add_items(
             VisibleLargeSeparator(),
             TextDisplay(
                 "## Reason\n"
-               f"{case.reason}",
+               f"{payload.reason}",
             ),
         )
+
+        # ⸻ Add the current time.
 
         container.add_items(
             VisibleLargeSeparator(),
@@ -440,43 +301,168 @@ class Cases:
 
         view.add_item(container)
 
+        # ⸻ Save the case into the database.
+
+        action_type = type(payload).__name__.replace("Payload", "").lower()
+        moderator_id = payload.moderator.id
+        reason = payload.reason
+
+        target_id = payload.target.id if payload.target is not None else None
+
+        dm_user           = None
+        seconds_to_delete = None
+        timeout_length    = None
+        purge_channel_id  = None
+        purge_amount      = None
+        purge_force       = None
+        related_case_id   = None
+
+        if isinstance(payload, BanAddPayload):
+            dm_user = int(payload.dm_user)
+            seconds_to_delete = payload.seconds_to_delete
+        elif isinstance(payload, TimeoutAddPayload):
+            dm_user = int(payload.dm_user)
+            timeout_length = payload.length
+        elif isinstance(payload, QuarantineAddPayload | KickPayload | BanRemovePayload | TimeoutRemovePayload | QuarantineRemovePayload):
+            dm_user = int(payload.dm_user)
+        elif isinstance(payload, PurgePayload):
+            purge_channel_id = payload.channel.id
+            purge_amount     = payload.amount
+            purge_force      = int(payload.force)
+
+        try:
+            if action_type.endswith("remove") and target_id is not None:
+                corresponding = action_type.replace("remove", "add")
+                async with self.bot.db.execute(
+                    t"SELECT id FROM Cases WHERE target_id = {target_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
+                ) as cursor:
+                    row = await cursor.fetchone()
+                    if row is not None:
+                        related_case_id = cast("int", row[0])
+
+            cursor = await self.bot.db.execute(
+                t"INSERT INTO Cases ("
+                t"    action_type, moderator_id, target_id, reason, "
+                t"    dm_user, seconds_to_delete, timeout_length, purge_channel_id, purge_amount, purge_force, related_case_id"
+                t") VALUES ("
+                t"    {action_type}, {moderator_id}, {target_id}, {reason}, "
+                t"    {dm_user}, {seconds_to_delete}, {timeout_length}, {purge_channel_id}, {purge_amount}, {purge_force}, {related_case_id}"
+                t")",
+            )
+            new_case_id = cursor.lastrowid
+
+            if not new_case_id:
+                return _CreateCaseResult(
+                    successful = False,
+                    case       = None,
+                )
+
+            await self.bot.db.execute(
+                t"UPDATE Cases SET expired = 1, related_case_id = {new_case_id} WHERE id = {related_case_id}",
+            )
+            await self.bot.db.commit()
+        except Exception:
+            self._log_failure("case database insertion")
+            return _CreateCaseResult(
+                successful = False,
+                case       = None,
+            )
+        else:
+            successful = True
+
+        # ⸻ Log the case.
+
         try:
             await log_channel.send(
                 view             = view,
                 allowed_mentions = AllowedMentions.none(),
             )
         except Forbidden:
-            return False
+            return _CreateCaseResult(
+                successful = False,
+                case       = None,
+            )
         except HTTPException:
             self._log_failure("case logging")
-            return False
-        else:
-            return True
+            return _CreateCaseResult(
+                successful = successful,
+                case       = None,
+            )
+
+        return _CreateCaseResult(
+            successful = successful,
+            case       = Case(
+                id                = new_case_id,
+                action_type       = action_type,
+                moderator         = payload.moderator,
+                target            = payload.target if isinstance(payload.target, Member) else None,
+                reason            = reason,
+                channel           = payload.channel if isinstance(payload, PurgePayload) else None,
+                created_at        = datetime.now(UTC),
+                dm_user           = bool(dm_user) if dm_user is not None else None,
+                seconds_to_delete = seconds_to_delete,
+                timeout_length    = timeout_length,
+                purge_amount      = purge_amount,
+                purge_force       = bool(purge_force) if purge_force is not None else None,
+                expired           = False,
+                related_case_id   = related_case_id,
+            ),
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # get_case
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_case(self, _case : int) -> None:
+    async def get_case(self, case_id : int, /) -> Case | None:
         """
-        Get a case.
+        Get a case from the database by its ID.
 
         Parameters
         ----------
-        _case : `int`
+        case_id : `int`
             The ID of the case to get.
-        """
+        /
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # edit_case
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def edit_case(self, _case : int) -> None:
+        Returns
+        -------
+        `Case | None`
+            The case if found, otherwise None.
         """
-        Edits a case.
+        try:
+            async with self.bot.db.execute(t"SELECT * FROM Cases WHERE id = {case_id}") as cursor:
+                row = await cursor.fetchone()
+                if row is None:
+                    return None
+        except Exception:
+            self._log_failure(f"fetching case {case_id}")
+            return None
 
-        Parameters
-        ----------
-        _case : `int`
-            The ID of the case to edit.
-        """
+        moderator_id = cast("int", row["moderator_id"])
+        target_id    = cast("int", row["target_id"])
+
+        moderator = self.guild.get_member(moderator_id) or await self.guild.fetch_member(moderator_id)
+        target    = self.guild.get_member(target_id)    or await self.guild.fetch_member(target_id) if target_id else None
+
+        purge_channel_id = cast("int", row["purge_channel_id"])
+        purge_channel    = self.guild.get_channel(purge_channel_id) or await self.guild.fetch_channel(purge_channel_id) if purge_channel_id else None
+
+        created_at = cast("str | datetime", row["created_at"])
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+
+        return Case(
+            id                = cast("int", row["id"]),
+            action_type       = cast("str", row["action_type"]),
+            moderator         = moderator,
+            target            = target,
+            reason            = cast("str", row["reason"]),
+            channel           = purge_channel if isinstance(purge_channel, GuildMessagable) else None,
+            created_at        = created_at,
+            dm_user           = bool(cast("int | None", row["dm_user"])),
+            seconds_to_delete = cast("int | None", row["seconds_to_delete"]),
+            timeout_length    = cast("int | None", row["timeout_length"]),
+            purge_amount      = cast("int | None", row["purge_amount"]),
+            purge_force       = bool(cast("int | None", row["purge_force"])),
+            expired           = bool(cast("int", row["expired"])),
+            related_case_id   = cast("int | None", row["related_case_id"]),
+        )

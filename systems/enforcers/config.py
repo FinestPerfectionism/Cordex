@@ -12,7 +12,7 @@ from bot import Cordex, log
 
 @final
 class ConfigEnforcer(commands.Cog):
-    """Resets configurations when the bot leaves or when the bot is (possibly due to the bot leaivng while offline)."""
+    """Resets configurations when the bot leaves or when the bot is (possibly due to the bot leaving while offline)."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
@@ -32,20 +32,20 @@ class ConfigEnforcer(commands.Cog):
     async def _loop_configenforce(self) -> None:
         configured_guild_ids = await self._get_configured_guilds()
         true_guild_ids       = {guild.id for guild in self.bot.guilds}
+        stale_guild_ids      = [guild_id for guild_id in configured_guild_ids if guild_id not in true_guild_ids]
 
         reset = 0
-        for guild_id in configured_guild_ids:
-            if guild_id not in true_guild_ids:
-                guild = await self.bot.fetch_guild(guild_id)
-
-                log.info("Found a configuration for a guild I am not in: %s. for Attempting a configuration reset.", guild.name)
-                try:
-                    await self.bot.config(guild).reset()
-                except Exception:
-                    log.exception("An exception occurred during this configuration reset. Moving on.")
+        if stale_guild_ids:
+            try:
+                await self.bot.db.execute(t"DELETE FROM Config WHERE guild_id IN {tuple(stale_guild_ids)}")
+                await self.bot.db.commit()
+            except Exception:
+                log.exception("An exception occurred during the configuration resets. Moving on.")
+            else:
+                reset = len(stale_guild_ids)
 
         if reset > 0:
-            log.info("Configuration reset complete. %s guilds reset.")
+            log.info("Configuration reset complete. %s guilds reset.", reset)
 
     @_loop_configenforce.before_loop
     async def _beforeloop_configenforce(self) -> None:

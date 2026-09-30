@@ -543,18 +543,14 @@ class ModerationModal(Modal):
                 footer = "\n-#".join(notes)
 
                 if all(statuses):
+                    title    = f"The {modal.name} was successful."
                     msg_type = "success"
                 elif any(statuses):
+                    title    = f"The {modal.name} was partially successful."
                     msg_type = "warning"
                 else:
+                    title    = f"The {modal.name} failed."
                     msg_type = "error"
-
-                if all(statuses):
-                    title = f"The {modal.name} was successful."
-                elif any(statuses):
-                    title = f"The {modal.name} was partially successful."
-                else:
-                    title = f"The {modal.name} failed."
 
                 result_view = LayoutView()
                 result_view.add_item(

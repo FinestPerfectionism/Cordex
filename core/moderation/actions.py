@@ -11,10 +11,9 @@ from constants import COLOR_BLACK, COLOR_ORANGE, COLOR_YELLOW, WARNING_EMOJI
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
-from .cases import (
+from .payloads import (
     BanAddPayload,
     BanRemovePayload,
-    Cases,
     KickPayload,
     LockdownAddPayload,
     LockdownRemovePayload,
@@ -70,7 +69,7 @@ class Actions:
         self.guild  = guild
         self.config = self.bot.config(guild)
 
-        self.cases = Cases(bot, guild)
+        self.cases = bot.cases(guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure
@@ -150,23 +149,25 @@ class Actions:
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_add(self, _action : LockdownAddPayload) -> _ActionResult:
-        return _ActionResult(
-            failed = failed,
-            logged = logged,
-            dmed   = None,
-        )
+    async def lockdown_add(self, _action : LockdownAddPayload) -> None:  # _ActionResult:
+        # return _ActionResult(
+        #     failed = failed,
+        #     logged = logged,
+        #     dmed   = None,
+        # )
+        ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_remove(self, _action : LockdownRemovePayload) -> _ActionResult:
-        return _ActionResult(
-            failed = failed,
-            logged = logged,
-            dmed   = None,
-        )
+    async def lockdown_remove(self, _action : LockdownRemovePayload) -> None:  # _ActionResult:
+        # return _ActionResult(
+        #     failed = failed,
+        #     logged = logged,
+        #     dmed   = None,
+        # )
+        ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_add
