@@ -52,23 +52,17 @@ type Targetable = User | Member | GuildMessagable
 
 
 @final
-class ModerationModal(Modal):
+class _ModerationModal(Modal):
     def __init__(
         self,
-        action_type          : ActionType,
-        target               : Targetable,
+        action_type  : ActionType,
+        target       : Targetable,
         *,
-        reason_default       : str        | None = None,
-        length_default       : str        | None = None,
-        dtd_default          : str        | None = None,
-        purge_target_default : Member     | None = None,
-        amount_default       : str        | None = None,
-        force_default        : bool              = False,
-        dm_default           : bool              = False,
-        edit_view            : LayoutView | None = None,
+        purge_target : Member     | None = None,
+        edit_view    : LayoutView | None = None,
     ) -> None:
-        self.edit_view            : LayoutView | None = edit_view
-        self.purge_target_default : Member     | None = purge_target_default
+        self.edit_view    : LayoutView | None = edit_view
+        self.purge_target : Member     | None = purge_target
 
         target_name = target.name
 
@@ -133,7 +127,7 @@ class ModerationModal(Modal):
 
             items.append(self.text)
 
-        self._reason = TextInput[Self](placeholder = "Enter reason here...", default = reason_default)
+        self._reason = TextInput[Self](placeholder = "Enter reason here...")
         self.reason  = Label[Self](
             text        =  "Reason",
             description = f"Reason for the {self.name}.",
@@ -143,10 +137,7 @@ class ModerationModal(Modal):
         items.append(self.reason)
 
         if action_type == "Timeout Add":
-            self._length = TextInput[Self](
-                placeholder = "Enter length here...",
-                default     = length_default,
-            )
+            self._length = TextInput[Self](placeholder = "Enter length here...")
             self.length  = Label[Self](
                 text        = "Length",
                 description = "Length of the timeout.",
@@ -162,7 +153,6 @@ class ModerationModal(Modal):
                     required    = False,
                     min_length  = 1,
                     max_length  = 1,
-                    default     = dtd_default,
                 )
                 self.dtd  = Label[Self](
                     text        = "Days to Delete",
@@ -176,7 +166,6 @@ class ModerationModal(Modal):
                     placeholder = 'ex: "10"',
                     min_length  = 1,
                     max_length  = 3,
-                    default     = amount_default,
                 )
                 self.amount  = Label[Self](
                     text        = "Amount",
@@ -184,7 +173,7 @@ class ModerationModal(Modal):
                     component   = self._amount,
                 )
 
-                self._force = Checkbox[Self](default = force_default)
+                self._force = Checkbox[Self]()
                 self.force  = Label[Self](
                     text        = "Force",
                     description = "Whether to force purge messages.",
@@ -196,7 +185,7 @@ class ModerationModal(Modal):
                 pass
 
         if action_type != "Purge":
-            self._dm = Checkbox[Self](default = dm_default)
+            self._dm = Checkbox[Self]()
             self.dm  = Label[Self](
                 text        =  "DM",
                 description = f"Whether to DM the user upon {self.name}. This can fail!",
@@ -211,12 +200,31 @@ class ModerationModal(Modal):
     async def on_submit(self, interaction : Interaction) -> None:
         modal = self
 
+        # ⸻ Update the defaults.
+
+        self._reason.default = self._reason.value
+
+        if self.action_type == "Timeout Add":
+            self._length.default = self._length.value
+
+        match self.action_type:
+            case "Ban Add":
+                self._dtd.default = self._dtd.value
+            case "Purge":
+                self._amount.default = self._amount.value
+                self._force.default  = self._force.value
+            case _:
+                pass
+
+        if self.action_type != "Purge":
+            self._dm.default = self._dm.value
+
         reason = self._reason.value
 
         length : str | None = None
         dtd    : str | None = None
 
-        purge_member : Member | None = self.purge_target_default
+        purge_member : Member | None = self.purge_target
         amount       : int    | None = None
         force        : bool          = False
         dm           : bool          = False
@@ -357,24 +365,7 @@ class ModerationModal(Modal):
         class EditOrExecuteRow(ActionRow["ModerationView"]):
             @button(label = "Edit", style = grey)
             async def btn_edit(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
-                view = self.view
-                if not view:
-                    return
-
-                await interaction.response.send_modal(
-                    ModerationModal(
-                        modal.action_type,
-                        modal.target,
-                        reason_default       = reason,
-                        length_default       = length,
-                        dtd_default          = dtd,
-                        purge_target_default = purge_member,
-                        amount_default       = str(amount) if amount is not None else None,
-                        force_default        = force,
-                        dm_default           = dm,
-                        edit_view            = view,
-                    ),
-                )
+                await interaction.response.send_modal(modal)
 
             @button(label = "Execute", style = red)
             async def btn_execute(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
@@ -544,13 +535,13 @@ class ModerationModal(Modal):
 
                 if all(statuses):
                     title    = f"The {modal.name} was successful."
-                    msg_type = "success"
+                    msg_type =  "success"
                 elif any(statuses):
                     title    = f"The {modal.name} was partially successful."
-                    msg_type = "warning"
+                    msg_type =  "warning"
                 else:
                     title    = f"The {modal.name} failed."
-                    msg_type = "error"
+                    msg_type =  "error"
 
                 result_view = LayoutView()
                 result_view.add_item(
@@ -689,6 +680,6 @@ async def send_moderation_modal(
         error = f"action_type '{action_type}' is not a recognized moderation action"
         raise ValueError(error)
 
-    modal = ModerationModal(action_type, target, purge_target_default = purge_target)
+    modal = _ModerationModal(action_type, target, purge_target = purge_target)
 
     await interaction.response.send_modal(modal)
