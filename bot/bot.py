@@ -159,10 +159,11 @@ class _ContextClass(BaseContext["Cordex"]):
         if len(output) < 2000:
             return await self.send(output)
 
-        module   = getattr(target, "__module__", "global").replace(".", "∕")
-        qualname = getattr(target, "__qualname__", "object").replace(".", "․")
-        filename = f"{module}∕{qualname}.py"
-        return await self.send(file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
+        module   = getattr(target, "__module__", "global").replace(".", "/")
+        qualname = getattr(target, "__qualname__", "object")
+        content  = f"`{module}/{qualname}`"
+        filename = f"{module.split('/')[-1]}.py"
+        return await self.send(content = content, file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
 
     async def show_def(self, target : InspectableObject, /) -> Message:
         source = getsource(target)
@@ -175,10 +176,11 @@ class _ContextClass(BaseContext["Cordex"]):
         if len(msg) < 2000:
             return await self.send(msg)
 
-        module   = getattr(target, "__module__", "global").replace(".", "∕")
-        qualname = getattr(target, "__qualname__", "object").replace(".", "․")
-        filename = f"{module}∕{qualname}.py"
-        return await self.send(file = File(BytesIO(source.encode()), filename = filename))
+        module   = getattr(target, "__module__", "global").replace(".", "/")
+        qualname = getattr(target, "__qualname__", "object")
+        content  = f"`{module}/{qualname}`"
+        filename = f"{module.split('/')[-1]}.py"
+        return await self.send(content = content, file = File(BytesIO(source.encode()), filename = filename))
 
     async def reference_delete(self) -> None:
         if self.message.reference and self.message.reference.message_id:
