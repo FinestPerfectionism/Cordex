@@ -161,7 +161,7 @@ class _ContextClass(BaseContext["Cordex"]):
 
         module   = getattr(target, "__module__", "global").replace(".", "/")
         qualname = getattr(target, "__qualname__", "object")
-        content  = f"`{module}/{qualname}`"
+        content  = f"```{module}/{qualname}```"
         filename = f"{module.split('/')[-1]}.py"
         return await self.send(content = content, file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
 
@@ -178,7 +178,7 @@ class _ContextClass(BaseContext["Cordex"]):
 
         module   = getattr(target, "__module__", "global").replace(".", "/")
         qualname = getattr(target, "__qualname__", "object")
-        content  = f"`{module}/{qualname}`"
+        content  = f"```{module}/{qualname}```"
         filename = f"{module.split('/')[-1]}.py"
         return await self.send(content = content, file = File(BytesIO(source.encode()), filename = filename))
 
