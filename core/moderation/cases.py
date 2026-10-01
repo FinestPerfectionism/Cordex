@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, cast, final
+from typing import cast, final
 
 from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Member
 
+from bot import Cordex, log
 from bot.types import GuildMessagable
 from bot.ui import (
     Container,
@@ -37,11 +38,6 @@ from .payloads import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-
-if TYPE_CHECKING:
-    from bot import Cordex
-
-from ._base import log
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Cases Management

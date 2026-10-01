@@ -1,15 +1,17 @@
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import TYPE_CHECKING, Literal, cast, final
+from typing import Literal, cast, final
 
 from discord import Forbidden, Guild, HTTPException, Message, Role
 from discord.utils import format_dt, utcnow
 
+from bot import Cordex, log
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_BLACK, COLOR_ORANGE, COLOR_YELLOW, WARNING_EMOJI
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
+from .cases import CasesManager
 from .payloads import (
     BanAddPayload,
     BanRemovePayload,
@@ -22,11 +24,6 @@ from .payloads import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-
-if TYPE_CHECKING:
-    from bot import Cordex
-
-from ._base import log
 
 type ActionType = Literal[
     "Ban Add",
@@ -73,7 +70,7 @@ class Actions:
         self.guild  = guild
         self.config = self.bot.config(guild)
 
-        self.cases = bot.cases(guild)
+        self.cases = CasesManager(bot, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure

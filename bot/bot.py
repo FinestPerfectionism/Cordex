@@ -34,7 +34,6 @@ from discord.http import Route
 
 from constants import DENIED_EMOJI, DEVELOPER_IDS, DisplayNameEffect, DisplayNameFont
 from core.cog_loader import discover_cogs
-from core.moderation import CasesManager
 from core.state import (
     Config,
     Connection,
@@ -280,13 +279,6 @@ class Cordex(commands.Bot):
 
     def config(self, guild : Guild) -> Config:
         return Config(self, guild)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Cases
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    def cases(self, guild : Guild) -> CasesManager:
-        return CasesManager(self, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Name Styles
