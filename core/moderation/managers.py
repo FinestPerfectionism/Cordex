@@ -1,9 +1,12 @@
-from typing import Literal, cast, final
+from typing import TYPE_CHECKING, Literal, cast, final
 
 from discord import Forbidden, Guild, HTTPException, Member, Permissions
 from discord.abc import GuildChannel
 
-from bot import Cordex, log
+if TYPE_CHECKING:
+    from bot import Cordex
+
+from ._base import log
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Managers

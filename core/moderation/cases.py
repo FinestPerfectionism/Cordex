@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from logging import getLogger as get_logger
 from typing import TYPE_CHECKING, cast, final
 
 from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Member
@@ -42,7 +41,7 @@ from .payloads import (
 if TYPE_CHECKING:
     from bot import Cordex
 
-log = get_logger("Cordex")
+from ._base import log
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Cases Management
@@ -161,7 +160,7 @@ class CasesManager:
 
     def _log_failure(self, msg : str, /, *, rate_limited : bool = False) -> None:
         rate_limited_msg = " — Rate-limited" if rate_limited else ""
-        log.exception("Failure during %s in guild %s, %s%s", msg, self.guild.name, self.guild.id, rate_limited_msg)  # ruff: ignore[log-exception-outside-except-handler]  # The exception context will be wherever the function is called.
+        log.exception("Failure during %s in guild %s, %s%s", msg, self.guild.name, self.guild.id, rate_limited_msg)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # create_case
