@@ -9,10 +9,12 @@ from typing import cast
 
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands as ext_commands
 from discord.utils import format_dt, get, utcnow
 
+import commands
 import constants
+import core
 from bot import Context, ContextOrInteraction, Cordex, Interaction, ui
 from constants import (
     ACCEPTED_EMOJI,
@@ -66,14 +68,18 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "Interaction"          : Interaction,
         "ContextOrInteraction" : ContextOrInteraction,
 
+        "commands"     : commands,
         "constants"    : constants,
+        "core"         : core,
+        "ui"           : ui,
         "asyncio"      : asyncio,
         "typing"       : typing,
-        "commands"     : commands,
+        "ext_commands" : ext_commands,
         "app_commands" : app_commands,
         "discord"      : discord,
+        "dabc"         : discord.abc,
+        "dutils"       : discord.utils,
         "dui"          : discord.ui,
-        "ui"           : ui,
 
         "ACCEPTED_EMOJI" : ACCEPTED_EMOJI,
         "WARNING_EMOJI"  : WARNING_EMOJI,
