@@ -124,7 +124,7 @@ class _ContextClass(BaseContext["Cordex"]):
     async def show_attrs(
         self,
         target   : object,
-        check    : Callable[[object], bool],
+        check    : Callable[[object], bool] | None = None,
         /,
         *,
         tall     : bool | None = None,
@@ -138,11 +138,14 @@ class _ContextClass(BaseContext["Cordex"]):
                 return privates
             return True
 
-        attrs = [
-            attr for attr in dir(target)
-            if _filter(attr) and
-            check(cast("object", getattr_static(target, attr)))
-        ]
+        if check is not None:
+            attrs = [
+                attr for attr in dir(target)
+                if _filter(attr) and
+                check(cast("object", getattr_static(target, attr)))
+            ]
+        else:
+            attrs = [attr for attr in dir(target) if _filter(attr)]
 
         if tall is None:
             estimated_length = sum(len(a) for a in attrs) + (2 * (len(attrs) - 1))
