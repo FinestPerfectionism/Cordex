@@ -6,8 +6,9 @@ from operator import itemgetter
 from typing import Self, final, override
 
 from discord import Member, Role, SelectOption
+from discord.ext import commands
 
-from bot import Cordex, Interaction
+from bot import Cordex, Interaction, log
 from bot.types import AnnotatedCommand
 from bot.ui import (
     ActionRow,
@@ -41,6 +42,14 @@ from core.paginator import UnnamedPaginator
 from core.responses import FormatOverride, PunctuationOverride, format_send
 from core.state import is_restrictable, is_restriction_required
 from core.utilities import format_command
+
+COG_EMOJIS : dict[str, str] = {
+    "moderation" : MODERATION_EMOJI,
+    "server"     : EMOJI_EMOJI,
+    "role"       : MEMBERS_EMOJI,
+    "channel"    : TEXT_EMOJI,
+    "member"     : MEMBER_EMOJI,
+}
 
 type CommandList = list[AnnotatedCommand]
 
@@ -345,50 +354,63 @@ class _GroupConfigButton(Button[UnnamedPaginator]):
 
 @final
 class _CategorySelect(Select[UnnamedPaginator]):
-    def __init__(self, cmds : CommandList) -> None:
+    def __init__(self, bot : Cordex, cmds : CommandList) -> None:
         self._commands = cmds
+        self._emojis   : dict[str, str] = {}
+
+        options = [
+            SelectOption(
+                label       = "All Commands",
+                value       = "all",
+                description = "All bot commands.",
+                emoji       = HORIZONTAL_SETTINGS,
+                default     = True,
+            ),
+        ]
+
+        for cog in bot.cogs.values():
+
+            # ⸻ Check
+
+            if not isinstance(cog, commands.GroupCog):
+                continue
+
+            name        = cog.__cog_group_name__
+            description = cog.__cog_group_description__
+
+            # ⸻ Do not show bot-owner commands.
+
+            if name == "bot-owner":
+                continue
+
+            # ⸻ Get the description and children.
+
+            children = ", ".join(f"/{cmd.qualified_name.replace(name, "").strip()}" for cmd in cog.walk_app_commands())
+            subtitle = f"{description} Children: {children}"
+
+            if len(subtitle) > 100:
+                subtitle = f"{description} Numerous children."
+
+            # ⸻ Get the emoji.
+
+            emoji = COG_EMOJIS.get(name)
+            if emoji is None:
+                log.warning("No emoji found for cog group '%s'.", name)
+            else:
+                self._emojis[name] = emoji
+
+            options.append(
+                SelectOption(
+                    label       = f"{name.title()} Commands",
+                    value       = name,
+                    description = subtitle,
+                    emoji       = emoji,
+                ),
+            )
 
         super().__init__(
             placeholder = "Select a command category.",
-            options     = [
-                SelectOption(
-                    label       = "All Commands",
-                    value       = "all",
-                    description = "All bot commands.",
-                    emoji       = HORIZONTAL_SETTINGS,
-                    default     = True,
-                ),
-                SelectOption(
-                    label       = "Moderation Commands",
-                    value       = "moderation",
-                    description = "Moderation commands. Numerous children.",
-                    emoji       = MODERATION_EMOJI,
-                ),
-                SelectOption(
-                    label       = "Server Commands",
-                    value       = "server",
-                    description = "Server commands. Children: commands, configure, health, info",
-                    emoji       = EMOJI_EMOJI,
-                ),
-                SelectOption(
-                    label       = "Role Commands",
-                    value       = "role",
-                    description = "Role commands. Children: compare, info, members, permissions",
-                    emoji       = MEMBERS_EMOJI,
-                ),
-                SelectOption(
-                    label       = "Channel Commands",
-                    value       = "channel",
-                    description = "Channel commands. Children: compare, info, permissions, sync",
-                    emoji       = TEXT_EMOJI,
-                ),
-                SelectOption(
-                    label       = "Member Commands",
-                    value       = "member",
-                    description = "Member commands. Children: info",
-                    emoji       = MEMBER_EMOJI,
-                ),
-            ],
+            options     = options,
         )
 
     @override
@@ -397,31 +419,16 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
         # ⸻ Filter the title and commands based on the select input
 
-        match value:
-            case "moderation":
-                filtered   = [c for c in self._commands if c.qualified_name.startswith("moderation")]
-                title      = f"# {MODERATION_EMOJI} Moderation Commands"
-                group_name = "Moderation Commands"
-            case "server":
-                filtered   = [c for c in self._commands if c.qualified_name.startswith("server")]
-                title      = f"# {EMOJI_EMOJI} Server Commands"
-                group_name = "Server Commands"
-            case "role":
-                filtered   = [c for c in self._commands if c.qualified_name.startswith("role")]
-                title      = f"# {PENCIL_EMOJI} Role Commands"
-                group_name = "Role Commands"
-            case "channel":
-                filtered   = [c for c in self._commands if c.qualified_name.startswith("channel")]
-                title      = f"# {TEXT_EMOJI} Channel Commands"
-                group_name = "Channel Commands"
-            case "member":
-                filtered   = [c for c in self._commands if c.qualified_name.startswith("member")]
-                title      = f"# {MEMBER_EMOJI} Member Commands"
-                group_name = "Member Commands"
-            case _:
-                filtered   = self._commands
-                title      = f"# {HORIZONTAL_SETTINGS} All Commands"
-                group_name = None
+        if value == "all":
+            filtered   = self._commands
+            title      = f"# {HORIZONTAL_SETTINGS} All Commands"
+            group_name = None
+        else:
+            filtered   = [command for command in self._commands if command.qualified_name.startswith(value)]
+            group_name = f"{value.title()} Commands"
+            emoji      = self._emojis.get(value)
+            prefix     = f"{emoji} " if emoji else ""
+            title      = f"# {prefix}{group_name}"
 
         if not self.view:
             return
@@ -471,7 +478,7 @@ async def run_server_commands(interaction : Interaction) -> None:
                 "-# Select a category to view commands.",
                 button = _QueryButton(commands),
             ),
-            ActionRow(_CategorySelect(commands)),
+            ActionRow(_CategorySelect(interaction.client, commands)),
         ),
     )
 
