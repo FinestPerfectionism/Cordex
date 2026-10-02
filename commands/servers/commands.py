@@ -6,7 +6,6 @@ from operator import itemgetter
 from typing import Self, final, override
 
 from discord import Member, Role, SelectOption
-from discord.ext import commands
 
 from bot import Cordex, Interaction, log
 from bot.types import AnnotatedCommand
@@ -94,7 +93,7 @@ def _fuzzy_search(query : str, commands : CommandList) -> CommandList:
 
     scored.sort(key = itemgetter(0), reverse = True)
 
-    return [cmd for score, cmd in scored if score >= 0.4]
+    return [command for score, command in scored if score >= 0.4]
 
 
 @final
@@ -354,9 +353,9 @@ class _GroupConfigButton(Button[UnnamedPaginator]):
 
 @final
 class _CategorySelect(Select[UnnamedPaginator]):
-    def __init__(self, bot : Cordex, cmds : CommandList) -> None:
-        self._commands = cmds
-        self._emojis   : dict[str, str] = {}
+    def __init__(self, bot : Cordex, commands : CommandList) -> None:
+        self._commands = commands
+        self._emojis : dict[str, str] = {}
 
         options = [
             SelectOption(
@@ -370,12 +369,11 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
         for cog in bot.cogs.values():
 
-            # ⸻ Check
+            # ⸻ Check that it's a GroupCog, and that the cog name is a str.
 
-            if not isinstance(cog, commands.GroupCog):
+            if not isinstance(cog, commands.GroupCog) or not isinstance(name := cog.__cog_group_name__, str):
                 continue
 
-            name        = cog.__cog_group_name__
             description = cog.__cog_group_description__
 
             # ⸻ Do not show bot-owner commands.
@@ -385,7 +383,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
             # ⸻ Get the description and children.
 
-            children = ", ".join(f"/{cmd.qualified_name.replace(name, "").strip()}" for cmd in cog.walk_app_commands())
+            children = ", ".join(f"/{command.qualified_name.replace(name, "").strip()}" for command in cog.walk_app_commands())
             subtitle = f"{description} Children: {children}"
 
             if len(subtitle) > 100:
@@ -421,13 +419,14 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
         if value == "all":
             filtered   = self._commands
-            title      = f"# {HORIZONTAL_SETTINGS} All Commands"
             group_name = None
+            title      = f"# {HORIZONTAL_SETTINGS} All Commands"
         else:
+            emoji  = self._emojis.get(value)
+            prefix = f"{emoji} " if emoji else ""
+
             filtered   = [command for command in self._commands if command.qualified_name.startswith(value)]
             group_name = f"{value.title()} Commands"
-            emoji      = self._emojis.get(value)
-            prefix     = f"{emoji} " if emoji else ""
             title      = f"# {prefix}{group_name}"
 
         if not self.view:
@@ -444,9 +443,9 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
 @final
 class _QueryButton(Button[UnnamedPaginator]):
-    def __init__(self, cmds : CommandList) -> None:
-        self._commands = cmds
+    def __init__(self, commands : CommandList) -> None:
         super().__init__(emoji = QUERY_EMOJI)
+        self._commands = commands
 
     @override
     async def callback(self, interaction : Interaction) -> None:
@@ -461,13 +460,11 @@ async def run_server_commands(interaction : Interaction) -> None:
     commands = [command for command in interaction.client.get_commands_cache() if is_restrictable(command)]
     commands.sort(key = lambda c : c.qualified_name)
 
-    sections = _build_sections(interaction.client, commands)
-
     # ⸻ Build the view,
 
     view = UnnamedPaginator(
         f"# {HORIZONTAL_SETTINGS} All Commands",
-        sections,
+        _build_sections(interaction.client, commands),
         data_name = "Commands",
         container = True,
     )

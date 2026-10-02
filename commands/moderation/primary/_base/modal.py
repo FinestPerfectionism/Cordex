@@ -376,12 +376,15 @@ class _ModerationModal(Modal):
         class EditOrExecuteRow(ActionRow["ModerationView"]):
             @button(label = "Edit", style = grey)
             async def btn_edit(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
+                if not self.view:
+                    return
+
                 await interaction.response.send_modal(
                     _ModerationModal(
                         modal.action_type,
                         modal.target,
                         purge_target = modal.purge_target,
-                        edit_view    = modal.edit_view,
+                        edit_view    = self.view,
                         state        = modal,
                     ),
                 )
