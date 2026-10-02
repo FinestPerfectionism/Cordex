@@ -17,12 +17,6 @@ class Connection(AiosqliteConnection):
     def execute(self, sql : Template, /) -> Result[Cursor]:
         return super().execute("?".join(sql.strings), sql.values)
 
-    @override
-    def cursor(self, sql : Template | None = None, /) -> Result[Cursor]:
-        if sql is None:
-            return super().cursor()
-        return super().cursor("?".join(sql.strings), sql.values)
-
 
 async def connect(database : str | Path) -> Connection:
     raw_connection = await aiosqlite_connect(database)
