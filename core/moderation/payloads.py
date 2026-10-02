@@ -78,7 +78,7 @@ class BanAddPayload(_BaseAddPayload):
     reason : `str`
         The reason for the ban add.
     dm_user : `bool`
-        Whether the user was direct messaged.
+        Whether the user will be direct messaged.
     seconds_to_delete : `int`
         The duration in seconds of messages to delete.
     """
@@ -100,7 +100,7 @@ class BanRemovePayload(_BaseRemovePayload):
     reason : `str`
         The reason for the ban remove.
     dm_user : `bool`
-        Whether the user was direct messaged.
+        Whether the user will be direct messaged.
     """
 
 
@@ -118,7 +118,7 @@ class KickPayload(_BaseAddPayload):
     reason : `str`
         The reason for the kick.
     dm_user : `bool`
-        Whether the user was direct messaged.
+        Whether the user will be direct messaged.
     """
 
 
@@ -136,7 +136,7 @@ class TimeoutAddPayload(_BaseAddPayload):
     reason : `str`
         The reason for the timeout add.
     dm_user : `bool`
-        Whether the user was direct messaged.
+        Whether the user will be direct messaged.
     length : `int`
         The duration of the timeout in seconds.
     """
@@ -158,7 +158,7 @@ class TimeoutRemovePayload(_BaseRemovePayload):
     reason : `str`
         The reason for the timeout remove.
     dm_user : `bool`
-        Whether the user was direct messaged.
+        Whether the user will be direct messaged.
     """
 
 
@@ -176,7 +176,7 @@ class QuarantineAddPayload(_BaseAddPayload):
     reason : `str`
         The reason for the quarantine add.
     dm_user : `bool`
-        Whether the user was direct messaged.
+        Whether the user will be direct messaged.
     """
 
 
@@ -194,7 +194,7 @@ class QuarantineRemovePayload(_BaseRemovePayload):
     reason : `str`
         The reason for the quarantine remove.
     dm_user : `bool`
-        Whether the user was direct messaged.
+        Whether the user will be direct messaged.
     """
 
 
@@ -208,15 +208,19 @@ class PurgePayload:
     moderator : `Member`
         The moderator responsible for the purge.
     target : `Member | None`
-        The optional target member whose messages were purged.
+        The optional target member whose messages will be purged.
     reason : `str`
         The reason for the purge.
     channel : `GuildMessagable`
         The target channel of the purge.
     amount : `int`
-        The amount of messages purged.
+        The amount of messages to purge.
     force : `bool`
-        Whether the purge was forced.
+        Whether the purge will be forced.
+        - True Deletes `amount` messages by the `target` found in the last 1000 messages in the channel.
+        - False Searches `channel` for `amount` messages and deletes any by the `target` (or deletes `amount` messages in the `channel` if no `target`)
+
+        Dependent on the `target` parameter.
     """
 
     moderator : Member

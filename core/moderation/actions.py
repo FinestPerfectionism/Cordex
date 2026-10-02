@@ -150,31 +150,58 @@ class Actions:
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_add(self, _action : LockdownAddPayload) -> None:  # _ActionResult:
+    async def lockdown_add(self, _action : LockdownAddPayload, /) -> None:  # _ActionResult:
+        """
+        Remove a channel from lockdown.
+
+        Parameters
+        ----------
+        _action : `LockdownAddPayload`
+            The data associated with the lockdown addition.
+        """
         # return _ActionResult(
         #     failed = failed,
         #     logged = case.successful,
         #     dmed   = None,
         # )
-        ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_remove(self, _action : LockdownRemovePayload) -> None:  # _ActionResult:
+    async def lockdown_remove(self, _action : LockdownRemovePayload, /) -> None:  # _ActionResult:
+        """
+        Place a channel in lockdown.
+
+        Parameters
+        ----------
+        _action : `LockdownRemovePayload`
+            The data associated with the lockdown removal.
+        """
         # return _ActionResult(
         #     failed = failed,
         #     logged = case.successful,
         #     dmed   = None,
         # )
-        ...
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_add(self, action : BanAddPayload) -> _ActionResult:
+    async def ban_add(self, action : BanAddPayload, /) -> _ActionResult:
+        """
+        Ban a member from the server.
+
+        Parameters
+        ----------
+        action : `BanAddPayload`
+            The data associated with the ban addition.
+
+        Returns
+        -------
+        `_ActionResult`
+            The result of the ban addition.
+        """
         if action.dm_user:
             success = await self._dm_target("Ban Add", action)
         else:
@@ -206,6 +233,14 @@ class Actions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def ban_view(self) -> UnnamedPaginator:
+        """
+        Display a paginator (`UnnamedPaginator`) of all server bans.
+
+        Returns
+        -------
+        `BanPaginator`
+            The paginator displaying all server bans.
+        """
         class BanPaginator(UnnamedPaginator):
             def __init__(self) -> None:
                 super().__init__(
@@ -223,7 +258,20 @@ class Actions:
     # ban_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def ban_remove(self, action : BanRemovePayload) -> _ActionResult:
+    async def ban_remove(self, action : BanRemovePayload, /) -> _ActionResult:
+        """
+        Remove a ban from a member.
+
+        Parameters
+        ----------
+        action : `BanRemovePayload`
+            The data associated with the ban removal.
+
+        Returns
+        -------
+        `_ActionResult`
+            The result of the ban removal.
+        """
         if action.dm_user:
             success = await self._dm_target("Ban Remove", action)
         else:
@@ -254,7 +302,20 @@ class Actions:
     # kick
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def kick(self, action : KickPayload) -> _ActionResult:
+    async def kick(self, action : KickPayload, /) -> _ActionResult:
+        """
+        Kick a member from the server.
+
+        Parameters
+        ----------
+        action : `KickPayload`
+            The data associated with the kick.
+
+        Returns
+        -------
+        `_ActionResult`
+            The result of the kick.
+        """
         if action.dm_user:
             success = await self._dm_target("Kick", action)
         else:
@@ -285,7 +346,20 @@ class Actions:
     # quarantine_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_add(self, action : QuarantineAddPayload) -> _ActionResult:
+    async def quarantine_add(self, action : QuarantineAddPayload, /) -> _ActionResult:
+        """
+        Place a member in quarantine.
+
+        Parameters
+        ----------
+        action : `QuarantineAddPayload`
+            The data associated with the quarantine addition.
+
+        Returns
+        -------
+        `_ActionResult`
+            The result of the quarantine addition.
+        """
         quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
             return _ActionResult(
@@ -334,6 +408,14 @@ class Actions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def quarantine_view(self) -> UnnamedPaginator:
+        """
+        Display a paginator (`UnnamedPaginator`) of all members in quarantine.
+
+        Returns
+        -------
+        `QuarantinePaginator`
+            The paginator displaying all members in quarantine.
+        """
         class QuarantinePaginator(UnnamedPaginator):
             def __init__(self) -> None:
                 super().__init__(
@@ -351,7 +433,20 @@ class Actions:
     # quarantine_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_remove(self, action : QuarantineRemovePayload) -> _ActionResult:
+    async def quarantine_remove(self, action : QuarantineRemovePayload, /) -> _ActionResult:
+        """
+        Remove a member from quarantine.
+
+        Parameters
+        ----------
+        action : `QuarantineRemovePayload`
+            The data associated with the quarantine removal.
+
+        Returns
+        -------
+        `_ActionResult`
+            The result of the quarantine removal.
+        """
         quarantine_role = await self.config.get_moderation_quarantine_role()
         if not quarantine_role:
             return _ActionResult(
@@ -416,7 +511,21 @@ class Actions:
     # timeout_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_add(self, action : TimeoutAddPayload) -> _ActionResult:
+    async def timeout_add(self, action : TimeoutAddPayload, /) -> _ActionResult:
+        """
+        Place a member in timeout.
+
+        Parameters
+        ----------
+        action : `TimeoutAddPayload`
+            The data associated with the timeout addition.
+        /
+
+        Returns
+        -------
+        `ActionResult`
+            The result of the timeout addition.
+        """
         if action.dm_user:
             success = await self._dm_target("Timeout Add", action)
         else:
@@ -448,6 +557,14 @@ class Actions:
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     async def timeout_view(self) -> UnnamedPaginator:
+        """
+        Display a paginator (`UnnamedPaginator`) of all members in timeout.
+
+        Returns
+        -------
+        `TimeoutPaginator`
+            The paginator displaying all members in timeout.
+        """
         class TimeoutPaginator(UnnamedPaginator):
             def __init__(self) -> None:
                 super().__init__(
@@ -465,7 +582,21 @@ class Actions:
     # timeout_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_remove(self, action : TimeoutRemovePayload) -> _ActionResult:
+    async def timeout_remove(self, action : TimeoutRemovePayload, /) -> _ActionResult:
+        """
+        Remove a member from timeout.
+
+        Parameters
+        ----------
+        action : `TimeoutRemovePayload`
+            The data associated with the timeout removal.
+        /
+
+        Returns
+        -------
+        `ActionResult`
+            The result of the timeout removal.
+        """
         if action.dm_user:
             success = await self._dm_target("Timeout Remove", action)
         else:
@@ -496,7 +627,21 @@ class Actions:
     # purge
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def purge(self, action : PurgePayload) -> _ActionResult[int]:
+    async def purge(self, action : PurgePayload, /) -> _ActionResult[int]:
+        """
+        Purge messages.
+
+        Parameters
+        ----------
+        action : `PurgePayload`
+            The data associated with the purge.
+        /
+
+        Returns
+        -------
+        `ActionResult`
+            The result of the purge.
+        """
         target  = action.target
         reason  = action.reason
         channel = action.channel
@@ -508,9 +653,8 @@ class Actions:
             if not target:
                 return await channel.purge(limit = amount, reason = reason)
 
-            limit = 1000 if action.force else amount
             return await channel.purge(
-                limit  = limit,
+                limit  = 1000 if action.force else amount,
                 check  = lambda m : m.author == target,
                 reason = reason,
             )
