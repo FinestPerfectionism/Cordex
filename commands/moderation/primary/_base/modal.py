@@ -1,3 +1,5 @@
+# ruff: file-ignore[private-member-access]
+
 from contextlib import suppress
 from typing import Self, final, override
 
@@ -58,8 +60,9 @@ class _ModerationModal(Modal):
         action_type  : ActionType,
         target       : Targetable,
         *,
-        purge_target : Member     | None = None,
-        edit_view    : LayoutView | None = None,
+        purge_target : Member           | None = None,
+        edit_view    : LayoutView       | None = None,
+        state        : _ModerationModal | None = None,
     ) -> None:
         self.edit_view    : LayoutView | None = edit_view
         self.purge_target : Member     | None = purge_target
@@ -127,7 +130,10 @@ class _ModerationModal(Modal):
 
             items.append(self.text)
 
-        self._reason = TextInput[Self](placeholder = "Enter reason here...")
+        self._reason = TextInput[Self](
+            placeholder = "Enter reason here...",
+            default     = state._reason.value if state else None,
+        )
         self.reason  = Label[Self](
             text        =  "Reason",
             description = f"Reason for the {self.name}.",
@@ -137,7 +143,10 @@ class _ModerationModal(Modal):
         items.append(self.reason)
 
         if action_type == "Timeout Add":
-            self._length = TextInput[Self](placeholder = "Enter length here...")
+            self._length = TextInput[Self](
+                placeholder = "Enter length here...",
+                default     = state._length.value if state else None,
+            )
             self.length  = Label[Self](
                 text        = "Length",
                 description = "Length of the timeout.",
@@ -153,6 +162,7 @@ class _ModerationModal(Modal):
                     required    = False,
                     min_length  = 1,
                     max_length  = 1,
+                    default     = state._dtd.value if state else None,
                 )
                 self.dtd  = Label[Self](
                     text        = "Days to Delete",
@@ -166,6 +176,7 @@ class _ModerationModal(Modal):
                     placeholder = 'ex: "10"',
                     min_length  = 1,
                     max_length  = 3,
+                    default     = state._amount.value if state else None,
                 )
                 self.amount  = Label[Self](
                     text        = "Amount",
@@ -173,7 +184,7 @@ class _ModerationModal(Modal):
                     component   = self._amount,
                 )
 
-                self._force = Checkbox[Self]()
+                self._force = Checkbox[Self](default = state._force.value if state else False)
                 self.force  = Label[Self](
                     text        = "Force",
                     description = "Whether to force purge messages.",
@@ -185,7 +196,7 @@ class _ModerationModal(Modal):
                 pass
 
         if action_type != "Purge":
-            self._dm = Checkbox[Self]()
+            self._dm = Checkbox[Self](default = state._dm.value if state else False)
             self.dm  = Label[Self](
                 text        =  "DM",
                 description = f"Whether to DM the user upon {self.name}. This can fail!",
@@ -365,7 +376,15 @@ class _ModerationModal(Modal):
         class EditOrExecuteRow(ActionRow["ModerationView"]):
             @button(label = "Edit", style = grey)
             async def btn_edit(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
-                await interaction.response.send_modal(modal)
+                await interaction.response.send_modal(
+                    _ModerationModal(
+                        modal.action_type,
+                        modal.target,
+                        purge_target = modal.purge_target,
+                        edit_view    = modal.edit_view,
+                        state        = modal,
+                    ),
+                )
 
             @button(label = "Execute", style = red)
             async def btn_execute(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
