@@ -150,39 +150,103 @@ class Actions:
     # lockdown_add
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_add(self, _action : LockdownAddPayload, /) -> None:  # _ActionResult:
-        """
-        Remove a channel from lockdown.
-
-        Parameters
-        ----------
-        _action : `LockdownAddPayload`
-            The data associated with the lockdown addition.
-        """
-        # return _ActionResult(
-        #     failed = failed,
-        #     logged = case.successful,
-        #     dmed   = None,
-        # )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # lockdown_remove
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    async def lockdown_remove(self, _action : LockdownRemovePayload, /) -> None:  # _ActionResult:
+    async def lockdown_add(self, action : LockdownAddPayload, /) -> _ActionResult:
         """
         Place a channel in lockdown.
 
         Parameters
         ----------
-        _action : `LockdownRemovePayload`
-            The data associated with the lockdown removal.
+        action : `LockdownAddPayload`
+            The data associated with the lockdown addition.
+
+        Returns
+        -------
+        `ActionResult`
+            The result of the lockdown addition.
         """
-        # return _ActionResult(
-        #     failed = failed,
-        #     logged = case.successful,
-        #     dmed   = None,
-        # )
+        channel   = action.target
+        everyone  = self.guild.default_role
+        overwrite = channel.overwrites_for(everyone)
+
+        try:
+            await self.bot.db.execute(
+                t"INSERT INTO Lockdowns (channel_id, guild_id) VALUES ({channel.id}, {self.guild.id}) "
+                t"ON CONFLICT (channel_id, guild_id) DO NOTHING",
+            )
+            await self.bot.db.commit()
+
+            overwrite.send_messages = False
+            await channel.set_permissions(
+                everyone,
+                overwrite = overwrite,
+                reason    = f"Locked down by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            self._log_failure("lockdown add")
+        else:
+            failed = False
+
+        case = await self.cases.create_case(action)
+
+        return _ActionResult(
+            failed = failed,
+            logged = case.successful,
+            dmed   = None,
+        )
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # lockdown_remove
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def lockdown_remove(self, action : LockdownRemovePayload, /) -> _ActionResult:
+        """
+        Remove a channel from lockdown.
+
+        Parameters
+        ----------
+        action : `LockdownRemovePayload`
+            The data associated with the lockdown removal.
+
+        Returns
+        -------
+        `ActionResult`
+            The result of the lockdown removal.
+        """
+        channel  = action.target
+        everyone = self.guild.default_role
+
+        await self.bot.db.execute(
+            t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
+        )
+        await self.bot.db.commit()
+
+        try:
+            overwrite = channel.overwrites_for(everyone)
+            overwrite.send_messages = None
+
+            await channel.set_permissions(
+                everyone,
+                overwrite = overwrite,
+                reason    = f"Unlocked by {action.moderator.name}: {action.reason}",
+            )
+        except Forbidden:
+            failed = True
+        except HTTPException:
+            failed = True
+            self._log_failure("lockdown removal")
+        else:
+            failed = False
+
+        case = await self.cases.create_case(action)
+
+        return _ActionResult(
+            failed = failed,
+            logged = case.successful,
+            dmed   = None,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # ban_add
@@ -199,7 +263,7 @@ class Actions:
 
         Returns
         -------
-        `_ActionResult`
+        `ActionResult`
             The result of the ban addition.
         """
         if action.dm_user:
@@ -269,7 +333,7 @@ class Actions:
 
         Returns
         -------
-        `_ActionResult`
+        `ActionResult`
             The result of the ban removal.
         """
         if action.dm_user:
@@ -313,7 +377,7 @@ class Actions:
 
         Returns
         -------
-        `_ActionResult`
+        `ActionResult`
             The result of the kick.
         """
         if action.dm_user:
@@ -357,7 +421,7 @@ class Actions:
 
         Returns
         -------
-        `_ActionResult`
+        `ActionResult`
             The result of the quarantine addition.
         """
         quarantine_role = await self.config.get_moderation_quarantine_role()
@@ -444,7 +508,7 @@ class Actions:
 
         Returns
         -------
-        `_ActionResult`
+        `ActionResult`
             The result of the quarantine removal.
         """
         quarantine_role = await self.config.get_moderation_quarantine_role()

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from discord import Member
 
-from bot.types import GuildMessagable
+from bot.types import GuildMessagable, GuildMessagableChannel
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Action Payloads
@@ -28,7 +28,7 @@ class _BaseAddPayload:
 @dataclass
 class _BaseLockdownPayload:
     moderator : Member
-    target    : GuildMessagable
+    target    : GuildMessagableChannel
     reason    : str
 
 
@@ -41,7 +41,7 @@ class LockdownAddPayload(_BaseLockdownPayload):
     ----------
     moderator : `Member`
         The moderator responsible for the lockdown add.
-    target : `GuildMessagable`
+    target : `GuildMessagableChannel`
         The target channel of the lockdown add.
     reason : `str`
         The reason for the lockdown add.
@@ -57,7 +57,7 @@ class LockdownRemovePayload(_BaseLockdownPayload):
     ----------
     moderator : `Member`
         The moderator responsible for the lockdown remove.
-    target : `GuildMessagable`
+    target : `GuildMessagableChannel`
         The target channel of the lockdown remove.
     reason : `str`
         The reason for the lockdown remove.

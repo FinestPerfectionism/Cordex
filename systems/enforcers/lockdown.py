@@ -1,5 +1,6 @@
 from typing import final, override
 
+from discord import HTTPException
 from discord.abc import GuildChannel
 from discord.ext import commands, tasks
 
@@ -28,7 +29,11 @@ class LockdownEnforcer(commands.Cog):
     async def _loop_lockdownenforce(self) -> None:
         for guild in self.bot.guilds:
             manager = LockdownManager(self.bot, guild)
-            await manager.enforce()
+            try:
+                await manager.enforce()
+            except HTTPException as e:
+                if e.status == 429:
+                    break
 
     @_loop_lockdownenforce.before_loop
     async def _beforeloop_lockdowneenforce(self) -> None:

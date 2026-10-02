@@ -73,21 +73,37 @@ class LockdownManager:
 
     async def enforce(self) -> None:
         """
-        Enforces quarantine operations by ensuring channels in lockdown have the proper permission overwrites.
+        Enforces lockdown operations by ensuring channels in lockdown have the proper permission overwrites.
 
         Raises
         ------
         HTTPException
             The enforcement caused a ratelimit.
         """
-        for _channel in self.guild.channels:
+        me = self.guild.me
+        if not me or not me.guild_permissions.manage_channels:
+            return
+
+        locked_channels = await self.get_channels()
+        if not locked_channels:
+            return
+
+        everyone = self.guild.default_role
+
+        for channel in locked_channels:
+            overwrites = channel.overwrites_for(everyone)
+
+            if overwrites.send_messages is False:
+                continue
+
+            overwrites.send_messages = False
+
             try:
-                # await channel.set_permissions(
-                #     ...,
-                #     overwrite = ...,
-                #     reason    = "Lockdown enforcement.",
-                # )
-                ...
+                await channel.set_permissions(
+                    everyone,
+                    overwrite = overwrites,
+                    reason    = "Lockdown enforcement.",
+                )
             except Forbidden:
                 pass
             except HTTPException as e:
