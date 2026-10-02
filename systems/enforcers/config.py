@@ -1,6 +1,7 @@
 from typing import final, override
 
-from discord import Guild
+from discord import Guild, Role
+from discord.abc import GuildChannel
 from discord.ext import commands, tasks
 
 from bot import Cordex, log
@@ -54,6 +55,25 @@ class ConfigEnforcer(commands.Cog):
     @commands.Cog.listener("on_guild_leave")
     async def _listener_config_guildleave(self, guild : Guild) -> None:
         await self.bot.config(guild).reset()
+
+    @commands.Cog.listener("on_guild_channel_delete")
+    async def _listener_config_channeldelete(self, channel : GuildChannel) -> None:
+        config = self.bot.config(channel.guild)
+
+        if channel == await config.get_messages_delete_logging_channel():
+            await config.set_messages_delete_logging_channel(None)
+
+        if channel == await config.get_messages_edit_logging_channel():
+            await config.set_messages_edit_logging_channel(None)
+
+        if channel == await config.get_moderation_logging_channel():
+            await config.set_moderation_logging_channel(None)
+
+    @commands.Cog.listener("on_guild_role_delete")
+    async def _listener_config_roledelete(self, role : Role) -> None:
+        config = self.bot.config(role.guild)
+        if role == await config.get_moderation_quarantine_role():
+            await config.set_moderation_quarantine_role(None)
 
 
 async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]

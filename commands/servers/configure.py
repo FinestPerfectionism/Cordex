@@ -318,8 +318,8 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         config = interaction.client.config(guild)
 
         try:
-            await config.set_moderation_quarantine_enforce_channels(enabled = self._channels.value)
-            await config.set_moderation_quarantine_enforce_roles(enabled = self._roles.value)
+            await config.set_moderation_quarantine_enforce_channels(self._channels.value)
+            await config.set_moderation_quarantine_enforce_roles(self._roles.value)
         except Exception:
             await send_bad_operation(interaction, title = "update quarantine enforcement")
             raise

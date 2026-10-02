@@ -145,19 +145,24 @@ class Config:
     # set_moderation_quarantine_role
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_quarantine_role(self, role : Role) -> None:
+    async def set_moderation_quarantine_role(self, role : Role | None) -> None:
         """
-        Set the role the bot should assign to quarantined members.
+        Set or reset the role the bot should assign to quarantined members.
 
         Parameters
         ----------
-        role : `Role`
-            The role the bot should assign to quarantined members.
+        role : `Role | None`
+            The role the bot should assign to quarantined members, or `None` to reset.
         """
-        await self.bot.db.execute(
-            t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"moderation_quarantine_role"}, {role.id}) "
-            t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
-        )
+        if role is None:
+            await self.bot.db.execute(
+                t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"moderation_quarantine_role"}",
+            )
+        else:
+            await self.bot.db.execute(
+                t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"moderation_quarantine_role"}, {role.id}) "
+                t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
+            )
         await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -194,19 +199,24 @@ class Config:
     # set_moderation_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_logging_channel(self, channel : GuildMessagable) -> None:
+    async def set_moderation_logging_channel(self, channel : GuildMessagable | None) -> None:
         """
-        Set the channel where the bot should log moderation actions.
+        Set or reset the channel where the bot should log moderation actions.
 
         Parameters
         ----------
-        channel : `GuildMessagable`
-            The channel where the bot should log moderation actions.
+        channel : `GuildMessagable | None`
+            The channel where the bot should log moderation actions, or `None` to reset.
         """
-        await self.bot.db.execute(
-            t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"moderation_logging_channel"}, {channel.id}) "
-            t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
-        )
+        if channel is None:
+            await self.bot.db.execute(
+                t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"moderation_logging_channel"}",
+            )
+        else:
+            await self.bot.db.execute(
+                t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"moderation_logging_channel"}, {channel.id}) "
+                t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
+            )
         await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -243,19 +253,24 @@ class Config:
     # set_messages_delete_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_messages_delete_logging_channel(self, channel : GuildMessagable) -> None:
+    async def set_messages_delete_logging_channel(self, channel : GuildMessagable | None) -> None:
         """
-        Set the channel where the bot should log message deletions.
+        Set or reset the channel where the bot should log message deletions.
 
         Parameters
         ----------
-        channel : `GuildMessagable`
-            The channel where the bot should log message deletions.
+        channel : `GuildMessagable | None`
+            The channel where the bot should log message deletions, or `None` to reset.
         """
-        await self.bot.db.execute(
-            t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"messages_delete_channel"}, {channel.id}) "
-            t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
-        )
+        if channel is None:
+            await self.bot.db.execute(
+                t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"messages_delete_channel"}",
+            )
+        else:
+            await self.bot.db.execute(
+                t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"messages_delete_channel"}, {channel.id}) "
+                t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
+            )
         await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -292,19 +307,24 @@ class Config:
     # set_messages_edit_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_messages_edit_logging_channel(self, channel : GuildMessagable) -> None:
+    async def set_messages_edit_logging_channel(self, channel : GuildMessagable | None) -> None:
         """
-        Set the channel where the bot should log message edits.
+        Set or reset the channel where the bot should log message edits.
 
         Parameters
         ----------
-        channel : `GuildMessagable`
-            The channel where the bot should log message edits.
+        channel : `GuildMessagable | None`
+            The channel where the bot should log message edits, or `None` to reset.
         """
-        await self.bot.db.execute(
-            t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"messages_edit_channel"}, {channel.id}) "
-            t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
-        )
+        if channel is None:
+            await self.bot.db.execute(
+                t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"messages_edit_channel"}",
+            )
+        else:
+            await self.bot.db.execute(
+                t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"messages_edit_channel"}, {channel.id}) "
+                t"ON CONFLICT (guild_id, config_key) DO UPDATE SET config_value = excluded.config_value",
+            )
         await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -375,15 +395,15 @@ class Config:
     # set_moderation_quarantine_enforce_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_quarantine_enforce_channels(self, *, enabled : bool) -> None:
+    async def set_moderation_quarantine_enforce_channels(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
         """
         Set whether the bot should automatically enforce quarantine for channels.
 
         Parameters
         ----------
-        *
         enabled : `bool`
             Whether the bot should automatically enforce quarantine for channels.
+        /
         """
         await self.bot.db.execute(
             t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"moderation_quarantine_enforce_channels"}, {int(enabled)}) "
@@ -417,15 +437,15 @@ class Config:
     # set_moderation_quarantine_enforce_roles
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_quarantine_enforce_roles(self, *, enabled : bool) -> None:
+    async def set_moderation_quarantine_enforce_roles(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
         """
         Set whether the bot should automatically enforce quarantine for roles.
 
         Parameters
         ----------
-        *
         enabled : `bool`
             Whether the bot should automatically enforce quarantine for roles.
+        /
         """
         await self.bot.db.execute(
             t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"moderation_quarantine_enforce_roles"}, {int(enabled)}) "
