@@ -94,6 +94,8 @@ class DisplayNameEffect(Enum):
     """
     Represents the available display name style effects a Discord user can have.
 
+    `glow` is not available for both bot and human users; it is only listed here for consistency.
+
     Attributes
     ----------
     solid : `int`
@@ -106,8 +108,6 @@ class DisplayNameEffect(Enum):
         Toon effect. Takes one color along side it.
     pop : `int`
         Pop effect. Takes one color along side it.
-    glow : `int`
-        Not available for both bot and human users. Takes five colors along side it.
     prism : `int`
         Not available for bot users. Takes five colors along side it.
     gummy : `int`
@@ -129,8 +129,7 @@ class DisplayNameEffect(Enum):
     pop = 5
     """Pop effect. Takes one color along side it."""
 
-    glow = 6  # Unavailable
-    """Not available for both bot and human users. Takes five colors along side it."""
+    # glow = 6
 
     prism = 7  # Unavailable
     """Not available for bot users. Takes five colors along side it."""
