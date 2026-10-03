@@ -1,3 +1,4 @@
+from dataclasses import dataclass, field
 from typing import Literal, Self, final
 
 from discord import AllowedMentions, Interaction, Message
@@ -14,6 +15,7 @@ type _SendTarget = Interaction | Messageable
 
 
 @final
+@dataclass(kw_only = True)
 class PunctuationOverride:
     """
     Override punctuation suffixing behavior for message titles, subtitles, and footers.
@@ -29,17 +31,9 @@ class PunctuationOverride:
         Whether the footer should have punctuation forcefully suffixed to it or not (or automatically if `None` or not passed).
     """
 
-    def __init__(
-        self,
-        *,
-        title    : bool | None = None,
-        subtitle : bool | None = None,
-        footer   : bool | None = None,
-    ) -> None:
-        super().__init__()
-        self.title    = title
-        self.subtitle = subtitle
-        self.footer   = footer
+    title    : bool | None = None
+    subtitle : bool | None = None
+    footer   : bool | None = None
 
     @classmethod
     def all_true(cls) -> Self:
@@ -67,6 +61,7 @@ class PunctuationOverride:
 
 
 @final
+@dataclass(kw_only = True)
 class FormatOverride:
     """
     Override formatting options for formatted messages.
@@ -82,17 +77,9 @@ class FormatOverride:
         The punctuation rules to apply to the formatter.
     """
 
-    def __init__(
-        self,
-        *,
-        prefix      : bool                       = True,
-        emoji       : bool                       = True,
-        punctuation : PunctuationOverride | None = None,
-    ) -> None:
-        super().__init__()
-        self.prefix      = prefix
-        self.emoji       = emoji
-        self.punctuation = punctuation or PunctuationOverride()
+    prefix      : bool                = True
+    emoji       : bool                = True
+    punctuation : PunctuationOverride = field(default_factory = PunctuationOverride)
 
 
 def _emoji_match(msg_type : _MessageType) -> str:
