@@ -92,7 +92,7 @@ class Case:
     reason : `str`
         The reason for the action in the case.
     channel : `GuildMessagable | None`
-        The channel purged in the case. Only populated in purge cases.
+        The channel affected in the case.
     created_at : `datetime`
         The datetime of when the case was created.
     dm_user : `bool | None`
@@ -107,7 +107,7 @@ class Case:
     purge_amount : `int | None`
         The amount of messages purged in the case.
         Only populated in purge cases.
-    purge_force : bool | None`
+    purge_force : `bool | None`
         Whether the channel was force purged in the case.
         Only populated in purge cases.
     expired : `bool`
@@ -191,7 +191,9 @@ class CasesManager:
 
         # ⸻ Add the target information.
 
-        if isinstance(payload, PurgePayload):
+        if isinstance(payload, LockdownAddPayload | LockdownRemovePayload):
+            pass
+        elif isinstance(payload, PurgePayload):
             if payload.target is not None:
                 target = payload.target
                 target_table = {
@@ -222,7 +224,7 @@ class CasesManager:
             )
 
             container.add_item(VisibleLargeSeparator())
-            if isinstance(target, Member) and target.guild_avatar:
+            if target.guild_avatar:
                 container.add_item(ThumbnailSection(target_info, thumbnail = Thumbnail[view](target.guild_avatar.url)))
             else:
                 container.add_text(target_info)
@@ -254,6 +256,8 @@ class CasesManager:
             details["Message Delete History"] = f"{payload.seconds_to_delete} seconds"
         elif isinstance(payload, TimeoutAddPayload):
             details["Duration"] = f"{payload.length} seconds"
+        elif isinstance(payload, LockdownAddPayload | LockdownRemovePayload):
+            details["Channel"] = payload.channel.mention
         elif isinstance(payload, PurgePayload):
             details["Channel"] = payload.channel.mention
             details["Amount"]  = payload.amount
@@ -307,12 +311,12 @@ class CasesManager:
         moderator_id = payload.moderator.id
         reason = payload.reason
 
-        target_id = payload.target.id if payload.target is not None else None
+        target_id = payload.target.id if not isinstance(payload, LockdownAddPayload | LockdownRemovePayload) and payload.target is not None else None
+        channel_id = payload.channel.id if isinstance(payload, PurgePayload | LockdownAddPayload | LockdownRemovePayload) else None
 
         dm_user           = None
         seconds_to_delete = None
         timeout_length    = None
-        purge_channel_id  = None
         purge_amount      = None
         purge_force       = None
         related_case_id   = None
@@ -326,27 +330,34 @@ class CasesManager:
         elif isinstance(payload, QuarantineAddPayload | KickPayload | BanRemovePayload | TimeoutRemovePayload | QuarantineRemovePayload):
             dm_user = int(payload.dm_user)
         elif isinstance(payload, PurgePayload):
-            purge_channel_id = payload.channel.id
-            purge_amount     = payload.amount
-            purge_force      = int(payload.force)
+            purge_amount = payload.amount
+            purge_force  = int(payload.force)
 
         try:
-            if action_type.endswith("remove") and target_id is not None:
+            if action_type.endswith("remove") and (target_id is not None or channel_id is not None):
                 corresponding = action_type.replace("remove", "add")
-                async with self.bot.db.execute(
-                    t"SELECT id FROM Cases WHERE target_id = {target_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
-                ) as cursor:
-                    row = await cursor.fetchone()
-                    if row is not None:
-                        related_case_id = cast("int", row[0])
+                if target_id is not None:
+                    async with self.bot.db.execute(
+                        t"SELECT id FROM Cases WHERE target_id = {target_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
+                    ) as cursor:
+                        row = await cursor.fetchone()
+                        if row is not None:
+                            related_case_id = cast("int", row[0])
+                elif channel_id is not None:
+                    async with self.bot.db.execute(
+                        t"SELECT id FROM Cases WHERE channel_id = {channel_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
+                    ) as cursor:
+                        row = await cursor.fetchone()
+                        if row is not None:
+                            related_case_id = cast("int", row[0])
 
             cursor = await self.bot.db.execute(
                 t"INSERT INTO Cases ("
                 t"    action_type, moderator_id, target_id, reason, "
-                t"    dm_user, seconds_to_delete, timeout_length, purge_channel_id, purge_amount, purge_force, related_case_id"
+                t"    dm_user, seconds_to_delete, timeout_length, channel_id, purge_amount, purge_force, related_case_id"
                 t") VALUES ("
                 t"    {action_type}, {moderator_id}, {target_id}, {reason}, "
-                t"    {dm_user}, {seconds_to_delete}, {timeout_length}, {purge_channel_id}, {purge_amount}, {purge_force}, {related_case_id}"
+                t"    {dm_user}, {seconds_to_delete}, {timeout_length}, {channel_id}, {purge_amount}, {purge_force}, {related_case_id}"
                 t")",
             )
             new_case_id = cursor.lastrowid
@@ -395,9 +406,9 @@ class CasesManager:
                 id                = new_case_id,
                 action_type       = action_type,
                 moderator         = payload.moderator,
-                target            = payload.target if isinstance(payload.target, Member) else None,
+                target            = payload.target if not isinstance(payload, LockdownAddPayload | LockdownRemovePayload) and isinstance(payload.target, Member) else None,
                 reason            = reason,
-                channel           = payload.channel if isinstance(payload, PurgePayload) else None,
+                channel           = payload.channel if isinstance(payload, PurgePayload | LockdownAddPayload | LockdownRemovePayload) else None,
                 created_at        = datetime.now(UTC),
                 dm_user           = bool(dm_user) if dm_user is not None else None,
                 seconds_to_delete = seconds_to_delete,
@@ -438,13 +449,13 @@ class CasesManager:
             return None
 
         moderator_id = cast("int", row["moderator_id"])
-        target_id    = cast("int", row["target_id"])
+        target_id    = cast("int | None", row["target_id"])
 
         moderator = self.guild.get_member(moderator_id) or await self.guild.fetch_member(moderator_id)
         target    = self.guild.get_member(target_id)    or await self.guild.fetch_member(target_id) if target_id else None
 
-        purge_channel_id = cast("int", row["purge_channel_id"])
-        purge_channel    = self.guild.get_channel(purge_channel_id) or await self.guild.fetch_channel(purge_channel_id) if purge_channel_id else None
+        channel_id = cast("int | None", row["channel_id"])
+        channel    = self.guild.get_channel(channel_id) or await self.guild.fetch_channel(channel_id) if channel_id else None
 
         created_at = cast("str | datetime", row["created_at"])
         if isinstance(created_at, str):
@@ -456,7 +467,7 @@ class CasesManager:
             moderator         = moderator,
             target            = target,
             reason            = cast("str", row["reason"]),
-            channel           = purge_channel if isinstance(purge_channel, GuildMessagable) else None,
+            channel           = channel if isinstance(channel, GuildMessagable) else None,
             created_at        = created_at,
             dm_user           = bool(cast("int | None", row["dm_user"])),
             seconds_to_delete = cast("int | None", row["seconds_to_delete"]),

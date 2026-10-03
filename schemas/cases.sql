@@ -3,13 +3,13 @@ CREATE TABLE IF NOT EXISTS Cases (
     action_type  TEXT NOT NULL,
     moderator_id INTEGER NOT NULL,
     target_id    INTEGER,
+    channel_id   INTEGER,
     reason       TEXT NOT NULL,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
     dm_user           INTEGER,
     seconds_to_delete INTEGER,
     timeout_length    INTEGER,
-    purge_channel_id  INTEGER,
     purge_amount      INTEGER,
     purge_force       INTEGER,
 

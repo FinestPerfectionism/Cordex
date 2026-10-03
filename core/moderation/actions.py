@@ -26,6 +26,8 @@ from .payloads import (
 )
 
 type ActionType = Literal[
+    "Lockdown Add",
+    "Lockdown Remove",
     "Ban Add",
     "Ban Remove",
     "Kick",
@@ -164,7 +166,7 @@ class Actions:
         `ActionResult`
             The result of the lockdown addition.
         """
-        channel   = action.target
+        channel   = action.channel
         everyone  = self.guild.default_role
         overwrite = channel.overwrites_for(everyone)
 
@@ -215,7 +217,7 @@ class Actions:
         `ActionResult`
             The result of the lockdown removal.
         """
-        channel  = action.target
+        channel  = action.channel
         everyone = self.guild.default_role
 
         await self.bot.db.execute(

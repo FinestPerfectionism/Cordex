@@ -69,7 +69,13 @@ class _ModerationModal(Modal):
 
         target_name = target.name
 
-        member_types  = {
+        channel_types = {
+            "Lockdown Add",
+            "Lockdown Remove",
+            "Purge",
+        }
+
+        person_types  = {
             "Ban Add",
             "Ban Remove",
             "Kick",
@@ -81,12 +87,16 @@ class _ModerationModal(Modal):
 
         # ⸻ Validate that target is the correct type.
 
-        if isinstance(target, GuildMessagable) and action_type != "Purge":
+        if isinstance(target, GuildMessagable) and action_type not in channel_types:
             error = "target cannot be GuildMessagable if action_type is not channel type"
             raise ValueError(error)
 
-        if isinstance(target, Member | User) and action_type not in member_types:
-            error = "target cannot be Member or User if action_type is not a user type"
+        if isinstance(target, Member) and action_type not in person_types:
+            error = "target cannot be Member if action_type is not a user type"
+            raise ValueError(error)
+
+        if isinstance(target, User) and action_type not in person_types:
+            error = "target cannot be User if action_type is not a user type"
             raise ValueError(error)
 
         title : dict[ActionType, str] = {
