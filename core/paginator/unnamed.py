@@ -59,7 +59,15 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        page = int(self._page_input.value) - 1
+        try:
+            page = int(self._page_input.value) - 1
+        except ValueError:
+            await send_bad_request(
+                interaction,
+                title    = "jump to page",
+                subtitle = "Please enter a positive integer greater than or equal to one",
+            )
+            return
 
         # ⸻ You're already on this page!
 
@@ -70,36 +78,20 @@ class _PageJumpModal(Modal, title = "Jump to Page"):
                 subtitle = "You are already viewing this page",
             )
             return
-        try:
 
-            # ⸻ Success..?
+        # ⸻ Success..?
 
-            if 0 <= page < len(self.paginator.pages):
-                await self.paginator._turn(interaction, page)
+        if 0 <= page < len(self.paginator.pages):
+            await self.paginator._turn(interaction, page)
 
-            # ⸻ Must be within the bounds of 1 and the highest page!
+        # ⸻ Must be within the bounds of 1 and the highest page!
 
-            else:
-                await send_bad_request(
-                    interaction,
-                    title    =  "jump to page",
-                    subtitle = f"Please enter a page between 1 and {len(self.paginator.pages)}",
-                )
-
-        # ⸻ Must be a positive integer greater than or equal to 1!
-
-        except ValueError:
+        else:
             await send_bad_request(
                 interaction,
-                title    = "jump to page",
-                subtitle = "Please enter a positive integer greater than or equal to one",
+                title    =  "jump to page",
+                subtitle = f"Please enter a page between 1 and {len(self.paginator.pages)}",
             )
-
-        # ⸻ Unhandled error.
-
-        except Exception:
-            await send_bad_operation(interaction, title = "jump to page")
-            raise
 
 
 @final
