@@ -29,10 +29,16 @@ class QuarantineEnforcer(commands.Cog):
     async def _loop_quarantineenforce(self) -> None:
         for guild in self.bot.guilds:
             manager = QuarantineManager(self.bot, guild)
+            config = self.bot.config(guild)
             try:
+                before_role_id = await config.get_moderation_quarantine_role(by_id = True)
+
                 await manager.enforce("Channels")
-                await manager.enforce("Role")
-                await manager.enforce("Members")
+
+                after_role_id = await config.get_moderation_quarantine_role(by_id = True)
+                if before_role_id == after_role_id:
+                    await manager.enforce("Role")
+                    await manager.enforce("Members")
             except HTTPException as e:
                 if e.status == 429:
                     break
@@ -88,6 +94,15 @@ class QuarantineEnforcer(commands.Cog):
         manager = QuarantineManager(self.bot, after.guild)
         await manager.enforce("Role")
 
+    @commands.Cog.listener("on_guild_role_delete")
+    async def _listener_quarantineenforce_roledelete(self, role : Role) -> None:
+        quarantine_role_id = await self.bot.config(role.guild).get_moderation_quarantine_role(by_id = True)
+        if role.id != quarantine_role_id:
+            return
+
+        manager = QuarantineManager(self.bot, role.guild)
+        await manager.enforce()
+
     @commands.Cog.listener("on_member_update")
     async def _listener_quarantineenforce_memberupdate(self, before : Member, after : Member) -> None:
         if before.roles == after.roles:
@@ -97,7 +112,7 @@ class QuarantineEnforcer(commands.Cog):
         if not quarantine_role:
             return
 
-        if (quarantine_role in before.roles) == (quarantine_role in after.roles):
+        if after.roles == [quarantine_role]:
             return
 
         manager = QuarantineManager(self.bot, after.guild)

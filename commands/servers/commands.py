@@ -6,6 +6,7 @@ from operator import itemgetter
 from typing import Self, final, override
 
 from discord import Member, Role, SelectOption
+from discord.ext import commands as extcommands
 
 from bot import Cordex, Interaction, log
 from bot.types import AnnotatedCommand
@@ -371,7 +372,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
             # ⸻ Check that it's a GroupCog, and that the cog name is a str.
 
-            if not isinstance(cog, commands.GroupCog) or not isinstance(name := cog.__cog_group_name__, str):
+            if not isinstance(cog, extcommands.GroupCog) or not isinstance(name := cog.__cog_group_name__, str):
                 continue
 
             description = cog.__cog_group_description__

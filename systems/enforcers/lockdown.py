@@ -47,6 +47,12 @@ class LockdownEnforcer(commands.Cog):
         manager = LockdownManager(self.bot, after.guild)
         await manager.enforce()
 
+    @commands.Cog.listener("on_guild_channel_delete")
+    async def _listener_lockdownenforce_channeldelete(self, channel : GuildChannel) -> None:
+        manager = LockdownManager(self.bot, channel.guild)
+        if channel in await manager.get_channels():
+            ...  # should do some form of expiration with the case, and then remove the channel from lockdown internally.
+
 
 async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]
     cog = LockdownEnforcer(bot)

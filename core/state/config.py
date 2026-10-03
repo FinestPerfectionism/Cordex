@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, cast, final
+from typing import TYPE_CHECKING, Literal, cast, final, overload
 
 from discord import Guild, Member, Role, User
 
@@ -119,14 +119,21 @@ class Config:
     # get_moderation_quarantine_role
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_moderation_quarantine_role(self) -> Role | None:
+    @overload
+    async def get_moderation_quarantine_role(self, *, by_id : Literal[True]) -> int | None: ...
+
+    @overload
+    async def get_moderation_quarantine_role(self, *, by_id : Literal[False] = False) -> Role | None: ...
+
+    async def get_moderation_quarantine_role(self, *, by_id : bool = False) -> Role | int | None:
         """
         Get the role the bot should assign to quarantined members, if any.
 
         Returns
         -------
-        `Role | None`
-            The role the bot should assign to quarantined members. Returns `None` if not configured.
+        `Role | int | None`
+            The role or its ID that the bot should assign to quarantined members. Returns `None` if not configured or deleted.
+        /
         """
         async with self.bot.db.execute(
             t"SELECT config_value FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"moderation_quarantine_role"}",
@@ -139,13 +146,16 @@ class Config:
         if role_id is None:
             return None
 
+        if by_id:
+            return role_id
+
         return self.guild.get_role(role_id)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # set_moderation_quarantine_role
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_quarantine_role(self, role : Role | None) -> None:
+    async def set_moderation_quarantine_role(self, role : Role | None, /) -> None:
         """
         Set or reset the role the bot should assign to quarantined members.
 
@@ -153,6 +163,7 @@ class Config:
         ----------
         role : `Role | None`
             The role the bot should assign to quarantined members, or `None` to reset.
+        /
         """
         if role is None:
             await self.bot.db.execute(
@@ -169,14 +180,21 @@ class Config:
     # get_moderation_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_moderation_logging_channel(self) -> GuildMessagable | None:
+    @overload
+    async def get_moderation_logging_channel(self, *, by_id : Literal[True]) -> int | None: ...
+
+    @overload
+    async def get_moderation_logging_channel(self, *, by_id : Literal[False] = False) -> GuildMessagable | None: ...
+
+    async def get_moderation_logging_channel(self, *, by_id : bool = False) -> GuildMessagable | int | None:
         """
         Get the channel where the bot should log moderation actions, if any.
 
         Returns
         -------
-        `GuildMessageable | None`
-            The channel in which the bot should log moderation actions. Returns `None` if not configured.
+        `GuildMessageable | int | None`
+            The channel or its ID in which the bot should log moderation actions. Returns `None` if not configured or deleted.
+        /
         """
         async with self.bot.db.execute(
             t"SELECT config_value FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"moderation_logging_channel"}",
@@ -189,6 +207,9 @@ class Config:
         if channel_id is None:
             return None
 
+        if by_id:
+            return channel_id
+
         log_channel = self.guild.get_channel(channel_id)
         if not isinstance(log_channel, GuildMessagable):
             return None
@@ -199,7 +220,7 @@ class Config:
     # set_moderation_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_logging_channel(self, channel : GuildMessagable | None) -> None:
+    async def set_moderation_logging_channel(self, channel : GuildMessagable | None, /) -> None:
         """
         Set or reset the channel where the bot should log moderation actions.
 
@@ -207,6 +228,7 @@ class Config:
         ----------
         channel : `GuildMessagable | None`
             The channel where the bot should log moderation actions, or `None` to reset.
+        /
         """
         if channel is None:
             await self.bot.db.execute(
@@ -223,14 +245,21 @@ class Config:
     # get_messages_delete_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_messages_delete_logging_channel(self) -> GuildMessagable | None:
+    @overload
+    async def get_messages_delete_logging_channel(self, *, by_id : Literal[True]) -> int | None: ...
+
+    @overload
+    async def get_messages_delete_logging_channel(self, *, by_id : Literal[False] = False) -> GuildMessagable | None: ...
+
+    async def get_messages_delete_logging_channel(self, *, by_id : bool = False) -> GuildMessagable | int | None:
         """
         Get the channel where the bot should log message deletions, if any.
 
         Returns
         -------
-        `GuildMessageable | None`
-            The channel in which the bot should log message deletions. Returns `None` if not configured.
+        `GuildMessageable | int | None`
+            The channel or its ID in which the bot should log message deletions. Returns `None` if not configured or deleted.
+        /
         """
         async with self.bot.db.execute(
             t"SELECT config_value FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"messages_delete_channel"}",
@@ -243,6 +272,9 @@ class Config:
         if channel_id is None:
             return None
 
+        if by_id:
+            return channel_id
+
         log_channel = self.guild.get_channel(channel_id)
         if not isinstance(log_channel, GuildMessagable):
             return None
@@ -253,7 +285,7 @@ class Config:
     # set_messages_delete_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_messages_delete_logging_channel(self, channel : GuildMessagable | None) -> None:
+    async def set_messages_delete_logging_channel(self, channel : GuildMessagable | None, /) -> None:
         """
         Set or reset the channel where the bot should log message deletions.
 
@@ -261,6 +293,7 @@ class Config:
         ----------
         channel : `GuildMessagable | None`
             The channel where the bot should log message deletions, or `None` to reset.
+        /
         """
         if channel is None:
             await self.bot.db.execute(
@@ -277,14 +310,21 @@ class Config:
     # get_messages_edit_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_messages_edit_logging_channel(self) -> GuildMessagable | None:
+    @overload
+    async def get_messages_edit_logging_channel(self, *, by_id : Literal[True]) -> int | None: ...
+
+    @overload
+    async def get_messages_edit_logging_channel(self, *, by_id : Literal[False] = False) -> GuildMessagable | None: ...
+
+    async def get_messages_edit_logging_channel(self, *, by_id : bool = False) -> GuildMessagable | int | None:
         """
         Get the channel where the bot should log message edits, if any.
 
         Returns
         -------
-        `GuildMessageable | None`
-            The channel in which the bot should log message edits. Returns `None` if not configured.
+        `GuildMessageable | int | None`
+            The channel or its ID in which the bot should log message edits. Returns `None` if not configured or deleted.
+        /
         """
         async with self.bot.db.execute(
             t"SELECT config_value FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"messages_edit_channel"}",
@@ -297,6 +337,9 @@ class Config:
         if channel_id is None:
             return None
 
+        if by_id:
+            return channel_id
+
         log_channel = self.guild.get_channel(channel_id)
         if not isinstance(log_channel, GuildMessagable):
             return None
@@ -307,7 +350,7 @@ class Config:
     # set_messages_edit_logging_channel
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_messages_edit_logging_channel(self, channel : GuildMessagable | None) -> None:
+    async def set_messages_edit_logging_channel(self, channel : GuildMessagable | None, /) -> None:
         """
         Set or reset the channel where the bot should log message edits.
 
@@ -315,6 +358,7 @@ class Config:
         ----------
         channel : `GuildMessagable | None`
             The channel where the bot should log message edits, or `None` to reset.
+        /
         """
         if channel is None:
             await self.bot.db.execute(
@@ -353,15 +397,15 @@ class Config:
     # set_messages_preview
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_messages_preview(self, *, enabled : bool) -> None:
+    async def set_messages_preview(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
         """
         Set whether the bot should provide previews for message links found in messages.
 
         Parameters
         ----------
-        *
         enabled : `bool`
             Whether the bot should provide previews for message links found in messages.
+        /
         """
         await self.bot.db.execute(
             t"INSERT INTO Config (guild_id, config_key, config_value) VALUES ({self.guild.id}, {"messages_preview"}, {int(enabled)}) "

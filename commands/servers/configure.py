@@ -158,7 +158,7 @@ class _MessagesPreviewButton(Button["_ConfigurationView"]):
         new_state = not self.view.preview
 
         try:
-            await interaction.client.config(self.view.guild).set_messages_preview(enabled = new_state)
+            await interaction.client.config(self.view.guild).set_messages_preview(new_state)
         except Exception:
             await send_bad_operation(interaction, title = "update messages preview setting")
             raise

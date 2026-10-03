@@ -1,9 +1,10 @@
 from typing import Literal, cast, final
 
-from discord import Forbidden, Guild, HTTPException, Member, Permissions
+from discord import Color, Forbidden, Guild, HTTPException, Member, Permissions
 from discord.abc import GuildChannel
 
 from bot import Cordex, log
+from core.responses import format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Managers
@@ -107,7 +108,7 @@ class LockdownManager:
             except Forbidden:
                 pass
             except HTTPException as e:
-                rate_limited = e.status == 429
+                rate_limited = (e.status == 429)
                 self._log_failure("channel lockdown enforcement", rate_limited = rate_limited)
                 if rate_limited:
                     raise
@@ -176,7 +177,7 @@ class QuarantineManager:
 
     type EnforceTypes = Literal["Channels", "Role", "Members"]
 
-    async def enforce(self, enforce_type : EnforceTypes) -> None:
+    async def enforce(self, enforce_type : EnforceTypes = "Members", /) -> None:
         """
         Enforces quarantine operations.
 
@@ -198,15 +199,41 @@ class QuarantineManager:
         """
         config = self.bot.config(self.guild)
 
+        deleted = False
         quarantine_role = await config.get_moderation_quarantine_role()
         if not quarantine_role:
-            return
+            try:
+                quarantine_role = await self.guild.create_role(
+                    name        = "Quarantine",
+                    color       = Color.dark_gold(),
+                    permissions = Permissions.none(),
+                    reason      = "Quarantine enforcement. Previous role was deleted.",
+                )
+                if channel := await config.get_moderation_logging_channel():
+                    await format_send(
+                        channel,
+                        msg_type = "warning",
+                        title    = "The quarantine role was deleted",
+                        subtitle = "Th quarantine role was deleted. I have created a new one and transfered all quarant.",
+                        footer   = "Please do not delete the quarantine role! ",
+                    )
+            except Forbidden:
+                return
+            except HTTPException as e:
+                rate_limited = (e.status == 429)
+                self._log_failure("quarantine enforcement", rate_limited = rate_limited)
+                if rate_limited:
+                    raise
+                return
+
+            await config.set_moderation_quarantine_role(quarantine_role)
+            deleted = True
 
         # ⸻ Channels
 
-        if enforce_type == "Channels":
+        if enforce_type == "Channels" or deleted:
             wants_enforcement = await config.get_moderation_quarantine_enforce_channels()
-            if not wants_enforcement:
+            if not wants_enforcement and not deleted:
                 return
 
             me = self.guild.me
@@ -234,16 +261,16 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = e.status == 429
+                    rate_limited = (e.status == 429)
                     self._log_failure("channel quarantine enforcement", rate_limited = rate_limited)
                     if rate_limited:
                         raise
 
         # ⸻ Role
 
-        if enforce_type == "Role":
+        if enforce_type == "Role" or deleted:
             wants_enforcement = await config.get_moderation_quarantine_enforce_roles()
-            if not wants_enforcement:
+            if not wants_enforcement and not deleted:
                 return
 
             me = self.guild.me
@@ -257,7 +284,7 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = e.status == 429
+                    rate_limited = (e.status == 429)
                     self._log_failure("role quarantine enforcement", rate_limited = rate_limited)
                     if rate_limited:
                         raise
@@ -268,49 +295,52 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = e.status == 429
+                    rate_limited = (e.status == 429)
                     self._log_failure("role quarantine enforcement", rate_limited = rate_limited)
                     if rate_limited:
                         raise
 
         # ⸻ Members
 
-        if enforce_type == "Members":
+        if enforce_type == "Members" or deleted:
             me = self.guild.me
             if not me or not me.guild_permissions.manage_roles:
                 return
 
-            true_quarantined     = await self.get_members()
-            expected_quarantined = true_quarantined or set()
-            role_quarantined     = set(quarantine_role.members)
+            true_quarantined = await self.get_members()
+            role_quarantined = set(quarantine_role.members)
+
+            for member in true_quarantined:
+                if member.roles != [quarantine_role]:
+                    await member.remove_roles(*(set(member.roles) - {quarantine_role}), reason = "Quarantine enforcement.")
 
             # ⸻ Role members matches quarantined members. Exit.
 
-            if role_quarantined == expected_quarantined:
+            if role_quarantined == true_quarantined:
                 return
 
             # ⸻ Some role members have the quarantine role but are not quarantined. Remove the role.
 
-            for member in (role_quarantined - expected_quarantined):
+            for member in (role_quarantined - true_quarantined):
                 try:
                     await member.remove_roles(quarantine_role, reason = "Quarantine enforcement.")
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = e.status == 429
+                    rate_limited = (e.status == 429)
                     self._log_failure("member quarantine enforcement (removal)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
 
             # ⸻ Some quarantined members are missing the quarantine role. Add the role.
 
-            for member in (expected_quarantined - role_quarantined):
+            for member in (true_quarantined - role_quarantined):
                 try:
                     await member.add_roles(quarantine_role, reason = "Quarantine enforcement.")
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = e.status == 429
+                    rate_limited = (e.status == 429)
                     self._log_failure("member quarantine enforcement (addition)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
