@@ -60,19 +60,19 @@ class ConfigEnforcer(commands.Cog):
     async def _listener_config_channeldelete(self, channel : GuildChannel) -> None:
         config = self.bot.config(channel.guild)
 
-        if channel == await config.get_messages_delete_logging_channel():
+        if channel.id == await config.get_messages_delete_logging_channel(by_id = True):
             await config.set_messages_delete_logging_channel(None)
 
-        if channel == await config.get_messages_edit_logging_channel():
+        if channel.id == await config.get_messages_edit_logging_channel(by_id = True):
             await config.set_messages_edit_logging_channel(None)
 
-        if channel == await config.get_moderation_logging_channel():
+        if channel.id == await config.get_moderation_logging_channel(by_id = True):
             await config.set_moderation_logging_channel(None)
 
     @commands.Cog.listener("on_guild_role_delete")
     async def _listener_config_roledelete(self, role : Role) -> None:
         config = self.bot.config(role.guild)
-        if role == await config.get_moderation_quarantine_role():
+        if role.id == await config.get_moderation_quarantine_role(by_id = True):
             await config.set_moderation_quarantine_role(None)
 
 
