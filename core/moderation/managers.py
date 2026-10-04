@@ -209,14 +209,6 @@ class QuarantineManager:
                     permissions = Permissions.none(),
                     reason      = "Quarantine enforcement. Previous role was deleted.",
                 )
-                if channel := await config.get_moderation_logging_channel():
-                    await format_send(
-                        channel,
-                        msg_type = "warning",
-                        title    = "The quarantine role was deleted",
-                        subtitle = "Th quarantine role was deleted. I have created a new one and transfered all quarant.",
-                        footer   = "Please do not delete the quarantine role! ",
-                    )
             except Forbidden:
                 return
             except HTTPException as e:
@@ -312,7 +304,7 @@ class QuarantineManager:
 
             for member in true_quarantined:
                 if member.roles != [quarantine_role]:
-                    await member.remove_roles(*(set(member.roles) - {quarantine_role}), reason = "Quarantine enforcement.")
+                    await member.edit(roles = [quarantine_role], reason = "Quarantine enforcement.")
 
             # ⸻ Role members matches quarantined members. Exit.
 
@@ -344,3 +336,13 @@ class QuarantineManager:
                     self._log_failure("member quarantine enforcement (addition)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
+
+        channel = await config.get_moderation_logging_channel()
+        if deleted and channel:
+            await format_send(
+                channel,
+                msg_type =  "warning",
+                title    =  "The quarantine role was deleted",
+                subtitle = f"The quarantine role was deleted. I have created a new one ({quarantine_role.mention}) and transferred all quarantined members over.",
+                footer   =  "Please do not delete the quarantine role!",
+            )

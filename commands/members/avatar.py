@@ -67,8 +67,8 @@ async def run_member_avatar(
         mention = "Your"
         name    = "your"
     else:
-        mention = f"{target.mention}'s'"
-        name    = f"{target.name}'s'"
+        mention = f"{target.mention}'s"
+        name    = f"{target.name}'s"
 
     @final
     class AvatarView(LayoutView):
