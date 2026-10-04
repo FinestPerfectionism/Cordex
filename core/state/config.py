@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal, cast, final, overload
 
-from discord import Guild, Member, Role, User
+from discord import Guild, Member, NotFound, Role, User
 
 from bot.types import GuildMessagable
 
@@ -129,6 +129,11 @@ class Config:
         """
         Get the role the bot should assign to quarantined members, if any.
 
+        Parameters
+        ----------
+        by_id : `bool = False`
+            Whether to return the ID of the role over an actual role object or not. This is useful in cases where the role may have been deleted.
+
         Returns
         -------
         `Role | int | None`
@@ -149,7 +154,10 @@ class Config:
         if by_id:
             return role_id
 
-        return self.guild.get_role(role_id)
+        try:
+            return self.guild.get_role(role_id) or await self.guild.fetch_role(role_id)
+        except NotFound:
+            return None
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # set_moderation_quarantine_role
@@ -190,6 +198,11 @@ class Config:
         """
         Get the channel where the bot should log moderation actions, if any.
 
+        Parameters
+        ----------
+        by_id : `bool = False`
+            Whether to return the ID of the channel over an actual channel object or not. This is useful in cases where the channel may have been deleted.
+
         Returns
         -------
         `GuildMessageable | int | None`
@@ -210,11 +223,16 @@ class Config:
         if by_id:
             return channel_id
 
-        log_channel = self.guild.get_channel(channel_id)
-        if not isinstance(log_channel, GuildMessagable):
+        try:
+            if not isinstance(
+                log_channel := self.guild.get_channel(channel_id) or await self.guild.fetch_channel(channel_id),
+                GuildMessagable,
+            ):
+                return None
+        except NotFound:
             return None
-
-        return log_channel
+        else:
+            return log_channel
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # set_moderation_logging_channel
@@ -255,6 +273,11 @@ class Config:
         """
         Get the channel where the bot should log message deletions, if any.
 
+        Parameters
+        ----------
+        by_id : `bool = False`
+            Whether to return the ID of the channel over an actual channel object or not. This is useful in cases where the channel may have been deleted.
+
         Returns
         -------
         `GuildMessageable | int | None`
@@ -275,11 +298,16 @@ class Config:
         if by_id:
             return channel_id
 
-        log_channel = self.guild.get_channel(channel_id)
-        if not isinstance(log_channel, GuildMessagable):
+        try:
+            if not isinstance(
+                log_channel := self.guild.get_channel(channel_id) or await self.guild.fetch_channel(channel_id),
+                GuildMessagable,
+            ):
+                return None
+        except NotFound:
             return None
-
-        return log_channel
+        else:
+            return log_channel
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # set_messages_delete_logging_channel
@@ -320,6 +348,11 @@ class Config:
         """
         Get the channel where the bot should log message edits, if any.
 
+        Parameters
+        ----------
+        by_id : `bool = False`
+            Whether to return the ID of the channel over an actual channel object or not. This is useful in cases where the channel may have been deleted.
+
         Returns
         -------
         `GuildMessageable | int | None`
@@ -340,11 +373,16 @@ class Config:
         if by_id:
             return channel_id
 
-        log_channel = self.guild.get_channel(channel_id)
-        if not isinstance(log_channel, GuildMessagable):
+        try:
+            if not isinstance(
+                log_channel := self.guild.get_channel(channel_id) or await self.guild.fetch_channel(channel_id),
+                GuildMessagable,
+            ):
+                return None
+        except NotFound:
             return None
-
-        return log_channel
+        else:
+            return log_channel
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # set_messages_edit_logging_channel
