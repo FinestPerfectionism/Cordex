@@ -1,11 +1,13 @@
+from io import BytesIO
 from typing import Self, final
 
 from discord import AllowedMentions, Message
+from discord import File as DiscordFile
 from discord.ext import commands
 
 from bot import Cordex
 from bot.types import GuildMessagable
-from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
+from bot.ui import Container, File, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_RED
 from core.utilities import format_now, format_table, is_bot_owner
 
@@ -84,6 +86,9 @@ class MessageDeleteLogging(commands.Cog):
                    f"{clean_and_truncate(content or "[No content, likely an embed or attachment]")}",
                 ),
             )
+
+            if len(clean_and_truncate(content)) > 1000:
+                container.add_item(File(DiscordFile(BytesIO(content.encode(encoding = "utf-8")), filename = "deleted.txt")))
 
         await log_channel.send(
             view             = DeleteView(),
