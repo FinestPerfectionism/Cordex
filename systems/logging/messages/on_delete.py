@@ -45,8 +45,7 @@ class MessageDeleteLogging(commands.Cog):
         # ⸻ Block messages that do not belong to the current guild context.
 
         log_channel = await self.bot.config(guild).get_messages_delete_logging_channel()
-
-        if log_channel is None or log_channel.guild != guild:
+        if log_channel is None or not log_channel.permissions_for(guild.me).send_messages:
             return
 
         # ⸻ Block evaluations.
