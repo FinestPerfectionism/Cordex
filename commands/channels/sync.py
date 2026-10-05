@@ -28,5 +28,5 @@ async def run_channel_sync(
         await format_send(interaction, MessageType.success, title = "synced channel")
         return
 
-    await send_bad_argument(interaction, subtitle = {"channel" : "Channel must be under a category"})
+    await send_bad_argument(interaction, subtitle = {"channel" : "Channel must be under a category."})
     return

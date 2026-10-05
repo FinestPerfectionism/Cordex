@@ -23,7 +23,7 @@ class MessageType(Enum):
     success : `str`
         The 'success' message type. Uses a checkmark emoji and prefixes the title with "Successfully".
     warning : `str`
-        The 'warning' message type. Uses an exclaimation mark emoji and prefixes the title with "Failed to".
+        The 'warning' message type. Uses an exclamation mark emoji and prefixes the title with "Failed to".
     error : `str`
         The 'error' message type. Uses an x-cross emoji and prefixes the title with "Failed to".
     """

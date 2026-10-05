@@ -1,8 +1,11 @@
+# pyright: reportImportCycles = false
+
 from discord.app_commands import CheckFailure
 
 from bot import Interaction
 
-from .responses import MessageType, format_send
+from .responses import FormatOverride, MessageType, PunctuationOverride, format_send
+from .utilities import format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management
@@ -116,28 +119,33 @@ async def send_bad_argument(
 
         - If `dict[str, str]` is passed, it will appear as "`Key`: Value".
         - If `dict[tuple[str, ...], str]` is passed, it will appear as "`Key1, Key2, ...`: Value".
-        - If `dict[None, str]` is passed, it will appear as "Value".
+        - If `dict[None, str]` is passed, it will appear as "Value" and be at the very top of all warnings.
+
+        Note that only one `None` type key may be passed or the most recent one will be overridden.
 
     footer : `str = "Bad argument"`
         The footer of the warning.
     """
-    issues : list[str] = []
-
+    argument_nones : list[str]      = []
+    argument_table : dict[str, str] = {}
     for argument, notice in subtitle.items():
         match argument:
             case None:
-                issues.append(notice)
+                argument_nones.append(notice)
             case tuple() as arguments:
-                issues.append(f"{", ".join(f"`{arg}`" for arg in arguments)}: {notice}")
+                argument_table[f"{", ".join(arg for arg in arguments)}"] = notice
             case _:
-                issues.append(f"`{argument}`: {notice}")
+                argument_table[argument] = notice
 
+    table     = format_table(argument_table, padding = 0 if len(argument_table) == 1 else 1)
+    nones_str = "\n".join(argument_nones)
     await format_send(
         target,
         MessageType.warning,
         title    = title,
-        subtitle = "\n".join(issues),
+        subtitle = "\n".join(filter(None, (nones_str, table))),
         footer   = footer,
+        override = FormatOverride(punctuation = PunctuationOverride(subtitle = False)),
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

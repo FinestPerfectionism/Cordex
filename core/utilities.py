@@ -8,8 +8,6 @@ from discord.utils import format_dt, utcnow
 from bot import Cordex, Interaction
 from constants import DEVELOPER_IDS
 
-from .exceptions import UnimplementedCommand
-
 type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -52,6 +50,7 @@ def unimplemented[F]() -> Callable[[F], F]:
         The decorator function.
     """
     def predicate(_interaction : Interaction) -> bool:
+        from .exceptions import UnimplementedCommand  # ruff: ignore[import-outside-top-level]
         raise UnimplementedCommand
 
     def decorator(func : F) -> F:
