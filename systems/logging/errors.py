@@ -27,7 +27,7 @@ from core.exceptions import (
     send_bad_permissions_command,
     send_unimplemented_command,
 )
-from core.responses import FormatOverride, format_send
+from core.responses import FormatOverride, MessageType, format_send
 from core.utilities import codeblock, format_command, format_now, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -201,7 +201,7 @@ class ErrorLogger(commands.Cog):
             if randbelow(10) == 0:
                 await format_send(
                     interaction,
-                    msg_type  = "error",
+                    MessageType.error,
                     title     = "I'm sorry, Dave,",
                     subtitle  = "I'm afraid I can't do that",
                     footer    = "You are not authorized to run this command — Bad request",

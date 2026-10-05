@@ -30,7 +30,7 @@ from constants import (
     WARNING_EMOJI,
 )
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
-from core.responses import format_message, format_send
+from core.responses import MessageType, format_message, format_send
 from core.utilities import (
     codeblock,
     format_command,
@@ -175,7 +175,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
     if not is_bot_owner(ctx.author):
         await ctx.send(
             format_message(
-                msg_type = "error",
+                MessageType.error,
                 title    = "run command",
                 subtitle = "You are not authorized to run this command",
                 footer   = "Bad request",
@@ -186,7 +186,7 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
     if not body:
         await ctx.send(
             format_message(
-                msg_type = "error",
+                MessageType.error,
                 title    = "run command",
                 subtitle = "`body`: This is a required argument that was omitted.",
                 footer   = "Bad argument",

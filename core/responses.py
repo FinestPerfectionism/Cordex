@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
-from typing import Literal, Self, final
+from enum import Enum
+from typing import Self, final
 
 from discord import AllowedMentions, Interaction, Message
 from discord.abc import Messageable
@@ -10,8 +11,26 @@ from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 # Response Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type _MessageType = Literal["success", "warning", "error"]
 type _SendTarget = Interaction | Messageable
+
+
+class MessageType(Enum):
+    """
+    Represents the message types for formatting.
+
+    Attributes
+    ----------
+    success : `str`
+        The 'success' message type. Uses a checkmark emoji and prefixes the title with "Successfully".
+    warning : `str`
+        The 'warning' message type. Uses an exclaimation mark emoji and prefixes the title with "Failed to".
+    error : `str`
+        The 'error' message type. Uses an x-cross emoji and prefixes the title with "Failed to".
+    """
+
+    success = "success"
+    warning = "warning"
+    error   = "error"
 
 
 @final
@@ -82,21 +101,21 @@ class FormatOverride:
     punctuation : PunctuationOverride = field(default_factory = PunctuationOverride)
 
 
-def _emoji_match(msg_type : _MessageType) -> str:
+def _emoji_match(msg_type : MessageType) -> str:
     match msg_type:
-        case "success":
+        case msg_type.success:
             return ACCEPTED_EMOJI
-        case "warning":
+        case msg_type.warning:
             return WARNING_EMOJI
-        case "error":
+        case msg_type.error:
             return DENIED_EMOJI
 
 
-def _title_match(msg_type : _MessageType) -> str:
+def _title_match(msg_type : MessageType) -> str:
     match msg_type:
-        case "success":
+        case msg_type.success:
             return "Successfully"
-        case "warning" | "error":
+        case msg_type.warning | msg_type.error:
             return "Failed to"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -117,7 +136,7 @@ def _apply_punctuation(text : str, default : str, *, setting : bool | None) -> s
     return text + default
 
 
-def _build_title(msg_type : _MessageType, title : str, config : FormatOverride) -> str:
+def _build_title(msg_type : MessageType, title : str, config : FormatOverride) -> str:
     prefix       = _title_match(msg_type) if config.prefix else ""
     emoji        = f"{_emoji_match(msg_type)} " if config.emoji else ""
     default_punc =  "!" if msg_type in {"warning", "error"} else "."
@@ -150,8 +169,9 @@ def _build_footer(footer : str | None, config : FormatOverride) -> str | None:
 
 
 def format_message(
+    msg_type : MessageType,
+    /,
     *,
-    msg_type : _MessageType,
     title    : str,
     subtitle : str            | None = None,
     footer   : str            | None = None,
@@ -162,9 +182,10 @@ def format_message(
 
     Parameters
     ----------
-    *
-    msg_type : `Literal["success", "warning", "error"]`
+    msg_type : `MessageType`
         The type of the message.
+    /
+    *
     title : `str`
         The title of the message, prefixed with either "Successfully" or "Failed to".
     subtitle : `str | None = None`
@@ -195,9 +216,9 @@ def format_message(
 
 async def format_send(
     target    : _SendTarget,
+    msg_type  : MessageType,
     /,
     *,
-    msg_type  : _MessageType,
     title     : str,
     subtitle  : str             | None = None,
     footer    : str             | None = None,
@@ -212,10 +233,10 @@ async def format_send(
     ----------
     target : `Interaction | Messageable`
         The target of the message.
+    msg_type : `MessageType`
+        The type of the message.
     /
     *
-    msg_type : `Literal["success", "warning", "error"]`
-        The type of the message.
     title : `str`
         The title of the message, prefixed with either "Successfully" or "Failed to".
     subtitle : `str | None = None`
@@ -235,7 +256,7 @@ async def format_send(
         The formatted and sent message. Possibly `None` if `target` is `Interaction`.
     """
     content = format_message(
-        msg_type = msg_type,
+        msg_type,
         title    = title,
         subtitle = subtitle,
         footer   = footer,

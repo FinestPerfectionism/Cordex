@@ -1,6 +1,6 @@
 from bot import Interaction, log
 from core.exceptions import send_bad_operation
-from core.responses import format_send
+from core.responses import MessageType, format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -18,7 +18,7 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
         await client.rebuild_api_commands_cache()
         await format_send(
             interaction,
-            msg_type = "success",
+            MessageType.success,
             title    = "synced app command tree",
             subtitle = "Successfully globally synced the app command tree",
         )

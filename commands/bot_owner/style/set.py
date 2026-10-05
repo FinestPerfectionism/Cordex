@@ -23,7 +23,7 @@ from core.exceptions import (
     send_bad_environment_guildonly,
     send_bad_operation,
 )
-from core.responses import format_send
+from core.responses import MessageType, format_send
 from core.utilities import codeblock
 
 COLOR_PATTERN = re.compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
@@ -185,7 +185,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
             )
             await format_send(
                 interaction,
-                msg_type = "success",
+                MessageType.success,
                 title    = "set display name style",
                 subtitle = "The bot's display name style has been set for this server.",
             )

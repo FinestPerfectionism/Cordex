@@ -2,7 +2,7 @@ from discord.app_commands import CheckFailure
 
 from bot import Interaction
 
-from .responses import format_send
+from .responses import MessageType, format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Exceptions Management
@@ -44,7 +44,7 @@ async def send_bad_operation(
     """
     await format_send(
         target,
-        msg_type = "error",
+        MessageType.error,
         title    = title,
         subtitle = subtitle,
         footer   = footer,
@@ -81,7 +81,7 @@ async def send_bad_request(
     """
     await format_send(
         target,
-        msg_type = "warning",
+        MessageType.warning,
         title    = title,
         subtitle = subtitle,
         footer   = footer,
@@ -134,7 +134,7 @@ async def send_bad_argument(
 
     await format_send(
         target,
-        msg_type = "warning",
+        MessageType.warning,
         title    = title,
         subtitle = "\n".join(issues),
         footer   = footer,
@@ -161,7 +161,7 @@ async def send_unimplemented_command(target : Interaction, /) -> None:
     """
     await format_send(
         target,
-        msg_type = "error",
+        MessageType.error,
         title    = "run command",
         subtitle = "This command is currently unimplemented",
         footer   = "Bad request",
@@ -188,7 +188,7 @@ async def send_bad_permissions_command(target : Interaction, /) -> None:
     """
     await format_send(
         target,
-        msg_type = "error",
+        MessageType.error,
         title    = "run command",
         subtitle = "You are not authorized to run this command",
         footer   = "Bad request",
@@ -215,7 +215,7 @@ async def send_bad_environment_guildonly(target : Interaction, /) -> None:
     """
     await format_send(
         target,
-        msg_type = "warning",
+        MessageType.warning,
         title    = "run command",
         subtitle = "This command can only be run in a guild",
         footer   = "Bad environment",
@@ -242,7 +242,7 @@ async def send_bad_environment_dmsonly(target : Interaction, /) -> None:
     """
     await format_send(
         target,
-        msg_type = "warning",
+        MessageType.warning,
         title    = "run command",
         subtitle = "This command can only be run in DMs",
         footer   = "Bad environment",

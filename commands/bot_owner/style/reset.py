@@ -1,6 +1,6 @@
 from bot import Interaction
 from core.exceptions import send_bad_operation
-from core.responses import format_send
+from core.responses import MessageType, format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -19,7 +19,7 @@ async def run_bo_style_reset(interaction : Interaction, *, branded : bool | None
         await interaction.client.reset_name_style(interaction.guild, branded = branded or True)
         await format_send(
             interaction,
-            msg_type = "success",
+            MessageType.success,
             title    = "reset display name style",
             subtitle = "The bot's display name style has been reset for this server",
         )

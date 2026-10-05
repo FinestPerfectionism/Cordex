@@ -39,7 +39,7 @@ from constants import (
 )
 from core.exceptions import send_bad_argument, send_bad_operation, send_bad_request
 from core.paginator import UnnamedPaginator
-from core.responses import FormatOverride, PunctuationOverride, format_send
+from core.responses import FormatOverride, MessageType, PunctuationOverride, format_send
 from core.state import is_restrictable, is_restriction_required
 from core.utilities import format_command
 
@@ -227,7 +227,7 @@ class _ConfigModal(Modal):
 
         await format_send(
             interaction,
-            msg_type = "success",
+            MessageType.success,
             title    = title,
             subtitle = subtitle,
             override = FormatOverride(punctuation = PunctuationOverride(subtitle = False)),
@@ -333,7 +333,7 @@ class _GroupConfigModal(Modal):
 
         await format_send(
             interaction,
-            msg_type = "success",
+            MessageType.success,
             title    = "configured group",
             subtitle = subtitle,
             override = FormatOverride(punctuation = PunctuationOverride(subtitle = False)),

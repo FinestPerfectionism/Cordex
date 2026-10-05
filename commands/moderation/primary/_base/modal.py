@@ -37,7 +37,12 @@ from core.moderation import (
     TimeoutAddPayload,
     TimeoutRemovePayload,
 )
-from core.responses import FormatOverride, PunctuationOverride, format_message
+from core.responses import (
+    FormatOverride,
+    MessageType,
+    PunctuationOverride,
+    format_message,
+)
 from core.utilities import format_table
 
 from .utilities import check_hierarchy
@@ -567,19 +572,19 @@ class _ModerationModal(Modal):
 
                 if all(statuses):
                     title    = f"The {modal.name} was successful."
-                    msg_type =  "success"
+                    msg_type = MessageType.success
                 elif any(statuses):
                     title    = f"The {modal.name} was partially successful."
-                    msg_type =  "warning"
+                    msg_type = MessageType.warning
                 else:
                     title    = f"The {modal.name} failed."
-                    msg_type =  "error"
+                    msg_type = MessageType.error
 
                 result_view = LayoutView()
                 result_view.add_item(
                     TextDisplay(
                         format_message(
-                            msg_type = msg_type,
+                            msg_type,
                             title    = title,
                             subtitle = subtitle,
                             footer   = footer,

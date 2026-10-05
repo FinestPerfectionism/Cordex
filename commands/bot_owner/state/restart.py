@@ -7,7 +7,7 @@ from discord import CustomActivity, DiscordException, Status
 from bot import Interaction, log
 from constants import COG_EMOJI
 from core.exceptions import send_bad_operation
-from core.responses import format_send
+from core.responses import MessageType, format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -30,7 +30,7 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
 
     client.restarting = True
 
-    confirm_msg = await interaction.followup.send(
+    await interaction.followup.send(
        f"{COG_EMOJI} **Restarting bot.**\n"
         "Restarting bot...",
     )
@@ -71,11 +71,10 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
         log.exception("Received fatal error during restart")
         client.restarting = False
 
-        if confirm_msg and not client.is_closed():
+        if not client.is_closed():
             await format_send(
                 interaction,
-                message  = confirm_msg,
-                msg_type = "error",
+                MessageType.error,
                 title    = "restart bot",
                 subtitle = codeblock(e),
             )
