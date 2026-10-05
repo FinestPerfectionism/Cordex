@@ -110,7 +110,7 @@ class MessageEditLogging(commands.Cog):
                f"{clean_and_truncate(before_content) or "[No content, likely an embed or attachment]"}",
             )
 
-            if len(clean_and_truncate(before_content)) > 1000:
+            if len(clean_and_truncate(before_content)) > 1500:
                 container.add_item(File(DiscordFile(BytesIO(before_content.encode(encoding = "utf-8")), filename = "before.txt")))
 
             container.add_text(
@@ -118,7 +118,7 @@ class MessageEditLogging(commands.Cog):
                f"{clean_and_truncate(after_content) or "[No content, likely an embed or attachment]"}",
             )
 
-            if len(clean_and_truncate(after_content)) > 1000:
+            if len(clean_and_truncate(after_content)) > 1500:
                 container.add_item(File(DiscordFile(BytesIO(after_content.encode(encoding = "utf-8")), filename = "after.txt")))
 
         await log_channel.send(

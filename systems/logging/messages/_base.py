@@ -15,7 +15,7 @@ from core.utilities import truncate
 
 
 def clean_and_truncate(text : str) -> str:
-    return escape_markdown(truncate(text, limit = 2000))
+    return escape_markdown(truncate(text, limit = 1500))
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # channel_display

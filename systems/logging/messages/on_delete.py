@@ -87,7 +87,7 @@ class MessageDeleteLogging(commands.Cog):
                 ),
             )
 
-            if len(clean_and_truncate(content)) > 1000:
+            if len(clean_and_truncate(content)) > 1500:
                 container.add_item(File(DiscordFile(BytesIO(content.encode(encoding = "utf-8")), filename = "deleted.txt")))
 
         await log_channel.send(
