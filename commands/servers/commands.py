@@ -58,19 +58,15 @@ type CommandList = list[AnnotatedCommand]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def _build_sections(bot : Cordex, commands : CommandList) -> list[str | Item[LayoutView]]:
-    mentions = [
-        format_command(bot, command.qualified_name)
-        for command in commands
-    ]
+def _build_sections(commands : CommandList) -> list[str | Item[LayoutView]]:
+    mentions = [format_command(command.qualified_name) for command in commands]
 
     return [
         ButtonSection(
             f"**{i}.** {mention}\n"
             f"-# {command.description or "*No description provided.*"}",
             button = _ConfigButton(command),
-        )
-        for i, (command, mention) in enumerate(zip(commands, mentions, strict = False), start = 1)
+        ) for i, (command, mention) in enumerate(zip(commands, mentions, strict = False), start = 1)
     ]
 
 
@@ -129,7 +125,7 @@ class _QueryModal(Modal, title = "Query"):
 
         paginator = UnnamedPaginator(
             f"# {SEARCH_EMOJI} Search Results",
-            _build_sections(interaction.client, matches),
+            _build_sections(matches),
             data_name = "Commands",
             per_page  = 10,
             container = True,
@@ -211,7 +207,7 @@ class _ConfigModal(Modal):
             await send_bad_operation(interaction, title = "configure command")
             raise
 
-        name = format_command(client, self._command.qualified_name)
+        name = format_command(self._command.qualified_name)
 
         if allowed:
             mentions = "\n".join(target.mention for target in allowed)
@@ -237,8 +233,8 @@ class _ConfigModal(Modal):
 @final
 class _ConfigButton(Button[UnnamedPaginator]):
     def __init__(self, command : AnnotatedCommand) -> None:
-        self._command = command
         super().__init__(emoji = PENCIL_EMOJI)
+        self._command = command
 
     @override
     async def callback(self, interaction : Interaction) -> None:
@@ -325,7 +321,7 @@ class _GroupConfigModal(Modal):
         if len(affected) == len(self._commands):
             subtitle = "Every command in this group was affected."
         else:
-            mentions = "\n".join(format_command(client, command.qualified_name) for command in affected)
+            mentions = "\n".join(format_command(command.qualified_name) for command in affected)
             subtitle = (
                 "Affected commands:\n"
                f"{mentions}"
@@ -343,9 +339,9 @@ class _GroupConfigModal(Modal):
 @final
 class _GroupConfigButton(Button[UnnamedPaginator]):
     def __init__(self, commands : CommandList, group_name : str) -> None:
+        super().__init__(emoji = PENCIL_EMOJI)
         self._commands   = commands
         self._group_name = group_name
-        super().__init__(emoji = PENCIL_EMOJI)
 
     @override
     async def callback(self, interaction : Interaction) -> None:
@@ -437,7 +433,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
             option.default = (option.value == value)
 
         self.view.set_title_button(_GroupConfigButton(filtered, group_name) if group_name is not None else None)
-        self.view.update_data(title, _build_sections(interaction.client, filtered))
+        self.view.update_data(title, _build_sections(filtered))
 
         await interaction.response.edit_message(view = self.view)
 
@@ -465,7 +461,7 @@ async def run_server_commands(interaction : Interaction) -> None:
 
     view = UnnamedPaginator(
         f"# {HORIZONTAL_SETTINGS} All Commands",
-        _build_sections(interaction.client, commands),
+        _build_sections(commands),
         data_name = "Commands",
         container = True,
     )

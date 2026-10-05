@@ -5,8 +5,11 @@ from discord import Member, User
 from discord.app_commands import check
 from discord.utils import format_dt, utcnow
 
-from bot import Cordex, Interaction
+from bot import Interaction
 from constants import DEVELOPER_IDS
+from main import (
+    bot,  # ⸻ Nottt a great practice, but having to pass bot is inconvenient.
+)
 
 type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 
@@ -70,7 +73,7 @@ def format_now(style : _Styles = "F", /) -> str:
 
     Parameters
     ----------
-    style : `["f", "F", "d", "D", "t", "T", "s", "S", "R"]`
+    style : `Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]`
         The style of the timestamp to create.
 
     Returns
@@ -85,14 +88,12 @@ def format_now(style : _Styles = "F", /) -> str:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def format_command(bot : Cordex, path : str, /) -> str:
+def format_command(path : str, /) -> str:
     """
     Format a command path into a clickable mention.
 
     Parameters
     ----------
-    bot : `Cordex`
-        The bot.
     path : `str`
         The path of the command to format.
     /
