@@ -1,6 +1,8 @@
+from io import BytesIO
 from typing import Self, final
 
 from discord import AllowedMentions, Message
+from discord import File as DiscordFile
 from discord.ext import commands
 from discord.utils import format_dt, utcnow
 
@@ -10,6 +12,7 @@ from bot.ui import (
     Button,
     ButtonSection,
     Container,
+    File,
     LayoutView,
     TextDisplay,
     VisibleLargeSeparator,
@@ -101,17 +104,22 @@ class MessageEditLogging(commands.Cog):
                     ),
                 )
 
-            container.add_items(
-                VisibleLargeSeparator(),
-                TextDisplay(
-                    "### Before\n"
-                   f"{clean_and_truncate(before_content) or "[No content, likely an embed or attachment]"}",
-                ),
-                TextDisplay(
-                    "### After\n"
-                   f"{clean_and_truncate(after_content) or "[No content, likely an embed or attachment]"}",
-                ),
+            container.add_item(VisibleLargeSeparator())
+            container.add_text(
+                "### Before\n"
+               f"{clean_and_truncate(before_content) or "[No content, likely an embed or attachment]"}",
             )
+
+            if len(clean_and_truncate(before_content)) > 1000:
+                container.add_item(File(DiscordFile(BytesIO(before_content.encode(encoding = "utf-8")), filename = "before.txt")))
+
+            container.add_text(
+                "### After\n"
+               f"{clean_and_truncate(after_content) or "[No content, likely an embed or attachment]"}",
+            )
+
+            if len(clean_and_truncate(after_content)) > 1000:
+                container.add_item(File(DiscordFile(BytesIO(after_content.encode(encoding = "utf-8")), filename = "after.txt")))
 
         await log_channel.send(
             view             = EditView(),
