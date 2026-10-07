@@ -224,7 +224,7 @@ class QuarantineManager:
         # ⸻ Channels
 
         if enforce_type == "Channels" or deleted:
-            wants_enforcement = await config.get_moderation_quarantine_enforce_channels()
+            wants_enforcement = await config.get_whether_moderation_quarantine_enforce_channels()
             if not wants_enforcement and not deleted:
                 return
 
@@ -261,7 +261,7 @@ class QuarantineManager:
         # ⸻ Role
 
         if enforce_type == "Role" or deleted:
-            wants_enforcement = await config.get_moderation_quarantine_enforce_roles()
+            wants_enforcement = await config.get_whether_moderation_quarantine_enforce_roles()
             if not wants_enforcement and not deleted:
                 return
 

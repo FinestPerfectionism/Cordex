@@ -158,7 +158,7 @@ class _MessagesPreviewButton(Button["_ConfigurationView"]):
         new_state = not self.view.preview
 
         try:
-            await interaction.client.config(self.view.guild).set_messages_preview(new_state)
+            await interaction.client.config(self.view.guild).set_whether_messages_preview(new_state)
         except Exception:
             await send_bad_operation(interaction, title = "update messages preview setting")
             raise
@@ -318,8 +318,8 @@ class _ModerationQuarantineEnforceModal(Modal, title = "Quarantine Enforce"):
         config = interaction.client.config(guild)
 
         try:
-            await config.set_moderation_quarantine_enforce_channels(self._channels.value)
-            await config.set_moderation_quarantine_enforce_roles(self._roles.value)
+            await config.set_whether_moderation_quarantine_enforce_channels(self._channels.value)
+            await config.set_whether_moderation_quarantine_enforce_roles(self._roles.value)
         except Exception:
             await send_bad_operation(interaction, title = "update quarantine enforcement")
             raise
@@ -534,9 +534,9 @@ async def run_server_configure(interaction : Interaction) -> None:
     delete_channel   = await config.get_messages_delete_logging_channel()
     logging_channel  = await config.get_moderation_logging_channel()
     quarantine_role  = await config.get_moderation_quarantine_role()
-    enforce_channels = await config.get_moderation_quarantine_enforce_channels()
-    enforce_roles    = await config.get_moderation_quarantine_enforce_roles()
-    preview          = await config.get_messages_preview()
+    enforce_channels = await config.get_whether_moderation_quarantine_enforce_channels()
+    enforce_roles    = await config.get_whether_moderation_quarantine_enforce_roles()
+    preview          = await config.get_whether_messages_preview()
 
     await interaction.response.send_message(
         view      = _ConfigurationView(

@@ -29,7 +29,7 @@ async def run_member_banner(
 
     guild = interaction.guild
 
-    if guild is None or not isinstance(target, Member):
+    if not guild or not isinstance(target, Member):
         return
 
     # ⸻ Determine banner based on server parameter.

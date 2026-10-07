@@ -18,7 +18,7 @@ async def run_channel_permissions(
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-    if interaction.guild is None:
+    if not interaction.guild:
         return
 
     await interaction.followup.send(

@@ -26,7 +26,7 @@ async def run_role_members(
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-    if interaction.guild is None:
+    if not interaction.guild:
         return
 
     # ⸻ Resolve the list.

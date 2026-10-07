@@ -29,7 +29,7 @@ async def run_member_avatar(
 
     guild = interaction.guild
 
-    if guild is None or not isinstance(target, Member):
+    if not guild or not isinstance(target, Member):
         return
 
     # ⸻ Determine avatar based on server parameter.

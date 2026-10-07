@@ -88,7 +88,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-    if interaction.guild is None or not isinstance(target, GuildMessagable):
+    if not interaction.guild or not isinstance(target, GuildMessagable):
         return
 
     if isinstance(target, Thread):

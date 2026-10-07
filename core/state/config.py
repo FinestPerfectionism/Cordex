@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal, cast, final, overload
 
-from discord import Guild, Member, NotFound, Role, User
+from discord import Guild, Member, NotFound, Role
 
 from bot.types import GuildMessagable
 
@@ -48,21 +48,21 @@ class Config:
 
     async def get_command_allowed(self, command_name : str, /) -> list[Role | Member]:
         """
-        Get the roles/members/users allowed to use a certain command.
+        Get the roles/members allowed to use a certain command.
 
         Parameters
         ----------
         command_name : `str`
-            The command to get the allowed roles/members/users for.
+            The command to get the allowed roles/members for.
         /
 
         Returns
         -------
         `list[Role | Member]`
-            The roles/members/users allowed to use the command.
+            The roles/members allowed to use the command.
         """
         restriction = self.bot.get_restriction(self.guild.id, command_name)
-        if restriction is None:
+        if not restriction:
             return []
 
         roles   = [role for role_id in sorted(restriction.role_ids) if (role := self.guild.get_role(role_id)) is not None]
@@ -74,20 +74,20 @@ class Config:
     # set_command_allowed
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_command_allowed(self, command_name : str, allowed : Sequence[Role | Member | User], /) -> None:
+    async def set_command_allowed(self, command_name : str, allowed : Sequence[Role | Member], /) -> None:
         """
-        Set the roles/members/users allowed to use a certain command.
+        Set the roles/members allowed to use a certain command.
 
         Parameters
         ----------
         command_name : `str`
-            The command to set the allowed roles/members/users for.
-        allowed : `Sequence[Role | Member | User]`
-            The roles/members/users allowed to use the command.
+            The command to set the allowed roles/members for.
+        allowed : `Sequence[Role | Member]`
+            The roles/members allowed to use the command.
         /
         """
         role_ids = frozenset(target.id for target in allowed if isinstance(target, Role))
-        user_ids = frozenset(target.id for target in allowed if isinstance(target, User))
+        user_ids = frozenset(target.id for target in allowed if isinstance(target, Member))
 
         try:
             await self.bot.db.execute(
@@ -148,7 +148,7 @@ class Config:
                 return None
 
         role_id = cast("int | None", res[0])
-        if role_id is None:
+        if not role_id:
             return None
 
         if by_id:
@@ -173,7 +173,7 @@ class Config:
             The role the bot should assign to quarantined members, or `None` to reset.
         /
         """
-        if role is None:
+        if not role:
             await self.bot.db.execute(
                 t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"moderation_quarantine_role"}",
             )
@@ -217,7 +217,7 @@ class Config:
                 return None
 
         channel_id = cast("int | None", res[0])
-        if channel_id is None:
+        if not channel_id:
             return None
 
         if by_id:
@@ -248,7 +248,7 @@ class Config:
             The channel where the bot should log moderation actions, or `None` to reset.
         /
         """
-        if channel is None:
+        if not channel:
             await self.bot.db.execute(
                 t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"moderation_logging_channel"}",
             )
@@ -292,7 +292,7 @@ class Config:
                 return None
 
         channel_id = cast("int | None", res[0])
-        if channel_id is None:
+        if not channel_id:
             return None
 
         if by_id:
@@ -323,7 +323,7 @@ class Config:
             The channel where the bot should log message deletions, or `None` to reset.
         /
         """
-        if channel is None:
+        if not channel:
             await self.bot.db.execute(
                 t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"messages_delete_channel"}",
             )
@@ -367,7 +367,7 @@ class Config:
                 return None
 
         channel_id = cast("int | None", res[0])
-        if channel_id is None:
+        if not channel_id:
             return None
 
         if by_id:
@@ -398,7 +398,7 @@ class Config:
             The channel where the bot should log message edits, or `None` to reset.
         /
         """
-        if channel is None:
+        if not channel:
             await self.bot.db.execute(
                 t"DELETE FROM Config WHERE guild_id = {self.guild.id} AND config_key = {"messages_edit_channel"}",
             )
@@ -410,10 +410,10 @@ class Config:
         await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_messages_preview
+    # get_whether_messages_preview
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_messages_preview(self) -> bool:
+    async def get_whether_messages_preview(self) -> bool:
         """
         Get whether the bot should provide previews for message links found in messages.
 
@@ -432,10 +432,10 @@ class Config:
         return bool(cast("int | None", res[0]))
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # set_messages_preview
+    # set_whether_messages_preview
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_messages_preview(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
+    async def set_whether_messages_preview(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
         """
         Set whether the bot should provide previews for message links found in messages.
 
@@ -452,10 +452,10 @@ class Config:
         await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_moderation_quarantine_enforce_channels
+    # get_whether_moderation_quarantine_enforce_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_moderation_quarantine_enforce_channels(self) -> bool:
+    async def get_whether_moderation_quarantine_enforce_channels(self) -> bool:
         """
         Get whether the bot should automatically enforce quarantine for channels.
 
@@ -474,10 +474,10 @@ class Config:
         return bool(cast("int | None", res[0]))
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # set_moderation_quarantine_enforce_channels
+    # set_whether_moderation_quarantine_enforce_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_quarantine_enforce_channels(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
+    async def set_whether_moderation_quarantine_enforce_channels(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
         """
         Set whether the bot should automatically enforce quarantine for channels.
 
@@ -494,10 +494,10 @@ class Config:
         await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # get_moderation_quarantine_enforce_roles
+    # get_whether_moderation_quarantine_enforce_roles
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_moderation_quarantine_enforce_roles(self) -> bool:
+    async def get_whether_moderation_quarantine_enforce_roles(self) -> bool:
         """
         Get whether the bot should automatically enforce quarantine for roles.
 
@@ -516,10 +516,10 @@ class Config:
         return bool(cast("int | None", res[0]))
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # set_moderation_quarantine_enforce_roles
+    # set_whether_moderation_quarantine_enforce_roles
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def set_moderation_quarantine_enforce_roles(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
+    async def set_whether_moderation_quarantine_enforce_roles(self, enabled : bool, /) -> None:  # ruff: ignore[boolean-type-hint-positional-argument]
         """
         Set whether the bot should automatically enforce quarantine for roles.
 

@@ -41,7 +41,7 @@ class MessageDeleteLogging(commands.Cog):
 
         # ⸻ Block non-guild messages.
 
-        if guild is None or not isinstance(channel, GuildMessagable):
+        if not guild or not isinstance(channel, GuildMessagable):
             return
 
         # ⸻ Block messages that do not belong to the current guild context.

@@ -1,6 +1,5 @@
 from .about import run_about
 from .bot_owner import (
-    run_bo_eval,
     run_bo_state_restart,
     run_bo_state_shutdown,
     run_bo_state_sync,
@@ -46,7 +45,6 @@ from .servers import (
 
 __all__ = [
     "run_about",
-    "run_bo_eval",
     "run_bo_state_restart",
     "run_bo_state_shutdown",
     "run_bo_state_sync",

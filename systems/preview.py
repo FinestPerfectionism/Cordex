@@ -24,6 +24,30 @@ MESSAGE_LINK_PATTERN = re.compile(r"https://discord(?:app)?\.com/channels/(\d+|@
 
 
 @final
+class _PreviewView(LayoutView):
+    def __init__(self, message : Message, link : str, names : list[str]) -> None:
+        super().__init__()
+        container = Container[Self](TextDisplay(f"{message.author.mention}: {link}"), VisibleLargeSeparator())
+
+        if message.content:
+            container.add_text(message.content)
+
+        if message.attachments:
+            if gallery_items := [
+                MediaGalleryItem(attachment.url)
+                for attachment in message.attachments
+                if attachment.content_type
+                and attachment.content_type.startswith(("image/", "video/"))
+            ]:
+                container.add_item(MediaGallery(*gallery_items))
+
+            if file_items := [File[Self](f"attachment://{name}") for name in names]:
+                container.append_items(file_items)
+
+        self.add_item(container)
+
+
+@final
 class Preview(commands.Cog):
     """Provides message previews for Discord message links."""
 
@@ -41,88 +65,49 @@ class Preview(commands.Cog):
         if author.bot or author == self.bot.user:
             return
 
-        # ⸻ Provide a preview for message links,
-
         if guild:
-            value = await self.bot.config(guild).get_messages_preview()
-            if not value:
+            wants_preview = await self.bot.config(guild).get_whether_messages_preview()
+            if not wants_preview:
                 return
 
-        # ⸻ ...but only if the guild (if any) wants it.
-
-        @final
-        class PreviewView(LayoutView):
-            def __init__(self, target : Message, link : str, names : list[str]) -> None:
-                super().__init__()
-
-                container = Container[Self](TextDisplay(f"{target.author.mention}: {link}"), VisibleLargeSeparator())
-
-                if target.content:
-                    container.add_text(target.content)
-
-                if target.attachments:
-                    gallery_items : list[MediaGalleryItem] = [
-                        MediaGalleryItem(attachment.url)
-                        for attachment in target.attachments
-                        if attachment.content_type
-                        and attachment.content_type.startswith(("image/", "video/"))
-                    ]
-                    file_items    : list[File[Self]]       = [File(f"attachment://{name}") for name in names]
-
-                    if gallery_items:
-                        container.add_item(MediaGallery(*gallery_items))
-
-                    if file_items:
-                        container.append_items(file_items)
-
-                self.add_item(container)
-
-        for index, match in enumerate(MESSAGE_LINK_PATTERN.finditer(content)):
+        for i, match in enumerate(MESSAGE_LINK_PATTERN.finditer(content)):
             channel_id = int(match.group(2))
             message_id = int(match.group(3))
 
-            target_channel = self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id)
-
-            if not isinstance(target_channel, Messageable):
+            if not isinstance(
+                target_channel := self.bot.get_channel(channel_id) or await self.bot.fetch_channel(channel_id),
+                Messageable,
+            ):
                 continue
 
             try:
                 target_message = await target_channel.fetch_message(message_id)
             except Forbidden:
                 continue
+            else:
+                if not target_message.content and not target_message.attachments:  # ⸻ Message has no content or attachments. Perhaps an embed?
+                    continue
 
-            # ⸻ Message has no content or attachments. Perhaps an embed?
-
-            if not target_message.content and not target_message.attachments:
-                continue
-
-            # ⸻ Convert non-media attachments to files for re-uploading.
-
-            attachments = [
-                attachment for attachment in target_message.attachments
-                if attachment.content_type and
-                not attachment.content_type.startswith(("image/", "video/"))
-            ]
-
-            files = await gather(*(attachment.to_file() for attachment in attachments))
-            names = [file.filename for file in files]
-
-            if index == 0:
+            files = await gather(
+                    *(
+                        attachment.to_file() for attachment in [
+                            attachment for attachment in target_message.attachments
+                            if attachment.content_type and
+                            not attachment.content_type.startswith(("image/", "video/"))
+                        ]
+                    ),
+                )
+            view  = _PreviewView(
+                target_message,
+                match.group(0),
+                [file.filename for file in files],
+            )
+            if i == 0:
                 async with message.channel.typing():
                     await sleep(0.5)
-                    await message.reply(
-                        files            = files,
-                        view             = PreviewView(target_message, match.group(0), names),
-                        mention_author   = False,
-                        allowed_mentions = AllowedMentions.none(),
-                    )
+                    await message.reply(files = files, view = view, allowed_mentions = AllowedMentions.none())
             else:
-                await message.reply(
-                    files            = files,
-                    view             = PreviewView(target_message, match.group(0), names),
-                    mention_author   = False,
-                    allowed_mentions = AllowedMentions.none(),
-                )
+                await message.reply(files = files, view = view, allowed_mentions = AllowedMentions.none())
 
     @commands.Cog.listener("on_message")
     async def _listener_preview_message(self, message : Message) -> None:

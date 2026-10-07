@@ -63,9 +63,10 @@ class ErrorLogger(commands.Cog):
         error       : str           | None = None,
         traceback   : str           | None = None,
     ) -> None:
-        channel = self.bot.get_channel(BOT_ERRORS_LOG_CHANNEL_ID)
-
-        if not isinstance(channel, TextChannel):
+        if not isinstance(
+            channel := self.bot.get_channel(BOT_ERRORS_LOG_CHANNEL_ID) or await self.bot.fetch_channel(BOT_ERRORS_LOG_CHANNEL_ID),
+            TextChannel,
+        ):
             return
 
         view = LayoutView()
@@ -171,20 +172,20 @@ class ErrorLogger(commands.Cog):
         *_args    : str,
         **_kwargs : int,
     ) -> None:
-        exc_type, exc, tb = exc_info()
+        exception_type, exception, traceback = exc_info()
 
-        if exc is None:
+        if exception is None:
             await self._send_error(
                 title  =  "Bot Event Error",
                 error  = f"{event}: Unknown exception",
             )
             return
 
-        traceback = "".join(format_exception(exc_type, exc, tb))
+        traceback = "".join(format_exception(exception_type, exception, traceback))
 
         await self._send_error(
             title     =  "Bot Event Error",
-            error     = f"{event}: {exc}",
+            error     = f"{event}: {exception}",
             traceback = traceback,
         )
 
@@ -267,16 +268,22 @@ class ErrorLogger(commands.Cog):
         if loop.is_closed():
             return
 
-        exc = context.get("exception")
-        msg = context.get("message")
-        msg_str = str(msg) if msg is not None else "No message"
+        exception   = context.get("exception")
+        message     = context.get("message")
+        message_str = str(message) or "No message"
 
-        traceback = "".join(format_exception(type(exc), exc, exc.__traceback__)) if isinstance(exc, BaseException) else msg_str
+        traceback = "".join(
+            format_exception(
+                type(exception),
+                exception,
+                exception.__traceback__,
+            ),
+        ) if isinstance(exception, BaseException) else message_str
 
         loop.create_task(
             self._send_error(
                 title     = "Asyncio Event Loop Error",
-                error     = msg_str,
+                error     = message_str,
                 traceback = traceback,
             ),
         )

@@ -54,13 +54,13 @@ class MessageEditLogging(commands.Cog):
 
         # ⸻ Block non-guild messages.
 
-        if guild is None or not isinstance(channel, GuildMessagable):
+        if not guild or not isinstance(channel, GuildMessagable):
             return
 
         # ⸻ Block messages that do not belong to the current guild context.
 
         log_channel = await self.bot.config(guild).get_messages_edit_logging_channel()
-        if log_channel is None or not log_channel.permissions_for(guild.me).send_messages:
+        if not log_channel or not log_channel.permissions_for(guild.me).send_messages:
             return
 
         # ⸻ Block evaluations.

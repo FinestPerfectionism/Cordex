@@ -143,7 +143,7 @@ class Modal(BaseModal):
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-class TextDisplay[V : LayoutView | Modal](BaseTextDisplay[V]):
+class TextDisplay[V : LayoutView | Modal](BaseTextDisplay[V]):  # pyright: ignore[reportInvalidTypeArguments]
     def __init__(self, content : str, /) -> None:
         super().__init__(content)
 

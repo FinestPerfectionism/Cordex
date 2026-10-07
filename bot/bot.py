@@ -203,7 +203,7 @@ class _Tree(CommandTree):
         if isinstance(command, ContextMenu | None):
             return True
 
-        if guild is None or not isinstance(user, Member):
+        if not guild or not isinstance(user, Member):
             return True
 
         if not is_restrictable(command):

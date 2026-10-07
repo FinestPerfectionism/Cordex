@@ -5,7 +5,7 @@ from difflib import SequenceMatcher
 from operator import itemgetter
 from typing import Self, final, override
 
-from discord import Member, Role, SelectOption
+from discord import Member, Role, SelectOption, User
 from discord.ext import commands as extcommands
 
 from bot import Cordex, Interaction, log
@@ -178,7 +178,7 @@ class _ConfigModal(Modal):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        allowed = self._allowed.values
+        allowed = [member for member in self._allowed.values if not isinstance(member, User)]
 
         client = interaction.client
         guild  = interaction.guild
@@ -276,7 +276,7 @@ class _GroupConfigModal(Modal):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        allowed = self._allowed.values
+        allowed = [member for member in self._allowed.values if not isinstance(member, User)]
         force   = self._force.value
 
         client = interaction.client

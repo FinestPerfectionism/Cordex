@@ -51,9 +51,10 @@ class GuildRemoveLogging(commands.Cog):
             else:
                 container.add_text(info)
 
-        log_channel = self.bot.get_channel(BOT_GUILD_LOG_CHANNEL_ID) or await self.bot.fetch_channel(BOT_GUILD_LOG_CHANNEL_ID)
-
-        if not isinstance(log_channel, TextChannel):
+        if not isinstance(
+            log_channel := self.bot.get_channel(BOT_GUILD_LOG_CHANNEL_ID) or await self.bot.fetch_channel(BOT_GUILD_LOG_CHANNEL_ID),
+            TextChannel,
+        ):
             return
 
         await log_channel.send(

@@ -26,8 +26,6 @@ from .payloads import (
 )
 
 type ActionType = Literal[
-    "Lockdown Add",
-    "Lockdown Remove",
     "Ban Add",
     "Ban Remove",
     "Kick",

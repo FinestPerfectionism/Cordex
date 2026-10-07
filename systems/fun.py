@@ -33,19 +33,19 @@ class Fun(commands.Cog):
 
         # ⸻ Replies.
 
-        if reference:
-            resolved_reference = reference.resolved
+        if reference and isinstance(
+            resolved_reference := reference.resolved,
+            Message,
+        ) and resolved_reference.author == self.bot.user:
+            words = [word.strip(".,!?\"'") for word in content.split()]
+            greetings = any(trigger in words for trigger in ["hi", "hello"])
 
-            if isinstance(resolved_reference, Message) and resolved_reference.author == self.bot.user:
-                words = [word.strip(".,!?\"'") for word in content.split()]
-                greetings = any(trigger in words for trigger in ["hi", "hello"])
+            if greetings:
+                responses = ["Hello, human.", "Greetings.", "Hi..?", "Hi... I guess..."]
 
-                if greetings:
-                    responses = ["Hello, human.", "Greetings.", "Hi..?", "Hi... I guess..."]
-
-                    async with message.channel.typing():
-                        await sleep(1)
-                        await message.reply(content = choice(responses))
+                async with message.channel.typing():
+                    await sleep(1)
+                    await message.reply(content = choice(responses))
 
 
 async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]

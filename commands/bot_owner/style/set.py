@@ -118,7 +118,7 @@ class _StyleModal(Modal, title = "Set Display Name Style"):
 
         # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
-        if interaction.guild is None:
+        if not interaction.guild:
             return
 
         # ⸻ Grab the modal values.

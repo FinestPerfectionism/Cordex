@@ -48,7 +48,7 @@ async def run_member_info(
 
     guild = interaction.guild
 
-    if guild is None or not isinstance(target, Member):
+    if not guild or not isinstance(target, Member):
         return
 
     # ⸻ Sort the joined and roles lists.
