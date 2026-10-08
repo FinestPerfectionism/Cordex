@@ -109,9 +109,9 @@ class DisplayNameEffect(Enum):
     pop : `int`
         Pop effect. Takes one color along side it.
     prism : `int`
-        Not available for bot users. Takes five colors along side it.
+        Takes five colors along side it.
     gummy : `int`
-        Not available for bot users. Takes four colors along side it, but said colors may or not be restricted to a set of specific colors, as this is the case for human users.
+        Takes four colors along side it, but said colors may or not be restricted to a set of specific colors, as this is the case for human users.
     """
 
     solid = 1
