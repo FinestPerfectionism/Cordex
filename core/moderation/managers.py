@@ -202,6 +202,9 @@ class QuarantineManager:
         deleted = False
         quarantine_role = await config.get_moderation_quarantine_role()
         if not quarantine_role:
+            if not await self.get_members():
+                return
+
             try:
                 quarantine_role = await self.guild.create_role(
                     name        = "Quarantine",
@@ -343,6 +346,9 @@ class QuarantineManager:
                 channel,
                 MessageType.warning,
                 title    =  "The quarantine role was deleted",
-                subtitle = f"The quarantine role was deleted. I have created a new one ({quarantine_role.mention}) and transferred all quarantined members over",
+                subtitle = (
+                   f"The quarantine role was deleted. I have created a new one ({quarantine_role.mention}) and transferred all quarantined members over.\n"
+                    "If you'd like to remove quarantine operations, remove all members from quarantine first, then delete the role."
+                ),
                 footer   =  "Please do not delete the quarantine role!",
             )
