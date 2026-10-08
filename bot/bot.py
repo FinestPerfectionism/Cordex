@@ -318,13 +318,13 @@ class Cordex(commands.Bot):
         )
 
     async def get_name_style(self, guild : Guild, /) -> NameStyleResult | None:
-        class NameStylePayload(TypedDict):
+        class NameStyleContent(TypedDict):
             font_id   : int
             effect_id : int
             colors    : list[int]
 
-        class MemberNameStylePayload(TypedDict):
-            display_name_styles : NameStylePayload
+        class NameStylePayload(TypedDict, total = False):
+            display_name_styles : NameStyleContent | None
 
         # ⸻ self.user is never None, but pyright will complain anyway.
 
@@ -332,7 +332,7 @@ class Cordex(commands.Bot):
             return None
 
         response = cast(
-            "MemberNameStylePayload",
+            "NameStylePayload",
             await self.http.request(
                 route = Route(
                     "GET", "/guilds/{guild_id}/members/{user_id}",
@@ -342,7 +342,14 @@ class Cordex(commands.Bot):
             ),
         )
 
-        styles = response["display_name_styles"]
+        styles = response.get("display_name_styles")
+
+        if styles is None:
+            return NameStyleResult(
+                font_id   = DisplayNameFont(12),
+                effect_id = DisplayNameEffect(1),
+                colors    = [f"{0xFFFFFF:06x}"],
+            )
 
         return NameStyleResult(
             font_id   = DisplayNameFont(styles["font_id"]),
