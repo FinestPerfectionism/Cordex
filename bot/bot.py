@@ -346,7 +346,7 @@ class Cordex(commands.Bot):
 
         if styles is None:
             return NameStyleResult(
-                font_id   = DisplayNameFont(12),
+                font_id   = DisplayNameFont(11),
                 effect_id = DisplayNameEffect(1),
                 colors    = [f"{0xFFFFFF:06x}"],
             )
