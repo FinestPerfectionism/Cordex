@@ -7,8 +7,8 @@ from discord.utils import format_dt, utcnow
 
 from bot import Interaction
 from constants import DEVELOPER_IDS
-from main import (
-    bot,  # ⸻ Nottt a great practice, but having to pass bot is inconvenient.
+from bot import (
+    cordex,  # ⸻ Nottt a great practice, but having to pass bot is inconvenient.
 )
 
 type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
@@ -95,7 +95,7 @@ def format_command(path : str, /) -> str:
     Parameters
     ----------
     path : `str`
-        The path of the command to format.
+        The path of the command to format into a mention.
     /
 
     Returns
@@ -111,16 +111,17 @@ def format_command(path : str, /) -> str:
     root_name : str        = parts[0]
     root_id   : int | None = None
 
-    commands = bot.get_api_commands_cache()
+    commands = cordex.get_api_commands_cache()
 
-    for cmd in commands:
-        if cmd.name == root_name:
-            root_id = cmd.id
+    for command in commands:
+        if command.name == root_name:
+            root_id = command.id
             break
 
-    if root_id:
-        return f"</{path}:{root_id}>"
-    return f"`/{path}`"
+    if not root_id:
+        return f"`/{path}`"
+
+    return f"</{path}:{root_id}>"
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_table

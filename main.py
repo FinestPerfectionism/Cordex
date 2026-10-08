@@ -6,7 +6,7 @@ from os import getenv
 
 from dotenv import load_dotenv
 
-from bot import Cordex, log
+from bot import cordex, log
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Main Script
@@ -21,8 +21,6 @@ basic_config(
 
 TOKEN = getenv("TOKEN")
 
-bot = Cordex()
-
 
 async def _main() -> None:
     if not TOKEN:
@@ -31,9 +29,9 @@ async def _main() -> None:
 
     log.info("Starting Discord connection")
 
-    async with bot:
+    async with cordex:
         try:
-            await bot.start(TOKEN.strip())
+            await cordex.start(TOKEN.strip())
         except Exception:
             log.exception("Received error — Bot crashed during runtime")
 
