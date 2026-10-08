@@ -3,8 +3,6 @@ from .bot_owner import (
     run_bo_state_restart,
     run_bo_state_shutdown,
     run_bo_state_sync,
-    run_bo_style_reset,
-    run_bo_style_set,
 )
 from .channels import (
     run_channel_compare,
@@ -41,6 +39,7 @@ from .servers import (
     run_server_configure,
     run_server_health,
     run_server_info,
+    run_server_personalize,
 )
 
 __all__ = [
@@ -48,8 +47,6 @@ __all__ = [
     "run_bo_state_restart",
     "run_bo_state_shutdown",
     "run_bo_state_sync",
-    "run_bo_style_reset",
-    "run_bo_style_set",
     "run_channel_compare",
     "run_channel_info",
     "run_channel_permissions",
@@ -80,4 +77,5 @@ __all__ = [
     "run_server_configure",
     "run_server_health",
     "run_server_info",
+    "run_server_personalize",
 ]

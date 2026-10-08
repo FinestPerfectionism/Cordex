@@ -3,7 +3,7 @@ from contextlib import suppress
 from typing import final
 
 from discord import Forbidden, HTTPException, Member, Message, Reaction, User
-from discord.app_commands import Group, check, describe
+from discord.app_commands import Group, check
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     command as prefix_command,
@@ -15,7 +15,6 @@ from core.utilities import is_bot_owner
 
 from .eval import run_bo_eval
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
-from .style import run_bo_style_reset, run_bo_style_set
 
 
 def bot_owner_cmd[F]() -> Callable[[F], F]:
@@ -135,33 +134,6 @@ class BotOwnerCommands(
     @prefix_command(name = "eval")
     async def cmd_bo_eval(self, ctx : Context, *, body : str) -> None:
         await run_bo_eval(ctx, body)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner style reset Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @style.command(
-        name        = "reset",
-        description = "Reset the bot's server specific display name style.",
-    )
-    @describe(branded = "Whether the reset should be the bot's branding instead of normal font. Defaults to True.")
-    async def cmd_bo_style_reset(self, interaction : Interaction, *, branded : bool | None = True) -> None:
-        await run_bo_style_reset(
-            interaction = interaction,
-            branded     = branded,
-        )
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner style set Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @style.command(
-        name        = "set",
-        description = "Set the bot's server specific display name style.",
-    )
-    @bot_owner_cmd()
-    async def cmd_bo_style_set(self, interaction : Interaction) -> None:
-        await run_bo_style_set(interaction)
 
 
 async def setup(bot : Cordex) -> None:
