@@ -41,22 +41,19 @@ async def run_member_info(
     await interaction.response.defer()
 
     client = interaction.client
+    client_user = client.user
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
     target = member or interaction.user
 
     guild = interaction.guild
-
     if not guild or not isinstance(target, Member):
         return
 
     # ⸻ Sort the joined and roles lists.
 
-    guild_members = sorted(
-        guild.members,
-        key = lambda m : m.joined_at or utcnow(),
-    )
+    guild_members = sorted(guild.members, key = lambda m : m.joined_at or utcnow())
 
     joins = "Unknown"
     roles = ", ".join(f"`{role.name}`" for role in target.roles if not role.is_default())
@@ -68,7 +65,7 @@ async def run_member_info(
             None,
             [
                 f"- {DEVELOPER_EMOJI} This user is one of my **my owners**." if is_bot_owner(target) else None,
-                f"- {PET_CORDEX_EMOJI} This user is a **good boy**."         if client.user and target == client.user else None,
+                f"- {PET_CORDEX_EMOJI} This user is a **good boy**."         if client_user and target == client_user else None,
                 f"- {EMPLOYEE_EMOJI} This user is a **Discord Employee**."   if target.public_flags.staff else None,
                 f"- {PARTNER_EMOJI} This user is a **Discord Partner**."     if target.public_flags.partner else None,
                 f"- {OWNER_EMOJI} This user is the **Server Owner**."        if guild.owner == target else None,
@@ -93,8 +90,7 @@ async def run_member_info(
                     len(guild_members),
                     target_index + 4,
                 ),
-            )
-            for member in [guild_members[index]]
+            ) for member in [guild_members[index]]
         ]
 
         joins = codeblock("\n".join(join_lines), language = None) or "Unknown"
@@ -151,7 +147,4 @@ async def run_member_info(
         if banner:
             container.add_item(MediaGallery(MediaGalleryItem(banner.url)))
 
-    await interaction.followup.send(
-        view             = InfoView(),
-        allowed_mentions = AllowedMentions.none(),
-    )
+    await interaction.followup.send(view = InfoView(), allowed_mentions = AllowedMentions.none())

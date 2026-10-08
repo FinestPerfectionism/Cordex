@@ -21,14 +21,11 @@ async def run_member_banner(
 ) -> None:
     await interaction.response.defer()
 
-    client_user = interaction.client.user
-
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
     target = member or interaction.user
 
     guild = interaction.guild
-
     if not guild or not isinstance(target, Member):
         return
 
@@ -39,36 +36,22 @@ async def run_member_banner(
 
     banner = (guild_target.guild_banner if scope == "guild" else None) or fetched_target.banner
 
-    if not banner:
-        if target == interaction.user:
-            await send_bad_argument(
-                interaction,
-                subtitle = {"member" : "You do not have a banner set."},
-            )
-            return
-
-        if target == client_user:
-            await send_bad_argument(
-                interaction,
-                subtitle = {"member" : "I do not have a banner set."},
-            )
-            return
-
-        await send_bad_argument(
-            interaction,
-            subtitle = {"member" : f"{target.mention} does not have a banner set."},
-        )
-        return
-
-    if target == client_user:
-        mention = "My"
-        name    = "my"
-    elif target == interaction.user:
-        mention = "Your"
-        name    = "your"
+    if target == interaction.user:
+        subtitle = "You do not have a banner set."
+        mention  = "Your"
+        name     = "your"
+    elif target == interaction.client.user:
+        subtitle = "I do not have a banner set."
+        mention  = "My"
+        name     = "my"
     else:
-        mention = f"{target.mention}'s"
-        name    = f"{target.name}'s"
+        subtitle = f"{target.mention} does not have a banner set."
+        mention  = f"{target.mention}'s"
+        name     = f"{target.name}'s"
+
+    if not banner:
+        await send_bad_argument(interaction, subtitle = {"member" : subtitle})
+        return
 
     @final
     class BannerView(LayoutView):
@@ -79,7 +62,4 @@ async def run_member_banner(
             color = target.color if target.color.value else COLOR_GREY,
         )
 
-    await interaction.followup.send(
-        view             = BannerView(),
-        allowed_mentions = AllowedMentions.none(),
-    )
+    await interaction.followup.send(view = BannerView(), allowed_mentions = AllowedMentions.none())

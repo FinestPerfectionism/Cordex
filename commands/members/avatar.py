@@ -21,14 +21,11 @@ async def run_member_avatar(
 ) -> None:
     await interaction.response.defer()
 
-    client_user = interaction.client.user
-
     # ⸻ We know that the command will run in a guild but the type checker doesn't...
 
     target = member or interaction.user
 
     guild = interaction.guild
-
     if not guild or not isinstance(target, Member):
         return
 
@@ -39,36 +36,22 @@ async def run_member_avatar(
 
     avatar = (guild_target.guild_avatar if scope == "guild" else None) or fetched_target.avatar
 
-    if not avatar:
-        if target == interaction.user:
-            await send_bad_argument(
-                interaction,
-                subtitle = {"member" : "You do not have an avatar set."},
-            )
-            return
-
-        if target == client_user:
-            await send_bad_argument(
-                interaction,
-                subtitle = {"member" : "I do not have an avatar set."},
-            )
-            return
-
-        await send_bad_argument(
-            interaction,
-            subtitle = {"member" : f"{target.mention} does not have an avatar set."},
-        )
-        return
-
-    if target == client_user:
-        mention = "My"
-        name    = "my"
-    elif target == interaction.user:
-        mention = "Your"
-        name    = "your"
+    if target == interaction.user:
+        subtitle = "You do not have an avatar set."
+        mention  = "Your"
+        name     = "your"
+    elif target == interaction.client.user:
+        subtitle = "I do not have an avatar set."
+        mention  = "My"
+        name     = "my"
     else:
-        mention = f"{target.mention}'s"
-        name    = f"{target.name}'s"
+        subtitle = f"{target.mention} does not have an avatar set."
+        mention  = f"{target.mention}'s"
+        name     = f"{target.name}'s"
+
+    if not avatar:
+        await send_bad_argument(interaction, subtitle = {"member" : subtitle})
+        return
 
     @final
     class AvatarView(LayoutView):
@@ -79,7 +62,4 @@ async def run_member_avatar(
             color = target.color if target.color.value else COLOR_GREY,
         )
 
-    await interaction.followup.send(
-        view             = AvatarView(),
-        allowed_mentions = AllowedMentions.none(),
-    )
+    await interaction.followup.send(view = AvatarView(), allowed_mentions = AllowedMentions.none())
