@@ -274,6 +274,14 @@ class Cordex(commands.Bot):
 
         self.developers : list[User] = []
 
+    @override
+    async def add_cog(self, cog : commands.Cog, /) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+        await super().add_cog(cog)
+
+        if getattr(cog.__class__, "__commands_extra_restriction__", False):
+            for command in cog.walk_app_commands():
+                command.extras["requires_restriction"] = True
+
     @property
     def id(self) -> int | None:
         return self.user.id if self.user else None

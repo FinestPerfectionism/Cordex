@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import final
+from typing import final, overload
 
 from discord import Member
 from discord.app_commands import Command, Group
@@ -74,23 +74,37 @@ def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[Gro
     return not command.extras.get("unrestrictable", False)
 
 
-def requires_restriction[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:
+@overload
+def requires_restriction[GroupT : Group | commands.Cog, **P, T](target : Command[GroupT, P, T], /) -> Command[GroupT, P, T]: ...
+
+@overload
+def requires_restriction[CogT : type[commands.GroupCog]](target : CogT, /) -> CogT: ...
+
+
+def requires_restriction[
+    GroupT : Group | commands.Cog, **P, T,
+    CogT   : type[commands.GroupCog],
+](target : Command[GroupT, P, T] | CogT, /) -> Command[GroupT, P, T] | CogT:
     """
-    Mark a command as requiring restriction.
+    Mark a command or group of commands as requiring restriction.
 
     Parameters
     ----------
-    command : `Command[GroupT, P, T]`
-        The command to mark.
+    target : `Command[GroupT, P, T] | GroupCog`
+        The command or group of commands to mark as requiring restriction.
     /
 
     Returns
     -------
-    `Command[GroupT, P, T]`
-        The restricted command.
+    `Command[GroupT, P, T] | GroupCog`
+        The command or group of commands marked as restricted.
     """
-    command.extras["requires_restriction"] = True
-    return command
+    if not isinstance(target, Command):
+        setattr(target, "__commands_extra_restriction__", True)  # ruff: ignore[set-attr-with-constant]
+        return target
+
+    target.extras["requires_restriction"] = True
+    return target
 
 
 def is_restriction_required[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:

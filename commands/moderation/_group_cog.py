@@ -48,6 +48,7 @@ from .primary.timeout import (
 
 @final
 @guild_only
+@requires_restriction
 @allowed_installs(guilds = True, users = False)
 class ModerationCommands(
     commands.GroupCog,
@@ -92,7 +93,6 @@ class ModerationCommands(
     # /moderation lockdown add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @lockdown.command(
         name        = "add",
         description = "Add a channel to lockdown.",
@@ -105,7 +105,6 @@ class ModerationCommands(
     # /moderation lockdown remove Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @lockdown.command(
         name        = "remove",
         description = "Remove a channel from lockdown.",
@@ -118,7 +117,6 @@ class ModerationCommands(
     # /moderation ban add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @ban.command(
         name        = "add",
         description = "Ban a member from the server.",
@@ -132,7 +130,6 @@ class ModerationCommands(
     # /moderation ban view Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @ban.command(
         name        = "view",
         description = "View all banned members.",
@@ -144,7 +141,6 @@ class ModerationCommands(
     # /moderation ban remove Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @ban.command(
         name        = "remove",
         description = "Remove a ban from a member.",
@@ -158,7 +154,6 @@ class ModerationCommands(
     # /moderation kick Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @command(
         name        = "kick",
         description = "Kick a member from the server.",
@@ -172,7 +167,6 @@ class ModerationCommands(
     # /moderation quarantine add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @quarantine.command(
         name        = "add",
         description = "Add a member to quarantine.",
@@ -187,7 +181,6 @@ class ModerationCommands(
     # /moderation quarantine view Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @quarantine.command(
         name        = "view",
         description = "View all quarantined members.",
@@ -200,7 +193,6 @@ class ModerationCommands(
     # /moderation quarantine remove Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @quarantine.command(
         name        = "remove",
         description = "Remove a member from quarantine.",
@@ -215,7 +207,6 @@ class ModerationCommands(
     # /moderation timeout add Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @timeout.command(
         name        = "add",
         description = "Add a member to timeout.",
@@ -229,7 +220,6 @@ class ModerationCommands(
     # /moderation timeout view Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @timeout.command(
         name        = "view",
         description = "View all timed out members.",
@@ -241,7 +231,6 @@ class ModerationCommands(
     # /moderation timeout remove Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @timeout.command(
         name        = "remove",
         description = "Remove a member from timeout.",
@@ -255,7 +244,6 @@ class ModerationCommands(
     # /moderation purge Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @command(
         name        = "purge",
         description = "Purge messages from a channel or member.",
@@ -269,7 +257,6 @@ class ModerationCommands(
     # /moderation cases query Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @cases.command(
         name        = "query",
         description = "Query moderation cases with various filters.",
@@ -282,7 +269,6 @@ class ModerationCommands(
     # /moderation cases view Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @requires_restriction
     @cases.command(
         name        = "view",
         description = "View a moderation case by its ID.",
