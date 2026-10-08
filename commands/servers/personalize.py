@@ -329,7 +329,7 @@ class _PersonalizationView(NamedPaginator):
         await interaction.response.edit_message(view = self)
 
     def update_pages(self) -> None:
-        colors = "-".join(self.style.colors) or "None"
+        colors = "-".join(f"`{color}`" for color in self.style.colors) or "None"
 
         for option in self.font_select.options:
             option.default = option.value == self.style.font_id.name
@@ -337,21 +337,31 @@ class _PersonalizationView(NamedPaginator):
         for option in self.effect_select.options:
             option.default = option.value == self.style.effect_id.name
 
+        s = "s" if len(self.style.colors) > 1 else ""
         txt_colors = (
-            f"**Color(s)**\n`{colors}`\n"
+           f"**Color{s}**\n"
+           f"{colors}\n"
             "Set one hex color, or two for a gradient."
         )
 
         txt_avatar = (
-            f"**Avatar**\n[View current avatar]({self.avatar_url})"
-            if self.avatar_url else
-            "**Avatar**\nNo server avatar is set."
+            (
+                f"**Avatar**\n"
+                f"[View current avatar]({self.avatar_url})"
+            ) if self.avatar_url else (
+                "**Avatar**\n"
+                "No server avatar is set."
+            )
         )
 
         txt_banner = (
-            f"**Banner**\n[View current banner]({self.banner_url})"
-            if self.banner_url else
-            "**Banner**\nNo server banner is set."
+            (
+                f"**Banner**\n"
+                f"[View current banner]({self.banner_url})"
+            ) if self.banner_url else (
+                "**Banner**\n"
+                "No server banner is set."
+            )
         )
 
         self.pages = [
