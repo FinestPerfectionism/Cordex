@@ -1,8 +1,6 @@
 # pyright: reportIncompatibleMethodOverride = false
 
 from collections.abc import Sequence
-from difflib import SequenceMatcher
-from operator import itemgetter
 from typing import Self, final, override
 
 from discord import Member, Role, SelectOption, User
@@ -23,7 +21,6 @@ from bot.ui import (
     Modal,
     Select,
     TextDisplay,
-    TextInput,
 )
 from constants import (
     COMMAND_EMOJI,
@@ -33,11 +30,9 @@ from constants import (
     MEMBERS_EMOJI,
     MODERATION_EMOJI,
     PENCIL_EMOJI,
-    QUERY_EMOJI,
-    SEARCH_EMOJI,
     TEXT_EMOJI,
 )
-from core.exceptions import send_bad_argument, send_bad_operation, send_bad_request
+from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import UnnamedPaginator
 from core.responses import FormatOverride, MessageType, PunctuationOverride, format_send
 from core.state import is_restrictable, is_restriction_required
@@ -70,77 +65,6 @@ def _build_sections(commands : CommandList) -> list[str | Item[LayoutView]]:
     ]
 
 
-def _fuzzy_search(query : str, commands : CommandList) -> CommandList:
-    query_lower = query.strip().lower()
-
-    scored = [
-        (
-            SequenceMatcher(
-                None,
-                query_lower,
-                command.qualified_name.lower(),
-            ).ratio(),
-            command,
-        ) for command in commands
-    ]
-
-    for index, (score, command) in enumerate(scored):
-        if query_lower and query_lower in command.qualified_name.lower():
-            scored[index] = (max(score, 0.85), command)
-
-    scored.sort(key = itemgetter(0), reverse = True)
-
-    return [command for score, command in scored if score >= 0.4]
-
-
-@final
-class _QueryModal(Modal, title = "Query"):
-    def __init__(self, commands : CommandList) -> None:
-        super().__init__()
-        self._commands = commands
-
-        self._text_input = TextInput[Self](placeholder = "Enter a query...")
-        self.text_input  = Label[Self](
-            text        = "Query",
-            description = "The query to enter.",
-            component   = self._text_input,
-        )
-
-        self.add_item(self.text_input)
-
-    @override
-    async def on_submit(self, interaction : Interaction) -> None:
-        query   = self._text_input.value
-        matches = _fuzzy_search(query, self._commands)
-
-        # ⸻ No commands matched closely enough to the query...
-
-        if not matches:
-            await send_bad_request(
-                interaction,
-                title    =  "query commands",
-                subtitle = f'No commands found matching "{query}".',
-            )
-            return
-
-        paginator = UnnamedPaginator(
-            f"# {SEARCH_EMOJI} Search Results",
-            _build_sections(matches),
-            data_name = "Commands",
-            per_page  = 10,
-            container = True,
-        )
-
-        try:
-            await interaction.response.send_message(view = paginator, ephemeral = True)
-
-        # ⸻ Unhandled error.
-
-        except Exception:
-            await send_bad_operation(interaction, title = "query commands")
-            raise
-
-
 @final
 class _ConfigModal(Modal):
     def __init__(self, command : AnnotatedCommand, allowed : Sequence[Role | Member]) -> None:
@@ -152,7 +76,7 @@ class _ConfigModal(Modal):
         self.current_allowed = TextDisplay[Self](
            f"**Currently allowed:**\n"
            f"{mentions}\n\n"
-            "Please note that the guild owner and bot owners are *always* allowed to run commands.",
+            "Please note that the guild owner may *always* run *any* command.",
         )
 
         configuration_required = is_restriction_required(command)
@@ -253,6 +177,8 @@ class _GroupConfigModal(Modal):
         super().__init__(title = f"Configuring {group_name}")
         self._commands = commands
 
+        self.note = TextDisplay("Please note that the guild owner may *always* run commands.")
+
         self._allowed = MentionableSelect[Self](
             placeholder = "Enter up to 25 users/roles...",
             min_values  = 0,
@@ -272,7 +198,7 @@ class _GroupConfigModal(Modal):
             component   = self._force,
         )
 
-        self.add_items(self.allowed, self.force)
+        self.add_items(self.note, self.allowed, self.force)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
@@ -438,17 +364,6 @@ class _CategorySelect(Select[UnnamedPaginator]):
         await interaction.response.edit_message(view = self.view)
 
 
-@final
-class _QueryButton(Button[UnnamedPaginator]):
-    def __init__(self, commands : CommandList) -> None:
-        super().__init__(emoji = QUERY_EMOJI)
-        self._commands = commands
-
-    @override
-    async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_modal(_QueryModal(self._commands))
-
-
 async def run_server_commands(interaction : Interaction) -> None:
     await interaction.response.defer(ephemeral = True)
 
@@ -467,10 +382,9 @@ async def run_server_commands(interaction : Interaction) -> None:
     )
     view.add_above(
         Container(
-            ButtonSection(
+            TextDisplay(
                f"# {COMMAND_EMOJI} Command Browser\n"
                 "-# Select a category to view commands.",
-                button = _QueryButton(commands),
             ),
             ActionRow(_CategorySelect(interaction.client, commands)),
         ),

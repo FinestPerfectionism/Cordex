@@ -223,10 +223,6 @@ class _Tree(CommandTree):
                 return False
             return True
 
-        user_is_bot_owner = user in client.developers
-        if user_is_bot_owner:
-            return True
-
         if restriction.allows(user):
             return True
 

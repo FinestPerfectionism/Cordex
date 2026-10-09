@@ -5,11 +5,11 @@ from discord import Member, User
 from discord.app_commands import check
 from discord.utils import format_dt, utcnow
 
-from bot import Interaction
-from constants import DEVELOPER_IDS
 from bot import (
+    Interaction,
     cordex,  # ⸻ Nottt a great practice, but having to pass bot is inconvenient.
 )
+from constants import DEVELOPER_IDS
 
 type _Styles = Literal["f", "F", "d", "D", "t", "T", "s", "S", "R"]
 
