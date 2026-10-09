@@ -47,7 +47,7 @@ class HelpView(LayoutView):
                     f"-# *{command.description}*",
                 ),
                 VisibleLargeSeparator(),
-                TextDisplay(*_build_parameter_sections(command.parameters)),
+                TextDisplay(_build_parameter_sections(command.parameters)),
             ),
         )
 

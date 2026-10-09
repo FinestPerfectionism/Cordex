@@ -40,7 +40,7 @@ class HelpCommand(commands.Cog):
             for cmd in interaction.client.tree.walk_commands()
             if not isinstance(cmd, Group) and
             current.lower() in cmd.qualified_name.lower()
-        ]
+        ][:25]
 
 
 async def setup(bot : Cordex) -> None:
