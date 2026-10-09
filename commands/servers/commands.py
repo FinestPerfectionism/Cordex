@@ -398,7 +398,7 @@ async def run_server_commands(interaction : Interaction) -> None:
 
     # ⸻ Grab the commands from the cache and then sort them.
 
-    commands = [command for command in interaction.client.get_commands_cache() if is_restrictable(command)]
+    commands = [command for command in interaction.client.tree.walk_commands() if is_restrictable(command)]
     commands.sort(key = lambda c : c.qualified_name)
 
     # ⸻ Build the view,

@@ -9,6 +9,10 @@ from discord.ext import commands
 # Restriction State
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Restriction Dataclass
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 @final
 @dataclass(frozen = True, slots = True)
@@ -45,6 +49,10 @@ class Restriction:
             return True
 
         return any(role.id in self.role_ids for role in member.roles)
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Unrestrictable
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 @overload
@@ -101,6 +109,10 @@ def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[Gro
         return False
 
     return command.extras.get("unrestrictable", False) is True
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Requires Restriction
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 @overload

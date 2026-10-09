@@ -43,7 +43,7 @@ from core.state import (
     is_restriction_required,
 )
 
-from .types import AnnotatedCommand, LambdaInter, NameStyleResult
+from .types import LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
 
 InspectableObject = (
@@ -262,7 +262,6 @@ class Cordex(commands.Bot):
 
         self.db : Connection
 
-        self._commands_cache     : list[AnnotatedCommand]             = []
         self._api_commands_cache : list[APICommand]                   = []
         self._restrictions_cache : dict[tuple[int, str], Restriction] = {}
 
@@ -431,7 +430,6 @@ class Cordex(commands.Bot):
 
         # ⸻ Cache
 
-        self.build_commands_cache()
         await self.build_api_commands_cache()
         await self.build_restrictions_cache()
 
@@ -439,23 +437,11 @@ class Cordex(commands.Bot):
     # Commands Cache
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def build_commands_cache(self) -> None:
-        self._commands_cache = list(self.tree.walk_commands())
-
     async def build_api_commands_cache(self) -> None:
         self._api_commands_cache = await self.tree.fetch_commands()
 
-    def get_commands_cache(self) -> list[AnnotatedCommand]:
-        if not self._commands_cache:
-            self.build_commands_cache()
-        return self._commands_cache
-
     def get_api_commands_cache(self) -> list[APICommand]:
         return self._api_commands_cache
-
-    def rebuild_commands_cache(self) -> None:
-        self._commands_cache.clear()
-        self.build_commands_cache()
 
     async def rebuild_api_commands_cache(self) -> None:
         self._api_commands_cache.clear()

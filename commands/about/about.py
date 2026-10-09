@@ -41,7 +41,7 @@ async def run_about(interaction : Interaction) -> None:
                         "Bot Version"  : f"v{client.version}",
                         "Guilds"       : len(client.guilds),
                         "Unique Users" : len(client.users),
-                        "Commands"     : len(client.get_commands_cache()),
+                        "Commands"     : len(list(client.tree.walk_commands())),
                         "Latency"      : f"{client.latency * 1000:.2f}",
                         "Python"       : python_version(),
                         "Discord.py"   : DISCORD_VERSION,
