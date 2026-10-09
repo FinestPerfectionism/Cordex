@@ -3,71 +3,39 @@ from operator import eq, ge, gt, le, lt
 from typing import Literal
 
 from discord import Member, Role
-from discord.app_commands import check
-
-from bot import Interaction
-from core.exceptions import BadEnvironmentGuild, UnconfiguredQuarantine
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Utilities Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# quarantine_cmd
+# hierarchy
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def quarantine_cmd[F]() -> Callable[[F], F]:
-    async def predicate(interaction : Interaction) -> bool:
-        if not interaction.guild:
-            raise BadEnvironmentGuild
-
-        quarantine_role = await interaction.client.config(interaction.guild).get_moderation_quarantine_role()
-
-        if not quarantine_role:
-            raise UnconfiguredQuarantine
-
-        return True
-
-    def decorator(func : F) -> F:
-        check(predicate)(func)
-        return func
-
-    return decorator
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# check_hierarchy
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-def check_hierarchy(
+def hierarchy(
     actor      : Member,
     comparison : Literal[">", "<", "=", ">=", "<="],
     target     : Member,
     /,
 ) -> bool:
 
-    # ⸻ Owner vs Owner
+    # ⸻ Actor vs Themselves
 
-    if actor.guild.owner == actor and target.guild.owner == target:
+    if actor == target:
         return comparison in {"=", ">=", "<="}
 
-    # ⸻ Actor vs Everyone (Actor is Owner)
+    # ⸻ Actor is Owner
 
-    if actor.guild.owner == actor:
+    if actor == actor.guild.owner:
         return comparison in {">", ">="}
 
-    # ⸻ Everyone vs Owner (Target is Owner)
+    # ⸻ Target is Owner
 
-    if target.guild.owner == target:
+    if target == target.guild.owner:
         return comparison in {"<", "<="}
 
-    # ⸻ Role vs Role
-
-    actor_role  = actor.top_role
-    target_role = target.top_role
-
-    ops : dict[str, Callable[[Role, Role], bool]] = {
+    operators : dict[str, Callable[[Role, Role], bool]] = {
         ">"  : gt,
         "<"  : lt,
         "="  : eq,
@@ -75,4 +43,4 @@ def check_hierarchy(
         "<=" : le,
     }
 
-    return ops[comparison](actor_role, target_role)
+    return operators[comparison](actor.top_role, target.top_role)

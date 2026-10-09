@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from contextlib import suppress
 from typing import final
 
@@ -17,18 +17,14 @@ from .eval import run_bo_eval
 from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
 
 
-def bot_owner_cmd[F]() -> Callable[[F], F]:
+def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
     def predicate(interaction : Interaction) -> bool:
         if is_bot_owner(interaction.user):
             return True
 
         raise BadPermissionsCommand
 
-    def decorator(func : F) -> F:
-        check(predicate)(func)
-        return func
-
-    return decorator
+    return check(predicate)(func)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
@@ -99,7 +95,7 @@ class BotOwnerCommands(
         name        = "shutdown",
         description = "Shutdown the bot.",
     )
-    @bot_owner_cmd()
+    @bot_owner_cmd
     async def cmd_bo_state_shutdown(self, interaction : Interaction) -> None:
         await run_bo_state_shutdown(interaction)
 
@@ -111,7 +107,7 @@ class BotOwnerCommands(
         name        = "restart",
         description = "Restart the bot.",
     )
-    @bot_owner_cmd()
+    @bot_owner_cmd
     async def cmd_bo_state_restart(self, interaction : Interaction) -> None:
         await run_bo_state_restart(interaction)
 
@@ -123,7 +119,7 @@ class BotOwnerCommands(
         name        = "sync",
         description = "Sync the bot tree.",
     )
-    @bot_owner_cmd()
+    @bot_owner_cmd
     async def cmd_bo_state_sync(self, interaction : Interaction) -> None:
         await run_bo_state_sync(interaction)
 

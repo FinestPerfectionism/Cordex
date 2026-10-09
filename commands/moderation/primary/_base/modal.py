@@ -45,7 +45,7 @@ from core.responses import (
 )
 from core.utilities import format_table
 
-from .utilities import check_hierarchy
+from .utilities import hierarchy
 
 type Targetable = User | Member | GuildMessagable
 
@@ -646,8 +646,8 @@ async def send_moderation_modal(
             )
             return
 
-        if not check_hierarchy(user, ">", check_target):
-            if check_hierarchy(user, "=", check_target):
+        if not hierarchy(user, ">", check_target):
+            if hierarchy(user, "=", check_target):
                 if check_target == client.user:
                     await send_bad_argument(
                         interaction,

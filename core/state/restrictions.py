@@ -82,8 +82,10 @@ def requires_restriction[CogT : type[commands.GroupCog]](target : CogT, /) -> Co
 
 
 def requires_restriction[
-    GroupT : Group | commands.Cog, **P, T,
+    GroupT : Group | commands.Cog,
     CogT   : type[commands.GroupCog],
+    **P,
+    T,
 ](target : Command[GroupT, P, T] | CogT, /) -> Command[GroupT, P, T] | CogT:
     """
     Mark a command or group of commands as requiring restriction.
@@ -122,7 +124,7 @@ def is_restriction_required[GroupT : Group | commands.Cog, **P, T](command : Com
     `bool`
         Whether the command requires restriction or not.
     """
-    if type(command) is Group:
+    if isinstance(command, Group):
         return False
 
     return command.extras.get("requires_restriction", False) is True

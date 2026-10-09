@@ -175,7 +175,7 @@ class CasesManager:
         Returns
         -------
         `CreateCaseResult`
-            The case created (`.case`) as well as a boolean status of whether the logging *and* database creation were successful (`.successful`). A case can still be created while `.successful` is False.
+            The case created (`.case`) as well as a boolean status of whether the logging *and* database creation were successful (`.successful`). A case can still be created while `.successful` is False, but never vice versa.
         """
         log_channel = await self.bot.config(self.guild).get_moderation_logging_channel()
         if not log_channel:

@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from typing import final, override
 
 from discord import Member, User
@@ -5,6 +6,7 @@ from discord.app_commands import (
     AppCommandError,
     Group,
     allowed_installs,
+    check,
     command,
     describe,
     guild_only,
@@ -13,12 +15,15 @@ from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
 
 from bot import Cordex, Interaction
-from core.exceptions import UnconfiguredQuarantine, send_bad_operation
+from core.exceptions import (
+    BadEnvironmentGuild,
+    UnconfiguredQuarantine,
+    send_bad_operation,
+)
 from core.state import requires_restriction
 from core.utilities import unimplemented
 
 from .cases import run_mod_cases_query, run_mod_cases_view
-from .primary._base import quarantine_cmd
 from .primary.ban import (
     run_mod_primary_ban_add,
     run_mod_primary_ban_remove,
@@ -40,6 +45,20 @@ from .primary.timeout import (
     run_mod_primary_timeout_remove,
     run_mod_primary_timeout_view,
 )
+
+
+def quarantine_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
+    async def predicate(interaction : Interaction) -> bool:
+        if not interaction.guild:
+            raise BadEnvironmentGuild
+
+        quarantine_role = await interaction.client.config(interaction.guild).get_moderation_quarantine_role()
+        if not quarantine_role:
+            raise UnconfiguredQuarantine
+
+        return True
+
+    return check(predicate)(func)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Group Commands
@@ -173,7 +192,7 @@ class ModerationCommands(
     )
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to place in quarantine.")
-    @quarantine_cmd()
+    @quarantine_cmd
     async def cmd_mod_primary_quarantine_add(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_quarantine_add(interaction, target)
 
@@ -185,7 +204,7 @@ class ModerationCommands(
         name        = "view",
         description = "View all quarantined members.",
     )
-    @quarantine_cmd()
+    @quarantine_cmd
     async def cmd_mod_primary_quarantine_view(self, interaction : Interaction) -> None:
         await run_mod_primary_quarantine_view(interaction)
 
@@ -199,7 +218,7 @@ class ModerationCommands(
     )
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to remove from quarantine.")
-    @quarantine_cmd()
+    @quarantine_cmd
     async def cmd_mod_primary_quarantine_remove(self, interaction : Interaction, target : Member) -> None:
         await run_mod_primary_quarantine_remove(interaction, target)
 

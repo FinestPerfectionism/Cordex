@@ -39,39 +39,6 @@ class ChannelCommands(
         self.bot = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /channel info Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @command(
-        name        = "info",
-        description = "View information for a channel.",
-    )
-    @describe(channel = "The channel to view information for. Defaults to the current one.")
-    async def cmd_channel_info(
-        self,
-        interaction : Interaction,
-        channel     : GuildChannel | None = None,
-    ) -> None:
-        await run_channel_info(interaction, channel)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /channel sync Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @command(
-        name        = "sync",
-        description = "Sync a channel's permissions to it's category. Defaults to the current one.",
-    )
-    @describe(channel = "The channel to sync permissions for. Defaults to the current one.")
-    async def cmd_channel_sync(
-        self,
-        interaction : Interaction,
-        channel     : GuildChannel | None = None,
-    ) -> None:
-        await run_channel_sync(interaction, channel)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /channel compare Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -96,6 +63,22 @@ class ChannelCommands(
         channel_2   : GuildChannel | None = None,
     ) -> None:
         await run_channel_compare(interaction, channel_1, channel_2)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /channel info Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @command(
+        name        = "info",
+        description = "View information for a channel.",
+    )
+    @describe(channel = "The channel to view information for. Defaults to the current one.")
+    async def cmd_channel_info(
+        self,
+        interaction : Interaction,
+        channel     : GuildChannel | None = None,
+    ) -> None:
+        await run_channel_info(interaction, channel)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /channel permissions Command
@@ -125,6 +108,23 @@ class ChannelCommands(
         permissions_filter : str          | None = None,
     ) -> None:
         await run_channel_permissions(interaction, channel, permissions_filter)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /channel sync Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @requires_restriction
+    @command(
+        name        = "sync",
+        description = "Sync a channel's permissions to it's category. Defaults to the current one.",
+    )
+    @describe(channel = "The channel to sync permissions for. Defaults to the current one.")
+    async def cmd_channel_sync(
+        self,
+        interaction : Interaction,
+        channel     : GuildChannel | None = None,
+    ) -> None:
+        await run_channel_sync(interaction, channel)
 
 
 async def setup(bot : Cordex) -> None:

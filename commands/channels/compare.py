@@ -1,5 +1,3 @@
-
-
 from discord.abc import GuildChannel
 
 from bot import Interaction

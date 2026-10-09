@@ -81,6 +81,16 @@ def _get_channel_emoji(target : GuildChannel) -> str | None:
 
 
 async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
+    """
+    View information for a channel.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    channel : `GuildChannel | None = None`
+        The channel to view information for. Defaults to the current one.
+    """
     await interaction.response.defer()
 
     target = channel or interaction.channel

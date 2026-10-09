@@ -14,6 +14,16 @@ async def run_channel_sync(
     interaction : Interaction,
     channel     : GuildChannel | None = None,
 ) -> None:
+    """
+    Sync a channel's permissions to it's category. Defaults to the current one.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    channel : `GuildChannel | None = None`
+        The channel to sync permissions for. Defaults to the current one.
+    """
     await interaction.response.defer(ephemeral = True)
 
     target = channel or interaction.channel
