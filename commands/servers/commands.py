@@ -23,6 +23,8 @@ from bot.ui import (
     TextDisplay,
 )
 from constants import (
+    ACCEPTED_EMOJI,
+    COG_EMOJI,
     COMMAND_EMOJI,
     EMOJI_EMOJI,
     HORIZONTAL_SETTINGS,
@@ -31,6 +33,7 @@ from constants import (
     MODERATION_EMOJI,
     PENCIL_EMOJI,
     TEXT_EMOJI,
+    WARNING_EMOJI,
 )
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import UnnamedPaginator
@@ -53,16 +56,35 @@ type CommandList = list[AnnotatedCommand]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def _build_sections(commands : CommandList) -> list[str | Item[LayoutView]]:
+def _build_sections(interaction : Interaction, commands : CommandList) -> list[str | Item[LayoutView]]:
     mentions = [format_command(command.qualified_name) for command in commands]
 
-    return [
-        ButtonSection(
-            f"**{i}.** {mention}\n"
-            f"-# {command.description or "*No description provided.*"}",
-            button = _ConfigButton(command),
-        ) for i, (command, mention) in enumerate(zip(commands, mentions, strict = False), start = 1)
-    ]
+    guild = interaction.guild
+    if not guild:
+        return []
+
+    sections : list[str | Item[LayoutView]] = []
+    for i, (command, mention) in enumerate(zip(commands, mentions, strict = False), start = 1):
+        requires_restriction = is_restriction_required(command)
+        is_restricted = interaction.client.get_restriction(guild.id, command.qualified_name) is not None
+
+        status = ""
+        if is_restricted:
+            status = ACCEPTED_EMOJI
+        if requires_restriction and not is_restricted:
+            status = WARNING_EMOJI
+        if not requires_restriction and not is_restricted:
+            status = ""
+
+        sections.append(
+            ButtonSection(
+                f"**{i}.** {status}{mention}\n"
+                f"-# {COG_EMOJI if requires_restriction else ""} {command.description or "*No description provided.*"}",
+                button = _ConfigButton(command),
+            ),
+        )
+
+    return sections
 
 
 @final
@@ -76,7 +98,7 @@ class _ConfigModal(Modal):
         self.current_allowed = TextDisplay[Self](
            f"**Currently allowed:**\n"
            f"{mentions}\n\n"
-            "Please note that the guild owner may *always* run *any* command.",
+            "Please note that the guild owner may *always* run commands.",
         )
 
         configuration_required = is_restriction_required(command)
@@ -358,7 +380,7 @@ class _CategorySelect(Select[UnnamedPaginator]):
             option.default = (option.value == value)
 
         self.view.set_title_button(_GroupConfigButton(filtered, group_name) if group_name is not None else None)
-        self.view.update_data(title, _build_sections(filtered))
+        self.view.update_data(title, _build_sections(interaction, filtered))
 
         await interaction.response.edit_message(view = self.view)
 
@@ -383,9 +405,16 @@ async def run_server_commands(interaction : Interaction) -> None:
 
     view = UnnamedPaginator(
         f"# {HORIZONTAL_SETTINGS} All Commands",
-        _build_sections(commands),
+        _build_sections(interaction, commands),
         data_name = "Commands",
         container = True,
+    )
+    view.add_under(
+        TextDisplay(
+            f"{COG_EMOJI} denotes a command that **requires restriction**.\n"
+            f"{WARNING_EMOJI} denotes a command that requires a restriction, but does not have any set.\n"
+            f"{ACCEPTED_EMOJI} denotes a command that has restrictions set.",
+        ),
     )
     view.add_above(
         Container(
