@@ -44,13 +44,9 @@ class BotOwnerCommands(
         self.bot  = bot
         self.tree = bot.tree
 
-    state   : Group = Group(
+    state : Group = Group(
         name        = "state",
         description = "Bot owner state commands.",
-    )
-    style   : Group = Group(
-        name        = "style",
-        description = "Bot owner style commands.",
     )
 
     @commands.Cog.listener("on_message_edit")
