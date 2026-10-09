@@ -348,7 +348,7 @@ class _PersonalizationView(NamedPaginator):
         txt_avatar = (
             (
                 f"**Avatar**\n"
-                f"[View current avatar]({self.avatar_url})"
+                f"[View current avatar.]({self.avatar_url})"
             ) if self.avatar_url else (
                 "**Avatar**\n"
                 "No server avatar is set."
@@ -358,7 +358,7 @@ class _PersonalizationView(NamedPaginator):
         txt_banner = (
             (
                 f"**Banner**\n"
-                f"[View current banner]({self.banner_url})"
+                f"[View current banner.]({self.banner_url})"
             ) if self.banner_url else (
                 "**Banner**\n"
                 "No server banner is set."
