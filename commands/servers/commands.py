@@ -177,7 +177,7 @@ class _GroupConfigModal(Modal):
         super().__init__(title = f"Configuring {group_name}")
         self._commands = commands
 
-        self.note = TextDisplay("Please note that the guild owner may *always* run commands.")
+        self.note = TextDisplay[Self]("Please note that the guild owner may *always* run commands.")
 
         self._allowed = MentionableSelect[Self](
             placeholder = "Enter up to 25 users/roles...",
@@ -227,20 +227,19 @@ class _GroupConfigModal(Modal):
             return
 
         affected : CommandList = []
+        for command in self._commands:
+            if not force and client.get_restriction(guild.id, command.qualified_name) is not None:
+                continue
 
-        try:
-            for command in self._commands:
-                if not force and client.get_restriction(guild.id, command.qualified_name) is not None:
-                    continue
+            if not allowed and is_restriction_required(command):
+                continue
 
-                if not allowed and is_restriction_required(command):
-                    continue
-
+            try:
                 await config.set_command_allowed(command.qualified_name, allowed)
                 affected.append(command)
-        except Exception:
-            await send_bad_operation(interaction, title = "configure group")
-            raise
+            except Exception:
+                await send_bad_operation(interaction, title = "configure group")
+                raise
 
         if not affected:
             subtitle = "No commands in this group were affected."

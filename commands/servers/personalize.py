@@ -210,17 +210,10 @@ class _ImageModal(Modal):
 
         try:
             data = await attachment.read() if attachment is not None and not reset else None
-
             if self.target == "avatar":
                 member = await me.edit(avatar = data)
-                if not member:
-                    return
-                self.view.avatar_url = member.guild_avatar.url if member.guild_avatar else None
             else:
                 member = await me.edit(banner = data)
-                if not member:
-                    return
-                self.view.banner_url = member.guild_banner.url if member.guild_banner else None
         except HTTPException as e:
             await send_bad_operation(
                 interaction,
@@ -228,6 +221,14 @@ class _ImageModal(Modal):
                 subtitle = codeblock(e),
             )
             return
+
+        if not member:
+            return
+
+        if self.target == "avatar":
+            self.view.avatar_url = member.guild_avatar.url if member.guild_avatar else None
+        if self.target == "banner":
+            self.view.banner_url = member.guild_banner.url if member.guild_banner else None
 
         self.view.update_pages()
 

@@ -110,16 +110,57 @@ class LayoutView(BaseLayoutView):
 
 
 class Modal(BaseModal):
+    """
+    Represents a Discord modal.
+
+    Parameters
+    ----------
+    title : `str`
+        The title of the modal. This may only be up to 45 characters.
+
+    Attributes
+    ----------
+    title : `str`
+        The title of the modal.
+    """
+
     @override
     async def on_submit(self, interaction : "Interaction", /) -> None:  # pyright: ignore[reportIncompatibleMethodOverride] # ruff: ignore[quoted-annotation]
         ...
 
     def add_text(self, text : str, /) -> Self:
+        """
+        Add text to the modal.
+
+        Parameters
+        ----------
+        text : `str`
+            The text to add to the modal.
+        /
+
+        Returns
+        -------
+        `Self`
+            The modal.
+        """
         self.add_item(TextDisplay(text))
 
         return self
 
-    def add_items(self, *items : Item[Modal | Self]) -> Self:
+    def add_items(self, *items : Item[Self]) -> Self:
+        """
+        Add items to the modal.
+
+        Parameters
+        ----------
+        *items : `Item[Self]`
+            The items to add to the modal.
+
+        Returns
+        -------
+        `Self`
+            The modal.
+        """
         if len(items) == 1:
             warn(
                 "Prefer Modal.add_item over Modal.add_items if only one item is being added.",
@@ -132,7 +173,21 @@ class Modal(BaseModal):
 
         return self
 
-    def append_items(self, items : Iterable[Item[Modal | Self]], /) -> Self:
+    def append_items(self, items : Iterable[Item[Self]], /) -> Self:
+        """
+        Unpack an iterable of items and add them to the modal.
+
+        Parameters
+        ----------
+        items : `Iterable[Item[Self]]`
+            The iterable of items to unpack and add to the modal.
+        /
+
+        Returns
+        -------
+        `Self`
+            The modal.
+        """
         for item in items:
             self.add_item(item)
 
@@ -198,6 +253,25 @@ class Container[V : LayoutView](BaseContainer[V]):
 
 
 class TextInput[M : Modal](BaseTextInput[M]):
+    """
+    Represents a Discord text input.
+
+    Parameters
+    ----------
+    style : `TextStyle`
+        The style of the text input.
+    placeholder : `str`
+        The placeholder text to display when the text input is empty. This may only be up to 100 characters.
+    default : `str | None`
+        The default value of the text input. This may only be up to 4000 characters.
+    required : `bool`
+        Whether the text input is required.
+    min_length : `int | None`
+        The minimum length of the text input. This must be between 0 and 4000.
+    max_length : `int | None`
+        The maximum length of the text input. This must be between 1 and 4000.
+    """
+
     def __init__(
         self,
         *,
@@ -232,32 +306,32 @@ link    = ButtonStyle.link
 # Separator Variants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-large = SeparatorSpacing.large
-small = SeparatorSpacing.small
+_large = SeparatorSpacing.large
+_small = SeparatorSpacing.small
 
 
 @final
 class VisibleLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
-        super().__init__(visible = True, spacing = large)
+        super().__init__(visible = True, spacing = _large)
 
 
 @final
 class VisibleSmallSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
-        super().__init__(visible = True, spacing = small)
+        super().__init__(visible = True, spacing = _small)
 
 
 @final
 class HiddenLargeSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
-        super().__init__(visible = False, spacing = large)
+        super().__init__(visible = False, spacing = _large)
 
 
 @final
 class HiddenSmallSeparator[V : LayoutView](Separator[V]):
     def __init__(self) -> None:
-        super().__init__(visible = False, spacing = small)
+        super().__init__(visible = False, spacing = _small)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Section Variants

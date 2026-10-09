@@ -30,9 +30,9 @@ class QuarantineEnforcer(commands.Cog):
         for guild in self.bot.guilds:
             manager = QuarantineManager(self.bot, guild)
             config = self.bot.config(guild)
-            try:
-                before_role_id = await config.get_moderation_quarantine_role(by_id = True)
 
+            before_role_id = await config.get_moderation_quarantine_role(by_id = True)
+            try:
                 await manager.enforce("Channels")
 
                 after_role_id = await config.get_moderation_quarantine_role(by_id = True)
