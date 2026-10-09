@@ -86,8 +86,6 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
     target = channel or interaction.channel
     thread_target : Thread | None = None
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
     if not interaction.guild or not isinstance(target, GuildMessagable):
         return
 

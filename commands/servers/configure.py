@@ -529,8 +529,6 @@ async def run_server_configure(interaction : Interaction) -> None:
     interaction : `Interaction`
         The interaction context to run the command with.
     """
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
     guild = interaction.guild
     if not guild:
         return

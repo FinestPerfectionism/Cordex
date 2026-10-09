@@ -60,12 +60,10 @@ async def run_server_info(interaction : Interaction) -> None:
     """
     await interaction.response.defer()
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
-    if not interaction.guild:
+    guild = interaction.guild
+    if not guild:
         return
 
-    guild = interaction.guild
     owner = guild.owner
 
     if not owner:

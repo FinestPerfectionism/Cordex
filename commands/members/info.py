@@ -55,8 +55,6 @@ async def run_member_info(
     client = interaction.client
     client_user = client.user
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
     target = member or interaction.user
 
     guild = interaction.guild

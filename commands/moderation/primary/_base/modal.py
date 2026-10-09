@@ -266,8 +266,6 @@ class _ModerationModal(Modal):
             case "Purge":
                 force = self._force.value
 
-                # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
                 if not interaction.guild or not isinstance(interaction.user, Member):
                     return
 

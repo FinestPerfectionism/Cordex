@@ -47,12 +47,9 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
     """
     await interaction.response.defer()
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
-    if interaction.guild is None or not isinstance(interaction.user, Member):
-        return
-
     guild = interaction.guild
+    if not guild or not isinstance(interaction.user, Member):
+        return
 
     roles = sorted(guild.roles, key = lambda r : r.position)
 

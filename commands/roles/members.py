@@ -41,8 +41,6 @@ async def run_role_members(
     """
     await interaction.response.defer(ephemeral = ephemeral)
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
     if not interaction.guild:
         return
 
@@ -51,7 +49,7 @@ async def run_role_members(
     not_members = set(interaction.guild.members) - set(role.members)
     members     = role.members
 
-    source      = members if role_filter == "In" else not_members
+    source = members if role_filter == "In" else not_members
 
     match person_filter:
         case "Both":

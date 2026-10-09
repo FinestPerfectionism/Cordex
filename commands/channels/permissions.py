@@ -16,8 +16,6 @@ async def run_channel_permissions(
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
     if not interaction.guild:
         return
 

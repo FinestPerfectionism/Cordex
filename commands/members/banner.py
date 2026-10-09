@@ -33,8 +33,6 @@ async def run_member_banner(
     """
     await interaction.response.defer()
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
     target = member or interaction.user
 
     guild = interaction.guild

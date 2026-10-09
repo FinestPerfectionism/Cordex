@@ -16,8 +16,6 @@ async def run_channel_sync(
 ) -> None:
     await interaction.response.defer(ephemeral = True)
 
-    # ⸻ We know that the command will run in a guild but the type checker doesn't...
-
     target = channel or interaction.channel
 
     if not isinstance(target, GuildMessagableChannel):
