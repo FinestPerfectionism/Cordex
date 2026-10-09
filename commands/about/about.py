@@ -14,6 +14,14 @@ from core.utilities import format_table
 
 
 async def run_about(interaction : Interaction) -> None:
+    """
+    View information about Cordex.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    """
     client = interaction.client
 
     await interaction.response.defer()

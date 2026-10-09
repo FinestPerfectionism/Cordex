@@ -35,6 +35,16 @@ from .members import run_role_members
 
 
 async def run_role_info(interaction : Interaction, role : Role) -> None:
+    """
+    View information for a role.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    role : `Role`
+        "The role to view information for.
+    """
     await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...

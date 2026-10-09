@@ -8,7 +8,6 @@ from core.state import requires_restriction
 
 from .commands import run_server_commands
 from .configure import run_server_configure
-from .health import run_server_health
 from .info import run_server_info
 from .personalize import run_server_personalize
 
@@ -54,18 +53,6 @@ class ServerCommands(
         await run_server_configure(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /server health Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @command(
-        name        = "health",
-        description = "Run a health check on this guild.",
-    )
-    async def cmd_server_health(self, interaction : Interaction) -> None:
-        await run_server_health(interaction)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /server info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -83,7 +70,7 @@ class ServerCommands(
     @requires_restriction
     @command(
         name        = "personalize",
-        description = "Personalize Cordex's avatar, banner, and name style.",
+        description = "Personalize my avatar, banner, and name style.",
     )
     async def cmd_server_personalize(self, interaction : Interaction) -> None:
         await run_server_personalize(interaction)

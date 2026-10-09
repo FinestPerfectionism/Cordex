@@ -38,6 +38,18 @@ async def run_member_info(
     member      : Member | None = None,
     scope       : Scope  | None = "global",
 ) -> None:
+    """
+    View information for a member.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    member : `Member | None = None`
+        The member to view information for. Defaults to yourself.
+    scope : `Scope | None = "global"`
+        Whether to view the guild profile or the global profile of the member. Defaults to "global".
+    """
     await interaction.response.defer()
 
     client = interaction.client

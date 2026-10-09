@@ -365,6 +365,14 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
 
 async def run_server_commands(interaction : Interaction) -> None:
+    """
+    Configure guild commands.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    """
     await interaction.response.defer(ephemeral = True)
 
     # ⸻ Grab the commands from the cache and then sort them.

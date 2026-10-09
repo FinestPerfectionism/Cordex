@@ -19,6 +19,18 @@ async def run_member_banner(
     member      : Member | None = None,
     scope       : Scope  | None = "global",
 ) -> None:
+    """
+    View the banner of a member.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    member : `Member | None = None`
+        The member to view the banner for. Defaults to yourself.
+    scope : `Scope | None = "global"`
+        Whether to view the guild banner or the global banner of the member. Defaults to "global".
+    """
     await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...

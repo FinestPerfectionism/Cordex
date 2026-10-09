@@ -19,6 +19,18 @@ async def run_role_compare(
     role_1      : Role,
     role_2      : Role,
 ) -> None:
+    """
+    List all differing permissions for two selected roles.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    role_1 : `Role`
+        The first role to compare.
+    role_2 : `Role`
+        The second role to compare.
+    """
     await interaction.response.defer()
 
     if role_1 == role_2:

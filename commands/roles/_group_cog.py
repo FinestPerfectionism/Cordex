@@ -38,6 +38,31 @@ class RoleCommands(
         self.bot = bot
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /role compare Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @requires_restriction
+    @command(
+        name        = "compare",
+        description = "List all differing permissions for two selected roles.",
+    )
+    @rename(
+        role_1 = "role-1",
+        role_2 = "role-2",
+    )
+    @describe(
+        role_1 = "The first role to compare.",
+        role_2 = "The second role to compare.",
+    )
+    async def cmd_role_compare(
+        self,
+        interaction : Interaction,
+        role_1      : Role,
+        role_2      : Role,
+    ) -> None:
+        await run_role_compare(interaction, role_1, role_2)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /role info Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -116,31 +141,6 @@ class RoleCommands(
         permissions_filter : PermissionsFilter = "Both",
     ) -> None:
         await run_role_permissions(interaction, role, permissions_filter)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /role compare Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @command(
-        name        = "compare",
-        description = "List all differing permissions for two selected roles.",
-    )
-    @rename(
-        role_1 = "role-1",
-        role_2 = "role-2",
-    )
-    @describe(
-        role_1 = "The first role to compare.",
-        role_2 = "The second role to compare.",
-    )
-    async def cmd_role_compare(
-        self,
-        interaction : Interaction,
-        role_1      : Role,
-        role_2      : Role,
-    ) -> None:
-        await run_role_compare(interaction, role_1, role_2)
 
 
 async def setup(bot : Cordex) -> None:

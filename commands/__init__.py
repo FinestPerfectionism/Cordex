@@ -37,7 +37,6 @@ from .roles import (
 from .servers import (
     run_server_commands,
     run_server_configure,
-    run_server_health,
     run_server_info,
     run_server_personalize,
 )
@@ -75,7 +74,6 @@ __all__ = [
     "run_role_permissions",
     "run_server_commands",
     "run_server_configure",
-    "run_server_health",
     "run_server_info",
     "run_server_personalize",
 ]

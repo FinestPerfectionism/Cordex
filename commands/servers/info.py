@@ -50,6 +50,14 @@ verification_requirement_map = {
 
 
 async def run_server_info(interaction : Interaction) -> None:
+    """
+    View information for this guild.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    """
     await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...

@@ -388,6 +388,14 @@ class _PersonalizationView(NamedPaginator):
 
 
 async def run_server_personalize(interaction : Interaction) -> None:
+    """
+    Personalize Cordex's avatar, banner, and name style.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    """
     guild = interaction.guild
     if not guild:
         return

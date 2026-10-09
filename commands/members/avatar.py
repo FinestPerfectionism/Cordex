@@ -19,6 +19,18 @@ async def run_member_avatar(
     member      : Member | None = None,
     scope       : Scope  | None = "global",
 ) -> None:
+    """
+    View the avatar of a member.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    member : `Member | None = None`
+        The member to view the avatar for. Defaults to yourself.
+    scope : `Scope | None = "global"`
+        Whether to view the guild avatar or the global avatar of the member. Defaults to "global".
+    """
     await interaction.response.defer()
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...

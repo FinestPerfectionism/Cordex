@@ -22,6 +22,23 @@ async def run_role_members(
     *,
     ephemeral     : bool         = False,
 ) -> None:
+    """
+    List members based on role possession and human/bot filtering.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    role : `Role`
+        The role to view members or the lack thereof for.
+    role_filter : `Literal["In", "Not In"]` = "In"
+        Whether to check who has or who doesn't have the role selected. Defaults to "In".
+    person_filter : `Literal["Both", "Humans", "Bots"]` = "Both"
+        Whether to show humans or bots. Defaults to both.
+    *
+    ephemeral : `bool` = False
+        Whether the response should be ephemeral or not. This argument is used specifically for the `/role info` command and it should not be used elsewhere.
+    """
     await interaction.response.defer(ephemeral = ephemeral)
 
     # ⸻ We know that the command will run in a guild but the type checker doesn't...

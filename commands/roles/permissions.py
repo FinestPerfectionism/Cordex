@@ -20,6 +20,18 @@ async def run_role_permissions(
     role        : Role,
     perm_filter : PermissionsFilter = "Both",
 ) -> None:
+    """
+    List permissions for a selected role.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    role : `Role`
+        The role to list permissions for.
+    perm_filter : Literal["Both", "Enabled", "Disabled"] = "Both"
+        Whether to show enabled or disabled permissions. Defaults to both.
+    """
     await interaction.response.defer()
 
     lines : list[str] = []

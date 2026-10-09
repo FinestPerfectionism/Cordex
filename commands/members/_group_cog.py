@@ -44,7 +44,7 @@ class MemberCommands(
         description = "View the avatar of a member.",
     )
     @describe(
-        member = "The user to view the avatar for. Defaults to yourself.",
+        member = "The member to view the avatar for. Defaults to yourself.",
         scope  = 'Whether to view the guild avatar or the global avatar of the member. Defaults to "global".',
     )
     @choices(
@@ -77,7 +77,7 @@ class MemberCommands(
         description = "View the banner of a member.",
     )
     @describe(
-        member = "The user to view the banner for. Defaults to yourself.",
+        member = "The member to view the banner for. Defaults to yourself.",
         scope  = 'Whether to view the guild banner or the global banner of the member. Defaults to "global".',
     )
     @choices(
@@ -110,7 +110,7 @@ class MemberCommands(
         description = "View information for a member.",
     )
     @describe(
-        member = "The user to view information for. Defaults to yourself.",
+        member = "The member to view information for. Defaults to yourself.",
         scope  = 'Whether to view the guild profile or the global profile of the member. Defaults to "global".',
     )
     @choices(
