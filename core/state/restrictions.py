@@ -5,8 +5,6 @@ from discord import Member
 from discord.app_commands import Command, Group
 from discord.ext import commands
 
-_UNRESTRICTABLE_ROOTS = frozenset({"bot-owner", "about"})
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Restriction State
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -49,9 +47,44 @@ class Restriction:
         return any(role.id in self.role_ids for role in member.roles)
 
 
+@overload
+def unrestrictable[GroupT : Group | commands.Cog, **P, T](target : Command[GroupT, P, T], /) -> Command[GroupT, P, T]: ...
+
+@overload
+def unrestrictable[CogT : type[commands.GroupCog]](target : CogT, /) -> CogT: ...
+
+
+def unrestrictable[
+    GroupT : Group | commands.Cog,
+    CogT   : type[commands.GroupCog],
+    **P,
+    T,
+](target : Command[GroupT, P, T] | CogT, /) -> Command[GroupT, P, T] | CogT:
+    """
+    Mark a command or group of commands as unrestrictable.
+
+    Parameters
+    ----------
+    target : `Command[GroupT, P, T] | GroupCog`
+        The command or group of commands to mark as unrestrictable.
+    /
+
+    Returns
+    -------
+    `Command[GroupT, P, T] | GroupCog`
+        The command or group of commands marked as unrestrictable.
+    """
+    if not isinstance(target, Command):
+        setattr(target, "__unrestrictable__", True)  # ruff: ignore[set-attr-with-constant]
+        return target
+
+    target.extras["unrestrictable"] = True
+    return target
+
+
 def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> bool:
     """
-    Check if a command is able to be restricted.
+    Check if a command is restrictable.
 
     Parameters
     ----------
@@ -62,16 +95,12 @@ def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[Gro
     Returns
     -------
     `bool`
-        Whether the command is able to be restricted or not.
+        Whether the command is restrictable or not.
     """
     if isinstance(command, Group):
         return False
 
-    parts = command.qualified_name.split()
-    if parts and parts[0] in _UNRESTRICTABLE_ROOTS:
-        return False
-
-    return not command.extras.get("unrestrictable", False)
+    return command.extras.get("unrestrictable", False) is True
 
 
 @overload
@@ -102,7 +131,7 @@ def requires_restriction[
         The command or group of commands marked as restricted.
     """
     if not isinstance(target, Command):
-        setattr(target, "__commands_extra_restriction__", True)  # ruff: ignore[set-attr-with-constant]
+        setattr(target, "__requires_restriction__", True)  # ruff: ignore[set-attr-with-constant]
         return target
 
     target.extras["requires_restriction"] = True

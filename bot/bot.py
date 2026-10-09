@@ -274,9 +274,13 @@ class Cordex(commands.Bot):
     async def add_cog(self, cog : commands.Cog, /) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         await super().add_cog(cog)
 
-        if getattr(cog.__class__, "__commands_extra_restriction__", False):
+        if getattr(cog.__class__, "__requires_restriction__", False):
             for command in cog.walk_app_commands():
                 command.extras["requires_restriction"] = True
+
+        if getattr(cog.__class__, "__unrestrictable__", False):
+            for command in cog.walk_app_commands():
+                command.extras["unrestrictable"] = True
 
     @property
     def id(self) -> int | None:

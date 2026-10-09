@@ -5,6 +5,7 @@ from .restrictions import (
     is_restrictable,
     is_restriction_required,
     requires_restriction,
+    unrestrictable,
 )
 
-__all__ = ["Config", "Connection", "Restriction", "connect", "is_restrictable", "is_restriction_required", "requires_restriction"]
+__all__ = ["Config", "Connection", "Restriction", "connect", "is_restrictable", "is_restriction_required", "requires_restriction", "unrestrictable"]

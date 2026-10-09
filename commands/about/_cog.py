@@ -4,6 +4,7 @@ from discord.app_commands import command
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.state import unrestrictable
 
 from .about import run_about
 
@@ -22,6 +23,7 @@ class AboutCommand(commands.Cog):
     # /about Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
+    @unrestrictable
     @command(
         name        = "about",
         description = "View information about me.",

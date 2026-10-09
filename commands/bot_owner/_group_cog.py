@@ -11,6 +11,7 @@ from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
 
 from bot import Context, Cordex, Interaction
 from core.exceptions import BadPermissionsCommand
+from core.state import unrestrictable
 from core.utilities import is_bot_owner
 
 from .eval import run_bo_eval
@@ -32,6 +33,7 @@ def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
 
 
 @final
+@unrestrictable
 class BotOwnerCommands(
     commands.GroupCog,
     name        = "bot-owner",
