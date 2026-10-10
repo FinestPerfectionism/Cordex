@@ -32,7 +32,7 @@ def _build_parameter_sections(parameters : list[HelpParameter]) -> str:
     for parameter in parameters:
         if parameter.choices:
             option_type = f"Choice[{", ".join(choice.name for choice in parameter.choices)}]"
-        if parameter.autocomplete:
+        elif parameter.autocomplete:
             option_type = "Autocomplete"
         else:
             option_type = option_types[parameter.type]
