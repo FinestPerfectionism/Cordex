@@ -522,7 +522,8 @@ class Actions:
                         (
                             f"**{case.target.mention if case.target else "Unknown Member"} | {case.moderator.mention}**\n"
                             f"*{escape_markdown(case.reason)}*\n"
-                            f"-# Quarantined at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}."
+                            f"-# Quarantined at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}.\n"
+                            f"-# Case ID: #{case.id}"
                         ) for case in cases
                     ],
                     data_name = "Quarantines",

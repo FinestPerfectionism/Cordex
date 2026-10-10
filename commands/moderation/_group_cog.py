@@ -4,12 +4,14 @@ from typing import final, override
 from discord import Member, User
 from discord.app_commands import (
     AppCommandError,
+    Choice,
     Group,
     allowed_installs,
     check,
     command,
     describe,
     guild_only,
+    rename,
 )
 from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
@@ -20,6 +22,7 @@ from core.exceptions import (
     UnconfiguredQuarantine,
     send_bad_operation,
 )
+from core.moderation import CasesManager
 from core.state import requires_restriction
 from core.utilities import unimplemented
 
@@ -293,9 +296,23 @@ class ModerationCommands(
         name        = "view",
         description = "View a moderation case by its ID.",
     )
+    @rename(case_id = "case-id")
+    @describe(case_id = "The ID of the case to view. Defaults to all cases.")
     @unimplemented
-    async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
-        await run_mod_cases_view(interaction)
+    async def cmd_mod_cases_view(self, interaction : Interaction, case_id : int) -> None:
+        await run_mod_cases_view(interaction, case_id)
+
+    @cmd_mod_cases_view.autocomplete("case_id")
+    async def autocomplete_cmdmodcasesview(self, interaction : Interaction, current : str) -> list[Choice[int]]:
+        guild = interaction.guild
+        if not guild:
+            return []
+
+        return [
+            Choice(name = str(case.id), value = case.id)
+            for case in await CasesManager(interaction.client, guild).get_all_cases()
+            if current.lower() in str(case.id).lower()
+        ][:25]
 
 
 async def setup(bot : Cordex) -> None:

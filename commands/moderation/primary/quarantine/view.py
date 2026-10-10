@@ -1,3 +1,5 @@
+from discord import AllowedMentions
+
 from bot import Interaction
 from core.moderation import Actions
 from core.responses import FormatOverride, MessageType, format_send
@@ -23,4 +25,8 @@ async def run_mod_primary_quarantine_view(interaction : Interaction) -> None:
         )
         return
 
-    await interaction.response.send_message(view = paginator, ephemeral = True)
+    await interaction.response.send_message(
+        view             = paginator,
+        ephemeral        = True,
+        allowed_mentions = AllowedMentions.none(),
+    )

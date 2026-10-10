@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from string.templatelib import Template
 from typing import cast, final
+from warnings import warn
 
 from aiosqlite import Row
 from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Member
@@ -484,6 +486,30 @@ class CasesManager:
         return await self._row_to_case(row)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # get_all_cases
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_all_cases(self) -> list[Case]:
+        """
+        Get all cases from the database.
+
+        Returns
+        -------
+        `list[Case]`
+            A list of all cases.
+        """
+        try:
+            async with self.bot.db.execute(
+                t"SELECT * FROM Cases ORDER BY id DESC",
+            ) as cursor:
+                rows = await cursor.fetchall()
+        except Exception:
+            self._log_failure("getting all cases")
+            return []
+
+        return [await self._row_to_case(row) for row in rows]
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # filter_by
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -519,28 +545,60 @@ class CasesManager:
         Returns
         -------
         `list[Case]`
-            A list of cases meeting the criteria.
+            A list of all cases meeting the criteria.
         """
-        expired_int = int(expired) if expired is not None else None
-        action_type_value = action_type.sql() if action_type is not None else None
+        if (
+            action_type  is None and
+            moderator_id is None and
+            target_id    is None and
+            channel_id   is None and
+            expired      is None and
+            limit        is None
+        ):
+            warn(
+                "Prefer CasesManager.get_all_cases over CasesManager.filter_by if getting all cases.",
+                category   = UserWarning,
+                stacklevel = 2,
+            )
+            return await self.get_all_cases()
+
+        conditions: list[Template] = []
+
+        if action_type is not None:
+            conditions.append(t"action_type = {action_type.sql()}")
+
+        if moderator_id is not None:
+            conditions.append(t"moderator_id = {moderator_id}")
+
+        if target_id is not None:
+            conditions.append(t"target_id = {target_id}")
+
+        if channel_id is not None:
+            conditions.append(t"channel_id = {channel_id}")
+
+        if expired is not None:
+            expired_int = int(expired)
+            conditions.append(t"expired = {expired_int}")
+
+        query: Template = t"SELECT * FROM Cases"
+
+        if conditions:
+            query += t" WHERE "
+            for index, condition in enumerate(conditions):
+                if index > 0:
+                    query += t" AND "
+                query += condition
+
+        query += t" ORDER BY id DESC"
+
+        if limit is not None:
+            query += t" LIMIT {limit}"
 
         try:
-            async with self.bot.db.execute(
-                t"SELECT * FROM Cases WHERE "
-                t"({action_type_value} IS NULL OR action_type = {action_type_value}) AND "
-                t"({moderator_id} IS NULL OR moderator_id = {moderator_id}) AND "
-                t"({target_id} IS NULL OR target_id = {target_id}) AND "
-                t"({channel_id} IS NULL OR channel_id = {channel_id}) AND "
-                t"({expired_int} IS NULL OR expired = {expired_int}) "
-                t"ORDER BY id DESC",
-            ) as cursor:
+            async with self.bot.db.execute(query) as cursor:
                 rows = await cursor.fetchall()
         except Exception:
             self._log_failure("filtering cases")
             return []
 
-        cases = [await self._row_to_case(row) for row in rows]
-        if limit is not None:
-            return cases[:limit]
-
-        return cases
+        return [await self._row_to_case(row) for row in rows]
