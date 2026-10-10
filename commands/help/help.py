@@ -58,12 +58,12 @@ class HelpView(LayoutView):
         )
 
         if parameters := command.parameters:
-            self.add_items(
+            container.add_items(
                 VisibleLargeSeparator(),
                 TextDisplay(_build_parameter_sections(parameters)),
             )
             if any(parameter.required for parameter in parameters):
-                self.add_items(
+                container.add_items(
                     VisibleLargeSeparator(),
                     TextDisplay(f"-# {REQUIRED_EMOJI} **Denotes a required argument.**"),
                 )
