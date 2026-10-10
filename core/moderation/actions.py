@@ -474,19 +474,21 @@ class Actions:
     # quarantine_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def quarantine_view(self) -> UnnamedPaginator:
+    async def quarantine_view(self) -> UnnamedPaginator | None:
         """
         Display a paginator (`UnnamedPaginator`) of all members in quarantine.
 
         Returns
         -------
-        `QuarantinePaginator`
-            The paginator displaying all members in quarantine.
+        `QuarantinePaginator | None`
+            The paginator displaying all members in quarantine, or `None` if no members in quarantine.
         """
         cases = await self.cases.filter_by(
             action_type = ActionType.quarantine_add,
             expired     = False,
         )
+        if not cases:
+             return None
 
         class QuarantinePaginator(UnnamedPaginator):
             def __init__(self) -> None:
