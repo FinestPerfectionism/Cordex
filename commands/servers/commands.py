@@ -16,7 +16,6 @@ from bot.ui import (
     Container,
     Item,
     Label,
-    LayoutView,
     MentionableSelect,
     Modal,
     Select,
@@ -56,14 +55,14 @@ type CommandList = list[AnnotatedCommand]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def _build_sections(interaction : Interaction, commands : CommandList) -> list[str | Item[LayoutView]]:
+def _build_sections(interaction : Interaction, commands : CommandList) -> list[str | Item[UnnamedPaginator]]:
     mentions = [format_command(command.qualified_name) for command in commands]
 
     guild = interaction.guild
     if not guild:
         return []
 
-    sections : list[str | Item[LayoutView]] = []
+    sections : list[str | Item[UnnamedPaginator]] = []
     for i, (command, mention) in enumerate(zip(commands, mentions, strict = False), start = 1):
         requires_restriction = is_restriction_required(command)
         is_restricted = interaction.client.get_restriction(guild.id, command.qualified_name) is not None
@@ -220,12 +219,20 @@ class _GroupConfigModal(Modal):
             component   = self._force,
         )
 
-        self.add_items(self.note, self.allowed, self.force)
+        self._ignore = Checkbox[Self](default = True)
+        self.ignore  = Label[Self](
+            text        = "Ignore",
+            description = "Whether to ignore commands that do not require restriction.",
+            component   = self._ignore,
+        )
+
+        self.add_items(self.note, self.allowed, self.force, self.ignore)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
         allowed = [member for member in self._allowed.values if not isinstance(member, User)]
         force   = self._force.value
+        ignore  = self._ignore.value
 
         client = interaction.client
         guild  = interaction.guild
@@ -253,6 +260,9 @@ class _GroupConfigModal(Modal):
             if not force and client.get_restriction(guild.id, command.qualified_name) is not None:
                 continue
 
+            if ignore and not is_restriction_required(command):
+                continue
+
             if not allowed and is_restriction_required(command):
                 continue
 
@@ -265,7 +275,7 @@ class _GroupConfigModal(Modal):
 
         if not affected:
             subtitle = "No commands in this group were affected."
-        if len(affected) == len(self._commands):
+        elif len(affected) == len(self._commands):
             subtitle = "Every command in this group was affected."
         else:
             mentions = "\n".join(format_command(command.qualified_name) for command in affected)
