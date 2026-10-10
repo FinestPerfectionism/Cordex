@@ -20,7 +20,7 @@ from core.exceptions import (
     BadEnvironmentDMs,
     BadEnvironmentGuild,
     BadPermissionsCommand,
-    PrefixBadPermissionsCommand,
+    BadPermissionsPrefixCommand,
     UnconfiguredQuarantine,
     UnimplementedCommand,
     send_bad_environment_dmsonly,
@@ -277,7 +277,7 @@ class ErrorLogger(commands.Cog):
         if isinstance(error, commands.MissingRequiredArgument):
             return
 
-        if isinstance(error, PrefixBadPermissionsCommand):
+        if isinstance(error, BadPermissionsPrefixCommand):
             if randbelow(10) == 0:
                 await format_send(
                     ctx,

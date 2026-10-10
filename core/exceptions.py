@@ -1,6 +1,7 @@
 # pyright: reportImportCycles = false
 
 from discord.app_commands import CheckFailure
+from discord.ext import commands
 
 from bot import ContextOrInteraction
 
@@ -180,7 +181,7 @@ async def send_unimplemented_command(target : ContextOrInteraction, /) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-class PrefixBadPermissionsCommand(CheckFailure):
+class BadPermissionsPrefixCommand(commands.CheckFailure):
     """The exception raised when a user runs a prefix command they are not authorized to use."""
 
 

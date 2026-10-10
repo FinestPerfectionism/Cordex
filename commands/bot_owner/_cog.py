@@ -9,7 +9,7 @@ from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
 )
 
 from bot import Context, Cordex
-from core.exceptions import PrefixBadPermissionsCommand
+from core.exceptions import BadPermissionsPrefixCommand
 from core.utilities import is_bot_owner
 
 from .eval import run_bo_eval
@@ -23,7 +23,7 @@ def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
         if is_bot_owner(ctx.author):
             return True
 
-        raise PrefixBadPermissionsCommand
+        raise BadPermissionsPrefixCommand
 
     return commands.check(predicate)(func)
 
