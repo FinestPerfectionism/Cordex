@@ -488,7 +488,7 @@ class Actions:
             expired     = False,
         )
         if not cases:
-             return None
+            return None
 
         class QuarantinePaginator(UnnamedPaginator):
             def __init__(self) -> None:
