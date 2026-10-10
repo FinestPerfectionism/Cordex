@@ -19,6 +19,7 @@ from types import (
 )
 from typing import Self, TypedDict, Unpack, cast, final, override
 
+from aiosqlite import Row
 from discord import Embed, File, Guild, Intents, Member, Message, Status, User
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand as APICommand
@@ -397,6 +398,7 @@ class Cordex(commands.Bot):
         db_path.parent.mkdir(parents = True, exist_ok = True)
 
         self.db = await connect(str(db_path))
+        self.db.row_factory = Row
 
         def read_schemas() -> tuple[str, ...]:
             return (
