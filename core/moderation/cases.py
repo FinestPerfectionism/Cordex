@@ -215,8 +215,84 @@ class CasesManager:
 
         data = CASE_MAP[type(payload)]
 
+        # ⸻ Save the case.
+
+        action_type = type(payload).__name__.replace("Payload", "").lower()
+        moderator_id = payload.moderator.id
+        reason = payload.reason
+
+        target_id = payload.target.id if not isinstance(payload, LockdownAddPayload | LockdownRemovePayload) and payload.target is not None else None
+        channel_id = payload.channel.id if isinstance(payload, PurgePayload | LockdownAddPayload | LockdownRemovePayload) else None
+
+        dm_user           = None
+        seconds_to_delete = None
+        timeout_length    = None
+        purge_amount      = None
+        purge_force       = None
+        related_case_id   = None
+
+        if isinstance(payload, BanAddPayload):
+            dm_user = int(payload.dm_user)
+            seconds_to_delete = payload.seconds_to_delete
+        elif isinstance(payload, TimeoutAddPayload):
+            dm_user = int(payload.dm_user)
+            timeout_length = payload.length
+        elif isinstance(payload, QuarantineAddPayload | KickPayload | BanRemovePayload | TimeoutRemovePayload | QuarantineRemovePayload):
+            dm_user = int(payload.dm_user)
+        elif isinstance(payload, PurgePayload):
+            purge_amount = payload.amount
+            purge_force  = int(payload.force)
+
+        try:
+            if action_type.endswith("remove") and (target_id is not None or channel_id is not None):
+                corresponding = action_type.replace("remove", "add")
+                if target_id is not None:
+                    async with self.bot.db.execute(
+                        t"SELECT id FROM Cases WHERE target_id = {target_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
+                    ) as cursor:
+                        row = await cursor.fetchone()
+                        if row is not None:
+                            related_case_id = cast("int", row[0])
+                elif channel_id is not None:
+                    async with self.bot.db.execute(
+                        t"SELECT id FROM Cases WHERE channel_id = {channel_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
+                    ) as cursor:
+                        row = await cursor.fetchone()
+                        if row is not None:
+                            related_case_id = cast("int", row[0])
+
+            cursor = await self.bot.db.execute(
+                t"INSERT INTO Cases ("
+                t"    action_type, moderator_id, target_id, reason, "
+                t"    dm_user, seconds_to_delete, timeout_length, channel_id, purge_amount, purge_force, related_case_id"
+                t") VALUES ("
+                t"    {action_type}, {moderator_id}, {target_id}, {reason}, "
+                t"    {dm_user}, {seconds_to_delete}, {timeout_length}, {channel_id}, {purge_amount}, {purge_force}, {related_case_id}"
+                t")",
+            )
+            new_case_id = cursor.lastrowid
+
+            if not new_case_id:
+                return _CreateCaseResult(
+                    successful = False,
+                    case       = None,
+                )
+
+            await self.bot.db.execute(
+                t"UPDATE Cases SET expired = 1, related_case_id = {new_case_id} WHERE id = {related_case_id}",
+            )
+            await self.bot.db.commit()
+        except Exception:
+            self._log_failure("case database insertion")
+            return _CreateCaseResult(
+                successful = False,
+                case       = None,
+            )
+        else:
+            successful = True
+
         view = LayoutView()
-        container = Container[view](TextDisplay(f"# {data.title}"), color = data.color)
+        container = Container[view](TextDisplay(f"# {data.title} | #{new_case_id}"), color = data.color)
 
         # ⸻ Add the target information.
 
@@ -333,82 +409,6 @@ class CasesManager:
         )
 
         view.add_item(container)
-
-        # ⸻ Save the case into the database.
-
-        action_type = type(payload).__name__.replace("Payload", "").lower()
-        moderator_id = payload.moderator.id
-        reason = payload.reason
-
-        target_id = payload.target.id if not isinstance(payload, LockdownAddPayload | LockdownRemovePayload) and payload.target is not None else None
-        channel_id = payload.channel.id if isinstance(payload, PurgePayload | LockdownAddPayload | LockdownRemovePayload) else None
-
-        dm_user           = None
-        seconds_to_delete = None
-        timeout_length    = None
-        purge_amount      = None
-        purge_force       = None
-        related_case_id   = None
-
-        if isinstance(payload, BanAddPayload):
-            dm_user = int(payload.dm_user)
-            seconds_to_delete = payload.seconds_to_delete
-        elif isinstance(payload, TimeoutAddPayload):
-            dm_user = int(payload.dm_user)
-            timeout_length = payload.length
-        elif isinstance(payload, QuarantineAddPayload | KickPayload | BanRemovePayload | TimeoutRemovePayload | QuarantineRemovePayload):
-            dm_user = int(payload.dm_user)
-        elif isinstance(payload, PurgePayload):
-            purge_amount = payload.amount
-            purge_force  = int(payload.force)
-
-        try:
-            if action_type.endswith("remove") and (target_id is not None or channel_id is not None):
-                corresponding = action_type.replace("remove", "add")
-                if target_id is not None:
-                    async with self.bot.db.execute(
-                        t"SELECT id FROM Cases WHERE target_id = {target_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
-                    ) as cursor:
-                        row = await cursor.fetchone()
-                        if row is not None:
-                            related_case_id = cast("int", row[0])
-                elif channel_id is not None:
-                    async with self.bot.db.execute(
-                        t"SELECT id FROM Cases WHERE channel_id = {channel_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
-                    ) as cursor:
-                        row = await cursor.fetchone()
-                        if row is not None:
-                            related_case_id = cast("int", row[0])
-
-            cursor = await self.bot.db.execute(
-                t"INSERT INTO Cases ("
-                t"    action_type, moderator_id, target_id, reason, "
-                t"    dm_user, seconds_to_delete, timeout_length, channel_id, purge_amount, purge_force, related_case_id"
-                t") VALUES ("
-                t"    {action_type}, {moderator_id}, {target_id}, {reason}, "
-                t"    {dm_user}, {seconds_to_delete}, {timeout_length}, {channel_id}, {purge_amount}, {purge_force}, {related_case_id}"
-                t")",
-            )
-            new_case_id = cursor.lastrowid
-
-            if not new_case_id:
-                return _CreateCaseResult(
-                    successful = False,
-                    case       = None,
-                )
-
-            await self.bot.db.execute(
-                t"UPDATE Cases SET expired = 1, related_case_id = {new_case_id} WHERE id = {related_case_id}",
-            )
-            await self.bot.db.commit()
-        except Exception:
-            self._log_failure("case database insertion")
-            return _CreateCaseResult(
-                successful = False,
-                case       = None,
-            )
-        else:
-            successful = True
 
         # ⸻ Log the case.
 
