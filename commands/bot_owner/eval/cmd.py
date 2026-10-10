@@ -30,14 +30,13 @@ from constants import (
     WARNING_EMOJI,
 )
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
-from core.responses import MessageType, format_message, format_send
+from core.responses import format_message, format_send
 from core.utilities import (
     codeblock,
     format_command,
     format_now,
     format_table,
     format_values,
-    is_bot_owner,
     truncate,
 )
 
@@ -169,19 +168,6 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "UnnamedPaginator" : UnnamedPaginator,
         "PageData"         : PageData,
     }
-
-    # ⸻ I would put significantly more thought into a check for this but Cordex doesn't use enough prefix commands to warrant it.
-
-    if not is_bot_owner(ctx.author):
-        await ctx.send(
-            format_message(
-                MessageType.error,
-                title    = "run command",
-                subtitle = "You are not authorized to run this command",
-                footer   = "Bad request",
-            ),
-        )
-        return
 
     message = ctx.message
     channel = ctx.channel

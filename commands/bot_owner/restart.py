@@ -4,33 +4,31 @@ from sys import argv, executable, stderr, stdout
 
 from discord import CustomActivity, DiscordException, Status
 
-from bot import Interaction, log
+from bot import Context, log
 from constants import COG_EMOJI
 from core.exceptions import send_bad_operation
 from core.responses import MessageType, format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner state restart Logic
+# .restart Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_state_restart(interaction : Interaction) -> None:
-    client = interaction.client
+async def run_bo_restart(ctx : Context) -> None:
+    bot = ctx.bot
 
-    await interaction.response.defer(ephemeral = True)
-
-    if client.restarting:
+    if bot.restarting:
         await send_bad_operation(
-            interaction,
+            ctx,
             title    = "restart bot",
             subtitle = "A restart is already in progress",
         )
         return
 
-    client.restarting = True
+    bot.restarting = True
 
-    await interaction.followup.send(
+    await ctx.send(
        f"{COG_EMOJI} **Restarting bot.**\n"
         "Restarting bot...",
     )
@@ -38,7 +36,7 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
     log.info("Attempting a restart.")
 
     try:
-        await client.change_presence(
+        await bot.change_presence(
             status   = Status.idle,
             activity = CustomActivity(name = "Restarting..."),
         )
@@ -57,7 +55,7 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
         log.exception("Couldn't flush logs. Continuing...")
 
     try:
-        await client.close()
+        await bot.close()
     except Exception:
         log.exception("Received fatal error during restart.")
 
@@ -69,13 +67,13 @@ async def run_bo_state_restart(interaction : Interaction) -> None:
 
     except (OSError, DiscordException) as e:
         log.exception("Received fatal error during restart")
-        client.restarting = False
+        bot.restarting = False
 
-        if not client.is_closed():
+        if not bot.is_closed():
             await format_send(
-                interaction,
+                ctx,
                 MessageType.error,
                 title    = "restart bot",
                 subtitle = codeblock(e),
             )
-            await client.change_presence(status = Status.online)
+            await bot.change_presence(status = Status.online)

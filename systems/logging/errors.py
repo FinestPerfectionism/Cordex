@@ -19,6 +19,7 @@ from core.exceptions import (
     BadEnvironmentDMs,
     BadEnvironmentGuild,
     BadPermissionsCommand,
+    PrefixBadPermissionsCommand,
     UnconfiguredQuarantine,
     UnimplementedCommand,
     send_bad_environment_dmsonly,
@@ -249,12 +250,27 @@ class ErrorLogger(commands.Cog):
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # "Prefix Command Errors"
+    # Prefix Command Errors
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @commands.Cog.listener("on_command_error")
-    async def _prefix_command_error_handler(self, _ctx : Context, _error : commands.CommandError) -> None:
-        pass  # ⸻ Literally just pass since only eval uses prefix and we shouldn't care.
+    async def _prefix_command_error_handler(self, ctx : Context, error : commands.CommandError) -> None:
+        if isinstance(error, PrefixBadPermissionsCommand):
+            if randbelow(10) == 0:
+                await format_send(
+                    ctx,
+                    MessageType.error,
+                    title     = "I'm sorry, Dave,",
+                    subtitle  = "I'm afraid I can't do that",
+                    footer    = "You are not authorized to run this command — Bad request",
+                    override  = FormatOverride(prefix = False),
+                    ephemeral = False,
+                )
+            else:
+                await send_bad_permissions_command(ctx)
+            return
+
+        await send_bad_operation(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Loop Exception Errors

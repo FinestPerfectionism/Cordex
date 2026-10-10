@@ -3,29 +3,29 @@ from contextlib import suppress
 from typing import final
 
 from discord import Forbidden, HTTPException, Member, Message, Reaction, User
-from discord.app_commands import Group, check
 from discord.ext import commands
 from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
     command as prefix_command,
 )
 
-from bot import Context, Cordex, Interaction
-from core.exceptions import BadPermissionsCommand
-from core.state import unrestrictable
+from bot import Context, Cordex
+from core.exceptions import PrefixBadPermissionsCommand
 from core.utilities import is_bot_owner
 
 from .eval import run_bo_eval
-from .state import run_bo_state_restart, run_bo_state_shutdown, run_bo_state_sync
+from .restart import run_bo_restart
+from .shutdown import run_bo_shutdown
+from .sync import run_bo_sync
 
 
 def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
-    def predicate(interaction : Interaction) -> bool:
-        if is_bot_owner(interaction.user):
+    def predicate(ctx : Context) -> bool:
+        if is_bot_owner(ctx.author):
             return True
 
-        raise BadPermissionsCommand
+        raise PrefixBadPermissionsCommand
 
-    return check(predicate)(func)
+    return commands.check(predicate)(func)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
@@ -33,21 +33,10 @@ def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
 
 
 @final
-@unrestrictable
-class BotOwnerCommands(
-    commands.GroupCog,
-    name        = "bot-owner",
-    description = "Bot Owner only —— Bot owner commands.",
-):
+class BotOwnerCommands(commands.Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
-        self.bot  = bot
-        self.tree = bot.tree
-
-    state : Group = Group(
-        name        = "state",
-        description = "Bot owner state commands.",
-    )
+        self.bot = bot
 
     @commands.Cog.listener("on_message_edit")
     async def listener_cmdeval_messageedit(self, before : Message, after : Message) -> None:
@@ -72,7 +61,7 @@ class BotOwnerCommands(
             except HTTPException:
                 pass
 
-            await self.bot.process_commands(after)
+        await self.bot.process_commands(after)
 
     @commands.Cog.listener("on_reaction_add")
     async def listener_cmdeval_reactionadd(self, reaction : Reaction, user : Member | User) -> None:
@@ -86,40 +75,31 @@ class BotOwnerCommands(
                 await message.delete()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner state shutdown Command
+    # .shutdown Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @state.command(
-        name        = "shutdown",
-        description = "Shutdown the bot.",
-    )
+    @prefix_command(name = "shutdown")
     @bot_owner_cmd
-    async def cmd_bo_state_shutdown(self, interaction : Interaction) -> None:
-        await run_bo_state_shutdown(interaction)
+    async def cmd_bo_shutdown(self, ctx : Context) -> None:
+        await run_bo_shutdown(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner state restart Command
+    # .restart Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @state.command(
-        name        = "restart",
-        description = "Restart the bot.",
-    )
+    @prefix_command(name = "restart")
     @bot_owner_cmd
-    async def cmd_bo_state_restart(self, interaction : Interaction) -> None:
-        await run_bo_state_restart(interaction)
+    async def cmd_bo_restart(self, ctx : Context) -> None:
+        await run_bo_restart(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /bot-owner state sync Command
+    # .sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @state.command(
-        name        = "sync",
-        description = "Sync the bot tree.",
-    )
+    @prefix_command(name = "sync")
     @bot_owner_cmd
-    async def cmd_bo_state_sync(self, interaction : Interaction) -> None:
-        await run_bo_state_sync(interaction)
+    async def cmd_bo_sync(self, ctx : Context) -> None:
+        await run_bo_sync(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command

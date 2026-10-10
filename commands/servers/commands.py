@@ -330,11 +330,6 @@ class _CategorySelect(Select[UnnamedPaginator]):
 
             description = cog.__cog_group_description__
 
-            # ⸻ Do not show bot-owner commands.
-
-            if name == "bot-owner":
-                continue
-
             # ⸻ Get the description and children.
 
             children = ", ".join(f"/{command.qualified_name.replace(name, "").strip()}" for command in cog.walk_app_commands())

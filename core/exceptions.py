@@ -2,7 +2,7 @@
 
 from discord.app_commands import CheckFailure
 
-from bot import Interaction
+from bot import ContextOrInteraction
 
 from .responses import FormatOverride, MessageType, PunctuationOverride, format_send
 from .utilities import format_table
@@ -22,11 +22,11 @@ class UnconfiguredQuarantine(CheckFailure):
 
 
 async def send_bad_operation(
-    target   : Interaction,
+    target   : ContextOrInteraction,
     /,
     *,
     title    : str = "run command",
-    subtitle : str = "An exception occurred during this interaction",
+    subtitle : str = "An exception occurred while processing this request",
     footer   : str = "Bad operation",
 ) -> None:
     """
@@ -34,13 +34,13 @@ async def send_bad_operation(
 
     Parameters
     ----------
-    target : `Interaction`
-        The interaction context to send the warning with.
+    target : `Context | Interaction`
+        The interaction or prefix context to send the warning with.
     /
     *
     title : `str = "run command"`
         The title of the error.
-    subtitle : `str = "An exception occurred during this interaction"`
+    subtitle : `str = "An exception occurred while processing this request"`
         The subtitle of the error.
     footer : `str = "Bad operation"`
         The footer of the error.
@@ -59,7 +59,7 @@ async def send_bad_operation(
 
 
 async def send_bad_request(
-    target   : Interaction,
+    target   : ContextOrInteraction,
     /,
     *,
     title    : str = "run command",
@@ -71,8 +71,8 @@ async def send_bad_request(
 
     Parameters
     ----------
-    target : `Interaction`
-        The interaction context to send the warning with.
+    target : `Context | Interaction`
+        The interaction or prefix context to send the warning with.
     /
     *
     title : `str = "run command"`
@@ -96,7 +96,7 @@ async def send_bad_request(
 
 
 async def send_bad_argument(
-    target   : Interaction,
+    target   : ContextOrInteraction,
     /,
     *,
     title    : str = "run command",
@@ -108,8 +108,8 @@ async def send_bad_argument(
 
     Parameters
     ----------
-    target : `Interaction`
-        The interaction context to send the warning with.
+    target : `Context | Interaction`
+        The interaction or prefix context to send the warning with.
     /
     *
     title : `str = "run command"`
@@ -157,14 +157,14 @@ class UnimplementedCommand(CheckFailure):
     """The exception raised when a command is unimplemented."""
 
 
-async def send_unimplemented_command(target : Interaction, /) -> None:
+async def send_unimplemented_command(target : ContextOrInteraction, /) -> None:
     """
     Warn a user when they run a command that is not implemented.
 
     Parameters
     ----------
-    target : `Interaction`
-        The interaction context to send the warning with.
+    target : `Context | Interaction`
+        The interaction or prefix context to send the warning with.
     /
     """
     await format_send(
@@ -180,18 +180,22 @@ async def send_unimplemented_command(target : Interaction, /) -> None:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
+class PrefixBadPermissionsCommand(CheckFailure):
+    """The exception raised when a user runs a prefix command they are not authorized to use."""
+
+
 class BadPermissionsCommand(CheckFailure):
     """The exception raised when a user runs a command they are not authorized to use."""
 
 
-async def send_bad_permissions_command(target : Interaction, /) -> None:
+async def send_bad_permissions_command(target : ContextOrInteraction, /) -> None:
     """
     Warn a user when they run a command when they are not authorized to do so.
 
     Parameters
     ----------
-    target : `Interaction`
-        The interaction context to send the warning with.
+    target : `Context | Interaction`
+        The interaction or prefix context to send the warning with.
     /
     """
     await format_send(
@@ -211,14 +215,14 @@ class BadEnvironmentGuild(CheckFailure):
     """The exception raised when a user runs a command in DMs when they must do so in a guild."""
 
 
-async def send_bad_environment_guildonly(target : Interaction, /) -> None:
+async def send_bad_environment_guildonly(target : ContextOrInteraction, /) -> None:
     """
     Warn a user when they run a command in DMs when they must do so in a guild.
 
     Parameters
     ----------
-    target : `Interaction`
-        The interaction context to send the warning with.
+    target : `Context | Interaction`
+        The interaction or prefix context to send the warning with.
     /
     """
     await format_send(
@@ -238,14 +242,14 @@ class BadEnvironmentDMs(CheckFailure):
     """The exception raised when a user runs a command in guild when they must do so in DMs."""
 
 
-async def send_bad_environment_dmsonly(target : Interaction, /) -> None:
+async def send_bad_environment_dmsonly(target : ContextOrInteraction, /) -> None:
     """
     Warn a user when they run a command in a guild when they must do so in DMs.
 
     Parameters
     ----------
-    target : `Interaction`
-        The interaction context to send the warning with.
+    target : `Context | Interaction`
+        The interaction or prefix context to send the warning with.
     /
     """
     await format_send(

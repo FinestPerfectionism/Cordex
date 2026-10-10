@@ -39,7 +39,6 @@ class HelpCommand(commands.Cog):
             Choice(name = f"/{cmd.qualified_name}", value = cmd.qualified_name)
             for cmd in interaction.client.tree.walk_commands() if
             not isinstance(cmd, Group) and
-            not cmd.qualified_name.startswith("bot-owner") and
             current.lower() in cmd.qualified_name.lower()
         ][:25]
 

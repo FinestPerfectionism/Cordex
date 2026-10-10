@@ -1,22 +1,22 @@
-from bot import Interaction, log
+from bot import Context, log
 from core.exceptions import send_bad_operation
 from core.responses import MessageType, format_send
 from core.utilities import codeblock
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner state sync Logic
+# .sync Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_state_sync(interaction : Interaction) -> None:
-    client = interaction.client
+async def run_bo_sync(ctx : Context) -> None:
+    bot = ctx.bot
 
     try:
         log.info("Attempting a tree sync.")
-        synced = await client.tree.sync()
-        await client.rebuild_api_commands_cache()
+        synced = await bot.tree.sync()
+        await bot.rebuild_api_commands_cache()
         await format_send(
-            interaction,
+            ctx,
             MessageType.success,
             title    = "synced app command tree",
             subtitle = "Successfully globally synced the app command tree",
@@ -24,7 +24,7 @@ async def run_bo_state_sync(interaction : Interaction) -> None:
     except Exception as e:
         log.exception("An exxception occurred during the tree sync.")
         await send_bad_operation(
-            interaction,
+            ctx,
             title    = "sync app command tree",
             subtitle = codeblock(e),
         )

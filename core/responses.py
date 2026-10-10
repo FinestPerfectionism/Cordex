@@ -5,13 +5,14 @@ from typing import Self, final
 from discord import AllowedMentions, Interaction, Message
 from discord.abc import Messageable
 
+from bot import ContextOrInteraction
 from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Response Management
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-type _SendTarget = Interaction | Messageable
+type _SendTarget = ContextOrInteraction | Messageable
 
 
 class MessageType(Enum):
@@ -231,7 +232,7 @@ async def format_send(
 
     Parameters
     ----------
-    target : `Interaction | Messageable`
+    target : `Context | Interaction | Messageable`
         The target of the message.
     msg_type : `MessageType`
         The type of the message.

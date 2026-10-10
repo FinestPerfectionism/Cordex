@@ -1,15 +1,14 @@
-
-from bot import Interaction
+from bot import Context
 from constants import COG_EMOJI
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /bot-owner state shutdown Logic
+# .shutdown Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_state_shutdown(interaction : Interaction) -> None:
-    await interaction.response.send_message(
+async def run_bo_shutdown(ctx : Context) -> None:
+    await ctx.send(
        f"{COG_EMOJI} **Shutting down bot.**\n"
         "Shutting down bot...",
     )
-    await interaction.client.close()
+    await ctx.bot.close()
