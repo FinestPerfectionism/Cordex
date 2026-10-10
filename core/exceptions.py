@@ -122,7 +122,7 @@ async def send_bad_argument(
         - If `dict[tuple[str, ...], str]` is passed, it will appear as "`Key1, Key2, ...`: Value".
         - If `dict[None, str]` is passed, it will appear as "Value" and be at the very top of all warnings.
 
-        Note that only one `None` type key may be passed or the most recent one will be overridden.
+        Note that only one `None` type key may be passed or the most recent one will override the last.
 
     footer : `str = "Bad argument"`
         The footer of the warning.
