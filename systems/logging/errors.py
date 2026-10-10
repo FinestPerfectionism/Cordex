@@ -2,7 +2,7 @@ from asyncio import AbstractEventLoop, get_running_loop
 from secrets import randbelow
 from sys import exc_info
 from traceback import format_exception
-from typing import cast, final, override
+from typing import final, override
 
 from discord import AllowedMentions, Guild, Member, TextChannel, User
 from discord import Interaction as BaseInteraction
@@ -23,6 +23,7 @@ from core.exceptions import (
     BadPermissionsPrefixCommand,
     UnconfiguredQuarantine,
     UnimplementedCommand,
+    send_bad_argument,
     send_bad_environment_dmsonly,
     send_bad_environment_guildonly,
     send_bad_operation,
@@ -271,25 +272,11 @@ class ErrorLogger(commands.Cog):
 
     @commands.Cog.listener("on_command_error")
     async def _prefix_command_error_handler(self, ctx : Context, error : commands.CommandError) -> None:
-        if isinstance(error, commands.CheckFailure) and error.__cause__:
-            error = cast("commands.CommandError", error.__cause__)
-
         if isinstance(error, commands.MissingRequiredArgument):
+            await send_bad_argument(ctx, subtitle = {error.param.name : "This is a required argument that was omitted."})
             return
 
         if isinstance(error, BadPermissionsPrefixCommand):
-            if randbelow(10) == 0:
-                await format_send(
-                    ctx,
-                    MessageType.error,
-                    title     = "I'm sorry, Dave,",
-                    subtitle  = "I'm afraid I can't do that",
-                    footer    = "You are not authorized to run this command — Bad request",
-                    override  = FormatOverride(prefix = False),
-                    ephemeral = False,
-                )
-            else:
-                await send_bad_permissions_command(ctx)
             return
 
         await send_bad_operation(ctx)
