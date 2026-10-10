@@ -35,6 +35,12 @@ async def run_channel_compare(
             subtitle = {("channel-1", "channel-2") :  "At least one channel must be selected."},
         )
 
+    if channel_1 == channel_2:
+        await send_bad_argument(
+            interaction,
+            subtitle = {("channel-1", "channel-2") : "You cannot compare a channel with itself."},
+        )
+
     await interaction.followup.send(
         "This command does nothing right now. :[",
         ephemeral = True,
