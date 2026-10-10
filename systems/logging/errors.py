@@ -272,6 +272,9 @@ class ErrorLogger(commands.Cog):
 
     @commands.Cog.listener("on_command_error")
     async def _prefix_command_error_handler(self, ctx : Context, error : commands.CommandError) -> None:
+        if isinstance(error, commands.CommandNotFound):
+            return
+
         if isinstance(error, commands.MissingRequiredArgument):
             await send_bad_argument(ctx, subtitle = {error.param.name : "This is a required argument that was omitted."})
             return
