@@ -68,18 +68,18 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
         "Interaction"          : Interaction,
         "ContextOrInteraction" : ContextOrInteraction,
 
-        "commands"     : commands,
-        "constants"    : constants,
-        "core"         : core,
-        "ui"           : ui,
-        "asyncio"      : asyncio,
-        "typing"       : typing,
-        "ext_commands" : ext_commands,
-        "app_commands" : app_commands,
-        "discord"      : discord,
-        "dabc"         : discord.abc,
-        "dutils"       : discord.utils,
-        "dui"          : discord.ui,
+        "commands"    : commands,
+        "constants"   : constants,
+        "core"        : core,
+        "ui"          : ui,
+        "asyncio"     : asyncio,
+        "typing"      : typing,
+        "extcommands" : ext_commands,
+        "appcommands" : app_commands,
+        "discord"     : discord,
+        "dabc"        : discord.abc,
+        "dutils"      : discord.utils,
+        "dui"         : discord.ui,
 
         "ACCEPTED_EMOJI" : ACCEPTED_EMOJI,
         "WARNING_EMOJI"  : WARNING_EMOJI,
@@ -179,17 +179,6 @@ async def run_bo_eval(ctx : Context, body : str) -> None:
                 title    = "run command",
                 subtitle = "You are not authorized to run this command",
                 footer   = "Bad request",
-            ),
-        )
-        return
-
-    if not body:
-        await ctx.send(
-            format_message(
-                MessageType.error,
-                title    = "run command",
-                subtitle = "`body`: This is a required argument that was omitted.",
-                footer   = "Bad argument",
             ),
         )
         return
