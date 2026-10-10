@@ -299,7 +299,7 @@ class ModerationCommands(
     @rename(case_id = "case-id")
     @describe(case_id = "The ID of the case to view. Defaults to all cases.")
     @unimplemented
-    async def cmd_mod_cases_view(self, interaction : Interaction, case_id : int) -> None:
+    async def cmd_mod_cases_view(self, interaction : Interaction, case_id : int | None = None) -> None:
         await run_mod_cases_view(interaction, case_id)
 
     @cmd_mod_cases_view.autocomplete("case_id")

@@ -13,7 +13,7 @@ from core.moderation import CasesManager
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_cases_view(interaction : Interaction, case_id : int) -> None:
+async def run_mod_cases_view(interaction : Interaction, case_id : int | None = None) -> None:
     guild = interaction.guild
     if not guild:
         return
