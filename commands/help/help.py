@@ -1,4 +1,4 @@
-from typing import final
+from typing import Self, final
 
 from discord import AppCommandOptionType
 from discord.utils import get as utils_get
@@ -50,18 +50,25 @@ def _build_parameter_sections(parameters : list[HelpParameter]) -> str:
 class HelpView(LayoutView):
     def __init__(self, command : HelpCommand) -> None:
         super().__init__()
-        self.add_item(
-            Container(
-                TextDisplay(
-                    f"# {format_command(command.name)}\n"
-                    f"-# *{command.description}*",
-                ),
-                VisibleLargeSeparator(),
-                TextDisplay(_build_parameter_sections(command.parameters)),
-                VisibleLargeSeparator(),
-                TextDisplay(f"-# {REQUIRED_EMOJI} **Denotes a required argument.**"),
+        container = Container[Self](
+            TextDisplay(
+                f"# {format_command(command.name)}\n"
+                f"-# *{command.description}*",
             ),
         )
+
+        if parameters := command.parameters:
+            self.add_items(
+                VisibleLargeSeparator(),
+                TextDisplay(_build_parameter_sections(parameters)),
+            )
+            if any(parameter.required for parameter in parameters):
+                self.add_items(
+                    VisibleLargeSeparator(),
+                    TextDisplay(f"-# {REQUIRED_EMOJI} **Denotes a required argument.**"),
+                )
+
+        self.add_item(container)
 
 
 async def run_help(interaction : Interaction, command_name : str) -> None:
