@@ -75,19 +75,19 @@ class _ModerationModal(Modal):
         target_name = target.name
 
         channel_types = {
-            "Lockdown Add",
-            "Lockdown Remove",
-            "Purge",
+            # ActionType.lockdown_add,
+            # ActionType.lockdown_remove,
+            ActionType.purge,
         }
 
         person_types  = {
-            "Ban Add",
-            "Ban Remove",
-            "Kick",
-            "Quarantine Add",
-            "Quarantine Remove",
-            "Timeout Add",
-            "Timeout Remove",
+            ActionType.ban_add,
+            ActionType.ban_remove,
+            ActionType.kick,
+            ActionType.quarantine_add,
+            ActionType.quarantine_remove,
+            ActionType.timeout_add,
+            ActionType.timeout_remove,
         }
 
         # ⸻ Validate that target is the correct type.
