@@ -2,6 +2,7 @@ from discord import Member
 
 from bot import Interaction
 from commands.moderation.primary._base import send_moderation_modal
+from core.moderation import ActionType
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation ban add Logic
@@ -9,4 +10,4 @@ from commands.moderation.primary._base import send_moderation_modal
 
 
 async def run_mod_primary_ban_add(interaction : Interaction, target : Member) -> None:
-    await send_moderation_modal(interaction, "Ban Add", target)
+    await send_moderation_modal(interaction, ActionType.ban_add, target)

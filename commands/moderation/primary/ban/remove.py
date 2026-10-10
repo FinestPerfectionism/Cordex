@@ -3,6 +3,7 @@ from discord import NotFound, User
 from bot import Interaction
 from commands.moderation.primary._base import send_moderation_modal
 from core.exceptions import send_bad_argument
+from core.moderation import ActionType
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation ban remove Logic
@@ -25,4 +26,4 @@ async def run_mod_primary_ban_remove(interaction : Interaction, target : User) -
         )
         return
 
-    await send_moderation_modal(interaction, "Ban Remove", target)
+    await send_moderation_modal(interaction, ActionType.ban_remove, target)
