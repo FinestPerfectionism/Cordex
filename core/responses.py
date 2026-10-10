@@ -139,7 +139,7 @@ def _apply_punctuation(text : str, default : str, *, setting : bool | None) -> s
 def _build_title(msg_type : MessageType, title : str, config : FormatOverride) -> str:
     prefix       = _title_match(msg_type) if config.prefix else ""
     emoji        = f"{_emoji_match(msg_type)} " if config.emoji else ""
-    default_punc =  "!" if msg_type in {"warning", "error"} else "."
+    default_punc =  "!" if msg_type in {MessageType.warning, MessageType.error} else "."
     clean_title  = _apply_punctuation(title, default_punc, setting = config.punctuation.title)
 
     if prefix:
