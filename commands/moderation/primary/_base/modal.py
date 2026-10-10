@@ -700,21 +700,4 @@ async def send_moderation_modal(
             )
             return
 
-    action_types = {
-        "Ban Add",
-        "Ban Remove",
-        "Kick",
-        "Quarantine Add",
-        "Quarantine Remove",
-        "Timeout Add",
-        "Timeout Remove",
-        "Purge",
-    }
-
-    if action_type not in action_types:
-        error = f"action_type '{action_type}' is not a recognized moderation action"
-        raise ValueError(error)
-
-    modal = _ModerationModal(action_type, target, purge_target = purge_target)
-
-    await interaction.response.send_modal(modal)
+    await interaction.response.send_modal(_ModerationModal(action_type, target, purge_target = purge_target))
