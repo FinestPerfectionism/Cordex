@@ -8,6 +8,7 @@ from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import REQUIRED_EMOJI
 from core.exceptions import send_bad_argument
 from core.help import HelpCommand, HelpParameter, get_command_help
+from core.utilities import format_command
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /help Logic
@@ -16,24 +17,33 @@ from core.help import HelpCommand, HelpParameter, get_command_help
 
 def _build_parameter_sections(parameters : list[HelpParameter]) -> str:
     option_types = {
-        AppCommandOptionType.subcommand       : "",
-        AppCommandOptionType.subcommand_group : "",
-        AppCommandOptionType.string           : "Text Input",
-        AppCommandOptionType.integer          : "Integer",
-        AppCommandOptionType.boolean          : "Boolean",
-        AppCommandOptionType.user             : "User",
-        AppCommandOptionType.channel          : "Channel",
-        AppCommandOptionType.role             : "Role",
-        AppCommandOptionType.mentionable      : "Role or User",
-        AppCommandOptionType.number           : "Number",
-        AppCommandOptionType.attachment       : "Attachment",
+        AppCommandOptionType.string      : "Text Input",
+        AppCommandOptionType.integer     : "Integer",
+        AppCommandOptionType.boolean     : "Boolean",
+        AppCommandOptionType.user        : "User",
+        AppCommandOptionType.channel     : "Channel",
+        AppCommandOptionType.role        : "Role",
+        AppCommandOptionType.mentionable : "Role or User",
+        AppCommandOptionType.number      : "Number",
+        AppCommandOptionType.attachment  : "Attachment",
     }
-    return "\n\n".join(
-        (
-            f"**{parameter.name}{f" {REQUIRED_EMOJI}" if parameter.required else ""}**\n"
-            f"-# {option_types[parameter.type]} | *{parameter.description}*"
-        ) for parameter in parameters
-    )
+
+    sections : list[str] = []
+    for parameter in parameters:
+        if parameter.choices:
+            option_type = f"Choice[{", ".join(choice.name for choice in parameter.choices)}]"
+        if parameter.autocomplete:
+            option_type = "Autocomplete"
+        else:
+            option_type = option_types[parameter.type]
+
+        required = f" {REQUIRED_EMOJI}" if parameter.required else ""
+        sections.append(
+            f"**{parameter.name}{required}**\n"
+            f"-# {option_type} | *{parameter.description}*",
+        )
+
+    return "\n\n".join(sections)
 
 
 @final
@@ -43,7 +53,7 @@ class HelpView(LayoutView):
         self.add_item(
             Container(
                 TextDisplay(
-                    f"# /{command.name}\n"
+                    f"# {format_command(command.name)}\n"
                     f"-# *{command.description}*",
                 ),
                 VisibleLargeSeparator(),

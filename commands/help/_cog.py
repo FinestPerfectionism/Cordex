@@ -4,6 +4,7 @@ from discord.app_commands import Choice, Group, command, describe, rename
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from core.help import Existing, Rename, command_help
 from core.state import unrestrictable
 
 from .help import run_help
@@ -24,6 +25,7 @@ class HelpCommand(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @unrestrictable
+    @command_help(parameters = {Rename("command_name", "command-name") : Existing})
     @command(
         name        = "help",
         description = "Receive helpful information for a command.",

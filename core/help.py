@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from discord import AppCommandOptionType
-from discord.app_commands import Command, Group
+from discord.app_commands import Choice, Command, Group
 from discord.ext import commands
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -14,10 +14,12 @@ from discord.ext import commands
 
 @dataclass(slots = True, kw_only = True)
 class HelpParameter:
-    name        : str
-    description : str
-    required    : bool
-    type        : AppCommandOptionType
+    name         : str
+    description  : str
+    required     : bool
+    type         : AppCommandOptionType
+    choices      : list[Choice[int | float | str]]
+    autocomplete : bool
 
 
 @dataclass(slots = True, kw_only = True)
@@ -35,7 +37,7 @@ class Existing:
         raise TypeError(error)
 
 
-@dataclass
+@dataclass(frozen = True)
 class Rename:
     existing : str
     new      : str
@@ -44,23 +46,24 @@ class Rename:
 def command_help[GroupT : Group | commands.Cog, **P, T](
     *,
     description : str | None = None,
-    arguments   : dict[str | Rename, str | type[Existing]],
+    parameters  : dict[str | Rename, str | type[Existing]] | None = None,
 ) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
     def decorator(command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:
         setattr(command, "__help_description__", description or command.description)
 
         lookup : dict[str, tuple[str, str | type[Existing]]] = {}
-        for key, value in arguments.items():
-            if isinstance(key, Rename):
-                lookup[key.existing] = (key.new, value)
-            else:
-                lookup[key] = (key, value)
+        if parameters is not None:
+            for key, value in parameters.items():
+                if isinstance(key, Rename):
+                    lookup[key.existing] = (key.new, value)
+                else:
+                    lookup[key] = (key, value)
 
         for parameter in command.parameters:
             help_name        = parameter.name
             help_description = parameter.description
 
-            if parameter.name in lookup:
+            if parameters is not None and parameter.name in lookup:
                 new_name, value = lookup[parameter.name]
                 help_name       = new_name
                 if not isinstance(value, type):
@@ -79,14 +82,16 @@ def get_command_help[GroupT : Group | commands.Cog, **P, T](command : Command[Gr
         return None
 
     return HelpCommand(
-        name        = command.name,
+        name        = command.qualified_name,
         description = getattr(command, "__help_description__", None) or command.description,
         parameters  = [
             HelpParameter(
-                name        = getattr(parameter, "__help_name__", parameter.name),
-                description = getattr(parameter, "__help_description__", parameter.description),
-                required    = parameter.required,
-                type        = parameter.type,
+                name         = getattr(parameter, "__help_name__", parameter.name),
+                description  = getattr(parameter, "__help_description__", parameter.description),
+                required     = parameter.required,
+                type         = parameter.type,
+                choices      = parameter.choices,
+                autocomplete = parameter.autocomplete,
             ) for parameter in command.parameters
         ],
     )
