@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Literal
 
 from discord import Member, User
@@ -43,24 +43,20 @@ def is_bot_owner(target : User | Member, /) -> bool:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def unimplemented[F]() -> Callable[[F], F]:
+def unimplemented[F : Callable[..., Awaitable[None]]](func : F) -> F:
     """
     Mark a command as unimplemented.
 
     Returns
     -------
-    `Callable[[F], F]`
-        The decorator function.
+    `F`
+        The command marked as unimplemented.
     """
     def predicate(_interaction : Interaction) -> bool:
         from .exceptions import UnimplementedCommand  # ruff: ignore[import-outside-top-level]
         raise UnimplementedCommand
 
-    def decorator(func : F) -> F:
-        check(predicate)(func)
-        return func
-
-    return decorator
+    return check(predicate)(func)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # format_now

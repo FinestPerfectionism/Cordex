@@ -28,8 +28,8 @@ from core.exceptions import send_bad_operation, send_bad_request
 
 __all__ = ["UnnamedPaginator"]
 
-type _ItemsList      = list[Item[LayoutView]]
-type _ItemsOrStrList = list[str | Item[LayoutView]]
+type _ItemsList      = list[Item[UnnamedPaginator]]
+type _ItemsOrStrList = list[str | Item[UnnamedPaginator]]
 type _TitleButton    = Button[UnnamedPaginator]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -137,29 +137,29 @@ class _PageRow(ActionRow["UnnamedPaginator"]):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @button(label = "<<")
-    async def btn_first(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+    async def btn_first(self, interaction : Interaction, _button : Button[UnnamedPaginator]) -> None:
         await self.paginator._turn(interaction, 0)
 
     @button(label = "<")
-    async def btn_backward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+    async def btn_backward(self, interaction : Interaction, _button : Button[UnnamedPaginator]) -> None:
         await self.paginator._turn(interaction, self.paginator.current_page - 1)
 
     @button(label = "1 / 1", style = green)
-    async def btn_page(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+    async def btn_page(self, interaction : Interaction, _button : Button[UnnamedPaginator]) -> None:
         await interaction.response.send_modal(_PageJumpModal(self.paginator))
 
     @button(label = ">")
-    async def btn_forward(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+    async def btn_forward(self, interaction : Interaction, _button : Button[UnnamedPaginator]) -> None:
         await self.paginator._turn(interaction, self.paginator.current_page + 1)
 
     @button(label = ">>")
-    async def btn_last(self, interaction : Interaction, _button : Button[LayoutView]) -> None:
+    async def btn_last(self, interaction : Interaction, _button : Button[UnnamedPaginator]) -> None:
         await self.paginator._turn(interaction, len(self.paginator.pages) - 1)
 
 
 class UnnamedPaginator(LayoutView):
     """
-    Paginate a list of data cleanly using buttons.
+    Paginate a list of data cleanly using <<, <, page jump, >, and >> buttons.
 
     Parameters
     ----------
@@ -276,13 +276,13 @@ class UnnamedPaginator(LayoutView):
     # add_above
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_above(self, *items : Item[LayoutView]) -> None:
+    def add_above(self, *items : Item[Self]) -> None:
         """
         Add items above the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add above the paginator.
         """
         self._above_items.extend(items)
@@ -292,13 +292,13 @@ class UnnamedPaginator(LayoutView):
     # add_over
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_over(self, *items : Item[LayoutView]) -> None:
+    def add_over(self, *items : Item[Self]) -> None:
         """
         Add items over the title of the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add over the title of the paginator.
         """
         self._over_items.extend(items)
@@ -308,13 +308,13 @@ class UnnamedPaginator(LayoutView):
     # add_under
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_under(self, *items : Item[LayoutView]) -> None:
+    def add_under(self, *items : Item[Self]) -> None:
         """
         Add items under the footer of the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add under the footer of the paginator.
         """
         self._under_items.extend(items)
@@ -324,13 +324,13 @@ class UnnamedPaginator(LayoutView):
     # add_below
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_below(self, *items : Item[LayoutView]) -> None:
+    def add_below(self, *items : Item[Self]) -> None:
         """
         Add items below the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add below the paginator.
         """
         self._below_items.extend(items)
@@ -417,7 +417,7 @@ class UnnamedPaginator(LayoutView):
 
         title_button = self._title_button
 
-        title_item : Item[LayoutView] = (
+        title_item : Item[Self | UnnamedPaginator] = (
             ButtonSection(self._title, button = title_button)
             if title_button is not None else
             TextDisplay(self._title)

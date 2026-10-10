@@ -36,11 +36,11 @@ from core.utilities import format_table
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def _is_private(target : GuildChannel) -> bool:
+def _is_private(target : GuildMessagable) -> bool:
     return not target.permissions_for(target.guild.default_role).view_channel
 
 
-def _get_channel_emoji(target : GuildChannel) -> str | None:
+def _get_channel_emoji(target : GuildMessagable) -> str | None:
 
     # ⸻ target is the rules channel.
 
@@ -80,7 +80,7 @@ def _get_channel_emoji(target : GuildChannel) -> str | None:
     return None
 
 
-async def run_channel_info(interaction : Interaction, channel : GuildChannel | None = None) -> None:
+async def run_channel_info(interaction : Interaction, channel : GuildMessagable | None = None) -> None:
     """
     View information for a channel.
 
@@ -88,7 +88,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
     ----------
     interaction : `Interaction`
         The interaction context to run the command with.
-    channel : `GuildChannel | None = None`
+    channel : `GuildMessagable | None = None`
         The channel to view information for. Defaults to the current one.
     """
     await interaction.response.defer()
@@ -103,7 +103,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildChannel | N
         thread_target = target
         target = target.parent
 
-    if not isinstance(target, GuildChannel):
+    if not isinstance(target, GuildChannel) or isinstance(target, ForumChannel):
         return
 
     # ⸻ Channel emoji.

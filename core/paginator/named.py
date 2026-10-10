@@ -3,7 +3,7 @@
 
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import Protocol, final, override
+from typing import Protocol, Self, final, override
 from warnings import warn
 
 from discord import Color, Emoji, HTTPException, Message, NotFound, PartialEmoji
@@ -34,18 +34,18 @@ class PageData:
     ----------
     name : `str`
         The name of the page. Displayed on the page's button.
-    content : `list[str | Item[LayoutView]]`
+    content : `list[str | Item[NamedPaginator]]`
         The content of the page.
     emoji : `str | Emoji | PartialEmoji | None = None`
         The emoji displayed on the page's button.
     """
 
     name    : str
-    content : list[str | Item[LayoutView]]
+    content : list[str | Item[NamedPaginator]]
     emoji   : str | Emoji | PartialEmoji | None = None
 
 
-type _ItemsList = list[Item[LayoutView]]
+type _ItemsList = list[Item[NamedPaginator]]
 
 
 class _InteractionCallback(Protocol):
@@ -76,7 +76,7 @@ class _NameRow(ActionRow["NamedPaginator"]):
 
             is_current = index == self.paginator.current_page
 
-            button : Button[LayoutView] = (
+            button : Button[NamedPaginator] = (
                 Button(label = page.name, emoji = page.emoji, style = blurple, disabled = is_current)
                 if is_current else
                 Button(label = page.name, emoji = page.emoji)
@@ -220,13 +220,13 @@ class NamedPaginator(LayoutView):
     # add_above
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_above(self, *items : Item[LayoutView]) -> None:
+    def add_above(self, *items : Item[Self]) -> None:
         """
         Add items above the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add above the paginator.
         """
         self._above_items.extend(items)
@@ -236,13 +236,13 @@ class NamedPaginator(LayoutView):
     # add_over
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_over(self, *items : Item[LayoutView]) -> None:
+    def add_over(self, *items : Item[Self]) -> None:
         """
         Add items over the title of the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add over the title of the paginator.
         """
         self._over_items.extend(items)
@@ -252,13 +252,13 @@ class NamedPaginator(LayoutView):
     # add_under
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_under(self, *items : Item[LayoutView]) -> None:
+    def add_under(self, *items : Item[Self]) -> None:
         """
         Add items under the footer of the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add under the footer of the paginator.
         """
         self._under_items.extend(items)
@@ -268,13 +268,13 @@ class NamedPaginator(LayoutView):
     # add_below
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def add_below(self, *items : Item[LayoutView]) -> None:
+    def add_below(self, *items : Item[Self]) -> None:
         """
         Add items below the paginator.
 
         Parameters
         ----------
-        *items : `Item[LayoutView]`
+        *items : `Item[Self]`
             The items to add below the paginator.
         """
         self._below_items.extend(items)

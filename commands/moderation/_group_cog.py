@@ -49,10 +49,11 @@ from .primary.timeout import (
 
 def quarantine_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
     async def predicate(interaction : Interaction) -> bool:
-        if not interaction.guild:
+        guild = interaction.guild
+        if not guild:
             raise BadEnvironmentGuild
 
-        quarantine_role = await interaction.client.config(interaction.guild).get_moderation_quarantine_role()
+        quarantine_role = await interaction.client.config(guild).get_moderation_quarantine_role()
         if not quarantine_role:
             raise UnconfiguredQuarantine
 
@@ -280,7 +281,7 @@ class ModerationCommands(
         name        = "query",
         description = "Query moderation cases with various filters.",
     )
-    @unimplemented()
+    @unimplemented
     async def cmd_mod_cases_query(self, interaction : Interaction) -> None:
         await run_mod_cases_query(interaction)
 
@@ -292,7 +293,7 @@ class ModerationCommands(
         name        = "view",
         description = "View a moderation case by its ID.",
     )
-    @unimplemented()
+    @unimplemented
     async def cmd_mod_cases_view(self, interaction : Interaction) -> None:
         await run_mod_cases_view(interaction)
 

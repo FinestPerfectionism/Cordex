@@ -1,6 +1,5 @@
 from typing import final
 
-from discord.abc import GuildChannel
 from discord.app_commands import (
     Choice,
     allowed_installs,
@@ -10,9 +9,11 @@ from discord.app_commands import (
     guild_only,
     rename,
 )
+from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from bot.types import GuildMessagable, GuildMessagableChannel
 from core.state import requires_restriction
 from core.utilities import unimplemented
 
@@ -52,15 +53,14 @@ class ChannelCommands(
         channel_2 = "channel-2",
     )
     @describe(
-        channel_1 = "The first channel to compare.",
-        channel_2 = "The second channel to compare.",
+        channel_1 = "The first channel to compare. Defaults to the current one.",
+        channel_2 = "The second channel to compare. Defaults to the current one.",
     )
-    @unimplemented()
     async def cmd_channel_compare(
         self,
         interaction : Interaction,
-        channel_1   : GuildChannel | None = None,
-        channel_2   : GuildChannel | None = None,
+        channel_1   : GuildMessagableChannel | None = None,
+        channel_2   : GuildMessagableChannel | None = None,
     ) -> None:
         await run_channel_compare(interaction, channel_1, channel_2)
 
@@ -76,7 +76,7 @@ class ChannelCommands(
     async def cmd_channel_info(
         self,
         interaction : Interaction,
-        channel     : GuildChannel | None = None,
+        channel     : GuildMessagable | None = None,
     ) -> None:
         await run_channel_info(interaction, channel)
 
@@ -91,7 +91,7 @@ class ChannelCommands(
     )
     @rename(permissions_filter = "filter")
     @describe(
-        channel     = "The channel to list permissions for.",
+        channel            = "The channel to list permissions for. Defaults to the current one.",
         permissions_filter = "Whether to show enabled or disabled permissions. Defaults to both.",
     )
     @choices(
@@ -100,12 +100,12 @@ class ChannelCommands(
             Choice(name = "Disabled", value = "disabled"),
         ],
     )
-    @unimplemented()
+    @unimplemented
     async def cmd_channel_permissions(
         self,
         interaction        : Interaction,
-        channel            : GuildChannel | None = None,
-        permissions_filter : str          | None = None,
+        channel            : GuildMessagableChannel | None = None,
+        permissions_filter : str                    | None = None,
     ) -> None:
         await run_channel_permissions(interaction, channel, permissions_filter)
 
@@ -119,10 +119,11 @@ class ChannelCommands(
         description = "Sync a channel's permissions to it's category. Defaults to the current one.",
     )
     @describe(channel = "The channel to sync permissions for. Defaults to the current one.")
+    @bot_has_permissions(manage_channels = True)
     async def cmd_channel_sync(
         self,
         interaction : Interaction,
-        channel     : GuildChannel | None = None,
+        channel     : GuildMessagableChannel | None = None,
     ) -> None:
         await run_channel_sync(interaction, channel)
 

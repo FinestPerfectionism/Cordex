@@ -1,7 +1,7 @@
-from discord.abc import GuildChannel
+from discord import Thread
 
 from bot import Interaction
-from bot.types import GuildMessagableChannel
+from bot.types import GuildMessagable, GuildMessagableChannel
 from core.exceptions import send_bad_argument
 from core.responses import MessageType, format_send
 
@@ -12,7 +12,7 @@ from core.responses import MessageType, format_send
 
 async def run_channel_sync(
     interaction : Interaction,
-    channel     : GuildChannel | None = None,
+    channel     : GuildMessagableChannel | None = None,
 ) -> None:
     """
     Sync a channel's permissions to it's category. Defaults to the current one.
@@ -21,14 +21,21 @@ async def run_channel_sync(
     ----------
     interaction : `Interaction`
         The interaction context to run the command with.
-    channel : `GuildChannel | None = None`
+    channel : `GuildMessagableChannel | None = None`
         The channel to sync permissions for. Defaults to the current one.
     """
     await interaction.response.defer(ephemeral = True)
 
     target = channel or interaction.channel
 
-    if not isinstance(target, GuildMessagableChannel):
+    if not isinstance(target, GuildMessagable):
+        return
+
+    if isinstance(target, Thread):
+        await send_bad_argument(
+            interaction,
+            subtitle = {"channel" : "Threads cannot be synced."},
+        )
         return
 
     if target.category:
