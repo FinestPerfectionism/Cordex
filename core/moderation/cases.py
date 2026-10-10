@@ -522,7 +522,7 @@ class CasesManager:
             A list of cases meeting the criteria.
         """
         expired_int = int(expired) if expired is not None else None
-        action_type_value = action_type.value if action_type is not None else None
+        action_type_value = action_type.sql() if action_type is not None else None
 
         try:
             async with self.bot.db.execute(

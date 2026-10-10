@@ -532,10 +532,10 @@ class _ModerationModal(Modal):
 
                 notes : list[str] = []
                 if not result.failed:
-                    table[modal.action_type.value.replace("_", " ").title()] = f"{ACCEPTED_EMOJI} Success."
+                    table[modal.action_type.readable()] = f"{ACCEPTED_EMOJI} Success."
                     statuses.append(True)
                 else:
-                    table[modal.action_type.value.replace("_", " ").title()] = f"{DENIED_EMOJI} Failure."
+                    table[modal.action_type.readable()] = f"{DENIED_EMOJI} Failure."
                     statuses.append(False)
 
                 if result.dmed is True:

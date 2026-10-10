@@ -28,6 +28,8 @@ from .payloads import (
 
 
 class ActionType(Enum):
+    """Represents all moderation actions."""
+
     ban_add           = "ban_add"
     ban_remove        = "ban_remove"
     kick              = "kick"
@@ -36,6 +38,28 @@ class ActionType(Enum):
     timeout_add       = "timeout_add"
     timeout_remove    = "timeout_remove"
     purge             = "purge"
+
+    def readable(self) -> str:
+        """
+        Present a moderation action in a readable form.
+
+        Returns
+        -------
+        `str`
+            The moderation action presented in a readable form.
+        """
+        return self.value.replace("_", " ").title()
+
+    def sql(self) -> str:
+        """
+        Present a moderation action in SQL form.
+
+        Returns
+        -------
+        `str`
+            The moderation action presented in SQL form.
+        """
+        return self.value.replace("_", "")
 
 
 @dataclass(frozen = True, slots = True)
