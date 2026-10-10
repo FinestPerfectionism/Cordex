@@ -106,6 +106,7 @@ class BotOwnerCommands(commands.Cog):
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @prefix_command(name = "eval")
+    @bot_owner_cmd
     async def cmd_bo_eval(self, ctx : Context, *, body : str) -> None:
         await run_bo_eval(ctx, body)
 

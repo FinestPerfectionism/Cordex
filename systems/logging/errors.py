@@ -2,13 +2,14 @@ from asyncio import AbstractEventLoop, get_running_loop
 from secrets import randbelow
 from sys import exc_info
 from traceback import format_exception
-from typing import final, override
+from typing import cast, final, override
 
 from discord import AllowedMentions, Guild, Member, TextChannel, User
+from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommandError, BotMissingPermissions
 from discord.ext import commands
 
-from bot import Context, Cordex, Interaction
+from bot import Context, ContextOrInteraction, Cordex, Interaction
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import (
     BOT_ERRORS_LOG_CHANNEL_ID,
@@ -57,12 +58,12 @@ class ErrorLogger(commands.Cog):
     async def _send_error(
         self,
         *,
-        title       : str,
-        user        : User | Member | None = None,
-        guild       : Guild         | None = None,
-        interaction : Interaction   | None = None,
-        error       : str           | None = None,
-        traceback   : str           | None = None,
+        title     : str,
+        user      : User | Member        | None = None,
+        guild     : Guild                | None = None,
+        context   : ContextOrInteraction | None = None,
+        error     : str                  | None = None,
+        traceback : str                  | None = None,
     ) -> None:
         if not isinstance(
             channel := self.bot.get_channel(BOT_ERRORS_LOG_CHANNEL_ID) or await self.bot.fetch_channel(BOT_ERRORS_LOG_CHANNEL_ID),
@@ -121,25 +122,40 @@ class ErrorLogger(commands.Cog):
                 ),
             )
 
-        if interaction and interaction.command:
-            qualified_name = interaction.command.qualified_name
-            command_id     = interaction.command_id
+        if context:
+            if isinstance(context, BaseInteraction):
+                interaction = context
+                if command := interaction.command:
+                    qualified_name = command.qualified_name
+                    command_id     = interaction.command_id
 
-            table = format_table(
-                {
-                    "Command"      : format_command(qualified_name),
-                    "Command Name" : qualified_name,
-                    "Command ID"   : str(command_id),
-                },
-            )
+                    table = format_table(
+                        {
+                            "Command"      : format_command(qualified_name),
+                            "Command Name" : f"/{qualified_name}",
+                            "Command ID"   : command_id,
+                        },
+                    )
 
-            container.add_items(
-                VisibleLargeSeparator(),
-                TextDisplay(
-                    "## Command\n"
-                   f"{table}",
-                ),
-            )
+                    container.add_items(
+                        VisibleLargeSeparator(),
+                        TextDisplay(
+                            "## Command\n"
+                           f"{table}",
+                        ),
+                    )
+            if isinstance(context, Context):
+                ctx = context
+                if command := ctx.command:
+                    table = format_table({"Command" : command.qualified_name})
+
+                    container.add_items(
+                        VisibleLargeSeparator(),
+                        TextDisplay(
+                            "## Command\n"
+                           f"{table}",
+                        ),
+                    )
 
         if error:
             container.add_items(
@@ -241,12 +257,12 @@ class ErrorLogger(commands.Cog):
         traceback = "".join(format_exception(type(error), error, error.__traceback__))
 
         await self._send_error(
-            title       = "Command Error",
-            user        = interaction.user,
-            guild       = interaction.guild,
-            interaction = interaction,
-            error       = str(error),
-            traceback   = traceback,
+            title     = "Command Error",
+            user      = interaction.user,
+            guild     = interaction.guild,
+            context   = interaction,
+            error     = str(error),
+            traceback = traceback,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -255,6 +271,12 @@ class ErrorLogger(commands.Cog):
 
     @commands.Cog.listener("on_command_error")
     async def _prefix_command_error_handler(self, ctx : Context, error : commands.CommandError) -> None:
+        if isinstance(error, commands.CheckFailure) and error.__cause__:
+            error = cast("commands.CommandError", error.__cause__)
+
+        if isinstance(error, commands.MissingRequiredArgument):
+            return
+
         if isinstance(error, PrefixBadPermissionsCommand):
             if randbelow(10) == 0:
                 await format_send(
@@ -271,6 +293,16 @@ class ErrorLogger(commands.Cog):
             return
 
         await send_bad_operation(ctx)
+
+        traceback = "".join(format_exception(type(error), error, error.__traceback__))
+
+        await self._send_error(
+            title     = "Prefix Command Error",
+            user      = ctx.author,
+            guild     = ctx.guild,
+            error     = str(error),
+            traceback = traceback,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Loop Exception Errors

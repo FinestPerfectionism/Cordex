@@ -235,9 +235,9 @@ class _Tree(CommandTree):
         return False
 
 
-type Context              = _ContextClass
-type Interaction          = BaseInteraction[Cordex]
-type ContextOrInteraction = Interaction | Context
+Context              = _ContextClass
+Interaction          = BaseInteraction["Cordex"]
+ContextOrInteraction = Interaction | Context
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Cordex Class
