@@ -6,7 +6,11 @@ from typing import final, override
 
 from discord import AllowedMentions, Guild, Member, TextChannel, User
 from discord import Interaction as BaseInteraction
-from discord.app_commands import AppCommandError, BotMissingPermissions, CommandOnCooldown
+from discord.app_commands import (
+    AppCommandError,
+    BotMissingPermissions,
+    CommandOnCooldown,
+)
 from discord.ext import commands
 
 from bot import Context, ContextOrInteraction, Cordex, Interaction
@@ -237,7 +241,7 @@ class ErrorLogger(commands.Cog):
                 MessageType.error,
                 title    =  "run command",
                 subtitle = f"This command is on cooldown. Retry in {error.retry_after:2f}s",
-                footer   =  "Too many requests"
+                footer   =  "Too many requests",
             )
 
         if isinstance(error, BadEnvironmentGuild):

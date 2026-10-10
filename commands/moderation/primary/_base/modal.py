@@ -105,24 +105,24 @@ class _ModerationModal(Modal):
             raise ValueError(error)
 
         title : dict[ActionType, str] = {
-            "Ban Add"           : f"Banning {target_name}",
-            "Ban Remove"        : f"Unbanning {target_name}",
-            "Kick"              : f"Kicking {target_name}",
-            "Quarantine Add"    : f"Placing {target_name} in Quarantine",
-            "Quarantine Remove" : f"Removing {target_name} from Quarantine",
-            "Timeout Add"       : f"Placing {target_name} in Timeout",
-            "Timeout Remove"    : f"Removing {target_name} from Timeout",
-            "Purge"             : f"Purging {target_name}",
+            ActionType.ban_add           : f"Banning {target_name}",
+            ActionType.ban_remove        : f"Unbanning {target_name}",
+            ActionType.kick              : f"Kicking {target_name}",
+            ActionType.quarantine_add    : f"Placing {target_name} in Quarantine",
+            ActionType.quarantine_remove : f"Removing {target_name} from Quarantine",
+            ActionType.timeout_add       : f"Placing {target_name} in Timeout",
+            ActionType.timeout_remove    : f"Removing {target_name} from Timeout",
+            ActionType.purge             : f"Purging {target_name}",
         }
         name : dict[ActionType, str] = {
-            "Ban Add"           : "ban",
-            "Ban Remove"        : "ban removal",
-            "Kick"              : "kick",
-            "Quarantine Add"    : "quarantine",
-            "Quarantine Remove" : "quarantine removal",
-            "Timeout Add"       : "timeout",
-            "Timeout Remove"    : "timeout removal",
-            "Purge"             : "purge",
+            ActionType.ban_add           : "ban",
+            ActionType.ban_remove        : "ban removal",
+            ActionType.kick              : "kick",
+            ActionType.quarantine_add    : "quarantine",
+            ActionType.quarantine_remove : "quarantine removal",
+            ActionType.timeout_add       : "timeout",
+            ActionType.timeout_remove    : "timeout removal",
+            ActionType.purge             : "purge",
         }
 
         self.action_type : ActionType = action_type
@@ -133,7 +133,7 @@ class _ModerationModal(Modal):
 
         items : list[Item[Self]] = []
 
-        if action_type == "Purge":
+        if action_type == ActionType.purge:
             self.text = TextDisplay[Self](
                f"{WARNING_EMOJI} **Use `Amount` alone, `Amount` + `Target`, or `Amount` + `Target` + `Force`.**\n"
                 "## Cases\n"
@@ -157,7 +157,7 @@ class _ModerationModal(Modal):
 
         items.append(self.reason)
 
-        if action_type == "Timeout Add":
+        if action_type == ActionType.timeout_add:
             self._length = TextInput[Self](
                 placeholder = "Enter length here...",
                 default     = state._length.value if state else None,
@@ -171,7 +171,7 @@ class _ModerationModal(Modal):
             items.append(self.length)
 
         match action_type:
-            case "Ban Add":
+            case ActionType.ban_add:
                 self._dtd = TextInput[Self](
                     placeholder = "Enter number here...",
                     required    = False,
@@ -186,7 +186,7 @@ class _ModerationModal(Modal):
                 )
 
                 items.append(self.dtd)
-            case "Purge":
+            case ActionType.purge:
                 self._amount = TextInput[Self](
                     placeholder = 'ex: "10"',
                     min_length  = 1,
@@ -210,7 +210,7 @@ class _ModerationModal(Modal):
             case _:
                 pass
 
-        if action_type != "Purge":
+        if action_type != ActionType.purge:
             self._dm = Checkbox[Self](default = state._dm.value if state else False)
             self.dm  = Label[Self](
                 text        =  "DM",
@@ -230,19 +230,19 @@ class _ModerationModal(Modal):
 
         self._reason.default = self._reason.value
 
-        if self.action_type == "Timeout Add":
+        if self.action_type == ActionType.timeout_add:
             self._length.default = self._length.value
 
         match self.action_type:
-            case "Ban Add":
+            case ActionType.ban_add:
                 self._dtd.default = self._dtd.value
-            case "Purge":
+            case ActionType.purge:
                 self._amount.default = self._amount.value
                 self._force.default  = self._force.value
             case _:
                 pass
 
-        if self.action_type != "Purge":
+        if self.action_type != ActionType.purge:
             self._dm.default = self._dm.value
 
         reason = self._reason.value
@@ -255,15 +255,15 @@ class _ModerationModal(Modal):
         force        : bool          = False
         dm           : bool          = False
 
-        if self.action_type == "Timeout Add":
+        if self.action_type == ActionType.timeout_add:
             length = self._length.value
 
         await interaction.response.defer(ephemeral = True)
 
         match self.action_type:
-            case "Ban Add":
+            case ActionType.ban_add:
                 dtd = self._dtd.value
-            case "Purge":
+            case ActionType.purge:
                 force = self._force.value
 
                 if not interaction.guild or not isinstance(interaction.user, Member):
@@ -318,7 +318,7 @@ class _ModerationModal(Modal):
             case _:
                 pass
 
-        if self.action_type != "Purge":
+        if self.action_type != ActionType.purge:
             dm = self._dm.value
 
         action_table : dict[str, object] = {"Reason" : reason}
@@ -329,7 +329,7 @@ class _ModerationModal(Modal):
         if dtd is not None:
             action_table["Days to Delete"] = dtd
 
-        if self.action_type == "Purge":
+        if self.action_type == ActionType.purge:
             action_table["Amount"] = amount or "None"
             action_table["Force"]  = force
 
@@ -416,7 +416,7 @@ class _ModerationModal(Modal):
                 actions = Actions(client, guild)
 
                 match modal.action_type:
-                    case "Ban Add":
+                    case ActionType.ban_add:
                         if not isinstance(modal.target, Member):
                             return
 
@@ -434,7 +434,7 @@ class _ModerationModal(Modal):
                                 seconds_to_delete = seconds_to_delete,
                             ),
                         )
-                    case "Ban Remove":
+                    case ActionType.ban_remove:
                         if not isinstance(modal.target, Member):
                             return
 
@@ -446,7 +446,7 @@ class _ModerationModal(Modal):
                                 dm_user   = dm,
                             ),
                         )
-                    case "Kick":
+                    case ActionType.kick:
                         if not isinstance(modal.target, Member):
                             return
 
@@ -458,7 +458,7 @@ class _ModerationModal(Modal):
                                 dm_user   = dm,
                             ),
                         )
-                    case "Quarantine Add":
+                    case ActionType.quarantine_add:
                         if not isinstance(modal.target, Member):
                             return
 
@@ -470,7 +470,7 @@ class _ModerationModal(Modal):
                                 dm_user   = dm,
                             ),
                         )
-                    case "Quarantine Remove":
+                    case ActionType.quarantine_remove:
                         if not isinstance(modal.target, Member):
                             return
 
@@ -482,7 +482,7 @@ class _ModerationModal(Modal):
                                 dm_user   = dm,
                             ),
                         )
-                    case "Timeout Add":
+                    case ActionType.timeout_add:
                         if not isinstance(modal.target, Member):
                             return
 
@@ -500,7 +500,7 @@ class _ModerationModal(Modal):
                                 length    = timeout_length,
                             ),
                         )
-                    case "Timeout Remove":
+                    case ActionType.timeout_remove:
                         if not isinstance(modal.target, Member):
                             return
 
@@ -512,7 +512,7 @@ class _ModerationModal(Modal):
                                 dm_user   = dm,
                             ),
                         )
-                    case "Purge":
+                    case ActionType.purge:
                         if not isinstance(modal.target, GuildMessagable):
                             return
 
@@ -532,10 +532,10 @@ class _ModerationModal(Modal):
 
                 notes : list[str] = []
                 if not result.failed:
-                    table[modal.action_type] = f"{ACCEPTED_EMOJI} Success."
+                    table[modal.action_type.value.replace("_", " ").title()] = f"{ACCEPTED_EMOJI} Success."
                     statuses.append(True)
                 else:
-                    table[modal.action_type] = f"{DENIED_EMOJI} Failure."
+                    table[modal.action_type.value.replace("_", " ").title()] = f"{DENIED_EMOJI} Failure."
                     statuses.append(False)
 
                 if result.dmed is True:
@@ -556,7 +556,7 @@ class _ModerationModal(Modal):
                     if not await client.config(guild).get_moderation_logging_channel():
                         notes.append("**Logged:** This server has not set up a logging channel for moderation.")
 
-                if modal.action_type == "Purge" and isinstance(result.data, int):
+                if modal.action_type == ActionType.purge and isinstance(result.data, int):
                     purge_line = f"Purged {result.data} message(s).\n"
                 else:
                     purge_line = ""
@@ -633,7 +633,7 @@ async def send_moderation_modal(
     if not guild or not isinstance(user, Member):
         return
 
-    check_target = purge_target if action_type == "Purge" else target
+    check_target = purge_target if action_type == ActionType.purge else target
 
     if isinstance(check_target, Member):
 
@@ -686,14 +686,14 @@ async def send_moderation_modal(
         manager = QuarantineManager(client, guild)
         quarantined_members = await manager.get_members()
 
-        if action_type == "Quarantine Remove" and check_target not in quarantined_members:
+        if action_type == ActionType.quarantine_remove and check_target not in quarantined_members:
             await send_bad_argument(
                 interaction,
                 subtitle = {"target" : f"{check_target.mention} is not quarantined."},
             )
             return
 
-        if action_type == "Quarantine Add" and check_target in quarantined_members:
+        if action_type == ActionType.quarantine_add and check_target in quarantined_members:
             await send_bad_argument(
                 interaction,
                 subtitle = {"target" : f"{check_target.mention} is already quarantined."},

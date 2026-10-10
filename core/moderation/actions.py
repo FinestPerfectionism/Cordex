@@ -1,9 +1,11 @@
+# pyright: reportImportCycles = false
+
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Literal, cast, final
+from typing import cast, final
 
-from discord import Forbidden, Guild, HTTPException, Message, Role
-from discord.utils import format_dt, utcnow
+from discord import Enum, Forbidden, Guild, HTTPException, Message, Role
+from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Cordex, log
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
@@ -11,7 +13,6 @@ from constants import COLOR_BLACK, COLOR_ORANGE, COLOR_YELLOW, WARNING_EMOJI
 from core.paginator import UnnamedPaginator
 from core.utilities import format_now, format_table
 
-from .cases import CasesManager
 from .payloads import (
     BanAddPayload,
     BanRemovePayload,
@@ -25,16 +26,16 @@ from .payloads import (
     TimeoutRemovePayload,
 )
 
-type ActionType = Literal[
-    "Ban Add",
-    "Ban Remove",
-    "Kick",
-    "Quarantine Add",
-    "Quarantine Remove",
-    "Timeout Add",
-    "Timeout Remove",
-    "Purge",
-]
+
+class ActionType(Enum):
+    ban_add           = "ban_add"
+    ban_remove        = "ban_remove"
+    kick              = "kick"
+    quarantine_add    = "quarantine_add"
+    quarantine_remove = "quarantine_remove"
+    timeout_add       = "timeout_add"
+    timeout_remove    = "timeout_remove"
+    purge             = "purge"
 
 
 @dataclass(frozen = True, slots = True)
@@ -66,6 +67,8 @@ class Actions:
 
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
+        from .cases import CasesManager  # ruff: ignore[import-outside-top-level]
+
         self.bot    = bot
         self.guild  = guild
         self.config = self.bot.config(guild)
@@ -101,14 +104,14 @@ class Actions:
 
         guild_name = f"'{self.guild.name}'"
 
-        type_map : dict[str, str] = {
-            "Ban Add"           : f"# {WARNING_EMOJI} You have been banned in the server {guild_name}.",
-            "Ban Remove"        : f"# {WARNING_EMOJI} You have been un-banned from the server {guild_name}.",
-            "Kick"              : f"# {WARNING_EMOJI} You have been kicked from the server {guild_name}.",
-            "Quarantine Add"    : f"# {WARNING_EMOJI} You have been placed in quarantine in the server {guild_name}.",
-            "Quarantine Remove" : f"# {WARNING_EMOJI} You have been removed from quarantine in the server {guild_name}.",
-            "Timeout Add"       : f"# {WARNING_EMOJI} You have been placed in timeout in the server {guild_name}.",
-            "Timeout Remove"    : f"# {WARNING_EMOJI} You have been removed from timeout in the server {guild_name}.",
+        type_map : dict[ActionType, str] = {
+            ActionType.ban_add           : f"# {WARNING_EMOJI} You have been banned in the server {guild_name}.",
+            ActionType.ban_remove        : f"# {WARNING_EMOJI} You have been un-banned from the server {guild_name}.",
+            ActionType.kick              : f"# {WARNING_EMOJI} You have been kicked from the server {guild_name}.",
+            ActionType.quarantine_add    : f"# {WARNING_EMOJI} You have been placed in quarantine in the server {guild_name}.",
+            ActionType.quarantine_remove : f"# {WARNING_EMOJI} You have been removed from quarantine in the server {guild_name}.",
+            ActionType.timeout_add       : f"# {WARNING_EMOJI} You have been placed in timeout in the server {guild_name}.",
+            ActionType.timeout_remove    : f"# {WARNING_EMOJI} You have been removed from timeout in the server {guild_name}.",
         }
 
         title  = type_map[action_type]
@@ -267,7 +270,7 @@ class Actions:
             The result of the ban addition.
         """
         if action.dm_user:
-            success = await self._dm_target("Ban Add", action)
+            success = await self._dm_target(ActionType.ban_add, action)
         else:
             success = None
 
@@ -337,7 +340,7 @@ class Actions:
             The result of the ban removal.
         """
         if action.dm_user:
-            success = await self._dm_target("Ban Remove", action)
+            success = await self._dm_target(ActionType.ban_remove, action)
         else:
             success = None
 
@@ -381,7 +384,7 @@ class Actions:
             The result of the kick.
         """
         if action.dm_user:
-            success = await self._dm_target("Kick", action)
+            success = await self._dm_target(ActionType.kick, action)
         else:
             success = None
 
@@ -433,7 +436,7 @@ class Actions:
             )
 
         if action.dm_user:
-            success = await self._dm_target("Quarantine Add", action)
+            success = await self._dm_target(ActionType.quarantine_add, action)
         else:
             success = None
 
@@ -480,11 +483,22 @@ class Actions:
         `QuarantinePaginator`
             The paginator displaying all members in quarantine.
         """
+        cases = await self.cases.filter_by(
+            action_type = ActionType.quarantine_add,
+            expired     = False,
+        )
+
         class QuarantinePaginator(UnnamedPaginator):
             def __init__(self) -> None:
                 super().__init__(
                     "# Server Quarantines",
-                    [],
+                    [
+                        (
+                            f"**{case.target.mention if case.target else "Unknown Member"} | {case.moderator.mention}**\n"
+                            f"*{escape_markdown(case.reason)}*\n"
+                            f"-# Quarantined at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}."
+                        ) for case in cases
+                    ],
                     data_name = "Quarantines",
                     per_page  = 10,
                     color     = COLOR_ORANGE,
@@ -520,7 +534,7 @@ class Actions:
             )
 
         if action.dm_user:
-            success = await self._dm_target("Quarantine Remove", action)
+            success = await self._dm_target(ActionType.quarantine_remove, action)
         else:
             success = None
 
@@ -591,7 +605,7 @@ class Actions:
             The result of the timeout addition.
         """
         if action.dm_user:
-            success = await self._dm_target("Timeout Add", action)
+            success = await self._dm_target(ActionType.timeout_add, action)
         else:
             success = None
 
@@ -662,7 +676,7 @@ class Actions:
             The result of the timeout removal.
         """
         if action.dm_user:
-            success = await self._dm_target("Timeout Remove", action)
+            success = await self._dm_target(ActionType.timeout_remove, action)
         else:
             success = None
 

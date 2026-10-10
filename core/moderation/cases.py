@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import cast, final
 
+from aiosqlite import Row
 from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Member
 
 from bot import Cordex, log
@@ -25,6 +26,7 @@ from constants import (
 )
 from core.utilities import format_now, format_table
 
+from .actions import ActionType
 from .payloads import (
     BanAddPayload,
     BanRemovePayload,
@@ -150,9 +152,36 @@ class CasesManager:
         self.bot   = bot
         self.guild = guild
 
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # _log_failure
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    async def _row_to_case(self, row : Row, /) -> Case:
+        moderator_id = cast("int", row["moderator_id"])
+        target_id    = cast("int | None", row["target_id"])
+
+        moderator = self.guild.get_member(moderator_id) or await self.guild.fetch_member(moderator_id)
+        target    = self.guild.get_member(target_id)    or await self.guild.fetch_member(target_id) if target_id else None
+
+        channel_id = cast("int | None", row["channel_id"])
+        channel    = self.guild.get_channel(channel_id) or await self.guild.fetch_channel(channel_id) if channel_id else None
+
+        created_at = cast("str | datetime", row["created_at"])
+        if isinstance(created_at, str):
+            created_at = datetime.fromisoformat(created_at)
+
+        return Case(
+            id                = cast("int", row["id"]),
+            action_type       = cast("str", row["action_type"]),
+            moderator         = moderator,
+            target            = target,
+            reason            = cast("str", row["reason"]),
+            channel           = channel if isinstance(channel, GuildMessagable) else None,
+            created_at        = created_at,
+            dm_user           = bool(cast("int | None", row["dm_user"])),
+            seconds_to_delete = cast("int | None", row["seconds_to_delete"]),
+            timeout_length    = cast("int | None", row["timeout_length"]),
+            purge_amount      = cast("int | None", row["purge_amount"]),
+            purge_force       = bool(cast("int | None", row["purge_force"])),
+            expired           = bool(cast("int", row["expired"])),
+            related_case_id   = cast("int | None", row["related_case_id"]),
+        )
 
     def _log_failure(self, msg : str, /, *, rate_limited : bool = False) -> None:
         rate_limited_msg = " — Rate-limited" if rate_limited else ""
@@ -406,7 +435,11 @@ class CasesManager:
                 id                = new_case_id,
                 action_type       = action_type,
                 moderator         = payload.moderator,
-                target            = payload.target if not isinstance(payload, LockdownAddPayload | LockdownRemovePayload) and isinstance(payload.target, Member) else None,
+                target            = (
+                    payload.target if not
+                    isinstance(payload, LockdownAddPayload | LockdownRemovePayload) and
+                    isinstance(payload.target, Member) else None
+                ),
                 reason            = reason,
                 channel           = payload.channel if isinstance(payload, PurgePayload | LockdownAddPayload | LockdownRemovePayload) else None,
                 created_at        = datetime.now(UTC),
@@ -448,32 +481,66 @@ class CasesManager:
             self._log_failure(f"fetching case {case_id}")
             return None
 
-        moderator_id = cast("int", row["moderator_id"])
-        target_id    = cast("int | None", row["target_id"])
+        return await self._row_to_case(row)
 
-        moderator = self.guild.get_member(moderator_id) or await self.guild.fetch_member(moderator_id)
-        target    = self.guild.get_member(target_id)    or await self.guild.fetch_member(target_id) if target_id else None
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # filter_by
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-        channel_id = cast("int | None", row["channel_id"])
-        channel    = self.guild.get_channel(channel_id) or await self.guild.fetch_channel(channel_id) if channel_id else None
+    async def filter_by(
+        self,
+        *,
+        action_type  : ActionType | None = None,
+        moderator_id : int        | None = None,
+        target_id    : int        | None = None,
+        channel_id   : int        | None = None,
+        expired      : bool       | None = None,
+        limit        : int        | None = None,
+    ) -> list[Case]:
+        """
+        Filter cases from the database based on various criteria.
 
-        created_at = cast("str | datetime", row["created_at"])
-        if isinstance(created_at, str):
-            created_at = datetime.fromisoformat(created_at)
+        Parameters
+        ----------
+        *
+        action_type : `str | None`
+            The action type to filter by.
+        moderator_id : `int | None`
+            The moderator ID to filter by.
+        target_id : `int | None`
+            The target ID to filter by.
+        channel_id : `int | None`
+            The channel ID to filter by.
+        expired : `bool | None`
+            Whether the case is expired.
+        limit : `int | None`
+            The maximum number of cases to return.
 
-        return Case(
-            id                = cast("int", row["id"]),
-            action_type       = cast("str", row["action_type"]),
-            moderator         = moderator,
-            target            = target,
-            reason            = cast("str", row["reason"]),
-            channel           = channel if isinstance(channel, GuildMessagable) else None,
-            created_at        = created_at,
-            dm_user           = bool(cast("int | None", row["dm_user"])),
-            seconds_to_delete = cast("int | None", row["seconds_to_delete"]),
-            timeout_length    = cast("int | None", row["timeout_length"]),
-            purge_amount      = cast("int | None", row["purge_amount"]),
-            purge_force       = bool(cast("int | None", row["purge_force"])),
-            expired           = bool(cast("int", row["expired"])),
-            related_case_id   = cast("int | None", row["related_case_id"]),
-        )
+        Returns
+        -------
+        `list[Case]`
+            A list of cases meeting the criteria.
+        """
+        expired_int = int(expired) if expired is not None else None
+        action_type_value = action_type.value if action_type is not None else None
+
+        try:
+            async with self.bot.db.execute(
+                t"SELECT * FROM Cases WHERE "
+                t"({action_type_value} IS NULL OR action_type = {action_type_value}) AND "
+                t"({moderator_id} IS NULL OR moderator_id = {moderator_id}) AND "
+                t"({target_id} IS NULL OR target_id = {target_id}) AND "
+                t"({channel_id} IS NULL OR channel_id = {channel_id}) AND "
+                t"({expired_int} IS NULL OR expired = {expired_int}) "
+                t"ORDER BY id DESC",
+            ) as cursor:
+                rows = await cursor.fetchall()
+        except Exception:
+            self._log_failure("filtering cases")
+            return []
+
+        cases = [await self._row_to_case(row) for row in rows]
+        if limit is not None:
+            return cases[:limit]
+
+        return cases
