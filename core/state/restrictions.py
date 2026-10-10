@@ -108,7 +108,7 @@ def is_restrictable[GroupT : Group | commands.Cog, **P, T](command : Command[Gro
     if isinstance(command, Group):
         return False
 
-    return command.extras.get("unrestrictable", False) is True
+    return command.extras.get("unrestrictable", False) is False
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Requires Restriction

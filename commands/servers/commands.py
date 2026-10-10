@@ -411,9 +411,9 @@ async def run_server_commands(interaction : Interaction) -> None:
     )
     view.add_under(
         TextDisplay(
-            f"-# {COG_EMOJI} Denotes a command that requires restriction.\n"
-            f"-# {WARNING_EMOJI} Denotes a command that requires restriction, but does not have any set.\n"
-            f"-# {ACCEPTED_EMOJI} Denotes a command that has restrictions set.",
+            f"-# {COG_EMOJI} **Denotes a command that requires restriction.**\n"
+            f"-# {WARNING_EMOJI} **Denotes a command that requires restriction, but does not have any set.**\n"
+            f"-# {ACCEPTED_EMOJI} **Denotes a command that has restrictions set.**",
         ),
     )
     view.add_above(

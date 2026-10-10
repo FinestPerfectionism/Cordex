@@ -39,11 +39,11 @@ def _build_parameter_sections(parameters : list[HelpParameter]) -> str:
 
         required = f" {REQUIRED_EMOJI}" if parameter.required else ""
         sections.append(
-            f"**{parameter.name}{required}**\n"
+            f"`{parameter.name}`{required}\n"
             f"-# {option_type} | *{parameter.description}*",
         )
 
-    return "\n\n".join(sections)
+    return "\n".join(sections)
 
 
 @final
@@ -58,6 +58,8 @@ class HelpView(LayoutView):
                 ),
                 VisibleLargeSeparator(),
                 TextDisplay(_build_parameter_sections(command.parameters)),
+                VisibleLargeSeparator(),
+                TextDisplay(f"{REQUIRED_EMOJI} **Denotes a required argument.**"),
             ),
         )
 
