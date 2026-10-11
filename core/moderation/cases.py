@@ -169,7 +169,7 @@ class CasesManager:
             created_at = datetime.fromisoformat(created_at)
 
         raw_action  = cast("str", row["action_type"])
-        action_type = next((action for action in ActionType if action.value == raw_action or action.sql() == raw_action), ActionType(raw_action))
+        action_type = next(action for action in ActionType if action.value == raw_action or action.sql() == raw_action)
 
         return Case(
             id                = cast("int", row["id"]),
