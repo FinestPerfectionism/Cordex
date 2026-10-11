@@ -547,14 +547,7 @@ class CasesManager:
         `list[Case]`
             A list of all cases meeting the criteria.
         """
-        if (
-            action_type  is None and
-            moderator_id is None and
-            target_id    is None and
-            channel_id   is None and
-            expired      is None and
-            limit        is None
-        ):
+        if all(argument is None for argument in (action_type, moderator_id, target_id, channel_id, expired, limit)):
             warn(
                 "Prefer CasesManager.get_all_cases over CasesManager.filter_by if getting all cases.",
                 category   = UserWarning,
