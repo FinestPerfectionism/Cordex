@@ -8,7 +8,7 @@ from core.moderation import ActionType, CasesManager
 from core.paginator import UnnamedPaginator
 from core.responses import FormatOverride, MessageType, format_send
 
-from ._base import format_summary
+from ._base import build_case_section
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation cases query Logic
@@ -43,9 +43,10 @@ async def run_mod_cases_query(
         )
         return
 
-    cases = list(
+    cases_manager = CasesManager(interaction.client, guild)
+    cases         = list(
         reversed(
-            await CasesManager(interaction.client, guild).filter_by(
+            await cases_manager.filter_by(
                 action_type  = parsed_action,
                 moderator_id = moderator.id if moderator else None,
                 target_id    = target.id    if target    else None,
@@ -68,7 +69,7 @@ async def run_mod_cases_query(
         def __init__(self) -> None:
             super().__init__(
                 "# Cases Found",
-                [format_summary(case) for case in cases],
+                [build_case_section(case, cases_manager) for case in cases],
                 data_name = "Cases",
                 per_page  = 10,
                 color     = COLOR_GREY,
