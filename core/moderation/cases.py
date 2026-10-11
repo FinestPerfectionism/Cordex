@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from string.templatelib import Template
 from typing import cast, final
 from warnings import warn
 
@@ -533,17 +532,17 @@ class CasesManager:
         Parameters
         ----------
         *
-        action_type : `str | None`
+        action_type : `ActionType | None = None`
             The action type to filter by.
-        moderator_id : `int | None`
+        moderator_id : `int | None = None`
             The moderator ID to filter by.
-        target_id : `int | None`
+        target_id : `int | None = None`
             The target ID to filter by.
-        channel_id : `int | None`
+        channel_id : `int | None = None`
             The channel ID to filter by.
-        expired : `bool | None`
+        expired : `bool | None = None`
             Whether the case is expired.
-        limit : `int | None`
+        limit : `int | None = None`
             The maximum number of cases to return.
 
         Returns
@@ -559,7 +558,7 @@ class CasesManager:
             )
             return await self.get_all_cases()
 
-        conditions : list[Template] = [t"guild_id = {self.guild.id}"]
+        conditions = [t"guild_id = {self.guild.id}"]
 
         if action_type is not None:
             conditions.append(t"action_type = {action_type.sql()}")
@@ -577,8 +576,7 @@ class CasesManager:
             expired_int = int(expired)
             conditions.append(t"expired = {expired_int}")
 
-        query : Template = t"SELECT * FROM Cases"
-
+        query = t"SELECT * FROM Cases"
         if conditions:
             query += t" WHERE "
             for index, condition in enumerate(conditions):
