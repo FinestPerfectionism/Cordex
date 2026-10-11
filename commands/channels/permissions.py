@@ -23,7 +23,7 @@ async def run_channel_permissions(
     _perm_filter : `str | None = None`
         Whether to show enabled or disabled permissions. Defaults to both.
     """
-    await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer()
 
     if not interaction.guild:
         return

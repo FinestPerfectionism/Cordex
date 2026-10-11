@@ -24,7 +24,7 @@ async def run_channel_compare(
     channel_2 : `GuildMessagableChannel | None = None`
         The second channel to compare. Defaults to the current one.
     """
-    await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer()
 
     if not interaction.guild:
         return
@@ -34,12 +34,14 @@ async def run_channel_compare(
             interaction,
             subtitle = {("channel-1", "channel-2") :  "At least one channel must be selected."},
         )
+        return
 
     if channel_1 == channel_2:
         await send_bad_argument(
             interaction,
             subtitle = {("channel-1", "channel-2") : "You cannot compare a channel with itself."},
         )
+        return
 
     await interaction.followup.send(
         "This command does nothing right now. :[",

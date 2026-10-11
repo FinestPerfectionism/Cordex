@@ -24,7 +24,7 @@ async def run_channel_sync(
     channel : `GuildMessagableChannel | None = None`
         The channel to sync permissions for. Defaults to the current one.
     """
-    await interaction.response.defer(ephemeral = True)
+    await interaction.response.defer()
 
     target = channel or interaction.channel
 
