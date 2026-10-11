@@ -225,6 +225,20 @@ class Actions:
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # lockdown_view
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def lockdown_view(self) -> ...:
+        """
+        Display a paginator (`UnnamedPaginator`) of all channels in lockdown.
+
+        Returns
+        -------
+        `LockdownPaginator | None`
+            The paginator displaying all lockdowned channels, or `None` if no channels are in lockdown.
+        """
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 

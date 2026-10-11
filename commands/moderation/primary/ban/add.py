@@ -10,4 +10,14 @@ from core.moderation import ActionType
 
 
 async def run_mod_primary_ban_add(interaction : Interaction, target : Member) -> None:
+    """
+    Ban a member from the server.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    target : `Member`
+        The member to ban.
+    """
     await send_moderation_modal(interaction, ActionType.ban_add, target)

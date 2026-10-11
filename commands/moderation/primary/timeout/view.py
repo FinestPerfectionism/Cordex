@@ -6,4 +6,11 @@ from bot import Interaction
 
 
 async def run_mod_primary_timeout_view(_interaction : Interaction) -> None:
-    ...
+    """
+    View all timed out members.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    """

@@ -12,6 +12,16 @@ from ._base import send_moderation_modal
 
 
 async def run_mod_primary_purge(interaction : Interaction, target : Member | None = None) -> None:
+    """
+    Purge messages from a channel or member.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    target : `Member | None = None`
+        The member to purge messages from.
+    """
     if not isinstance(interaction.channel, GuildMessagable):
         return
 

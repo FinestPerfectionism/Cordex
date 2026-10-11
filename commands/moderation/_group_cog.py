@@ -37,6 +37,7 @@ from .primary.kick import run_mod_primary_kick
 from .primary.lockdown import (
     run_mod_primary_lockdown_add,
     run_mod_primary_lockdown_remove,
+    run_mod_primary_lockdown_view,
 )
 from .primary.purge import run_mod_primary_purge
 from .primary.quarantine import (
@@ -124,6 +125,17 @@ class ModerationCommands(
     @bot_has_permissions(manage_channels = True)
     async def cmd_mod_primary_lockdown_add(self, interaction : Interaction) -> None:
         await run_mod_primary_lockdown_add(interaction)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # /moderation lockdown view Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @lockdown.command(
+        name        = "view",
+        description = "View all lockdowned channels.",
+    )
+    async def cmd_mod_primary_lockdown_view(self, interaction : Interaction) -> None:
+        await run_mod_primary_lockdown_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation lockdown remove Command
@@ -325,14 +337,13 @@ class ModerationCommands(
 
     @cases.command(
         name        = "view",
-        description = "View a moderation case by its ID.",
+        description = "View a moderation case.",
     )
-    @rename(case_id = "case-id")
-    @describe(case_id = "The ID of the case to view. Defaults to all cases.")
-    async def cmd_mod_cases_view(self, interaction : Interaction, case_id : int | None = None) -> None:
-        await run_mod_cases_view(interaction, case_id)
+    @describe(case_id = "The case to view. Defaults to all cases.")
+    async def cmd_mod_cases_view(self, interaction : Interaction, case : int | None = None) -> None:
+        await run_mod_cases_view(interaction, case)
 
-    @cmd_mod_cases_view.autocomplete("case_id")
+    @cmd_mod_cases_view.autocomplete("case")
     async def autocomplete_cmdmodcasesview(self, interaction : Interaction, current : str) -> list[Choice[int]]:
         guild = interaction.guild
         if not guild:

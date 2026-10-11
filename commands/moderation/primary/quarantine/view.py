@@ -10,6 +10,14 @@ from core.responses import FormatOverride, MessageType, format_send
 
 
 async def run_mod_primary_quarantine_view(interaction : Interaction) -> None:
+    """
+    View all quarantined members.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    """
     guild = interaction.guild
     if not guild:
         return

@@ -24,6 +24,24 @@ async def run_mod_cases_query(
     channel     : GuildMessagableChannel | None = None,
     expired     : bool                   | None = None,
 ) -> None:
+    """
+    Query moderation cases with various filters.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    action_type : `str | None = None`
+        Filter by action type.
+    moderator : `Member | None = None`
+        Filter by moderator.
+    target : `User | None = None`
+        Filter by user.
+    channel : `GuildMessagableChannel | None = None`
+        Filter by channel.
+    expired : `bool | None = None`
+        Filter by expiration.
+    """
     guild = interaction.guild
     if not guild:
         return

@@ -11,6 +11,16 @@ from core.moderation import ActionType
 
 
 async def run_mod_primary_ban_remove(interaction : Interaction, target : User) -> None:
+    """
+    Remove a ban from a member.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    target : `User`
+        The member to unban.
+    """
     guild = interaction.guild
     if not guild:
         return

@@ -10,4 +10,14 @@ from core.moderation import ActionType
 
 
 async def run_mod_primary_timeout_remove(interaction : Interaction, target : Member) -> None:
+    """
+    Remove a member from timeout.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    target : `Member`
+        The member to remove from timeout.
+    """
     await send_moderation_modal(interaction, ActionType.timeout_remove, target)

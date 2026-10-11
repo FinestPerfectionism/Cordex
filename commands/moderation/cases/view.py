@@ -14,6 +14,16 @@ from ._base import build_case_section, send_case_view
 
 
 async def run_mod_cases_view(interaction : Interaction, case_id : int | None = None) -> None:
+    """
+    View a moderation case.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    case_id : `int | None = None`
+        The ID of the case to view. Defaults to all cases.
+    """
     guild = interaction.guild
     if not guild:
         return

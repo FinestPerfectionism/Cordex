@@ -10,4 +10,14 @@ from core.moderation import ActionType
 
 
 async def run_mod_primary_quarantine_remove(interaction : Interaction, target : Member) -> None:
+    """
+    Remove a member from quarantine.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    target : `Member`
+        The member to remove from quarantine.
+    """
     await send_moderation_modal(interaction, ActionType.quarantine_remove, target)
