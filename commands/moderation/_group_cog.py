@@ -20,7 +20,7 @@ from discord.ext import commands
 from bot import Cordex, Interaction
 from bot.types import GuildMessagableChannel
 from core.exceptions import (
-    BadEnvironmentGuild,
+    BadEnvironmentGuildOnly,
     UnconfiguredQuarantine,
     send_bad_operation,
 )
@@ -55,7 +55,7 @@ def quarantine_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
     async def predicate(interaction : Interaction) -> bool:
         guild = interaction.guild
         if not guild:
-            raise BadEnvironmentGuild
+            raise BadEnvironmentGuildOnly
 
         quarantine_role = await interaction.client.config(guild).get_moderation_quarantine_role()
         if not quarantine_role:

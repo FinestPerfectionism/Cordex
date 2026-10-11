@@ -208,11 +208,11 @@ async def send_bad_permissions_command(target : ContextOrInteraction, /) -> None
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Bad Environment Guild Exception
+# Bad Environment Guild Only Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-class BadEnvironmentGuild(CheckFailure):
+class BadEnvironmentGuildOnly(CheckFailure):
     """The exception raised when a user runs a command in DMs when they must do so in a guild."""
 
 
@@ -235,11 +235,11 @@ async def send_bad_environment_guildonly(target : ContextOrInteraction, /) -> No
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Bad Environment DMs Exception
+# Bad Environment DMs Only Exception
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-class BadEnvironmentDMs(CheckFailure):
+class BadEnvironmentDMsOnly(CheckFailure):
     """The exception raised when a user runs a command in guild when they must do so in DMs."""
 
 

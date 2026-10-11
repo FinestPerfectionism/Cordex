@@ -21,8 +21,8 @@ from constants import (
     COLOR_RED,
 )
 from core.exceptions import (
-    BadEnvironmentDMs,
-    BadEnvironmentGuild,
+    BadEnvironmentDMsOnly,
+    BadEnvironmentGuildOnly,
     BadPermissionsCommand,
     BadPermissionsPrefixCommand,
     UnconfiguredQuarantine,
@@ -244,11 +244,11 @@ class ErrorLogger(commands.Cog):
                 footer   =  "Too many requests",
             )
 
-        if isinstance(error, BadEnvironmentGuild):
+        if isinstance(error, BadEnvironmentGuildOnly):
             await send_bad_environment_guildonly(interaction)
             return
 
-        if isinstance(error, BadEnvironmentDMs):
+        if isinstance(error, BadEnvironmentDMsOnly):
             await send_bad_environment_dmsonly(interaction)
             return
 
