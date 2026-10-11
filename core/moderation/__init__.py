@@ -1,5 +1,5 @@
 from .actions import Actions, ActionType
-from .cases import CasesManager
+from .cases import Case, CasesManager
 from .managers import LockdownManager, QuarantineManager
 from .payloads import (
     BanAddPayload,
@@ -19,6 +19,7 @@ __all__ = [
     "Actions",
     "BanAddPayload",
     "BanRemovePayload",
+    "Case",
     "CasesManager",
     "KickPayload",
     "LockdownAddPayload",
