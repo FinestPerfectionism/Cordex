@@ -1,5 +1,6 @@
 from collections.abc import Awaitable, Callable
-from typing import TYPE_CHECKING, NamedTuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from discord import StageChannel, TextChannel, Thread, VoiceChannel
 from discord.app_commands import Command, Group
@@ -34,7 +35,8 @@ GuildMessagableChannel = TextChannel | StageChannel | VoiceChannel
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-class NameStyleResult(NamedTuple):
+@dataclass(frozen = True, slots = True)
+class NameStyleResult:
     font_id   : DisplayNameFont
     effect_id : DisplayNameEffect
     colors    : list[str]
