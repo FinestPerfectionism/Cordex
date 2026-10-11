@@ -309,7 +309,7 @@ class ModerationCommands(
             return []
 
         return [
-            Choice(name = str(case.id), value = case.id)
+            Choice(name = f"#{case.id} | {case.action_type.readable()}", value = case.id)
             for case in await CasesManager(interaction.client, guild).get_all_cases()
             if current.lower() in str(case.id).lower()
         ][:25]

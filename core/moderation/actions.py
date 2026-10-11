@@ -337,8 +337,8 @@ class Actions:
             expired     = False,
         )
 
-        api_bans = [case async for case in self.guild.bans()]
-        if not db_cases and not api_bans:
+        api_cases = [case async for case in self.guild.bans()]
+        if not db_cases and not api_cases:
             return None
 
         class BanPaginator(UnnamedPaginator):
@@ -348,19 +348,19 @@ class Actions:
                     [
                         *[
                             (
-                                f"**{case.target.mention if case.target else 'Unknown Member'} | {case.moderator.mention}**\n"
-                                f"*{escape_markdown(case.reason or 'No reason provided')}*\n"
-                                f"-# Banned at {format_dt(case.created_at, 'F')}, {format_dt(case.created_at, 'R')}.\n"
+                                f"**{case.target.mention if case.target else "Unknown Member"} | {case.moderator.mention}**\n"
+                                f"*{escape_markdown(case.reason or "No reason provided")}*\n"
+                                f"-# Banned at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}.\n"
                                 f"-# Case ID: #{case.id}"
                             ) for case in db_cases
                         ],
                         *[
                             (
-                                f"**{case.user.mention if case.user else 'Unknown Member'} | Unknown Moderator**\n"
-                                f"*{escape_markdown(case.reason or 'No reason provided')}*\n"
+                                f"**{case.user.mention if case.user else "Unknown Member"} | Unknown Moderator**\n"
+                                f"*{escape_markdown(case.reason or "No reason provided")}*\n"
                                 f"-# Banned at Unknown Time.\n"
                                 f"-# Case ID: N/A (Ban is not managed by Cordex)"
-                            ) for case in api_bans
+                            ) for case in api_cases
                         ],
                     ],
                     data_name = "Bans",
@@ -531,7 +531,7 @@ class Actions:
         Returns
         -------
         `QuarantinePaginator | None`
-            The paginator displaying all members in quarantine, or `None` if no members are quarantined.
+            The paginator displaying all quarantined members, or `None` if no members are quarantined.
         """
         cases = await self.cases.filter_by(
             action_type = ActionType.quarantine_add,

@@ -87,7 +87,7 @@ class Case:
     ----------
     id : `int`
         The ID of the case.
-    action_type : `str`
+    action_type : `ActionType`
         The type of the case.
     moderator : `Member`
         The moderator of the case.
@@ -119,7 +119,7 @@ class Case:
     """
 
     id                : int
-    action_type       : str
+    action_type       : ActionType
     moderator         : Member
     target            : Member          | None
     reason            : str
@@ -168,9 +168,12 @@ class CasesManager:
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
 
+        raw_action  = cast("str", row["action_type"])
+        action_type = next((action for action in ActionType if action.value == raw_action or action.sql() == raw_action), ActionType(raw_action))
+
         return Case(
             id                = cast("int", row["id"]),
-            action_type       = cast("str", row["action_type"]),
+            action_type       = action_type,
             moderator         = moderator,
             target            = target,
             reason            = cast("str", row["reason"]),
@@ -435,7 +438,7 @@ class CasesManager:
             successful = successful,
             case       = Case(
                 id                = new_case_id,
-                action_type       = action_type,
+                action_type       = next(action for action in ActionType if action.value == action_type or action.sql() == action_type),
                 moderator         = payload.moderator,
                 target            = (
                     payload.target if not
@@ -500,7 +503,7 @@ class CasesManager:
         """
         try:
             async with self.bot.db.execute(
-                t"SELECT * FROM Cases ORDER BY id DESC",
+                t"SELECT * FROM Cases WHERE guild_id = {self.guild.id} ORDER BY id DESC",
             ) as cursor:
                 rows = await cursor.fetchall()
         except Exception:
