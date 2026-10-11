@@ -339,7 +339,7 @@ class ModerationCommands(
         name        = "view",
         description = "View a moderation case.",
     )
-    @describe(case_id = "The case to view. Defaults to all cases.")
+    @describe(case = "The case to view. Defaults to all cases.")
     async def cmd_mod_cases_view(self, interaction : Interaction, case : int | None = None) -> None:
         await run_mod_cases_view(interaction, case)
 

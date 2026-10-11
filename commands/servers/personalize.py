@@ -133,11 +133,11 @@ class _ColorsModal(Modal, title = "Edit Color(s)"):
     @override
     async def on_submit(self, interaction : Interaction) -> None:
         value       = self._colors.value.strip()
-        multi_color = self.view.style.effect_id in (
+        multi_color = self.view.style.effect_id in {
             DisplayNameEffect.prism,
             DisplayNameEffect.gradient,
             DisplayNameEffect.gummy,
-        )
+        }
         color_set   = value.split("-")
 
         if not COLOR_PATTERN.match(value) or (not multi_color and len(color_set) > 1) or len(color_set) > 5:
@@ -306,11 +306,11 @@ class _PersonalizationView(NamedPaginator):
         effect_id  = effect if effect is not None else self.style.effect_id
         color_list = colors if colors is not None else self.style.colors
 
-        multi_color = effect_id in (
+        multi_color = effect_id in {
             DisplayNameEffect.prism,
             DisplayNameEffect.gradient,
             DisplayNameEffect.gummy,
-        )
+        }
 
         if multi_color:
             if len(color_list) > 5:
