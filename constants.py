@@ -77,17 +77,17 @@ class DisplayNameFont(Enum):
     zilla_slab = 12
     """Tempo font."""
 
-    playpen_sans = 13  # Unavailable
-    """Not available for bot users. Monkey Bars font."""
+    playpen_sans = 13
+    """Monkey Bars font."""
 
-    orbitron = 14  # Unavailable
-    """Not available for bot users. Mainframe font."""
+    orbitron = 14
+    """Mainframe font."""
 
-    new_rocker = 15  # Unavailable
-    """Not available for bot users. Headbang font."""
+    new_rocker = 15
+    """Headbang font."""
 
-    kalam = 16  # Unavailable
-    """Not available for bot users. Journal font."""
+    kalam = 16
+    """Journal font."""
 
 
 class DisplayNameEffect(Enum):
@@ -109,9 +109,9 @@ class DisplayNameEffect(Enum):
     pop : `int`
         Pop effect. Takes one color along side it.
     prism : `int`
-        Takes five colors along side it.
+        Prism effect. Takes five colors along side it.
     gummy : `int`
-        Takes four colors along side it, but said colors may or not be restricted to a set of specific colors, as this is the case for human users.
+        Gummy effect. Takes five colors along side it.
     """
 
     solid = 1
@@ -131,11 +131,11 @@ class DisplayNameEffect(Enum):
 
     # glow = 6
 
-    prism = 7  # Unavailable
-    """Not available for bot users. Takes five colors along side it."""
+    prism = 7
+    """Prism effect. Takes five colors along side it."""
 
-    gummy = 8  # Unavailable
-    """Not available for bot users. Takes four colors along side it, but said colors may or not be restricted to a set of specific colors, as this is the case for human users."""
+    gummy = 8
+    """Gummy effect. Takes five colors along side it."""
 
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -248,13 +248,17 @@ COMMAND_EMOJI          = "<:command:1528781249718517951>"
 EMOJI_EMOJI            = "<:emoji:1528940345763827775>"
 REQUIRED_EMOJI         = "<:required:1558254401985187862>"
 
-GG_SANS_FONT_EMOJI   = "<:gg_sans_font:1543707473662447706>"
-TEMPO_FONT_EMOJI     = "<:tempo_font:1543699287366696980>"
-SAKURA_FONT_EMOJI    = "<:sakura_font:1543700368976912445>"
-JELLYBEAN_FONT_EMOJI = "<:jellybean_font:1543702658429223022>"
-MODERN_FONT_EMOJI    = "<:modern_font:1543704217116737537>"
-MEDIEVAL_FONT_EMOJI  = "<:medieval_font:1543705096658096160>"
-EIGHTBIT_FONT_EMOJI  = "<:8bit_font:1543701845338226890>"
-VAMPYRE_FONT_EMOJI   = "<:vampyre_font:1543706163793891328>"
+GG_SANS_FONT_EMOJI     = "<:gg_sans_font:1543707473662447706>"
+TEMPO_FONT_EMOJI       = "<:tempo_font:1543699287366696980>"
+SAKURA_FONT_EMOJI      = "<:sakura_font:1543700368976912445>"
+JELLYBEAN_FONT_EMOJI   = "<:jellybean_font:1543702658429223022>"
+MODERN_FONT_EMOJI      = "<:modern_font:1543704217116737537>"
+MEDIEVAL_FONT_EMOJI    = "<:medieval_font:1543705096658096160>"
+EIGHTBIT_FONT_EMOJI    = "<:8bit_font:1543701845338226890>"
+VAMPYRE_FONT_EMOJI     = "<:vampyre_font:1543706163793891328>"
+MONKEY_BARS_FONT_EMOJI = "<:monkey_bars_font:1558977784997482566>"
+MAINFRAME_FONT_EMOJI   = "<:mainframe_font:1558978438369648670>"
+HEADBANG_FONT_EMOJI    = "<:headbang_font:1558979103267225650>"
+JOURNAL_FONT_EMOJI     = "<:journal_font:1558979516368556125>"
 
 PET_CORDEX_EMOJI = "<a:pet_cordex:1526024713078571141>"

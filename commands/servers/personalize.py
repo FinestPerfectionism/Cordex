@@ -22,9 +22,13 @@ from bot.ui import (
 from constants import (
     EIGHTBIT_FONT_EMOJI,
     GG_SANS_FONT_EMOJI,
+    HEADBANG_FONT_EMOJI,
     JELLYBEAN_FONT_EMOJI,
+    JOURNAL_FONT_EMOJI,
+    MAINFRAME_FONT_EMOJI,
     MEDIEVAL_FONT_EMOJI,
     MODERN_FONT_EMOJI,
+    MONKEY_BARS_FONT_EMOJI,
     SAKURA_FONT_EMOJI,
     TEMPO_FONT_EMOJI,
     VAMPYRE_FONT_EMOJI,
@@ -35,17 +39,21 @@ from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import NamedPaginator, PageData
 from core.utilities import codeblock
 
-COLOR_PATTERN = re.compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6})?$")
+COLOR_PATTERN = re.compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6}){0,4}$")
 
 FONT_OPTIONS = [
-    ("GG Sans",   "Discord's GG Sans font.", "default",       GG_SANS_FONT_EMOJI),
-    ("Tempo",     "Tempo font.",             "zilla_slab",    TEMPO_FONT_EMOJI),
-    ("Sakura",    "Sakura font.",            "cherry_bomb",   SAKURA_FONT_EMOJI),
-    ("Jellybean", "Jellybean font.",         "chicle",        JELLYBEAN_FONT_EMOJI),
-    ("Modern",    "Modern font.",            "museo_moderno", MODERN_FONT_EMOJI),
-    ("Medieval",  "Medieval font.",          "neo_castel",    MEDIEVAL_FONT_EMOJI),
-    ("8Bit",      "8Bit font.",              "pixelify",      EIGHTBIT_FONT_EMOJI),
-    ("Vampyre",   "Vampyre font.",           "sinistre",      VAMPYRE_FONT_EMOJI),
+    ("GG Sans",    "Discord's GG Sans font.", "default",      GG_SANS_FONT_EMOJI),
+    ("Tempo",      "Tempo font.",             "zilla_slab",    TEMPO_FONT_EMOJI),
+    ("Sakura",     "Sakura font.",            "cherry_bomb",   SAKURA_FONT_EMOJI),
+    ("Jellybean",  "Jellybean font.",         "chicle",        JELLYBEAN_FONT_EMOJI),
+    ("Modern",     "Modern font.",            "museo_moderno", MODERN_FONT_EMOJI),
+    ("Medieval",   "Medieval font.",          "neo_castel",    MEDIEVAL_FONT_EMOJI),
+    ("8Bit",       "8Bit font.",              "pixelify",      EIGHTBIT_FONT_EMOJI),
+    ("Vampyre",    "Vampyre font.",           "sinistre",      VAMPYRE_FONT_EMOJI),
+    ("Monkey Bars", "Monkey Bars font.",       "playpen_sans",  MONKEY_BARS_FONT_EMOJI),
+    ("Mainframe",  "Mainframe font.",         "orbitron",      MAINFRAME_FONT_EMOJI),
+    ("Headbang",   "Headbang font.",          "new_rocker",    HEADBANG_FONT_EMOJI),
+    ("Journal",    "Journal font.",           "kalam",         JOURNAL_FONT_EMOJI),
 ]
 
 EFFECT_OPTIONS = [
@@ -54,6 +62,8 @@ EFFECT_OPTIONS = [
     ("Neon",     "neon"),
     ("Toon",     "toon"),
     ("Pop",      "pop"),
+    ("Prism",    "prism"),
+    ("Gummy",    "gummy"),
 ]
 
 type _ImageTypes = Literal["avatar", "banner"]
@@ -107,10 +117,10 @@ class _ColorsModal(Modal, title = "Edit Color(s)"):
         colors = "-".join(view.style.colors)
 
         self._colors = TextInput[Self](
-            placeholder = "ABCDEF or ABCDEF-123456",
+            placeholder = "ABCDEF or ABCDEF-123456-...",
             default     = colors,
             min_length  = 6,
-            max_length  = 13,
+            max_length  = 34,
         )
         self.colors  = Label[Self](
             text        = "Color(s)",
@@ -122,14 +132,18 @@ class _ColorsModal(Modal, title = "Edit Color(s)"):
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
-        value     = self._colors.value.strip()
-        gradient  = self.view.style.effect_id == DisplayNameEffect.gradient
-        color_set = value.split("-")
+        value       = self._colors.value.strip()
+        multi_color = self.view.style.effect_id in (
+            DisplayNameEffect.prism,
+            DisplayNameEffect.gradient,
+            DisplayNameEffect.gummy,
+        )
+        color_set   = value.split("-")
 
-        if not COLOR_PATTERN.match(value) or (not gradient and len(color_set) > 1):
+        if not COLOR_PATTERN.match(value) or (not multi_color and len(color_set) > 1) or len(color_set) > 5:
             error = (
-                "Gradient must be of the form `ABCDEF-123456`."
-                if gradient else
+                "Prism, Gradient, and Gummy must have between 1 and 5 colors of the form `ABCDEF-123456-...`."
+                if multi_color else
                 "Color must be of the form `ABCDEF`."
             )
 
@@ -292,15 +306,21 @@ class _PersonalizationView(NamedPaginator):
         effect_id  = effect if effect is not None else self.style.effect_id
         color_list = colors if colors is not None else self.style.colors
 
-        if effect_id == DisplayNameEffect.gradient:
-            if len(color_list) == 1:
-                color_list = [color_list[0], color_list[0]]
+        multi_color = effect_id in (
+            DisplayNameEffect.prism,
+            DisplayNameEffect.gradient,
+            DisplayNameEffect.gummy,
+        )
+
+        if multi_color:
+            if len(color_list) > 5:
+                color_list = color_list[:5]
         elif len(color_list) > 1:
             if colors is not None:
                 await send_bad_argument(
                     interaction,
                     title    = "set display name style",
-                    subtitle = {"colors" : "Only the gradient effect accepts two colors."},
+                    subtitle = {"colors" : "Only Prism, Gradient, and Gummy accept multiple colors."},
                 )
                 return
 
@@ -342,7 +362,7 @@ class _PersonalizationView(NamedPaginator):
         txt_colors = (
            f"**Color{s}**\n"
            f"{colors}\n"
-            "Set one hex color, or two for a gradient."
+            "Set one hex color, or up to five for Prism, Gradient, and Gummy."
         )
 
         txt_avatar = (
