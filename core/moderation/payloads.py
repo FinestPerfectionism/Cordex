@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from discord import Member
+from discord import Member, User
 
 from bot.types import GuildMessagable, GuildMessagableChannel
 
@@ -87,7 +87,7 @@ class BanAddPayload(_BaseAddPayload):
 
 
 @dataclass
-class BanRemovePayload(_BaseRemovePayload):
+class BanRemovePayload:
     """
     Represents a ban remove action.
 
@@ -95,13 +95,18 @@ class BanRemovePayload(_BaseRemovePayload):
     ----------
     moderator : `Member`
         The moderator responsible for the ban remove.
-    target : `Member`
+    target : `User`
         The target member of the ban remove.
     reason : `str`
         The reason for the ban remove.
     dm_user : `bool`
         Whether the user will be direct messaged.
     """
+
+    moderator : Member
+    target    : User
+    reason    : str
+    dm_user   : bool
 
 
 @dataclass

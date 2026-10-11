@@ -4,7 +4,15 @@ from typing import cast, final
 from warnings import warn
 
 from aiosqlite import Row
-from discord import AllowedMentions, Color, Forbidden, Guild, HTTPException, Member
+from discord import (
+    AllowedMentions,
+    Color,
+    Forbidden,
+    Guild,
+    HTTPException,
+    Member,
+    User,
+)
 
 from bot import Cordex, log
 from bot.types import GuildMessagable
@@ -90,17 +98,19 @@ class Case:
         The type of the case.
     moderator : `Member`
         The moderator of the case.
-    target : `Member | None`
+    target : `Member | User | None`
         The target of the case.
+        Only populated in user-type cases (including).
     reason : `str`
         The reason for the action in the case.
     channel : `GuildMessagable | None`
         The channel affected in the case.
+        Only populated in channel-type cases.
     created_at : `datetime`
         The datetime of when the case was created.
     dm_user : `bool | None`
         Whether the user was DMed upon the action in the case.
-        Only populated in member-type cases.
+        Only populated in user-type cases.
     seconds_to_delete : `int | None`
         The seconds to delete upon ban in the case.
         Only populated in ban cases.
@@ -115,14 +125,16 @@ class Case:
         Only populated in purge cases.
     expired : `bool`
         Whether the case is expired or not. A case expires when it's opposite action is performed (ex: a `Ban Add` expires when a `Ban Remove` occurs on the same person).
+        Only populated in additive-type cases.
     related_case_id : `int | None`
         The ID of the related case. For additive type cases, it is the ID of the case that expires it, and for removal type cases, it is ID of the case that it is expiring.
+        Only populated in cases in which it's action has an opposite removal type.
     """
 
     id                : int
     action_type       : ActionType
     moderator         : Member
-    target            : Member          | None
+    target            : Member | User   | None
     reason            : str
     channel           : GuildMessagable | None
     created_at        : datetime
@@ -160,7 +172,17 @@ class CasesManager:
         target_id    = cast("int | None", row["target_id"])
 
         moderator = self.guild.get_member(moderator_id) or await self.guild.fetch_member(moderator_id)
-        target    = self.guild.get_member(target_id)    or await self.guild.fetch_member(target_id) if target_id else None
+
+        raw_action  = cast("str", row["action_type"])
+        action_type = next(action for action in ActionType if action.value == raw_action or action.sql() == raw_action)
+
+        if target_id is not None:
+            if action_type == ActionType.ban_remove:
+                target = self.bot.get_user(target_id) or await self.bot.fetch_user(target_id)
+            else:
+                target = self.guild.get_member(target_id) or await self.guild.fetch_member(target_id)
+        else:
+            target = None
 
         channel_id = cast("int | None", row["channel_id"])
         channel    = self.guild.get_channel(channel_id) or await self.guild.fetch_channel(channel_id) if channel_id else None
@@ -168,9 +190,6 @@ class CasesManager:
         created_at = cast("str | datetime", row["created_at"])
         if isinstance(created_at, str):
             created_at = datetime.fromisoformat(created_at)
-
-        raw_action  = cast("str", row["action_type"])
-        action_type = next(action for action in ActionType if action.value == raw_action or action.sql() == raw_action)
 
         return Case(
             id                = cast("int", row["id"]),
@@ -321,6 +340,8 @@ class CasesManager:
                 container.add_item(VisibleLargeSeparator())
                 if target.guild_avatar:
                     container.add_item(ThumbnailSection(target_info, thumbnail = Thumbnail[view](target.guild_avatar.url)))
+                elif target.avatar:
+                    container.add_item(ThumbnailSection(target_info, thumbnail = Thumbnail[view](target.avatar.url)))
                 else:
                     container.add_text(target_info)
         else:
@@ -335,9 +356,15 @@ class CasesManager:
                f"{format_table(target_table)}"
             )
 
+            if isinstance(target, User) and not isinstance(target, Member):
+                fetched_target = await self.bot.fetch_user(target.id)
+                avatar = fetched_target.avatar
+            else:
+                avatar = target.guild_avatar or target.avatar
+
             container.add_item(VisibleLargeSeparator())
-            if target.guild_avatar:
-                container.add_item(ThumbnailSection(target_info, thumbnail = Thumbnail[view](target.guild_avatar.url)))
+            if avatar:
+                container.add_item(ThumbnailSection(target_info, thumbnail = Thumbnail[view](avatar.url)))
             else:
                 container.add_text(target_info)
 
@@ -445,7 +472,7 @@ class CasesManager:
                 target            = (
                     payload.target if not
                     isinstance(payload, LockdownAddPayload | LockdownRemovePayload) and
-                    isinstance(payload.target, Member) else None
+                    isinstance(payload.target, Member | User) else None
                 ),
                 reason            = reason,
                 channel           = payload.channel if isinstance(payload, PurgePayload | LockdownAddPayload | LockdownRemovePayload) else None,

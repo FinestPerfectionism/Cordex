@@ -435,7 +435,7 @@ class _ModerationModal(Modal):
                             ),
                         )
                     case ActionType.ban_remove:
-                        if not isinstance(modal.target, Member):
+                        if not isinstance(modal.target, User):
                             return
 
                         result = await actions.ban_remove(
