@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS Cases (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
     action_type  TEXT NOT NULL,
+    guild_id     INTEGER NOT NULL,
     moderator_id INTEGER NOT NULL,
     target_id    INTEGER,
     channel_id   INTEGER,

@@ -223,6 +223,7 @@ class CasesManager:
         # ⸻ Save the case.
 
         action_type = type(payload).__name__.replace("Payload", "").lower()
+        guild_id = self.guild.id
         moderator_id = payload.moderator.id
         reason = payload.reason
 
@@ -253,14 +254,14 @@ class CasesManager:
                 corresponding = action_type.replace("remove", "add")
                 if target_id is not None:
                     async with self.bot.db.execute(
-                        t"SELECT id FROM Cases WHERE target_id = {target_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
+                        t"SELECT id FROM Cases WHERE guild_id = {guild_id} AND target_id = {target_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
                     ) as cursor:
                         row = await cursor.fetchone()
                         if row is not None:
                             related_case_id = cast("int", row[0])
                 elif channel_id is not None:
                     async with self.bot.db.execute(
-                        t"SELECT id FROM Cases WHERE channel_id = {channel_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
+                        t"SELECT id FROM Cases WHERE guild_id = {guild_id} AND channel_id = {channel_id} AND action_type = {corresponding} AND expired = 0 ORDER BY id DESC LIMIT 1",
                     ) as cursor:
                         row = await cursor.fetchone()
                         if row is not None:
@@ -268,10 +269,10 @@ class CasesManager:
 
             cursor = await self.bot.db.execute(
                 t"INSERT INTO Cases ("
-                t"    action_type, moderator_id, target_id, reason, "
+                t"    guild_id, action_type, moderator_id, target_id, reason, "
                 t"    dm_user, seconds_to_delete, timeout_length, channel_id, purge_amount, purge_force, related_case_id"
                 t") VALUES ("
-                t"    {action_type}, {moderator_id}, {target_id}, {reason}, "
+                t"    {guild_id}, {action_type}, {moderator_id}, {target_id}, {reason}, "
                 t"    {dm_user}, {seconds_to_delete}, {timeout_length}, {channel_id}, {purge_amount}, {purge_force}, {related_case_id}"
                 t")",
             )
@@ -284,7 +285,7 @@ class CasesManager:
                 )
 
             await self.bot.db.execute(
-                t"UPDATE Cases SET expired = 1, related_case_id = {new_case_id} WHERE id = {related_case_id}",
+                t"UPDATE Cases SET expired = 1, related_case_id = {new_case_id} WHERE guild_id = {guild_id} AND id = {related_case_id}",
             )
             await self.bot.db.commit()
         except Exception:
@@ -478,7 +479,7 @@ class CasesManager:
             The case if found, otherwise None.
         """
         try:
-            async with self.bot.db.execute(t"SELECT * FROM Cases WHERE id = {case_id}") as cursor:
+            async with self.bot.db.execute(t"SELECT * FROM Cases WHERE guild_id = {self.guild.id} AND id = {case_id}") as cursor:
                 row = await cursor.fetchone()
                 if row is None:
                     return None
@@ -558,7 +559,7 @@ class CasesManager:
             )
             return await self.get_all_cases()
 
-        conditions: list[Template] = []
+        conditions : list[Template] = [t"guild_id = {self.guild.id}"]
 
         if action_type is not None:
             conditions.append(t"action_type = {action_type.sql()}")
@@ -576,7 +577,7 @@ class CasesManager:
             expired_int = int(expired)
             conditions.append(t"expired = {expired_int}")
 
-        query: Template = t"SELECT * FROM Cases"
+        query : Template = t"SELECT * FROM Cases"
 
         if conditions:
             query += t" WHERE "
