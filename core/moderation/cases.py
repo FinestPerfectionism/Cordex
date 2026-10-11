@@ -114,7 +114,9 @@ class Case:
         Whether the channel was force purged in the case.
         Only populated in purge cases.
     expired : `bool`
+        Whether the case is expired or not. A case expires when it's opposite action is performed (ex: a `Ban Add` expires when a `Ban Remove` occurs on the same person).
     related_case_id : `int | None`
+        The ID of the related case. For additive type cases, it is the ID of the case that expires it, and for removal type cases, it is ID of the case that it is expiring.
     """
 
     id                : int
@@ -524,7 +526,6 @@ class CasesManager:
         target_id    : int        | None = None,
         channel_id   : int        | None = None,
         expired      : bool       | None = None,
-        limit        : int        | None = None,
     ) -> list[Case]:
         """
         Filter cases from the database based on various criteria.
@@ -542,15 +543,13 @@ class CasesManager:
             The channel ID to filter by.
         expired : `bool | None = None`
             Whether the case is expired.
-        limit : `int | None = None`
-            The maximum number of cases to return.
 
         Returns
         -------
         `list[Case]`
             A list of all cases meeting the criteria.
         """
-        if all(argument is None for argument in (action_type, moderator_id, target_id, channel_id, expired, limit)):
+        if all(argument is None for argument in (action_type, moderator_id, target_id, channel_id, expired)):
             warn(
                 "Prefer CasesManager.get_all_cases over CasesManager.filter_by if getting all cases.",
                 category   = UserWarning,
@@ -585,9 +584,6 @@ class CasesManager:
                 query += condition
 
         query += t" ORDER BY id DESC"
-
-        if limit is not None:
-            query += t" LIMIT {limit}"
 
         try:
             async with self.bot.db.execute(query) as cursor:

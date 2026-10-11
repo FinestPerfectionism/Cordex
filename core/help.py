@@ -31,7 +31,7 @@ class HelpCommand:
 
 def command_help[GroupT : Group | commands.Cog, **P, T](
     *,
-    description : str | None = None,
+    description : str | None            = None,
     parameters  : dict[str, str] | None = None,
 ) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
     def decorator(command : Command[GroupT, P, T], /) -> Command[GroupT, P, T]:

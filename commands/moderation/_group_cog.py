@@ -8,6 +8,7 @@ from discord.app_commands import (
     Group,
     allowed_installs,
     check,
+    choices,
     command,
     describe,
     guild_only,
@@ -17,14 +18,14 @@ from discord.app_commands.checks import bot_has_permissions
 from discord.ext import commands
 
 from bot import Cordex, Interaction
+from bot.types import GuildMessagableChannel
 from core.exceptions import (
     BadEnvironmentGuild,
     UnconfiguredQuarantine,
     send_bad_operation,
 )
-from core.moderation import CasesManager
+from core.moderation import ActionType, CasesManager
 from core.state import requires_restriction
-from core.utilities import unimplemented
 
 from .cases import run_mod_cases_query, run_mod_cases_view
 from .primary.ban import (
@@ -284,9 +285,31 @@ class ModerationCommands(
         name        = "query",
         description = "Query moderation cases with various filters.",
     )
-    @unimplemented
-    async def cmd_mod_cases_query(self, interaction : Interaction) -> None:
-        await run_mod_cases_query(interaction)
+    @choices(
+        action_type = [
+            Choice(name = action_type.readable(), value = action_type.value)
+            for action_type in ActionType
+        ],
+    )
+    @rename(action_type = "action-type")
+    async def cmd_mod_cases_query(
+        self,
+        interaction : Interaction,
+        *,
+        action_type : str                    | None = None,
+        moderator   : Member                 | None = None,
+        target      : User                   | None = None,
+        channel     : GuildMessagableChannel | None = None,
+        expired     : bool                   | None = None,
+    ) -> None:
+        await run_mod_cases_query(
+            interaction,
+            action_type = action_type,
+            moderator   = moderator,
+            target      = target,
+            channel     = channel,
+            expired     = expired,
+        )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation cases view Command
@@ -298,7 +321,6 @@ class ModerationCommands(
     )
     @rename(case_id = "case-id")
     @describe(case_id = "The ID of the case to view. Defaults to all cases.")
-    @unimplemented
     async def cmd_mod_cases_view(self, interaction : Interaction, case_id : int | None = None) -> None:
         await run_mod_cases_view(interaction, case_id)
 

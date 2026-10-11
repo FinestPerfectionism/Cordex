@@ -1,12 +1,11 @@
-# from discord import AllowedMentions
-# from discord.utils import escape_markdown, format_dt
+from discord import AllowedMentions
+from discord.utils import escape_markdown, format_dt
 
 from bot import Interaction
+from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 from core.moderation import CasesManager
-
-# from core.paginator import UnnamedPaginator
-# from constants import COLOR_GREY
+from core.paginator import UnnamedPaginator
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation cases view Logic
@@ -37,8 +36,7 @@ async def run_mod_cases_view(interaction : Interaction, case_id : int | None = N
             )
             return
 
-        """
-        class CasePaginator(UnnamedPaginator):
+        class CasePaginator(UnnamedPaginator):  # TODO: Handle purge-type cases.
             def __init__(self) -> None:
                 super().__init__(
                     "# Server Cases",
@@ -46,7 +44,7 @@ async def run_mod_cases_view(interaction : Interaction, case_id : int | None = N
                         (
                             f"**{case.target.mention if case.target else "Unknown Member"} | {case.moderator.mention}**\n"
                             f"*{escape_markdown(case.reason)}*\n"
-                            f"-# Occured at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}.\n"
+                            f"-# Occurred at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}.\n"
                             f"-# Case ID: #{case.id}"
                         ) for case in cases
                     ],
@@ -61,4 +59,3 @@ async def run_mod_cases_view(interaction : Interaction, case_id : int | None = N
             ephemeral        = True,
             allowed_mentions = AllowedMentions.none(),
         )
-        """
