@@ -158,6 +158,7 @@ class ModerationCommands(
         name        = "view",
         description = "View all banned members.",
     )
+    @bot_has_permissions(ban_members = True)
     async def cmd_mod_primary_ban_view(self, interaction : Interaction) -> None:
         await run_mod_primary_ban_view(interaction)
 
@@ -290,6 +291,13 @@ class ModerationCommands(
             Choice(name = action_type.readable(), value = action_type.value)
             for action_type in ActionType
         ],
+    )
+    @describe(
+        action_type = "Filter by action type.",
+        moderator   = "Filter by moderator.",
+        target      = "Filter by user.",
+        channel     = "Filter by channel.",
+        expired     = "Filter by expiration.",
     )
     @rename(action_type = "action-type")
     async def cmd_mod_cases_query(

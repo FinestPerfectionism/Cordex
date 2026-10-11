@@ -7,6 +7,7 @@ from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 from core.moderation import ActionType, CasesManager
 from core.paginator import UnnamedPaginator
+from core.responses import FormatOverride, MessageType, format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation cases query Logic
@@ -26,20 +27,37 @@ async def run_mod_cases_query(
     if not guild:
         return
 
+    if all(case_filter is None for case_filter in (action_type, moderator, target, channel, expired)):
+        await send_bad_argument(
+            interaction,
+            subtitle = {None : "At least one filter must be chosen."},
+        )
+
     if channel and action_type != ActionType.purge:
         await send_bad_argument(
             interaction,
-            subtitle = {("action-type", "channel") : "`channel` cannot be passed if `action-type` is not `Purge`."},
+            subtitle = {("action-type", "channel") : "`channel` cannot be passed if `action-type` is not 'Purge'."},
         )
         return
 
-    cases = await CasesManager(interaction.client, guild).filter_by(
-        action_type  = ActionType(action_type),
-        moderator_id = moderator.id if moderator else None,
-        target_id    = target.id    if target    else None,
-        channel_id   = channel.id   if channel   else None,
-        expired      = expired,
+    cases = reversed(
+        await CasesManager(interaction.client, guild).filter_by(
+            action_type  = ActionType(action_type),
+            moderator_id = moderator.id if moderator else None,
+            target_id    = target.id    if target    else None,
+            channel_id   = channel.id   if channel   else None,
+            expired      = expired,
+        ),
     )
+
+    if not cases:
+        await format_send(
+            interaction,
+            MessageType.warning,
+            title    = "No cases found matching this filter",
+            override = FormatOverride(prefix = False),
+        )
+        return
 
     class CasePaginator(UnnamedPaginator):  # TODO: Handle purge-type cases.
         def __init__(self) -> None:
@@ -47,6 +65,7 @@ async def run_mod_cases_query(
                 "# Cases Found",
                 [
                     (
+                        f"## {case.action_type.readable()}\n"
                         f"**{case.target.mention if case.target else "Unknown Member"} | {case.moderator.mention}**\n"
                         f"*{escape_markdown(case.reason)}*\n"
                         f"-# Occurred at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}.\n"

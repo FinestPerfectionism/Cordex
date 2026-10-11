@@ -6,6 +6,7 @@ from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 from core.moderation import CasesManager
 from core.paginator import UnnamedPaginator
+from core.responses import FormatOverride, MessageType, format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation cases view Logic
@@ -28,11 +29,13 @@ async def run_mod_cases_view(interaction : Interaction, case_id : int | None = N
             )
             return
     else:
-        cases = await cases_manager.get_all_cases()
+        cases = reversed(await cases_manager.get_all_cases())
         if not cases:
-            await send_bad_argument(
+            await format_send(
                 interaction,
-                subtitle = {None : "No cases found."},
+                MessageType.warning,
+                title    = "No cases found",
+                override = FormatOverride(prefix = False),
             )
             return
 
