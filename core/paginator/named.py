@@ -117,9 +117,8 @@ class NamedPaginator(LayoutView):
     Raises
     ------
     ValueError
-        You passed only one page.
-    ValueError
-        You passed 'color' without passing 'container'.
+        - You passed only one page.
+        - You passed 'color' without passing 'container'.
     """
 
     def __init__(
@@ -159,7 +158,7 @@ class NamedPaginator(LayoutView):
         self._name_rows   : list[_NameRow] = [
             _NameRow(self, range(i, min(i + 5, len(self._pages))))
             for i in range(0, len(self._pages), 5)
-        ] if len(self._pages) >= 2 else []
+        ]
 
         self._above_items : _ItemsList = []
         self._over_items  : _ItemsList = []

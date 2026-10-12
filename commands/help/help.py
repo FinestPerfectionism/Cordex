@@ -72,6 +72,16 @@ class HelpView(LayoutView):
 
 
 async def run_help(interaction : Interaction, command_name : str) -> None:
+    """
+    Receive helpful information for a command.
+
+    Parameters
+    ----------
+    interaction : `Interaction`
+        The interaction context to run the command with.
+    command_name : `str`
+        The name of the command to view information for.
+    """
     command = utils_get(interaction.client.tree.walk_commands(), qualified_name = command_name)
     if not command:
         await send_bad_argument(

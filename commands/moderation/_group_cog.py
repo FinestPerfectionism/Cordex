@@ -310,8 +310,8 @@ class ModerationCommands(
         target      = "Filter by user.",
         channel     = "Filter by channel.",
         expired     = "Filter by expiration.",
-        before      = 'Filter cases that occurred before this date. Must be of the form "MM/DD/YYYY".',
-        after       = 'Filter cases that occurred after this date. Must be of the form "MM/DD/YYYY".',
+        before      = 'Filter cases that occurred before this date. Must be of the form "MM/DD/YYYY", "MM/DD/YY", or "MM/DD".',
+        after       = 'Filter cases that occurred after this date. Must be of the form "MM/DD/YYYY", "MM/DD/YY", or "MM/DD".',
     )
     @rename(action_type = "action-type")
     async def cmd_mod_cases_query(

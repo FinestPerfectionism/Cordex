@@ -46,40 +46,53 @@ async def run_mod_cases_query(
     expired : `bool | None = None`
         Filter by expiration.
     before : `str | None = None`
-        Filter cases that occurred before this date. Must be of the form "MM/DD/YYYY".
+        Filter cases that occurred before this date. Must be of the form "MM/DD/YYYY", "MM/DD/YY", or "MM/DD".
     after : `str | None = None`
-        Filter cases that occurred after this date. Must be of the form "MM/DD/YYYY".
+        Filter cases that occurred after this date. Must be of the form "MM/DD/YYYY", "MM/DD/YY", or "MM/DD".
     """
     guild = interaction.guild
     if not guild:
         return
 
-    if all(case_filter is None for case_filter in (action_type, moderator, target, channel, expired)):
+    if all(
+        case_filter is None for case_filter in
+        (action_type, moderator, target, channel, expired, before, after)
+    ):
         await send_bad_argument(
             interaction,
             subtitle = {None : "At least one filter must be chosen."},
         )
         return
 
+    def _parse_date(date : str) -> datetime | None:
+        for date_format in ("%m/%d/%Y", "%m/%d/%y", "%m/%d"):
+            try:
+                parsed_dt = datetime.strptime(date, date_format).replace(tzinfo = UTC)
+                if date_format == "%m/%d":
+                    parsed_dt = parsed_dt.replace(year = datetime.now(UTC).year)
+            except ValueError:
+                continue
+            else:
+                return parsed_dt
+        return None
+
     if before:
-        try:
-            before_datetime = datetime.strptime(before, "%m/%d/%Y").replace(tzinfo = UTC)
-        except ValueError:
+        before_datetime = _parse_date(before)
+        if not before_datetime:
             await send_bad_argument(
                 interaction,
-                subtitle = {"before" : "Invalid date passed. A date must be of the form `MM/DD/YYYY`."},
+                subtitle = {"before" : "Invalid date passed. A date must be of the form `MM/DD/YYYY`, `MM/DD/YY`, or `MM/DD`."},
             )
             return
     else:
         before_datetime = None
 
     if after:
-        try:
-            after_datetime = datetime.strptime(after, "%m/%d/%Y").replace(tzinfo = UTC)
-        except ValueError:
+        after_datetime = _parse_date(after)
+        if not after_datetime:
             await send_bad_argument(
                 interaction,
-                subtitle = {"after" : "Invalid date passed. A date must be of the form `MM/DD/YYYY`."},
+                subtitle = {"after" : "Invalid date passed. A date must be of the form `MM/DD/YYYY`, `MM/DD/YY`, or `MM/DD`."},
             )
             return
     else:

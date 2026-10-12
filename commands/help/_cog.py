@@ -1,6 +1,6 @@
 from typing import final
 
-from discord.app_commands import Choice, Group, command, describe, rename
+from discord.app_commands import Choice, Group, command, describe
 from discord.ext.commands import Cog
 
 from bot import Cordex, Interaction
@@ -28,12 +28,11 @@ class HelpCommand(Cog):
         name        = "help",
         description = "Receive helpful information for a command.",
     )
-    @rename(command_name = "command-name")
-    @describe(command_name = "The name of the command to view information for.")
-    async def cmd_help(self, interaction : Interaction, command_name : str) -> None:
-        await run_help(interaction, command_name)
+    @describe(command = "The command to view information for.")
+    async def cmd_help(self, interaction : Interaction, command : str) -> None:
+        await run_help(interaction, command)
 
-    @cmd_help.autocomplete("command_name")
+    @cmd_help.autocomplete("command")
     async def autocomplete_cmdhelp(self, interaction : Interaction, current : str) -> list[Choice[str]]:
         return [
             Choice(name = f"/{cmd.qualified_name}", value = cmd.qualified_name)
