@@ -228,7 +228,7 @@ class Actions:
     # lockdown_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_view(self) -> ...:
+    async def lockdown_view(self) -> None:
         """
         Display a paginator (`UnnamedPaginator`) of all channels in lockdown.
 
