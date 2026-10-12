@@ -1,10 +1,10 @@
-import re
 from asyncio import gather, sleep
+from re import compile as regex_compile
 from typing import Self, final
 
 from discord import AllowedMentions, Forbidden, MediaGalleryItem, Message
 from discord.abc import Messageable
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 from bot import Cordex
 from bot.ui import (
@@ -16,7 +16,7 @@ from bot.ui import (
     VisibleLargeSeparator,
 )
 
-MESSAGE_LINK_PATTERN = re.compile(r"https://discord(?:app)?\.com/channels/(\d+|@me)/(\d+)/(\d+)")
+MESSAGE_LINK_PATTERN = regex_compile(r"https://discord(?:app)?\.com/channels/(\d+|@me)/(\d+)/(\d+)")
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Preview Handling
@@ -48,7 +48,7 @@ class _PreviewView(LayoutView):
 
 
 @final
-class Preview(commands.Cog):
+class Preview(Cog):
     """Provides message previews for Discord message links."""
 
     def __init__(self, bot : Cordex) -> None:
@@ -89,14 +89,14 @@ class Preview(commands.Cog):
                     continue
 
             files = await gather(
-                    *(
-                        attachment.to_file() for attachment in [
-                            attachment for attachment in target_message.attachments
-                            if attachment.content_type and
-                            not attachment.content_type.startswith(("image/", "video/"))
-                        ]
-                    ),
-                )
+                *(
+                    attachment.to_file() for attachment in [
+                        attachment for attachment in target_message.attachments
+                        if attachment.content_type and
+                        not attachment.content_type.startswith(("image/", "video/"))
+                    ]
+                ),
+            )
             view  = _PreviewView(
                 target_message,
                 match.group(0),
@@ -109,11 +109,11 @@ class Preview(commands.Cog):
             else:
                 await message.reply(files = files, view = view, allowed_mentions = AllowedMentions.none())
 
-    @commands.Cog.listener("on_message")
+    @Cog.listener("on_message")
     async def _listener_preview_message(self, message : Message) -> None:
         await self._process_message_preview(message)
 
-    @commands.Cog.listener("on_message_edit")
+    @Cog.listener("on_message_edit")
     async def _listener_preview_messageedit(self, _before : Message, after : Message) -> None:
         await self._process_message_preview(after)
 

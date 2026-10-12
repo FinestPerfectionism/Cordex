@@ -9,7 +9,7 @@ from discord.app_commands import (
     describe,
     guild_only,
 )
-from discord.ext import commands
+from discord.ext.commands import GroupCog
 
 from bot import Cordex, Interaction
 
@@ -27,7 +27,7 @@ from .info import run_member_info
 @guild_only
 @allowed_installs(guilds = True, users = False)
 class MemberCommands(
-    commands.GroupCog,
+    GroupCog,
     name        = "member",
     description = "Member commands.",
 ):

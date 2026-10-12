@@ -10,7 +10,7 @@ from discord.app_commands import (
     rename,
 )
 from discord.app_commands.checks import bot_has_permissions
-from discord.ext import commands
+from discord.ext.commands import GroupCog
 
 from bot import Cordex, Interaction
 from bot.types import GuildMessagable, GuildMessagableChannel
@@ -31,7 +31,7 @@ from .sync import run_channel_sync
 @guild_only
 @allowed_installs(guilds = True, users = False)
 class ChannelCommands(
-    commands.GroupCog,
+    GroupCog,
     name        = "channel",
     description = "Channel commands.",
 ):

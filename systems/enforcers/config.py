@@ -2,7 +2,8 @@ from typing import final, override
 
 from discord import Guild, Role
 from discord.abc import GuildChannel
-from discord.ext import commands, tasks
+from discord.ext.commands import Cog
+from discord.ext.tasks import loop
 
 from bot import Cordex, log
 
@@ -12,7 +13,7 @@ from bot import Cordex, log
 
 
 @final
-class ConfigEnforcer(commands.Cog):
+class ConfigEnforcer(Cog):
     """Resets configurations when the bot leaves or when the bot is (possibly due to the bot leaving while offline)."""
 
     def __init__(self, bot : Cordex) -> None:
@@ -29,7 +30,7 @@ class ConfigEnforcer(commands.Cog):
     async def cog_unload(self) -> None:
         self._loop_configenforce.cancel()
 
-    @tasks.loop(minutes = 10)
+    @loop(minutes = 10)
     async def _loop_configenforce(self) -> None:
         configured_guild_ids = await self._get_configured_guilds()
         true_guild_ids       = {guild.id for guild in self.bot.guilds}
@@ -52,11 +53,11 @@ class ConfigEnforcer(commands.Cog):
     async def _beforeloop_configenforce(self) -> None:
         await self.bot.wait_until_ready()
 
-    @commands.Cog.listener("on_guild_leave")
+    @Cog.listener("on_guild_leave")
     async def _listener_config_guildleave(self, guild : Guild) -> None:
         await self.bot.config(guild).reset()
 
-    @commands.Cog.listener("on_guild_channel_delete")
+    @Cog.listener("on_guild_channel_delete")
     async def _listener_config_channeldelete(self, channel : GuildChannel) -> None:
         config = self.bot.config(channel.guild)
 
@@ -69,7 +70,7 @@ class ConfigEnforcer(commands.Cog):
         if channel.id == await config.get_moderation_logging_channel(by_id = True):
             await config.set_moderation_logging_channel(None)
 
-    @commands.Cog.listener("on_guild_role_delete")
+    @Cog.listener("on_guild_role_delete")
     async def _listener_config_roledelete(self, role : Role) -> None:
         config = self.bot.config(role.guild)
         if role.id == await config.get_moderation_quarantine_role(by_id = True):

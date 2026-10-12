@@ -2,7 +2,8 @@ from typing import final, override
 
 from discord import HTTPException
 from discord.abc import GuildChannel
-from discord.ext import commands, tasks
+from discord.ext.commands import Cog
+from discord.ext.tasks import loop
 
 from bot import Cordex
 from core.moderation import LockdownManager
@@ -13,7 +14,7 @@ from core.moderation import LockdownManager
 
 
 @final
-class LockdownEnforcer(commands.Cog):
+class LockdownEnforcer(Cog):
     """Enforces lockdowns by ensuring specific channel permissions are configured properly."""
 
     def __init__(self, bot : Cordex) -> None:
@@ -25,7 +26,7 @@ class LockdownEnforcer(commands.Cog):
     async def cog_unload(self) -> None:
         self._loop_lockdownenforce.cancel()
 
-    @tasks.loop(minutes = 10)
+    @loop(minutes = 10)
     async def _loop_lockdownenforce(self) -> None:
         for guild in self.bot.guilds:
             manager = LockdownManager(self.bot, guild)
@@ -39,7 +40,7 @@ class LockdownEnforcer(commands.Cog):
     async def _beforeloop_lockdowneenforce(self) -> None:
         await self.bot.wait_until_ready()
 
-    @commands.Cog.listener("on_guild_channel_update")
+    @Cog.listener("on_guild_channel_update")
     async def _listener_lockdownenforce_channelupdate(self, before : GuildChannel, after : GuildChannel) -> None:
         if before.overwrites == after.overwrites:
             return
@@ -47,7 +48,7 @@ class LockdownEnforcer(commands.Cog):
         manager = LockdownManager(self.bot, after.guild)
         await manager.enforce()
 
-    @commands.Cog.listener("on_guild_channel_delete")
+    @Cog.listener("on_guild_channel_delete")
     async def _listener_lockdownenforce_channeldelete(self, channel : GuildChannel) -> None:
         manager = LockdownManager(self.bot, channel.guild)
         if channel in await manager.get_channels():

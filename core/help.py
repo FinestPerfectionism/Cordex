@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from discord import AppCommandOptionType
 from discord.app_commands import Choice, Command, Group
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Help State
@@ -29,7 +29,7 @@ class HelpCommand:
     parameters  : list[HelpParameter]
 
 
-def command_help[GroupT : Group | commands.Cog, **P, T](
+def command_help[GroupT : Group | Cog, **P, T](
     *,
     description : str | None            = None,
     parameters  : dict[str, str] | None = None,
@@ -56,7 +56,7 @@ def command_help[GroupT : Group | commands.Cog, **P, T](
     return decorator
 
 
-def get_command_help[GroupT : Group | commands.Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> HelpCommand | None:
+def get_command_help[GroupT : Group | Cog, **P, T](command : Command[GroupT, P, T] | Group, /) -> HelpCommand | None:
     if isinstance(command, Group):
         return None
 

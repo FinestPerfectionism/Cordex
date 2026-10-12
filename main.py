@@ -1,8 +1,8 @@
-import sys
 from asyncio import run
 from logging import INFO
 from logging import basicConfig as basic_config
 from os import getenv
+from sys import exit as sys_exit
 
 from dotenv import load_dotenv
 
@@ -43,4 +43,4 @@ if __name__ == "__main__":
         log.info("Received error — KeyboardInterrupt")
     except Exception:
         log.exception("Received fatal error during startup")
-        sys.exit(1)
+        sys_exit(1)

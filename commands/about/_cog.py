@@ -1,7 +1,7 @@
 from typing import final
 
 from discord.app_commands import command
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 from bot import Cordex, Interaction
 from core.state import unrestrictable
@@ -14,7 +14,7 @@ from .about import run_about
 
 
 @final
-class AboutCommand(commands.Cog):
+class AboutCommand(Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot

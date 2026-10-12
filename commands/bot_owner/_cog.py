@@ -3,10 +3,9 @@ from contextlib import suppress
 from typing import final
 
 from discord import Forbidden, HTTPException, Member, Message, Reaction, User
-from discord.ext import commands
-from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
-    command as prefix_command,
-)
+from discord.ext.commands import Cog
+from discord.ext.commands import check as prefix_check
+from discord.ext.commands import command as prefix_command
 
 from bot import Context, Cordex
 from core.exceptions import BadPermissionsPrefixCommand
@@ -25,7 +24,7 @@ def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
 
         raise BadPermissionsPrefixCommand
 
-    return commands.check(predicate)(func)
+    return prefix_check(predicate)(func)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
@@ -33,12 +32,12 @@ def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
 
 
 @final
-class BotOwnerCommands(commands.Cog):
+class BotOwnerCommands(Cog):
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
-    @commands.Cog.listener("on_message_edit")
+    @Cog.listener("on_message_edit")
     async def listener_cmdeval_messageedit(self, before : Message, after : Message) -> None:
         author = before.author
 
@@ -63,7 +62,7 @@ class BotOwnerCommands(commands.Cog):
 
         await self.bot.process_commands(after)
 
-    @commands.Cog.listener("on_reaction_add")
+    @Cog.listener("on_reaction_add")
     async def listener_cmdeval_reactionadd(self, reaction : Reaction, user : Member | User) -> None:
         message = reaction.message
 

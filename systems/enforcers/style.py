@@ -1,7 +1,7 @@
 from typing import final
 
 from discord import Guild
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 from bot import Cordex
 
@@ -11,14 +11,14 @@ from bot import Cordex
 
 
 @final
-class StyleEnforcer(commands.Cog):
+class StyleEnforcer(Cog):
     """Sets the bot's name style upon joining a guild."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
-    @commands.Cog.listener("on_guild_join")
+    @Cog.listener("on_guild_join")
     async def _listener_styleenforce_guildjoin(self, guild : Guild) -> None:
         await self.bot.reset_name_style(guild)
 

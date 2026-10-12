@@ -1,7 +1,7 @@
 from typing import Self, final
 
 from discord import AllowedMentions, Guild, TextChannel
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 from bot import Cordex
 from bot.ui import (
@@ -20,14 +20,14 @@ from core.utilities import format_now, format_table
 
 
 @final
-class GuildRemoveLogging(commands.Cog):
+class GuildRemoveLogging(Cog):
     """Logs when the bot is removed from a guild."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
-    @commands.Cog.listener("on_guild_remove")
+    @Cog.listener("on_guild_remove")
     async def _listener_guild_guildremove(self, guild : Guild) -> None:
         owner = guild.owner or await self.bot.fetch_user(guild.owner_id) if guild.owner_id else None
         if not owner:

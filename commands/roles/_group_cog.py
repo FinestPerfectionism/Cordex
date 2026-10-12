@@ -10,7 +10,7 @@ from discord.app_commands import (
     guild_only,
     rename,
 )
-from discord.ext import commands
+from discord.ext.commands import GroupCog
 
 from bot import Cordex, Interaction
 from core.state import requires_restriction
@@ -29,7 +29,7 @@ from .permissions import PermissionsFilter, run_role_permissions
 @guild_only
 @allowed_installs(guilds = True, users = False)
 class RoleCommands(
-    commands.GroupCog,
+    GroupCog,
     name        = "role",
     description = "Role commands.",
 ):

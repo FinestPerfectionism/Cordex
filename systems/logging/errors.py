@@ -11,7 +11,9 @@ from discord.app_commands import (
     BotMissingPermissions,
     CommandOnCooldown,
 )
-from discord.ext import commands
+from discord.ext.commands import Cog, MissingRequiredArgument
+from discord.ext.commands import CommandError as PrefixCommandError
+from discord.ext.commands import CommandNotFound as PrefixCommandNotFound
 
 from bot import Context, ContextOrInteraction, Cordex, Interaction
 from bot.ui import Container, LayoutView, TextDisplay, VisibleLargeSeparator
@@ -43,7 +45,7 @@ from core.utilities import codeblock, format_command, format_now, format_table
 
 
 @final
-class ErrorLogger(commands.Cog):
+class ErrorLogger(Cog):
     """Logs when Cordex errors."""
 
     def __init__(self, bot : Cordex) -> None:
@@ -187,7 +189,7 @@ class ErrorLogger(commands.Cog):
     # Discord Event Errors
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.Cog.listener("on_error")
+    @Cog.listener("on_error")
     async def _error_handler(
         self,
         event     : str,
@@ -283,12 +285,12 @@ class ErrorLogger(commands.Cog):
     # Prefix Command Errors
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @commands.Cog.listener("on_command_error")
-    async def _prefix_command_error_handler(self, ctx : Context, error : commands.CommandError) -> None:
-        if isinstance(error, commands.CommandNotFound):
+    @Cog.listener("on_command_error")
+    async def _prefix_command_error_handler(self, ctx : Context, error : PrefixCommandError) -> None:
+        if isinstance(error, PrefixCommandNotFound):
             return
 
-        if isinstance(error, commands.MissingRequiredArgument):
+        if isinstance(error, MissingRequiredArgument):
             await send_bad_argument(ctx, subtitle = {error.param.name : "This is a required argument that was omitted."})
             return
 

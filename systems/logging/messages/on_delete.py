@@ -3,7 +3,7 @@ from typing import Self, final
 
 from discord import AllowedMentions, Message
 from discord import File as DiscordFile
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 from bot import Cordex
 from bot.types import GuildMessagable
@@ -19,14 +19,14 @@ from ._base import attachments_display, channel_display, clean_and_truncate
 
 
 @final
-class MessageDeleteLogging(commands.Cog):
+class MessageDeleteLogging(Cog):
     """Logs message deletion for guilds with it enabled."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
-    @commands.Cog.listener("on_message_delete")
+    @Cog.listener("on_message_delete")
     async def _listener_delete_messagedelete(self, message : Message) -> None:
         content     = message.content
         attachments = message.attachments

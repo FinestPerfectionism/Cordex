@@ -3,7 +3,7 @@ from secrets import choice
 from typing import final
 
 from discord import Message
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 from bot import Cordex
 
@@ -13,14 +13,14 @@ from bot import Cordex
 
 
 @final
-class Fun(commands.Cog):
+class Fun(Cog):
     """Who doesn't like a little bit of fun? Responds to message greeting the bot with a couple of greetings."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
-    @commands.Cog.listener("on_message")
+    @Cog.listener("on_message")
     async def _listener_fun_message(self, message : Message) -> None:
         content   = message.content.lower()
         reference = message.reference

@@ -1,6 +1,6 @@
 # pyright: reportIncompatibleMethodOverride = false
 
-import re
+from re import compile as regex_compile
 from typing import Literal, Self, final, override
 
 from discord import HTTPException, SelectOption
@@ -39,7 +39,7 @@ from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import NamedPaginator, PageData
 from core.utilities import codeblock
 
-COLOR_PATTERN = re.compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6}){0,4}$")
+COLOR_PATTERN = regex_compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6}){0,4}$")
 
 FONT_OPTIONS = [
     ("GG Sans",    "Discord's GG Sans font.", "default",      GG_SANS_FONT_EMOJI),
@@ -50,7 +50,7 @@ FONT_OPTIONS = [
     ("Medieval",   "Medieval font.",          "neo_castel",    MEDIEVAL_FONT_EMOJI),
     ("8Bit",       "8Bit font.",              "pixelify",      EIGHTBIT_FONT_EMOJI),
     ("Vampyre",    "Vampyre font.",           "sinistre",      VAMPYRE_FONT_EMOJI),
-    ("Monkey Bars", "Monkey Bars font.",       "playpen_sans",  MONKEY_BARS_FONT_EMOJI),
+    ("Monkey Bars", "Monkey Bars font.",      "playpen_sans",  MONKEY_BARS_FONT_EMOJI),
     ("Mainframe",  "Mainframe font.",         "orbitron",      MAINFRAME_FONT_EMOJI),
     ("Headbang",   "Headbang font.",          "new_rocker",    HEADBANG_FONT_EMOJI),
     ("Journal",    "Journal font.",           "kalam",         JOURNAL_FONT_EMOJI),

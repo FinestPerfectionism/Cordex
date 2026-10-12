@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from discord import StageChannel, TextChannel, Thread, VoiceChannel
 from discord.app_commands import Command, Group
-from discord.ext.commands import Cog  # pyright: ignore[reportMissingTypeStubs]
+from discord.ext.commands import Cog
 
 from constants import DisplayNameEffect, DisplayNameFont
 

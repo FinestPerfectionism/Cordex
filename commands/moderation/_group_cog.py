@@ -15,7 +15,7 @@ from discord.app_commands import (
     rename,
 )
 from discord.app_commands.checks import bot_has_permissions
-from discord.ext import commands
+from discord.ext.commands import GroupCog
 
 from bot import Cordex, Interaction
 from bot.types import GuildMessagableChannel
@@ -76,7 +76,7 @@ def quarantine_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
 @requires_restriction
 @allowed_installs(guilds = True, users = False)
 class ModerationCommands(
-    commands.GroupCog,
+    GroupCog,
     name        = "moderation",
     description = "Moderation commands.",
 ):

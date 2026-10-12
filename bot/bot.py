@@ -24,13 +24,9 @@ from discord import Embed, File, Guild, Intents, Member, Message, Status, User
 from discord import Interaction as BaseInteraction
 from discord.app_commands import AppCommand as APICommand
 from discord.app_commands import CommandTree, ContextMenu
-from discord.ext import commands
-from discord.ext.commands import (  # pyright: ignore[reportMissingTypeStubs]
-    Context as BaseContext,
-)
-from discord.ext.commands.view import (  # pyright: ignore[reportMissingTypeStubs]
-    StringView,
-)
+from discord.ext.commands import Bot, Cog, when_mentioned_or
+from discord.ext.commands import Context as BaseContext
+from discord.ext.commands.view import StringView
 from discord.http import Route
 
 from constants import DENIED_EMOJI, DEVELOPER_IDS, DisplayNameEffect, DisplayNameFont
@@ -246,14 +242,14 @@ ContextOrInteraction = Interaction | Context
 
 
 @final
-class Cordex(commands.Bot):
+class Cordex(Bot):
     """The main bot class."""
 
     def __init__(self) -> None:
         super().__init__(
             chunk_guilds_at_startup = True,
             case_insensitive        = True,
-            command_prefix          = commands.when_mentioned_or("."),
+            command_prefix          = when_mentioned_or("."),
             help_command            = None,
             intents                 = Intents.all(),
             status                  = Status.online,
@@ -271,7 +267,7 @@ class Cordex(commands.Bot):
         self.developers : list[User] = []
 
     @override
-    async def add_cog(self, cog : commands.Cog, /) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
+    async def add_cog(self, cog : Cog, /) -> None:  # pyright: ignore[reportIncompatibleMethodOverride]
         await super().add_cog(cog)
 
         if getattr(cog.__class__, "__requires_restriction__", False):

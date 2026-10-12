@@ -1,7 +1,7 @@
 from typing import Self, final
 
 from discord import AllowedMentions, Guild, TextChannel
-from discord.ext import commands
+from discord.ext.commands import Cog
 
 from bot import Cordex
 from bot.ui import (
@@ -20,14 +20,14 @@ from core.utilities import format_now, format_table
 
 
 @final
-class GuildJoinLogging(commands.Cog):
+class GuildJoinLogging(Cog):
     """Logs when the bot is added to a guild."""
 
     def __init__(self, bot : Cordex) -> None:
         super().__init__()
         self.bot = bot
 
-    @commands.Cog.listener("on_guild_join")
+    @Cog.listener("on_guild_join")
     async def _listener_guild_guildjoin(self, guild : Guild) -> None:
         owner = guild.owner or await self.bot.fetch_user(guild.owner_id) if guild.owner_id else None
         if not owner:

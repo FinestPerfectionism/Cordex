@@ -1,7 +1,7 @@
 from typing import final
 
 from discord.app_commands import allowed_installs, command, guild_only
-from discord.ext import commands
+from discord.ext.commands import GroupCog
 
 from bot import Cordex, Interaction
 from core.state import requires_restriction
@@ -20,7 +20,7 @@ from .personalize import run_server_personalize
 @guild_only
 @allowed_installs(guilds = True, users = False)
 class ServerCommands(
-    commands.GroupCog,
+    GroupCog,
     name        = "server",
     description = "Server commands.",
 ):
