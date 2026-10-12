@@ -133,7 +133,7 @@ class _ColorsModal(Modal, title = "Edit Color(s)"):
     @override
     async def on_submit(self, interaction : Interaction) -> None:
         value       = self._colors.value.strip()
-        multi_color = self.view.style.effect_id in {
+        multi_color = self.view.style.effect in {
             DisplayNameEffect.prism,
             DisplayNameEffect.gradient,
             DisplayNameEffect.gummy,
@@ -302,11 +302,11 @@ class _PersonalizationView(NamedPaginator):
         if not guild:
             return
 
-        font_id    = font   if font   is not None else self.style.font_id
-        effect_id  = effect if effect is not None else self.style.effect_id
+        font       = font   if font   is not None else self.style.font
+        effect     = effect if effect is not None else self.style.effect
         color_list = colors if colors is not None else self.style.colors
 
-        multi_color = effect_id in {
+        multi_color = effect in {
             DisplayNameEffect.prism,
             DisplayNameEffect.gradient,
             DisplayNameEffect.gummy,
@@ -329,9 +329,9 @@ class _PersonalizationView(NamedPaginator):
         try:
             await interaction.client.set_name_style(
                 guild,
-                font_id   = font_id,
-                effect_id = effect_id,
-                colors    = color_list,
+                font   = font,
+                effect = effect,
+                colors = color_list,
             )
         except Exception as e:
             await send_bad_operation(
@@ -341,9 +341,7 @@ class _PersonalizationView(NamedPaginator):
             )
             return
 
-        updated = await interaction.client.get_name_style(guild)
-        if updated:
-            self.style = updated
+        self.style = await interaction.client.get_name_style(guild)
 
         self.update_pages()
 
@@ -353,10 +351,10 @@ class _PersonalizationView(NamedPaginator):
         colors = "-".join(f"`{color}`" for color in self.style.colors) or "None"
 
         for option in self.font_select.options:
-            option.default = option.value == self.style.font_id.name
+            option.default = option.value == self.style.font.name
 
         for option in self.effect_select.options:
-            option.default = option.value == self.style.effect_id.name
+            option.default = option.value == self.style.effect.name
 
         s = "s" if len(self.style.colors) > 1 else ""
         txt_colors = (
@@ -422,8 +420,6 @@ async def run_server_personalize(interaction : Interaction) -> None:
         return
 
     style = await interaction.client.get_name_style(guild)
-    if not style:
-        return
 
     me = guild.me
     if not me:

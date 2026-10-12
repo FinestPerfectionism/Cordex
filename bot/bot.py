@@ -4,7 +4,6 @@
 
 from asyncio import to_thread
 from collections.abc import Callable
-from contextlib import suppress
 from inspect import getattr_static, getsource
 from io import BytesIO
 from logging import getLogger as get_logger
@@ -118,15 +117,17 @@ class _ContextClass(BaseContext["Cordex"]):
 
         return await self.send_button(func)
 
+    type Check = Callable[[object], bool]
+
     async def show_attrs(
         self,
         target   : object,
-        check    : Callable[[object], bool] | None = None,
+        check    : Check | None = None,
         /,
         *,
-        tall     : bool | None = None,
-        dunders  : bool        = False,
-        privates : bool        = False,
+        tall     : bool  | None = None,
+        dunders  : bool         = False,
+        privates : bool         = False,
     ) -> Message:
         def _filter(attr : str) -> bool:
             if attr.startswith("__") and attr.endswith("__"):
@@ -166,6 +167,12 @@ class _ContextClass(BaseContext["Cordex"]):
         return await self.send(content = content, file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
 
     async def show_def(self, target : InspectableObject, /) -> Message:
+        if isinstance(target, property):
+            fget = target.fget
+            if not fget:
+                return await self.send("Property has no getter method.")
+            target = fget
+
         source = getsource(target)
         msg    = (
             "```py\n"
@@ -181,12 +188,6 @@ class _ContextClass(BaseContext["Cordex"]):
         content  = f"```{module}/{qualname}```"
         filename = f"{module.split('/')[-1]}.py"
         return await self.send(content = content, file = File(BytesIO(source.encode()), filename = filename))
-
-    async def reference_delete(self) -> None:
-        if self.message.reference and self.message.reference.message_id:
-            with suppress(Exception):
-                reference_message = await self.channel.fetch_message(self.message.reference.message_id)
-                await reference_message.delete()
 
 
 class _Tree(CommandTree):
@@ -278,15 +279,24 @@ class Cordex(Bot):
             for command in cog.walk_app_commands():
                 command.extras["unrestrictable"] = True
 
-    @property
-    def id(self) -> int | None:
-        return self.user.id if self.user else None
-
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Configuration
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     def config(self, guild : Guild) -> Config:
+        """
+        Get the configuration for a guild.
+
+        Parameters
+        ----------
+        guild : `Guild`
+            The guild to get the configuration for.
+
+        Returns
+        -------
+        `Config`
+            The configuration for this guild.
+        """
         return Config(self, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -295,25 +305,88 @@ class Cordex(Bot):
 
     async def set_name_style(
         self,
-        guild     : Guild,
+        guild  : Guild,
         /,
         *,
-        font_id   : DisplayNameFont,
-        effect_id : DisplayNameEffect,
-        colors    : list[str],
+        font   : DisplayNameFont,
+        effect : DisplayNameEffect,
+        colors : list[str],
     ) -> None:
+        """
+        Set the bot's display name style for this guild.
+
+        Parameters
+        ----------
+        guild : `Guild`
+            The guild to set the display name style in.
+        /
+        *
+        font : `DisplayNameFont`
+            The font to use in the display name style.
+        effect : `DisplayNameEffect`
+            The effect to use in the display name style.
+        colors : `list[str]`
+            The colors to use in the display name style. The gradient, prism, and gummy effects take up to five colors; all else take specifically one.
+
+        Raises
+        ------
+        ValueError
+            - No colors were passed.
+            - Too many colors were passed.
+        """
+        multi_colored = {
+            DisplayNameEffect.gradient,
+            DisplayNameEffect.prism,
+            DisplayNameEffect.gummy,
+        }
+
+        if len(colors) == 0 and effect not in multi_colored:
+            error = "0 colors were passed; exepected 1"
+            raise ValueError(error)
+
+        if len(colors) == 0 and effect in multi_colored:
+            error = "0 colors were passed; exepected 1 to 5"
+            raise ValueError(error)
+
+        if len(colors) > 1 and effect not in multi_colored:
+            error = f"{len(colors)} colors were passed; exepected 1"
+            raise ValueError(error)
+
+        if len(colors) > 5 and effect in multi_colored:
+            error = f"{len(colors)} colors were passed; exepected 1 to 5"
+            raise ValueError(error)
+
         color_integers = [int(hex_code, 16) for hex_code in colors]
 
         await self.http.request(
             route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = guild.id),
             json  = {
-                "display_name_font_id"   : font_id.value,
-                "display_name_effect_id" : effect_id.value,
+                "display_name_font_id"   : font.value,
+                "display_name_effect_id" : effect.value,
                 "display_name_colors"    : color_integers,
             },
         )
 
-    async def get_name_style(self, guild : Guild, /) -> NameStyleResult | None:
+    async def get_name_style(self, guild : Guild, /) -> NameStyleResult:
+        """
+        Get the bot's display name style for this guild.
+
+        Parameters
+        ----------
+        guild : `Guild`
+            The guild to get the display name style in.
+        /
+
+        Returns
+        -------
+        `NameStyleResult`
+            The result of the display name style call. Has `font`, `effect`, and `colors` attributes for accessing.
+
+        Raises
+        ------
+        RuntimeError
+            The bot user is `None` (it is impossible for this to be raised).
+        """
         class NameStyleContent(TypedDict):
             font_id   : int
             effect_id : int
@@ -322,10 +395,8 @@ class Cordex(Bot):
         class NameStylePayload(TypedDict, total = False):
             display_name_styles : NameStyleContent | None
 
-        # ⸻ self.user is never None, but pyright will complain anyway.
-
         if self.user is None:
-            return None
+            raise RuntimeError
 
         response = cast(
             "NameStylePayload",
@@ -342,26 +413,35 @@ class Cordex(Bot):
 
         if styles is None:
             return NameStyleResult(
-                font_id   = DisplayNameFont(11),
-                effect_id = DisplayNameEffect(1),
-                colors    = [f"{0xFFFFFF:06x}"],
+                font   = DisplayNameFont(11),
+                effect = DisplayNameEffect(1),
+                colors = [f"{0xFFFFFF:06x}"],
             )
 
         return NameStyleResult(
-            font_id   = DisplayNameFont(styles["font_id"]),
-            effect_id = DisplayNameEffect(styles["effect_id"]),
-            colors    = [f"{color:06x}" for color in styles["colors"]],
+            font   = DisplayNameFont(styles["font_id"]),
+            effect = DisplayNameEffect(styles["effect_id"]),
+            colors = [f"{color:06x}" for color in styles["colors"]],
         )
 
     async def reset_name_style(self, guild : Guild, /, *, branded : bool = True) -> None:
+        """
+        Reset the bot's display name style for this guild.
 
-        # ⸻ Branded is the bot's special scheme instead of a normal discord font.
-
+        Parameters
+        ----------
+        guild : `Guild`
+            The guild to reset the display name style in.
+        /
+        *
+        branded : `bool = True`
+            Whether to reset the display name style using the branded types: `zilla_slab` font, `gradient` effect, `["FFFFFF", "000000"]` colors
+        """
         await self.set_name_style(
             guild,
-            font_id   = DisplayNameFont.zilla_slab if branded else DisplayNameFont.default,
-            effect_id = DisplayNameEffect.gradient if branded else DisplayNameEffect.solid,
-            colors    = ["FFFFFF", "000000"]       if branded else ["FFFFFF", "FFFFFF"],
+            font   = DisplayNameFont.zilla_slab if branded else DisplayNameFont.default,
+            effect = DisplayNameEffect.gradient if branded else DisplayNameEffect.solid,
+            colors = ["FFFFFF", "000000"]       if branded else ["FFFFFF"],
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

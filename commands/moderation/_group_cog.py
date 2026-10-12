@@ -310,6 +310,8 @@ class ModerationCommands(
         target      = "Filter by user.",
         channel     = "Filter by channel.",
         expired     = "Filter by expiration.",
+        before      = 'Filter cases that occurred before this date. Must be of the form "MM/DD/YYYY".',
+        after       = 'Filter cases that occurred after this date. Must be of the form "MM/DD/YYYY".',
     )
     @rename(action_type = "action-type")
     async def cmd_mod_cases_query(
@@ -321,6 +323,8 @@ class ModerationCommands(
         target      : User                   | None = None,
         channel     : GuildMessagableChannel | None = None,
         expired     : bool                   | None = None,
+        before      : str                    | None = None,
+        after       : str                    | None = None,
     ) -> None:
         await run_mod_cases_query(
             interaction,
@@ -329,6 +333,8 @@ class ModerationCommands(
             target      = target,
             channel     = channel,
             expired     = expired,
+            before      = before,
+            after       = after,
         )
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻

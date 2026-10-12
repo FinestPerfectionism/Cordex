@@ -523,7 +523,7 @@ class CasesManager:
 
     async def get_all_cases(self) -> list[Case]:
         """
-        Get all cases from the database.
+        Get all cases for the guild from the database.
 
         Returns
         -------
@@ -553,6 +553,8 @@ class CasesManager:
         target_id    : int        | None = None,
         channel_id   : int        | None = None,
         expired      : bool       | None = None,
+        before       : datetime   | None = None,
+        after        : datetime   | None = None,
     ) -> list[Case]:
         """
         Filter cases from the database based on various criteria.
@@ -570,13 +572,20 @@ class CasesManager:
             The channel ID to filter by.
         expired : `bool | None = None`
             Whether the case is expired.
+        before : `datetime | None = None`
+            Show cases created before this datetime..
+        after : `datetime | None = None`
+            Show cases created after this datetime.
 
         Returns
         -------
         `list[Case]`
             A list of all cases meeting the criteria.
         """
-        if all(argument is None for argument in (action_type, moderator_id, target_id, channel_id, expired)):
+        if all(
+            argument is None for argument in
+            (action_type, moderator_id, target_id, channel_id, expired, before, after)
+        ):
             warn(
                 "Prefer CasesManager.get_all_cases over CasesManager.filter_by if getting all cases.",
                 category   = UserWarning,
@@ -602,6 +611,12 @@ class CasesManager:
             expired_int = int(expired)
             conditions.append(t"expired = {expired_int}")
 
+        if before is not None:
+            conditions.append(t"created_at < {before.isoformat()}")
+
+        if after is not None:
+            conditions.append(t"created_at > {after.isoformat()}")
+
         query = t"SELECT * FROM Cases"
         if conditions:
             query += t" WHERE "
@@ -620,3 +635,25 @@ class CasesManager:
             return []
 
         return [await self._row_to_case(row) for row in rows]
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # delete_all_cases
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def delete_all_cases(self) -> bool:
+        """
+        Delete all cases for the guild from the database.
+
+        Returns
+        -------
+        `bool`
+            True if all cases were successfully deleted, otherwise False.
+        """
+        try:
+            await self.bot.db.execute(t"DELETE FROM Cases WHERE guild_id = {self.guild.id}")
+            await self.bot.db.commit()
+        except Exception:
+            self._log_failure("deleting all cases")
+            return False
+        else:
+            return True

@@ -37,6 +37,6 @@ GuildMessagableChannel = TextChannel | StageChannel | VoiceChannel
 
 @dataclass(frozen = True, slots = True)
 class NameStyleResult:
-    font_id   : DisplayNameFont
-    effect_id : DisplayNameEffect
-    colors    : list[str]
+    font   : DisplayNameFont
+    effect : DisplayNameEffect
+    colors : list[str]

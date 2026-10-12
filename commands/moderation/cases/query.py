@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from discord import AllowedMentions, Member, User
 
 from bot import Interaction
@@ -23,6 +25,8 @@ async def run_mod_cases_query(
     target      : User                   | None = None,
     channel     : GuildMessagableChannel | None = None,
     expired     : bool                   | None = None,
+    before      : str                    | None = None,
+    after       : str                    | None = None,
 ) -> None:
     """
     Query moderation cases with various filters.
@@ -41,6 +45,10 @@ async def run_mod_cases_query(
         Filter by channel.
     expired : `bool | None = None`
         Filter by expiration.
+    before : `str | None = None`
+        Filter cases that occurred before this date. Must be of the form "MM/DD/YYYY".
+    after : `str | None = None`
+        Filter cases that occurred after this date. Must be of the form "MM/DD/YYYY".
     """
     guild = interaction.guild
     if not guild:
@@ -52,6 +60,30 @@ async def run_mod_cases_query(
             subtitle = {None : "At least one filter must be chosen."},
         )
         return
+
+    if before:
+        try:
+            before_datetime = datetime.strptime(before, "%m/%d/%Y").replace(tzinfo = UTC)
+        except ValueError:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"before" : "Invalid date passed. A date must be of the form `MM/DD/YYYY`."},
+            )
+            return
+    else:
+        before_datetime = None
+
+    if after:
+        try:
+            after_datetime = datetime.strptime(after, "%m/%d/%Y").replace(tzinfo = UTC)
+        except ValueError:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"after" : "Invalid date passed. A date must be of the form `MM/DD/YYYY`."},
+            )
+            return
+    else:
+        after_datetime = None
 
     parsed_action = ActionType(action_type) if action_type is not None else None
     if channel is not None and parsed_action != ActionType.purge:
@@ -70,9 +102,21 @@ async def run_mod_cases_query(
                 target_id    = target.id    if target    else None,
                 channel_id   = channel.id   if channel   else None,
                 expired      = expired,
+                before       = before_datetime,
+                after        = after_datetime,
             ),
         ),
     )
+
+    if expired is False:
+        cases = [
+            case for case in cases if
+            case.action_type not in {
+                ActionType.ban_remove,
+                ActionType.quarantine_remove,
+                ActionType.timeout_remove,
+            }
+        ]
 
     if not cases:
         await format_send(
