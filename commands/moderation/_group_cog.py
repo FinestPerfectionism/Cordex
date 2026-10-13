@@ -6,6 +6,7 @@ from discord.app_commands import (
     AppCommandError,
     Choice,
     Group,
+    Range,
     allowed_installs,
     check,
     choices,
@@ -323,8 +324,8 @@ class ModerationCommands(
         target      : User                   | None = None,
         channel     : GuildMessagableChannel | None = None,
         expired     : bool                   | None = None,
-        before      : str                    | None = None,
-        after       : str                    | None = None,
+        before      : Range[str, 5, 10]      | None = None,
+        after       : Range[str, 5, 10]      | None = None,
     ) -> None:
         await run_mod_cases_query(
             interaction,
