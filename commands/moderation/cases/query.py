@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 from discord import AllowedMentions, Member, User
 
 from bot import Interaction
-from bot.types import GuildMessagableChannel
+from bot.types import GuildMessagable
 from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 from core.moderation import ActionType, CasesManager
@@ -20,13 +20,13 @@ from ._base import build_case_section
 async def run_mod_cases_query(
     interaction : Interaction,
     *,
-    action_type : str                    | None = None,
-    moderator   : Member                 | None = None,
-    target      : User                   | None = None,
-    channel     : GuildMessagableChannel | None = None,
-    expired     : bool                   | None = None,
-    before      : str                    | None = None,
-    after       : str                    | None = None,
+    action_type : str             | None = None,
+    moderator   : Member          | None = None,
+    target      : User            | None = None,
+    channel     : GuildMessagable | None = None,
+    expired     : bool            | None = None,
+    before      : str             | None = None,
+    after       : str             | None = None,
 ) -> None:
     """
     Query moderation cases with various filters.

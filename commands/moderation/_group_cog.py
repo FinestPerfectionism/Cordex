@@ -19,7 +19,7 @@ from discord.app_commands.checks import bot_has_permissions
 from discord.ext.commands import GroupCog
 
 from bot import Cordex, Interaction
-from bot.types import GuildMessagableChannel
+from bot.types import GuildMessagable
 from core.exceptions import (
     BadEnvironmentGuildOnly,
     UnconfiguredQuarantine,
@@ -319,13 +319,13 @@ class ModerationCommands(
         self,
         interaction : Interaction,
         *,
-        action_type : str                    | None = None,
-        moderator   : Member                 | None = None,
-        target      : User                   | None = None,
-        channel     : GuildMessagableChannel | None = None,
-        expired     : bool                   | None = None,
-        before      : Range[str, 5, 10]      | None = None,
-        after       : Range[str, 5, 10]      | None = None,
+        action_type : str               | None = None,
+        moderator   : Member            | None = None,
+        target      : User              | None = None,
+        channel     : GuildMessagable   | None = None,
+        expired     : bool              | None = None,
+        before      : Range[str, 5, 10] | None = None,
+        after       : Range[str, 5, 10] | None = None,
     ) -> None:
         await run_mod_cases_query(
             interaction,
