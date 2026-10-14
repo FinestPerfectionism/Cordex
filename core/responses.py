@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Self, final
 
 from discord import AllowedMentions, Interaction, Message
@@ -15,7 +15,7 @@ from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 type _SendTarget = ContextOrInteraction | Messageable
 
 
-class MessageType(Enum):
+class MessageType(StrEnum):
     """
     Represents the message types for formatting.
 
@@ -32,6 +32,24 @@ class MessageType(Enum):
     success = "success"
     warning = "warning"
     error   = "error"
+
+    @property
+    def emoji(self) -> str:
+        """The emoji for this message type."""
+        return {
+            MessageType.success : ACCEPTED_EMOJI,
+            MessageType.warning : WARNING_EMOJI,
+            MessageType.error   : DENIED_EMOJI,
+        }[self]
+
+    @property
+    def prefix(self) -> str:
+        """The prefix for this message type."""
+        if self == MessageType.success:
+            return "Successfully"
+        if self == MessageType.warning or MessageType.error:
+            return "Failed to"
+        return ""
 
 
 @final
@@ -102,23 +120,6 @@ class FormatOverride:
     punctuation : PunctuationOverride = field(default_factory = PunctuationOverride)
 
 
-def _emoji_match(msg_type : MessageType) -> str:
-    match msg_type:
-        case msg_type.success:
-            return ACCEPTED_EMOJI
-        case msg_type.warning:
-            return WARNING_EMOJI
-        case msg_type.error:
-            return DENIED_EMOJI
-
-
-def _title_match(msg_type : MessageType) -> str:
-    match msg_type:
-        case msg_type.success:
-            return "Successfully"
-        case msg_type.warning | msg_type.error:
-            return "Failed to"
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Internal Builders
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -138,8 +139,8 @@ def _apply_punctuation(text : str, default : str, *, setting : bool | None) -> s
 
 
 def _build_title(msg_type : MessageType, title : str, config : FormatOverride) -> str:
-    prefix       = _title_match(msg_type) if config.prefix else ""
-    emoji        = f"{_emoji_match(msg_type)} " if config.emoji else ""
+    prefix       = msg_type.prefix if config.prefix else ""
+    emoji        = f"{msg_type.emoji} " if config.emoji else ""
     default_punc =  "!" if msg_type in {MessageType.warning, MessageType.error} else "."
     clean_title  = _apply_punctuation(title, default_punc, setting = config.punctuation.title)
 

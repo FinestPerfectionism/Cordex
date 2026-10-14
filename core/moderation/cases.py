@@ -59,7 +59,7 @@ from .payloads import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-@dataclass(frozen = True)
+@dataclass(frozen = True, slots = True)
 class _CaseData:
     color : Color
     title : str
@@ -100,7 +100,7 @@ class Case:
         The moderator of the case.
     target : `Member | User | None`
         The target of the case.
-        Only populated in user-type cases (including).
+        Only populated in user-type cases.
     reason : `str`
         The reason for the action in the case.
     channel : `GuildMessagable | None`
