@@ -41,7 +41,7 @@ async def run_mod_cases_query(
         Filter by moderator.
     target : `User | None = None`
         Filter by user.
-    channel : `GuildMessagableChannel | None = None`
+    channel : `GuildMessagable | None = None`
         Filter by channel.
     expired : `bool | None = None`
         Filter by expiration.
