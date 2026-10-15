@@ -11,7 +11,7 @@ from ._base import send_moderation_modal
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_purge(interaction : Interaction, target : Member | None = None) -> None:
+async def run_moderation_purge(interaction : Interaction, target : Member | None = None) -> None:
     """
     Purge messages from a channel or member.
 

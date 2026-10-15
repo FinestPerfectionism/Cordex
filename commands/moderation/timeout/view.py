@@ -1,13 +1,13 @@
 from bot import Interaction
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# /moderation lockdown remove Logic
+# /moderation timeout view Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_lockdown_remove(_interaction : Interaction) -> None:
+async def run_moderation_timeout_view(_interaction : Interaction) -> None:
     """
-    Remove a channel from lockdown.
+    View all timed out members.
 
     Parameters
     ----------

@@ -9,7 +9,7 @@ from core.responses import FormatOverride, MessageType, format_send
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_ban_view(interaction : Interaction) -> None:
+async def run_moderation_ban_view(interaction : Interaction) -> None:
     """
     View all banned members.
 

@@ -6,7 +6,7 @@ from constants import COG_EMOJI
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_shutdown(ctx : Context) -> None:
+async def run_botowner_shutdown(ctx : Context) -> None:
     await ctx.send(
        f"{COG_EMOJI} **Shutting down bot.**\n"
         "Shutting down bot...",

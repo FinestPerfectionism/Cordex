@@ -1,7 +1,7 @@
 from discord import NotFound, User
 
 from bot import Interaction
-from commands.moderation.primary._base import send_moderation_modal
+from commands.moderation._base import send_moderation_modal
 from core.exceptions import send_bad_argument
 from core.moderation import ActionType
 
@@ -10,7 +10,7 @@ from core.moderation import ActionType
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_ban_remove(interaction : Interaction, target : User) -> None:
+async def run_moderation_ban_remove(interaction : Interaction, target : User) -> None:
     """
     Remove a ban from a member.
 

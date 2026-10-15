@@ -50,7 +50,7 @@ type Lambda = Callable[[], Awaitable[object]]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_eval(ctx : Context, body : str) -> None:
+async def run_botowner_eval(ctx : Context, body : str) -> None:
     env : dict[str, object] = {
         "Cordex" : Cordex,
 

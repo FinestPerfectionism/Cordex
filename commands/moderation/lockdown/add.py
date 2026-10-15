@@ -5,7 +5,7 @@ from bot import Interaction
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_lockdown_add(_interaction : Interaction) -> None:
+async def run_moderation_lockdown_add(_interaction : Interaction) -> None:
     """
     Add a channel to lockdown.
 

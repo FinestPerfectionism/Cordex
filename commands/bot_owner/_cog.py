@@ -11,10 +11,10 @@ from bot import Context, Cordex
 from core.exceptions import BadPermissionsPrefixCommand
 from core.utilities import is_bot_owner
 
-from .eval import run_bo_eval
-from .restart import run_bo_restart
-from .shutdown import run_bo_shutdown
-from .sync import run_bo_sync
+from .eval import run_botowner_eval
+from .restart import run_botowner_restart
+from .shutdown import run_botowner_shutdown
+from .sync import run_botowner_sync
 
 
 def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
@@ -80,7 +80,7 @@ class BotOwnerCommands(Cog):
     @prefix_command(name = "shutdown")
     @bot_owner_cmd
     async def cmd_bo_shutdown(self, ctx : Context) -> None:
-        await run_bo_shutdown(ctx)
+        await run_botowner_shutdown(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .restart Command
@@ -89,7 +89,7 @@ class BotOwnerCommands(Cog):
     @prefix_command(name = "restart")
     @bot_owner_cmd
     async def cmd_bo_restart(self, ctx : Context) -> None:
-        await run_bo_restart(ctx)
+        await run_botowner_restart(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .sync Command
@@ -98,7 +98,7 @@ class BotOwnerCommands(Cog):
     @prefix_command(name = "sync")
     @bot_owner_cmd
     async def cmd_bo_sync(self, ctx : Context) -> None:
-        await run_bo_sync(ctx)
+        await run_botowner_sync(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .eval Command
@@ -107,7 +107,7 @@ class BotOwnerCommands(Cog):
     @prefix_command(name = "eval")
     @bot_owner_cmd
     async def cmd_bo_eval(self, ctx : Context, *, body : str) -> None:
-        await run_bo_eval(ctx, body)
+        await run_botowner_eval(ctx, body)
 
 
 async def setup(bot : Cordex) -> None:

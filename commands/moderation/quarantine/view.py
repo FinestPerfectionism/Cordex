@@ -9,7 +9,7 @@ from core.responses import FormatOverride, MessageType, format_send
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_quarantine_view(interaction : Interaction) -> None:
+async def run_moderation_quarantine_view(interaction : Interaction) -> None:
     """
     View all quarantined members.
 

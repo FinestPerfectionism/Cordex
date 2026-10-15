@@ -1,19 +1,18 @@
 from discord import AllowedMentions
 
 from bot import Interaction
+from commands.moderation._base import build_case_section, send_case_view
 from constants import COLOR_GREY
 from core.moderation import CasesManager
 from core.paginator import UnnamedPaginator
 from core.responses import FormatOverride, MessageType, format_send
-
-from ._base import build_case_section, send_case_view
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation cases view Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_cases_view(interaction : Interaction, case_id : int | None = None) -> None:
+async def run_moderation_cases_view(interaction : Interaction, case_id : int | None = None) -> None:
     """
     View a moderation case.
 

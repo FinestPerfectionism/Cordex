@@ -5,7 +5,7 @@ from bot import Interaction
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_lockdown_view(_interaction : Interaction) -> None:
+async def run_moderation_lockdown_view(_interaction : Interaction) -> None:
     """
     View all lockdowned channels.
 

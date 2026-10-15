@@ -8,7 +8,7 @@ from core.utilities import codeblock
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_sync(ctx : Context) -> None:
+async def run_botowner_sync(ctx : Context) -> None:
     bot = ctx.bot
 
     try:

@@ -10,7 +10,7 @@ from ._base import send_moderation_modal
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_kick(interaction : Interaction, target : Member) -> None:
+async def run_moderation_kick(interaction : Interaction, target : Member) -> None:
     """
     Kick a member from the server.
 

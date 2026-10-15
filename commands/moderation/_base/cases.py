@@ -20,7 +20,7 @@ from core.moderation import Case, CasesManager
 from core.utilities import format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Moderation Case Commands Base
+# Moderation Cases Base
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 

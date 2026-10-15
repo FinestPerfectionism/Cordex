@@ -15,7 +15,7 @@ from core.utilities import codeblock
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_bo_restart(ctx : Context) -> None:
+async def run_botowner_restart(ctx : Context) -> None:
     bot = ctx.bot
 
     if bot.restarting:

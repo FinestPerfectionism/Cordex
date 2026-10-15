@@ -28,28 +28,28 @@ from core.exceptions import (
 from core.moderation import ActionType, CasesManager
 from core.state import requires_restriction
 
-from .cases import run_mod_cases_query, run_mod_cases_view
-from .primary.ban import (
-    run_mod_primary_ban_add,
-    run_mod_primary_ban_remove,
-    run_mod_primary_ban_view,
+from .ban import (
+    run_moderation_ban_add,
+    run_moderation_ban_remove,
+    run_moderation_ban_view,
 )
-from .primary.kick import run_mod_primary_kick
-from .primary.lockdown import (
-    run_mod_primary_lockdown_add,
-    run_mod_primary_lockdown_remove,
-    run_mod_primary_lockdown_view,
+from .cases import run_moderation_cases_query, run_moderation_cases_view
+from .kick import run_moderation_kick
+from .lockdown import (
+    run_moderation_lockdown_add,
+    run_moderation_lockdown_remove,
+    run_moderation_lockdown_view,
 )
-from .primary.purge import run_mod_primary_purge
-from .primary.quarantine import (
-    run_mod_primary_quarantine_add,
-    run_mod_primary_quarantine_remove,
-    run_mod_primary_quarantine_view,
+from .purge import run_moderation_purge
+from .quarantine import (
+    run_moderation_quarantine_add,
+    run_moderation_quarantine_remove,
+    run_moderation_quarantine_view,
 )
-from .primary.timeout import (
-    run_mod_primary_timeout_add,
-    run_mod_primary_timeout_remove,
-    run_mod_primary_timeout_view,
+from .timeout import (
+    run_moderation_timeout_add,
+    run_moderation_timeout_remove,
+    run_moderation_timeout_view,
 )
 
 
@@ -124,8 +124,8 @@ class ModerationCommands(
         description = "Add a channel to lockdown.",
     )
     @bot_has_permissions(manage_channels = True)
-    async def cmd_mod_primary_lockdown_add(self, interaction : Interaction) -> None:
-        await run_mod_primary_lockdown_add(interaction)
+    async def cmd_moderation_lockdown_add(self, interaction : Interaction) -> None:
+        await run_moderation_lockdown_add(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation lockdown view Command
@@ -135,8 +135,8 @@ class ModerationCommands(
         name        = "view",
         description = "View all lockdowned channels.",
     )
-    async def cmd_mod_primary_lockdown_view(self, interaction : Interaction) -> None:
-        await run_mod_primary_lockdown_view(interaction)
+    async def cmd_moderation_lockdown_view(self, interaction : Interaction) -> None:
+        await run_moderation_lockdown_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation lockdown remove Command
@@ -147,8 +147,8 @@ class ModerationCommands(
         description = "Remove a channel from lockdown.",
     )
     @bot_has_permissions(manage_channels = True)
-    async def cmd_mod_primary_lockdown_remove(self, interaction : Interaction) -> None:
-        await run_mod_primary_lockdown_remove(interaction)
+    async def cmd_moderation_lockdown_remove(self, interaction : Interaction) -> None:
+        await run_moderation_lockdown_remove(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation ban add Command
@@ -160,8 +160,8 @@ class ModerationCommands(
     )
     @bot_has_permissions(ban_members = True)
     @describe(target = "The member to ban.")
-    async def cmd_mod_primary_ban_add(self, interaction : Interaction, target : Member) -> None:
-        await run_mod_primary_ban_add(interaction, target)
+    async def cmd_moderation_ban_add(self, interaction : Interaction, target : Member) -> None:
+        await run_moderation_ban_add(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation ban view Command
@@ -172,8 +172,8 @@ class ModerationCommands(
         description = "View all banned members.",
     )
     @bot_has_permissions(ban_members = True)
-    async def cmd_mod_primary_ban_view(self, interaction : Interaction) -> None:
-        await run_mod_primary_ban_view(interaction)
+    async def cmd_moderation_ban_view(self, interaction : Interaction) -> None:
+        await run_moderation_ban_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation ban remove Command
@@ -185,8 +185,8 @@ class ModerationCommands(
     )
     @bot_has_permissions(ban_members = True)
     @describe(target = "The member to unban.")
-    async def cmd_mod_primary_ban_remove(self, interaction : Interaction, target : User) -> None:
-        await run_mod_primary_ban_remove(interaction, target)
+    async def cmd_moderation_ban_remove(self, interaction : Interaction, target : User) -> None:
+        await run_moderation_ban_remove(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation kick Command
@@ -198,8 +198,8 @@ class ModerationCommands(
     )
     @bot_has_permissions(kick_members = True)
     @describe(target = "The member to kick.")
-    async def cmd_mod_primary_kick(self, interaction : Interaction, target : Member) -> None:
-        await run_mod_primary_kick(interaction, target)
+    async def cmd_moderation_kick(self, interaction : Interaction, target : Member) -> None:
+        await run_moderation_kick(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation quarantine add Command
@@ -212,8 +212,8 @@ class ModerationCommands(
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to place in quarantine.")
     @quarantine_cmd
-    async def cmd_mod_primary_quarantine_add(self, interaction : Interaction, target : Member) -> None:
-        await run_mod_primary_quarantine_add(interaction, target)
+    async def cmd_moderation_quarantine_add(self, interaction : Interaction, target : Member) -> None:
+        await run_moderation_quarantine_add(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation quarantine view Command
@@ -224,8 +224,8 @@ class ModerationCommands(
         description = "View all quarantined members.",
     )
     @quarantine_cmd
-    async def cmd_mod_primary_quarantine_view(self, interaction : Interaction) -> None:
-        await run_mod_primary_quarantine_view(interaction)
+    async def cmd_moderation_quarantine_view(self, interaction : Interaction) -> None:
+        await run_moderation_quarantine_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation quarantine remove Command
@@ -238,8 +238,8 @@ class ModerationCommands(
     @bot_has_permissions(manage_roles = True)
     @describe(target = "The member to remove from quarantine.")
     @quarantine_cmd
-    async def cmd_mod_primary_quarantine_remove(self, interaction : Interaction, target : Member) -> None:
-        await run_mod_primary_quarantine_remove(interaction, target)
+    async def cmd_moderation_quarantine_remove(self, interaction : Interaction, target : Member) -> None:
+        await run_moderation_quarantine_remove(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation timeout add Command
@@ -251,8 +251,8 @@ class ModerationCommands(
     )
     @bot_has_permissions(moderate_members = True)
     @describe(target = "The member to place in timeout.")
-    async def cmd_mod_primary_timeout_add(self, interaction : Interaction, target : Member) -> None:
-        await run_mod_primary_timeout_add(interaction, target)
+    async def cmd_moderation_timeout_add(self, interaction : Interaction, target : Member) -> None:
+        await run_moderation_timeout_add(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation timeout view Command
@@ -262,8 +262,8 @@ class ModerationCommands(
         name        = "view",
         description = "View all timed out members.",
     )
-    async def cmd_mod_primary_timeout_view(self, interaction : Interaction) -> None:
-        await run_mod_primary_timeout_view(interaction)
+    async def cmd_moderation_timeout_view(self, interaction : Interaction) -> None:
+        await run_moderation_timeout_view(interaction)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation timeout remove Command
@@ -275,8 +275,8 @@ class ModerationCommands(
     )
     @bot_has_permissions(moderate_members = True)
     @describe(target = "The member to remove from timeout.")
-    async def cmd_mod_primary_timeout_remove(self, interaction : Interaction, target : Member) -> None:
-        await run_mod_primary_timeout_remove(interaction, target)
+    async def cmd_moderation_timeout_remove(self, interaction : Interaction, target : Member) -> None:
+        await run_moderation_timeout_remove(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation purge Command
@@ -288,8 +288,8 @@ class ModerationCommands(
     )
     @bot_has_permissions(manage_messages = True, read_message_history = True)
     @describe(target = "The member to purge messages from.")
-    async def cmd_mod_primary_purge(self, interaction : Interaction, target : Member | None = None) -> None:
-        await run_mod_primary_purge(interaction, target)
+    async def cmd_moderation_purge(self, interaction : Interaction, target : Member | None = None) -> None:
+        await run_moderation_purge(interaction, target)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # /moderation cases query Command
@@ -315,7 +315,7 @@ class ModerationCommands(
         after       = 'Filter cases that occurred after this date. Must be of the form "MM/DD/YYYY", "MM/DD/YY", or "MM/DD".',
     )
     @rename(action_type = "action-type")
-    async def cmd_mod_cases_query(
+    async def cmd_moderation_cases_query(
         self,
         interaction : Interaction,
         *,
@@ -327,7 +327,7 @@ class ModerationCommands(
         before      : Range[str, 5, 10] | None = None,
         after       : Range[str, 5, 10] | None = None,
     ) -> None:
-        await run_mod_cases_query(
+        await run_moderation_cases_query(
             interaction,
             action_type = action_type,
             moderator   = moderator,
@@ -347,10 +347,10 @@ class ModerationCommands(
         description = "View a moderation case.",
     )
     @describe(case = "The case to view. Defaults to all cases.")
-    async def cmd_mod_cases_view(self, interaction : Interaction, case : int | None = None) -> None:
-        await run_mod_cases_view(interaction, case)
+    async def cmd_moderation_cases_view(self, interaction : Interaction, case : int | None = None) -> None:
+        await run_moderation_cases_view(interaction, case)
 
-    @cmd_mod_cases_view.autocomplete("case")
+    @cmd_moderation_cases_view.autocomplete("case")
     async def autocomplete_cmdmodcasesview(self, interaction : Interaction, current : str) -> list[Choice[int]]:
         guild = interaction.guild
         if not guild:

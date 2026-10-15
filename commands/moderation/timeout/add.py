@@ -1,7 +1,7 @@
 from discord import Member
 
 from bot import Interaction
-from commands.moderation.primary._base import send_moderation_modal
+from commands.moderation._base import send_moderation_modal
 from core.moderation import ActionType
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -9,7 +9,7 @@ from core.moderation import ActionType
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_primary_timeout_add(interaction : Interaction, target : Member) -> None:
+async def run_moderation_timeout_add(interaction : Interaction, target : Member) -> None:
     """
     Add a member to timeout.
 

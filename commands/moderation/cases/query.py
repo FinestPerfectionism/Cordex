@@ -4,20 +4,19 @@ from discord import AllowedMentions, Member, User
 
 from bot import Interaction
 from bot.types import GuildMessagable
+from commands.moderation._base import build_case_section
 from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 from core.moderation import ActionType, CasesManager
 from core.paginator import UnnamedPaginator
 from core.responses import FormatOverride, MessageType, format_send
 
-from ._base import build_case_section
-
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /moderation cases query Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-async def run_mod_cases_query(
+async def run_moderation_cases_query(
     interaction : Interaction,
     *,
     action_type : str             | None = None,
