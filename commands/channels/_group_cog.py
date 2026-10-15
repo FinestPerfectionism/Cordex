@@ -9,7 +9,6 @@ from discord.app_commands import (
     guild_only,
     rename,
 )
-from discord.app_commands.checks import bot_has_permissions
 from discord.ext.commands import GroupCog
 
 from bot import Cordex, Interaction
@@ -20,7 +19,6 @@ from core.utilities import unimplemented
 from .compare import run_channel_compare
 from .info import run_channel_info
 from .permissions import run_channel_permissions
-from .sync import run_channel_sync
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Channel Group Commands
@@ -108,24 +106,6 @@ class ChannelCommands(
         permissions_filter : str                    | None = None,
     ) -> None:
         await run_channel_permissions(interaction, channel, permissions_filter)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # /channel sync Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @requires_restriction
-    @command(
-        name        = "sync",
-        description = "Sync a channel's permissions to it's category. Defaults to the current one.",
-    )
-    @describe(channel = "The channel to sync permissions for. Defaults to the current one.")
-    @bot_has_permissions(manage_channels = True)
-    async def cmd_channel_sync(
-        self,
-        interaction : Interaction,
-        channel     : GuildMessagableChannel | None = None,
-    ) -> None:
-        await run_channel_sync(interaction, channel)
 
 
 async def setup(bot : Cordex) -> None:

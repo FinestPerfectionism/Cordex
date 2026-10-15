@@ -3,7 +3,6 @@ from .channels import (
     run_channel_compare,
     run_channel_info,
     run_channel_permissions,
-    run_channel_sync,
 )
 from .help import run_help
 from .members import run_member_avatar, run_member_banner, run_member_info
@@ -43,7 +42,6 @@ __all__ = [
     "run_channel_compare",
     "run_channel_info",
     "run_channel_permissions",
-    "run_channel_sync",
     "run_help",
     "run_member_avatar",
     "run_member_banner",
