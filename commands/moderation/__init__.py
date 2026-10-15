@@ -8,6 +8,7 @@ from .kick import run_moderation_kick
 from .lockdown import (
     run_moderation_lockdown_add,
     run_moderation_lockdown_remove,
+    run_moderation_lockdown_view,
 )
 from .purge import run_moderation_purge
 from .quarantine import (
@@ -30,6 +31,7 @@ __all__ = [
     "run_moderation_kick",
     "run_moderation_lockdown_add",
     "run_moderation_lockdown_remove",
+    "run_moderation_lockdown_view",
     "run_moderation_purge",
     "run_moderation_quarantine_add",
     "run_moderation_quarantine_remove",
