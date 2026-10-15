@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from typing import Self, final
 
 from discord import (
+    AllowedMentions,
     ForumChannel,
     Member,
     StageChannel,
@@ -99,8 +100,9 @@ def _member_section(title : str, members : Sequence[Member]) -> str | None:
         f"(+{remaining} more)" if remaining > 0 else shown
     )
 
+    s = "s" if len(members) > 1 else ""
     return (
-        f"**{title} ({len(members)})**\n"
+        f"**{len(members)} {title}{s}**\n"
         f"{codeblock(listing, language = None)}"
     )
 
@@ -167,7 +169,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildMessagable 
 
         info = {
             "Parent"            : target.mention,
-            "Owner"             : f"<@{thread_target.owner_id}>",
+            "Owner"             : f"<@{thread_target.owner.mention if thread_target.owner else thread_target.owner_id}>",
             "Not Safe for Work" :  "Yes" if nsfw else "No",
             "Locked"            :  "Yes" if thread_target.locked else "No",
             "Archived"          :  "Yes" if thread_target.archived else "No",
@@ -195,7 +197,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildMessagable 
 
             sections.extend(
                 section for section in (
-                    _member_section("Members", target.members),
+                    _member_section("Member", target.members),
                 ) if section
             )
         elif isinstance(target, StageChannel):
@@ -204,9 +206,9 @@ async def run_channel_info(interaction : Interaction, channel : GuildMessagable 
 
             sections.extend(
                 section for section in (
-                    _member_section("Speakers",   target.speakers),
-                    _member_section("Moderators", target.moderators),
-                    _member_section("Listeners",  target.listeners),
+                    _member_section("Speaker",   target.speakers),
+                    _member_section("Moderator", target.moderators),
+                    _member_section("Listener",  target.listeners),
                 ) if section
             )
 
@@ -219,4 +221,4 @@ async def run_channel_info(interaction : Interaction, channel : GuildMessagable 
             color = COLOR_GREY,
         )
 
-    await interaction.followup.send(view = InfoView())
+    await interaction.followup.send(view = InfoView(), allowed_mentions = AllowedMentions.none())
