@@ -428,11 +428,10 @@ async def run_server_personalize(interaction : Interaction) -> None:
     avatar = me.guild_avatar
     banner = me.guild_banner
 
-    await interaction.response.send_message(
-        view      = _PersonalizationView(
-            style,
-            avatar_url = avatar.url if avatar else None,
-            banner_url = banner.url if banner else None,
-        ),
-        ephemeral = True,
+    view = _PersonalizationView(
+        style,
+        avatar_url = avatar.url if avatar else None,
+        banner_url = banner.url if banner else None,
     )
+    await interaction.response.send_message(view = view, ephemeral = True)
+    view.message = await interaction.original_response()

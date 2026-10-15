@@ -543,16 +543,15 @@ async def run_server_configure(interaction : Interaction) -> None:
     enforce_roles    = await config.get_whether_moderation_quarantine_enforce_roles()
     preview          = await config.get_whether_messages_preview()
 
-    await interaction.response.send_message(
-        view      = _ConfigurationView(
-            guild,
-            edit_channel     = edit_channel.id    if edit_channel    else None,
-            delete_channel   = delete_channel.id  if delete_channel  else None,
-            logging_channel  = logging_channel.id if logging_channel else None,
-            quarantine_role  = quarantine_role.id if quarantine_role else None,
-            enforce_channels = enforce_channels,
-            enforce_roles    = enforce_roles,
-            preview          = preview,
-        ),
-        ephemeral = True,
+    view = _ConfigurationView(
+        guild,
+        edit_channel     = edit_channel.id    if edit_channel    else None,
+        delete_channel   = delete_channel.id  if delete_channel  else None,
+        logging_channel  = logging_channel.id if logging_channel else None,
+        quarantine_role  = quarantine_role.id if quarantine_role else None,
+        enforce_channels = enforce_channels,
+        enforce_roles    = enforce_roles,
+        preview          = preview,
     )
+    await interaction.response.send_message(view = view, ephemeral = True)
+    view.message = await interaction.original_response()
