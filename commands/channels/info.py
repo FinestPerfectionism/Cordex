@@ -1,6 +1,14 @@
+from collections.abc import Sequence
 from typing import Self, final
 
-from discord import ForumChannel, StageChannel, TextChannel, Thread, VoiceChannel
+from discord import (
+    ForumChannel,
+    Member,
+    StageChannel,
+    TextChannel,
+    Thread,
+    VoiceChannel,
+)
 from discord.abc import GuildChannel
 from discord.utils import format_dt
 
@@ -29,18 +37,18 @@ from constants import (
     THREAD_EMOJI,
     VOICE_EMOJI,
 )
-from core.utilities import format_table
+from core.utilities import codeblock, format_table
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # /channel info Logic
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def _is_private(target : GuildMessagable) -> bool:
+def _is_private(target : GuildChannel) -> bool:
     return not target.permissions_for(target.guild.default_role).view_channel
 
 
-def _get_channel_emoji(target : GuildMessagable) -> str | None:
+def _get_channel_emoji(target : GuildChannel) -> str | None:
 
     # ⸻ target is the rules channel.
 
@@ -80,6 +88,23 @@ def _get_channel_emoji(target : GuildMessagable) -> str | None:
     return None
 
 
+def _member_section(title : str, members : Sequence[Member]) -> str | None:
+    if not members:
+        return None
+
+    shown     = "\n".join(f"{member.name} | {member.id}" for member in members)
+    remaining = len(members) - 20
+    listing   = (
+        f"{shown}\n"
+        f"(+{remaining} more)" if remaining > 0 else shown
+    )
+
+    return (
+        f"**{title} ({len(members)})**\n"
+        f"{codeblock(listing, language = None)}"
+    )
+
+
 async def run_channel_info(interaction : Interaction, channel : GuildMessagable | None = None) -> None:
     """
     View information for a channel.
@@ -103,7 +128,7 @@ async def run_channel_info(interaction : Interaction, channel : GuildMessagable 
         thread_target = target
         target = target.parent
 
-    if not isinstance(target, GuildChannel) or isinstance(target, ForumChannel):
+    if not isinstance(target, GuildChannel):
         return
 
     # ⸻ Channel emoji.
@@ -119,28 +144,79 @@ async def run_channel_info(interaction : Interaction, channel : GuildMessagable 
         emoji_display = f"| {channel_type_emoji} " if channel_type_emoji else ""
         header_text   = f"### {target.mention} {emoji_display}| {target.id}"
 
-    topic = target.topic if isinstance(target, TextChannel) else None
+    nsfw  = target.nsfw
+    topic = target.topic if isinstance(target, TextChannel | StageChannel | ForumChannel) else None
+
+    info     : dict[str, str]
+    sections : list[str] = []
+
+    if topic:
+        sections.append(
+            "**Description**\n"
+           f"{topic}",
+        )
+
+    if thread_target:
+        archive_minutes = thread_target.auto_archive_duration
+
+        auto_archive = (
+            f"{archive_minutes // 1440} day{"s" if archive_minutes != 1440 else ""}"
+            if archive_minutes >= 1440 else
+            f"{archive_minutes // 60} hour{"s" if archive_minutes != 60 else ""}"
+        )
+
+        info = {
+            "Parent"            : target.mention,
+            "Owner"             : f"<@{thread_target.owner_id}>",
+            "Not Safe for Work" :  "Yes" if nsfw else "No",
+            "Locked"            :  "Yes" if thread_target.locked else "No",
+            "Archived"          :  "Yes" if thread_target.archived else "No",
+            "Auto Archive"      : auto_archive,
+            "Last Modified"     : f"{format_dt(thread_target.archive_timestamp, style = "F")} | {format_dt(thread_target.archive_timestamp, style = "R")}",
+            "Created at"        : f"{format_dt(thread_target.created_at, style = "F")} | {format_dt(thread_target.created_at, style = "R")}" if thread_target.created_at else "Unknown",
+        }
+
+        if thread_target.applied_tags:
+            info["Tags"] = ", ".join(tag.name for tag in thread_target.applied_tags)
+    else:
+        category = f"{target.category.name} | {target.category.id}" if target.category else "None"
+
+        info = {
+            "Not Safe for Work" :  "Yes" if nsfw else "No",
+            "Category"          : category,
+            "Created at"        : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
+        }
+
+        if isinstance(target, TextChannel):
+            info["Slowmode"] = f"{target.slowmode_delay} seconds" if target.slowmode_delay else "Off"
+        elif isinstance(target, VoiceChannel):
+            info["User Limit"] = str(target.user_limit) if target.user_limit else "Unlimited"
+            info["Bitrate"]    = f"{target.bitrate // 1000} kbps"
+
+            sections.extend(
+                section for section in (
+                    _member_section("Members", target.members),
+                ) if section
+            )
+        elif isinstance(target, StageChannel):
+            info["User Limit"] = str(target.user_limit) if target.user_limit else "Unlimited"
+            info["Bitrate"]    = f"{target.bitrate // 1000} kbps"
+
+            sections.extend(
+                section for section in (
+                    _member_section("Speakers",   target.speakers),
+                    _member_section("Moderators", target.moderators),
+                    _member_section("Listeners",  target.listeners),
+                ) if section
+            )
 
     @final
     class InfoView(LayoutView):
         container = Container[Self](
             TextDisplay(header_text),
-            TextDisplay(
-                format_table(
-                    {
-                        "???"               :  "This (mostly) doesn't display any information... yet.",
-                        "Not Safe for Work" :  "Yes" if target.nsfw else "No",
-                        "Created at"        : f"{format_dt(target.created_at, style = "F")} | {format_dt(target.created_at, style = "R")}",
-                    },
-                ),
-            ),
+            TextDisplay(format_table(info)),
+            *(TextDisplay[Self](section) for section in sections),
             color = COLOR_GREY,
         )
-
-        if topic:
-            container.add_text(
-                "**Description**\n"
-               f"{topic}",
-            )
 
     await interaction.followup.send(view = InfoView())
