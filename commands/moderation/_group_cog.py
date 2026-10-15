@@ -351,7 +351,7 @@ class ModerationCommands(
         await run_moderation_cases_view(interaction, case)
 
     @cmd_moderation_cases_view.autocomplete("case")
-    async def autocomplete_cmdmodcasesview(self, interaction : Interaction, current : str) -> list[Choice[int]]:
+    async def autocomplete_cmdmoderationcasesview(self, interaction : Interaction, current : str) -> list[Choice[int]]:
         guild = interaction.guild
         if not guild:
             return []

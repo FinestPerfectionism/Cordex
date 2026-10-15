@@ -9,8 +9,8 @@ from core.exceptions import send_bad_argument
 
 async def run_channel_compare(
     interaction : Interaction,
-    channel_1  : GuildMessagableChannel | None = None,
-    channel_2  : GuildMessagableChannel | None = None,
+    channel_1   : GuildMessagableChannel | None = None,
+    channel_2   : GuildMessagableChannel | None = None,
 ) -> None:
     """
     List all differing permissions for two selected channels.
