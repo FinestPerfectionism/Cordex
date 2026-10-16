@@ -37,12 +37,11 @@ from constants import (
 )
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import NamedPaginator, PageData
-from core.utilities import codeblock
 
 COLOR_PATTERN = regex_compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6}){0,4}$")
 
 FONT_OPTIONS = [
-    ("GG Sans",    "Discord's GG Sans font.", "default",      GG_SANS_FONT_EMOJI),
+    ("GG Sans",    "Discord's GG Sans font.", "default",       GG_SANS_FONT_EMOJI),
     ("Tempo",      "Tempo font.",             "zilla_slab",    TEMPO_FONT_EMOJI),
     ("Sakura",     "Sakura font.",            "cherry_bomb",   SAKURA_FONT_EMOJI),
     ("Jellybean",  "Jellybean font.",         "chicle",        JELLYBEAN_FONT_EMOJI),
@@ -228,12 +227,8 @@ class _ImageModal(Modal):
                 member = await me.edit(avatar = data)
             else:
                 member = await me.edit(banner = data)
-        except HTTPException as e:
-            await send_bad_operation(
-                interaction,
-                title    = f"set {self.target}",
-                subtitle = codeblock(e),
-            )
+        except HTTPException:
+            await send_bad_operation(interaction, title = f"set {self.target}")
             return
 
         if not member:
@@ -333,12 +328,8 @@ class _PersonalizationView(NamedPaginator):
                 effect = effect,
                 colors = color_list,
             )
-        except Exception as e:
-            await send_bad_operation(
-                interaction,
-                title    = "set display name style",
-                subtitle = codeblock(e),
-            )
+        except Exception:
+            await send_bad_operation(interaction, title = "set display name style")
             return
 
         self.style = await interaction.client.get_name_style(guild)
