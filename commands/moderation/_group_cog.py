@@ -324,8 +324,8 @@ class ModerationCommands(
         target      : User              | None = None,
         channel     : GuildMessagable   | None = None,
         expired     : bool              | None = None,
-        before      : Range[str, 5, 10] | None = None,
-        after       : Range[str, 5, 10] | None = None,
+        before      : Range[str, 3, 10] | None = None,
+        after       : Range[str, 3, 10] | None = None,
     ) -> None:
         await run_moderation_cases_query(
             interaction,

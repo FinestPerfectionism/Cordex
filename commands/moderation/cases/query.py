@@ -16,6 +16,19 @@ from core.responses import FormatOverride, MessageType, format_send
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
+def _parse_date(date : str) -> datetime | None:
+    for date_format in ("%m/%d/%Y", "%m/%d/%y", "%m/%d"):
+        try:
+            parsed_dt = datetime.strptime(date, date_format).replace(tzinfo = UTC)
+            if date_format == "%m/%d":
+                parsed_dt = parsed_dt.replace(year = datetime.now(UTC).year)
+        except ValueError:
+            continue
+        else:
+            return parsed_dt
+    return None
+
+
 async def run_moderation_cases_query(
     interaction : Interaction,
     *,
@@ -62,18 +75,6 @@ async def run_moderation_cases_query(
             subtitle = {None : "At least one filter must be chosen."},
         )
         return
-
-    def _parse_date(date : str) -> datetime | None:
-        for date_format in ("%m/%d/%Y", "%m/%d/%y", "%m/%d"):
-            try:
-                parsed_dt = datetime.strptime(date, date_format).replace(tzinfo = UTC)
-                if date_format == "%m/%d":
-                    parsed_dt = parsed_dt.replace(year = datetime.now(UTC).year)
-            except ValueError:
-                continue
-            else:
-                return parsed_dt
-        return None
 
     if before:
         before_datetime = _parse_date(before)
