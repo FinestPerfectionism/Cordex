@@ -8,7 +8,7 @@ from commands.moderation._base import build_case_section
 from constants import COLOR_GREY
 from core.exceptions import send_bad_argument
 from core.moderation import ActionType, CasesManager
-from core.paginator import UnnamedPaginator
+from core.paginator import Footer, UnnamedPaginator
 from core.responses import FormatOverride, MessageType, format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -145,7 +145,7 @@ async def run_moderation_cases_query(
             super().__init__(
                 "# Cases Found",
                 [build_case_section(case, cases_manager) for case in cases],
-                data_name = "Cases",
+                footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Case{s}"),
                 per_page  = 10,
                 color     = COLOR_GREY,
                 container = True,

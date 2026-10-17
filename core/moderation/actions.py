@@ -10,7 +10,7 @@ from discord.utils import escape_markdown, format_dt, utcnow
 from bot import Cordex, log
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
 from constants import COLOR_BLACK, COLOR_ORANGE, COLOR_YELLOW, WARNING_EMOJI
-from core.paginator import UnnamedPaginator
+from core.paginator import Footer, UnnamedPaginator
 from core.utilities import format_now, format_table
 
 from .payloads import (
@@ -377,7 +377,7 @@ class Actions:
                             ) for case in api_cases
                         ],
                     ],
-                    data_name = "Bans",
+                    footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Ban{s}"),
                     per_page  = 10,
                     color     = COLOR_BLACK,
                     container = True,
@@ -566,7 +566,7 @@ class Actions:
                             f"-# Case ID: #{case.id}"
                         ) for case in cases
                     ],
-                    data_name = "Quarantines",
+                    footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Quarantine{s}"),
                     per_page  = 10,
                     color     = COLOR_ORANGE,
                     container = True,
@@ -715,7 +715,7 @@ class Actions:
                 super().__init__(
                     "# Server Timeouts",
                     [],
-                    data_name = "Timeouts",
+                    footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Timeout{s}"),
                     per_page  = 10,
                     color     = COLOR_YELLOW,
                     container = True,

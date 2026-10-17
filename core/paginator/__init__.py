@@ -1,4 +1,4 @@
 from .named import NamedPaginator, PageData
-from .unnamed import UnnamedPaginator
+from .unnamed import Footer, UnnamedPaginator
 
-__all__ = ["NamedPaginator", "PageData", "UnnamedPaginator"]
+__all__ = ["Footer", "NamedPaginator", "PageData", "UnnamedPaginator"]

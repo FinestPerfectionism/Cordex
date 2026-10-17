@@ -161,6 +161,42 @@ class _PageRow(ActionRow["UnnamedPaginator"]):
         await self.paginator._turn(interaction, len(self.paginator.pages) - 1)
 
 
+@final
+class Footer:
+    """
+    Represents the footer of an UnnamedPaginator.
+
+    Parameters
+    ----------
+    content : `str | None = "Page {smallest_page} of {biggest_page} | {count} Item{s}"`
+        The content of the footer.
+        - `{smallest_page}` will be replaced with the smallest page number.
+        - `{biggest_page}` will be replaced with the biggest page number.
+        - `{count}` will be replaced with the length of the paginator data list.
+        - `{s}` will be either 's', or nothing if only one item is provided in the paginator data list, but only if `singularize` is `True`.
+
+    /
+    *
+    singularize : `bool = True`
+        Whether to remove the '{s}' placeholder on `footer` (if any) if only one item is provided in the paginator data list or not. Does nothing if `hide_on_single` is `True`.
+    hide_on_single : `bool = True`
+        Whether to remove the footer as a whole if only one page exists or not.
+    """
+
+    def __init__(
+        self,
+        content        : str | None = "Page {smallest_page} of {biggest_page} | {count} Item{s}",
+        /,
+        *,
+        singularize    : bool       = True,
+        hide_on_single : bool       = True,
+    ) -> None:
+        super().__init__()
+        self.content        = f"-# {content}"
+        self.singularize    = singularize
+        self.hide_on_single = hide_on_single
+
+
 class UnnamedPaginator(LayoutView):
     """
     Paginate a list of data cleanly using <<, <, page jump, >, and >> buttons.
@@ -173,17 +209,17 @@ class UnnamedPaginator(LayoutView):
         The data to paginate.
     /
     *
-    data_name : str
-        The name of the data.
-    per_page : int = 5
+    footer : `Footer | None = None`
+        The footer of the paginator.
+    per_page : `int = 5`
         The amount of data to display per page. Defaults to 5.
-    color : Color | None = None
+    color : `Color | None = None`
         The color of the container. Dependent on the `container` parameter.
-    container : bool = False
+    container : `bool = False`
         Whether the paginator should be in a Container.
-    force : bool = False
+    force : `bool = False`
         Whether multiple strings passed into data will be concatenated with newlines instead of `TextDisplay`s.
-    timeout : int | None = 600
+    timeout : `int | None = 600`
         The amount of seconds to pass before timing out, disabling all buttons and selects. If None, the paginator will never time out.
 
     Raises
@@ -198,21 +234,21 @@ class UnnamedPaginator(LayoutView):
         data      : _ItemsOrStrList,
         /,
         *,
-        data_name : str,
-        per_page  : int          = 5,
-        color     : Color | None = None,
-        container : bool         = False,
-        force     : bool         = False,
-        timeout   : int   | None = 600,
+        footer    : Footer | None = None,
+        per_page  : int           = 5,
+        color     : Color  | None = None,
+        container : bool          = False,
+        force     : bool          = False,
+        timeout   : int    | None = 600,
     ) -> None:
         super().__init__(timeout = timeout)
         self.message : Message | None = None
 
         self._title     : str             = title
         self._data      : _ItemsOrStrList = data
-        self._data_name : str   | None    = data_name
+        self._footer    : Footer | None   = footer if footer is not None else Footer()
         self._per_page  : int             = per_page
-        self._color     : Color | None    = color
+        self._color     : Color  | None   = color
         self._container : bool            = container
         self._force     : bool            = force
 
@@ -271,11 +307,20 @@ class UnnamedPaginator(LayoutView):
                     await self.message.delete()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # _get_page_footer
+    # _get_footer
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def _get_page_footer(self) -> str:
-        return f"-# Page {self.current_page + 1} of {len(self.pages)} | {len(self._data)} {self._data_name}"
+    def _get_footer(self) -> str | None:
+        if not self._footer:
+            return None
+
+        footer = self._footer.content
+        footer = footer.replace("{smallest_page}", str(self.current_page + 1))
+        footer = footer.replace("{biggest_page}", str(len(self.pages)))
+        footer = footer.replace("{count}", str(len(self._data)))
+        if self._footer.singularize:
+            footer = footer.replace("{s}", "s" if len(self._data) > 1 else "")
+        return footer
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_above
@@ -428,14 +473,19 @@ class UnnamedPaginator(LayoutView):
             TextDisplay(self._title)
         )
 
+        show_footer = self._footer is not None and not (self._footer.hide_on_single and len(self.pages) == 1)
+        footer_text = self._get_footer() if show_footer else None
+
         items : _ItemsList = [
             *self._over_items,
             title_item,
             VisibleLargeSeparator(),
             *page_items,
-            VisibleLargeSeparator(),
-            TextDisplay(self._get_page_footer()),
         ]
+
+        if show_footer and footer_text is not None:
+            items.append(VisibleLargeSeparator())
+            items.append(TextDisplay(footer_text))
 
         if self._page_row:
             self._page_row.update_states()

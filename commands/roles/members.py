@@ -4,7 +4,7 @@ from discord import AllowedMentions, Role
 
 from bot import Interaction
 from constants import COLOR_GREY
-from core.paginator import UnnamedPaginator
+from core.paginator import Footer, UnnamedPaginator
 
 type PersonFilter = Literal["Both", "Humans", "Bots"]
 type RoleFilter   = Literal["In", "Not In"]
@@ -71,7 +71,7 @@ async def run_role_members(
     view = UnnamedPaginator(
         f"### {person_label} {role_label} {mention}",
         [f"- {member.mention} | {member.id}" for member in filtered] if filtered else ["No members found."],
-        data_name = person_label.lower(),
+        footer    = Footer("Page {smallest_page} of {biggest_page} | {count} " + person_label + "{s}"),
         per_page  = 15,
         color     = role.color if role.color.value else COLOR_GREY,
         container = True,

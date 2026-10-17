@@ -35,7 +35,7 @@ from constants import (
     WARNING_EMOJI,
 )
 from core.exceptions import send_bad_argument, send_bad_operation
-from core.paginator import UnnamedPaginator
+from core.paginator import Footer, UnnamedPaginator
 from core.responses import FormatOverride, MessageType, PunctuationOverride, format_send
 from core.state import is_restrictable, is_restriction_required
 from core.utilities import format_command
@@ -411,7 +411,7 @@ async def run_server_commands(interaction : Interaction) -> None:
     view = UnnamedPaginator(
         f"# {HORIZONTAL_SETTINGS} All Commands",
         _build_sections(interaction, commands),
-        data_name = "Commands",
+        footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Command{s}"),
         container = True,
     )
     view.add_under(

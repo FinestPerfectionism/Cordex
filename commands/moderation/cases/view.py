@@ -4,7 +4,7 @@ from bot import Interaction
 from commands.moderation._base import build_case_section, send_case_view
 from constants import COLOR_GREY
 from core.moderation import CasesManager
-from core.paginator import UnnamedPaginator
+from core.paginator import Footer, UnnamedPaginator
 from core.responses import FormatOverride, MessageType, format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -48,7 +48,7 @@ async def run_moderation_cases_view(interaction : Interaction, case_id : int | N
             super().__init__(
                 "# Server Cases",
                 [build_case_section(case, cases_manager) for case in cases],
-                data_name = "Cases",
+                footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Case{s}"),
                 per_page  = 10,
                 color     = COLOR_GREY,
                 container = True,
