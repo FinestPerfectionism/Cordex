@@ -300,6 +300,30 @@ class Cordex(Bot):
         return Config(self, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # Biography
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def get_bio(self, guild : Guild, /) -> str:
+        """
+        Get the bot's biography for this guild.
+
+        Returns
+        -------
+        str
+            The biography for this guild.
+        """
+        class BioPayload(TypedDict):
+            bio : str
+
+        return cast(
+            "BioPayload",
+            await self.http.request(
+                route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = guild.id),
+                json  = {},
+            ),
+        )["bio"]
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Name Styles
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 

@@ -70,7 +70,7 @@ class ServerCommands(
     @requires_restriction
     @command(
         name        = "personalize",
-        description = "Personalize my avatar, banner, and name style.",
+        description = "Personalize my avatar, banner, biography, and display name style.",
     )
     async def cmd_server_personalize(self, interaction : Interaction) -> None:
         await run_server_personalize(interaction)

@@ -1,9 +1,8 @@
 # pyright: reportIncompatibleMethodOverride = false
 
-from re import compile as regex_compile
 from typing import Literal, Self, final, override
 
-from discord import HTTPException, SelectOption
+from discord import HTTPException, SelectOption, TextStyle
 
 from bot import Interaction
 from bot.types import NameStyleResult
@@ -19,51 +18,11 @@ from bot.ui import (
     TextDisplay,
     TextInput,
 )
-from constants import (
-    EIGHTBIT_FONT_EMOJI,
-    GG_SANS_FONT_EMOJI,
-    HEADBANG_FONT_EMOJI,
-    JELLYBEAN_FONT_EMOJI,
-    JOURNAL_FONT_EMOJI,
-    MAINFRAME_FONT_EMOJI,
-    MEDIEVAL_FONT_EMOJI,
-    MODERN_FONT_EMOJI,
-    MONKEY_BARS_FONT_EMOJI,
-    SAKURA_FONT_EMOJI,
-    TEMPO_FONT_EMOJI,
-    VAMPYRE_FONT_EMOJI,
-    DisplayNameEffect,
-    DisplayNameFont,
-)
+from constants import DisplayNameEffect, DisplayNameFont
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import NamedPaginator, PageData
 
-COLOR_PATTERN = regex_compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6}){0,4}$")
-
-FONT_OPTIONS = [
-    ("GG Sans",    "Discord's GG Sans font.", "default",       GG_SANS_FONT_EMOJI),
-    ("Tempo",      "Tempo font.",             "zilla_slab",    TEMPO_FONT_EMOJI),
-    ("Sakura",     "Sakura font.",            "cherry_bomb",   SAKURA_FONT_EMOJI),
-    ("Jellybean",  "Jellybean font.",         "chicle",        JELLYBEAN_FONT_EMOJI),
-    ("Modern",     "Modern font.",            "museo_moderno", MODERN_FONT_EMOJI),
-    ("Medieval",   "Medieval font.",          "neo_castel",    MEDIEVAL_FONT_EMOJI),
-    ("8Bit",       "8Bit font.",              "pixelify",      EIGHTBIT_FONT_EMOJI),
-    ("Vampyre",    "Vampyre font.",           "sinistre",      VAMPYRE_FONT_EMOJI),
-    ("Monkey Bars", "Monkey Bars font.",      "playpen_sans",  MONKEY_BARS_FONT_EMOJI),
-    ("Mainframe",  "Mainframe font.",         "orbitron",      MAINFRAME_FONT_EMOJI),
-    ("Headbang",   "Headbang font.",          "new_rocker",    HEADBANG_FONT_EMOJI),
-    ("Journal",    "Journal font.",           "kalam",         JOURNAL_FONT_EMOJI),
-]
-
-EFFECT_OPTIONS = [
-    ("Solid",    "solid"),
-    ("Gradient", "gradient"),
-    ("Neon",     "neon"),
-    ("Toon",     "toon"),
-    ("Pop",      "pop"),
-    ("Prism",    "prism"),
-    ("Gummy",    "gummy"),
-]
+from ._base import COLOR_PATTERN, EFFECT_OPTIONS, FONT_OPTIONS, find_violation
 
 type _ImageTypes = Literal["avatar", "banner"]
 
@@ -259,6 +218,72 @@ class _ImageButton(Button["_PersonalizationView"]):
 
 
 @final
+class _BioModal(Modal, title = "Edit Bio"):
+    def __init__(self, view : _PersonalizationView) -> None:
+        super().__init__()
+        self.view = view
+
+        self._bio = TextInput[Self](
+            style       = TextStyle.paragraph,
+            placeholder = "Write a short biography...",
+            default     = view.bio,
+            required    = False,
+            max_length  = 300,
+        )
+        self.bio  = Label[Self](
+            text        = "Biography",
+            description = "The bot's server biography. Leave blank to remove it.",
+            component   = self._bio,
+        )
+
+        self.add_items(self.bio)
+
+    @override
+    async def on_submit(self, interaction : Interaction) -> None:
+        guild = interaction.guild
+        if not guild:
+            return
+
+        me = guild.me
+        if not me:
+            return
+
+        bio = self._bio.value.strip() or None
+
+        if bio is not None and (violation := find_violation(bio)):
+            await send_bad_argument(
+                interaction,
+                title    = "set bio",
+                subtitle = {"bio" : violation},
+            )
+            return
+
+        try:
+            await me.edit(bio = bio)
+        except HTTPException:
+            await send_bad_operation(interaction, title = "set bio")
+            return
+
+        self.view.bio = bio
+        self.view.update_pages()
+
+        await interaction.response.edit_message(view = self.view)
+
+
+@final
+class _BioButton(Button["_PersonalizationView"]):
+    def __init__(self) -> None:
+        super().__init__(label = "Edit Biography")
+
+    @override
+    async def callback(self, interaction : Interaction) -> None:
+        if not self.view:
+            return
+
+        await interaction.response.send_modal(_BioModal(self.view))
+
+
+@final
 class _PersonalizationView(NamedPaginator):
     def __init__(
         self,
@@ -266,20 +291,24 @@ class _PersonalizationView(NamedPaginator):
         *,
         avatar_url : str | None,
         banner_url : str | None,
+        bio        : str | None,
     ) -> None:
         self.style      = style
         self.avatar_url = avatar_url
         self.banner_url = banner_url
+        self.bio        = bio
 
         self.font_select   = _FontSelect()
         self.effect_select = _EffectSelect()
         self.color_button  = _ColorsButton()
         self.avatar_button = _ImageButton("avatar")
         self.banner_button = _ImageButton("banner")
+        self.bio_button    = _BioButton()
 
         initial_pages = [
             PageData(name = "Name Style",      content = []),
             PageData(name = "Avatar & Banner", content = []),
+            PageData(name = "Biography",       content = []),
         ]
 
         super().__init__(initial_pages, container = True)
@@ -374,6 +403,18 @@ class _PersonalizationView(NamedPaginator):
             )
         )
 
+        bio = "\n".join(f"> {line}" for line in (self.bio or "").splitlines())
+
+        txt_bio = (
+            (
+                "**Biography**\n"
+                f"{bio}"
+            ) if self.bio else (
+                "**Biography**\n"
+                "No server biography is set."
+            )
+        )
+
         self.pages = [
             PageData(
                 name    = "Name Style",
@@ -394,12 +435,19 @@ class _PersonalizationView(NamedPaginator):
                     ButtonSection(txt_banner, button = self.banner_button),
                 ],
             ),
+            PageData(
+                name    = "Biography",
+                content = [
+                    "# Biography",
+                    ButtonSection(txt_bio, button = self.bio_button),
+                ],
+            ),
         ]
 
 
 async def run_server_personalize(interaction : Interaction) -> None:
     """
-    Personalize Cordex's avatar, banner, and name style.
+    Personalize Cordex's avatar, banner, biography, and display name style.
 
     Parameters
     ----------
@@ -411,6 +459,7 @@ async def run_server_personalize(interaction : Interaction) -> None:
         return
 
     style = await interaction.client.get_name_style(guild)
+    bio   = await interaction.client.get_bio(guild)
 
     me = guild.me
     if not me:
@@ -423,6 +472,7 @@ async def run_server_personalize(interaction : Interaction) -> None:
         style,
         avatar_url = avatar.url if avatar else None,
         banner_url = banner.url if banner else None,
+        bio        = bio,
     )
     await interaction.response.send_message(view = view, ephemeral = True)
     view.message = await interaction.original_response()
