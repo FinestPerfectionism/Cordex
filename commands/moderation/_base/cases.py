@@ -1,9 +1,9 @@
 from typing import final, override
 
-from discord import AllowedMentions, Member
+from discord import AllowedMentions, Member, User
 from discord.utils import escape_markdown, format_dt
 
-from bot import Interaction
+from bot import Cordex, Interaction
 from bot.ui import (
     Button,
     ButtonSection,
@@ -67,34 +67,43 @@ def build_case_section[V : LayoutView](case : Case, cases_manager : CasesManager
     return ButtonSection(_format_summary(case), button = _OpenCaseButton(cases_manager, case.id))
 
 
-def build_case_view(case : Case, cases_manager : CasesManager) -> LayoutView:
+async def build_case_view(bot : Cordex, case : Case, cases_manager : CasesManager) -> LayoutView:
     view      = LayoutView()
     container = Container[view](TextDisplay(f"# {case.action_type.readable()} | #{case.id}"), color = COLOR_GREY)
 
-    sections : list[tuple[str, Member | None]] = [
+    sections : list[tuple[str, Member | User | None]] = [
         ("Target",    case.target),
         ("Moderator", case.moderator),
     ]
 
-    for heading, member in sections:
-        if member is None:
+    for heading, user in sections:
+        if user is None:
             continue
 
-        member_table : dict[str, object] = {
-            heading           : member.mention,
-            f"{heading} Name" : member.name,
-            f"{heading} ID"   : member.id,
+        user_table : dict[str, object] = {
+            heading           : user.mention,
+            f"{heading} Name" : user.name,
+            f"{heading} ID"   : user.id,
         }
-        member_info = (
+        user_info = (
             f"## {heading}\n"
-            f"{format_table(member_table)}"
+            f"{format_table(user_table)}"
         )
 
         container.add_item(VisibleLargeSeparator())
-        if member.guild_avatar:
-            container.add_item(ThumbnailSection(member_info, thumbnail = Thumbnail[view](member.guild_avatar.url)))
+
+        avatar_url = None
+        if isinstance(user, Member) and user.guild_avatar:
+            avatar_url = user.guild_avatar.url
         else:
-            container.add_text(member_info)
+            fetched_user = await bot.fetch_user(user.id)
+            if fetched_user.avatar:
+                avatar_url = fetched_user.avatar.url
+
+        if avatar_url:
+            container.add_item(ThumbnailSection(user_info, thumbnail = Thumbnail[view](avatar_url)))
+        else:
+            container.add_text(user_info)
 
     details : dict[str, object] = {"Expired" : case.expired}
 
@@ -152,7 +161,7 @@ async def send_case_view(interaction : Interaction, cases_manager : CasesManager
         return
 
     await interaction.response.send_message(
-        view             = build_case_view(case, cases_manager),
+        view             = await build_case_view(interaction.client, case, cases_manager),
         ephemeral        = True,
         allowed_mentions = AllowedMentions.none(),
     )
