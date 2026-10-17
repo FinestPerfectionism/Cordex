@@ -20,7 +20,7 @@ from bot.ui import (
     VisibleLargeSeparator,
     blurple,
 )
-from core.exceptions import send_bad_operation
+from core.exceptions import DependentParameterError, send_bad_operation
 
 __all__ = ["NamedPaginator", "PageData"]
 
@@ -117,8 +117,9 @@ class NamedPaginator(LayoutView):
     Raises
     ------
     ValueError
-        - You passed only one page.
-        - You passed 'color' without passing 'container'.
+        You passed only one page.
+    DependentParameter
+        You passed `color` without passing `container`.
     """
 
     def __init__(
@@ -168,8 +169,9 @@ class NamedPaginator(LayoutView):
         # ⸻ color is dependent on container.
 
         if color and not container:
-            error = "color is dependent on container"
-            raise ValueError(error)
+            parameter_1 = "color"
+            parameter_2 = "container"
+            raise DependentParameterError(parameter_1, parameter_2)
 
         # ⸻ Render.
 

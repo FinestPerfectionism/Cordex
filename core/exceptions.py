@@ -16,6 +16,27 @@ from .utilities import format_table
 class UnconfiguredQuarantine(CheckFailure):
     """The exception raised when a user tries to run a quarantine command, but the server has not configured quarantine."""
 
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Internal
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+class DependentParameterError(Exception):
+    """
+    The exception raised when someone runs a parameter without passing an additional one that the first is dependent on.
+
+    Parameters
+    ----------
+    parameter : str
+        The parameter that is dependent on `depends_on`.
+    depends_on : str
+        The parameter that `parameter` depends on.
+    /
+    """
+
+    def __init__(self, parameter : str, depends_on : str, /) -> None:
+        super().__init__(f"Parameter '{parameter}' is dependent on parameter '{depends_on}'")
+
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bad Operation Exception

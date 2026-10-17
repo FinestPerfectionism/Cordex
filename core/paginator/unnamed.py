@@ -24,7 +24,11 @@ from bot.ui import (
     button,
     green,
 )
-from core.exceptions import send_bad_operation, send_bad_request
+from core.exceptions import (
+    DependentParameterError,
+    send_bad_operation,
+    send_bad_request,
+)
 
 __all__ = ["UnnamedPaginator"]
 
@@ -184,7 +188,7 @@ class UnnamedPaginator(LayoutView):
 
     Raises
     ------
-    ValueError
+    DependentParameter
         You passed `color` without passing `container`.
     """
 
@@ -228,8 +232,9 @@ class UnnamedPaginator(LayoutView):
         # ⸻ color is dependent on container.
 
         if color and not container:
-            error = "color is dependent on container"
-            raise ValueError(error)
+            parameter_1 = "color"
+            parameter_2 = "container"
+            raise DependentParameterError(parameter_1, parameter_2)
 
         # ⸻ Render.
 

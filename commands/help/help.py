@@ -47,7 +47,7 @@ def _build_parameter_sections(parameters : list[HelpParameter]) -> str:
 
 
 @final
-class HelpView(LayoutView):
+class _HelpView(LayoutView):
     def __init__(self, command : HelpCommand) -> None:
         super().__init__()
         container = Container[Self](
@@ -94,4 +94,4 @@ async def run_help(interaction : Interaction, command_name : str) -> None:
     if not details:
         return
 
-    await interaction.response.send_message(view = HelpView(details))
+    await interaction.response.send_message(view = _HelpView(details))

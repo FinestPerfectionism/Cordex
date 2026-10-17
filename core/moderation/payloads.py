@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from discord import Member, User
 
 from bot.types import GuildMessagable, GuildMessagableChannel
+from core.exceptions import DependentParameterError
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Action Payloads
@@ -222,8 +223,8 @@ class PurgePayload:
         The amount of messages to purge.
     force : `bool`
         Whether the purge will be forced.
-        - True Deletes `amount` messages by the `target` found in the last 1000 messages in the channel.
-        - False Searches `channel` for `amount` messages and deletes any by the `target` (or deletes `amount` messages in the `channel` if no `target`)
+        - True: Deletes `amount` messages by the `target` found in the last 1000 messages in the channel.
+        - False: Searches `channel` for `amount` messages and deletes any by the `target` (or deletes `amount` messages in the `channel` if no `target`)
 
         Dependent on the `target` parameter.
     """
@@ -234,6 +235,20 @@ class PurgePayload:
     channel   : GuildMessagable
     amount    : int
     force     : bool
+
+    def __post_init__(self) -> None:
+        """
+        Validate that `target` is passed if `force` is passed.
+
+        Raises
+        ------
+        DependentParameterError
+            `force` was passed without `target`.
+        """
+        if self.force and not self.target:
+            parameter_1 = "force"
+            parameter_2 = "target"
+            raise DependentParameterError(parameter_1, parameter_2)
 
 
 Payloads = (

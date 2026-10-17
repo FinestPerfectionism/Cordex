@@ -42,7 +42,7 @@ from core.state import (
 from .types import LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
 
-InspectableObject = (
+type _InspectableObject = (
     ModuleType
     | type
     | MethodType
@@ -166,7 +166,7 @@ class _ContextClass(BaseContext["Cordex"]):
         filename = f"{module.split('/')[-1]}.py"
         return await self.send(content = content, file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
 
-    async def show_def(self, target : InspectableObject, /) -> Message:
+    async def show_def(self, target : _InspectableObject, /) -> Message:
         if isinstance(target, property):
             fget = target.fget
             if not fget:
