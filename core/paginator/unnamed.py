@@ -189,7 +189,7 @@ class Footer:
         /,
         *,
         singularize    : bool       = True,
-        hide_on_single : bool       = True,
+        hide_on_single : bool     = True,
     ) -> None:
         super().__init__()
         self.content        = f"-# {content}"

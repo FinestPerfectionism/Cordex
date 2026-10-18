@@ -1,6 +1,7 @@
 # pyright: reportIncompatibleMethodOverride = false
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 from typing import Self, final, override
 
 from discord import Member, Role, SelectOption, User
@@ -55,7 +56,14 @@ type CommandList = list[AnnotatedCommand]
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
-def _build_sections(interaction : Interaction, commands : CommandList) -> list[str | Item[UnnamedPaginator]]:
+@dataclass
+class _State:
+    title    : str
+    commands : CommandList
+
+
+def _build_sections(interaction : Interaction, state : _State) -> list[str | Item[UnnamedPaginator]]:
+    commands = state.commands
     mentions = [format_command(command.qualified_name) for command in commands]
 
     guild = interaction.guild
@@ -79,18 +87,31 @@ def _build_sections(interaction : Interaction, commands : CommandList) -> list[s
             ButtonSection(
                 f"**{i}.** {status}{mention}\n"
                 f"-# {COG_EMOJI if requires_restriction else ""} {command.description or "*No description provided.*"}",
-                button = _ConfigButton(command),
+                button = _ConfigButton(command, state),
             ),
         )
 
     return sections
 
 
+async def _refresh(interaction : Interaction, view : UnnamedPaginator, state : _State) -> None:
+    view.update_data(state.title, _build_sections(interaction, state))
+    await interaction.response.edit_message(view = view)
+
+
 @final
 class _ConfigModal(Modal):
-    def __init__(self, command : AnnotatedCommand, allowed : Sequence[Role | Member]) -> None:
+    def __init__(
+        self,
+        command : AnnotatedCommand,
+        allowed : Sequence[Role | Member],
+        view    : UnnamedPaginator,
+        state   : _State,
+    ) -> None:
         super().__init__(title = f"Configuring /{command.qualified_name}")
         self._command = command
+        self._view    = view
+        self._state   = state
 
         mentions = "\n".join(f"- {target.mention}" for target in allowed) or "- @everyone"
 
@@ -152,6 +173,8 @@ class _ConfigModal(Modal):
             await send_bad_operation(interaction, title = "configure command")
             raise
 
+        await _refresh(interaction, self._view, self._state)
+
         name = format_command(self._command.qualified_name)
 
         if allowed:
@@ -177,26 +200,34 @@ class _ConfigModal(Modal):
 
 @final
 class _ConfigButton(Button[UnnamedPaginator]):
-    def __init__(self, command : AnnotatedCommand) -> None:
+    def __init__(self, command : AnnotatedCommand, state : _State) -> None:
         super().__init__(emoji = PENCIL_EMOJI)
         self._command = command
+        self._state   = state
 
     @override
     async def callback(self, interaction : Interaction) -> None:
         guild = interaction.guild
-        if not guild:
+        if not guild or not self.view:
             return
 
         allowed = await interaction.client.config(guild).get_command_allowed(self._command.qualified_name)
 
-        await interaction.response.send_modal(_ConfigModal(self._command, allowed))
+        await interaction.response.send_modal(_ConfigModal(self._command, allowed, self.view, self._state))
 
 
 @final
 class _GroupConfigModal(Modal):
-    def __init__(self, commands : CommandList, group_name : str) -> None:
+    def __init__(
+        self,
+        group_name : str,
+        view       : UnnamedPaginator,
+        state      : _State,
+    ) -> None:
         super().__init__(title = f"Configuring {group_name}")
-        self._commands = commands
+        self._commands = list(state.commands)
+        self._view     = view
+        self._state    = state
 
         self.note = TextDisplay[Self]("Please note that the guild owner may *always* run commands.")
 
@@ -219,20 +250,24 @@ class _GroupConfigModal(Modal):
             component   = self._force,
         )
 
-        self._ignore = Checkbox[Self](default = True)
-        self.ignore  = Label[Self](
-            text        = "Ignore",
-            description = "Whether to ignore commands that do not require restriction.",
-            component   = self._ignore,
-        )
+        self.add_items(self.note, self.allowed, self.force)
 
-        self.add_items(self.note, self.allowed, self.force, self.ignore)
+        self._ignore : Checkbox[Self] | None = None
+        if not all(is_restriction_required(command) for command in self._commands):
+            self._ignore = Checkbox[Self](default = True)
+            self.ignore  = Label[Self](
+                text        = "Ignore",
+                description = "Whether to ignore commands that do not require restriction.",
+                component   = self._ignore,
+            )
+
+            self.add_item(self.ignore)
 
     @override
     async def on_submit(self, interaction : Interaction) -> None:
         allowed = [member for member in self._allowed.values if not isinstance(member, User)]
         force   = self._force.value
-        ignore  = self._ignore.value
+        ignore  = self._ignore.value if self._ignore is not None else False
 
         client = interaction.client
         guild  = interaction.guild
@@ -273,6 +308,9 @@ class _GroupConfigModal(Modal):
                 await send_bad_operation(interaction, title = "configure group")
                 raise
 
+        if affected:
+            await _refresh(interaction, self._view, self._state)
+
         if not affected:
             subtitle = "No commands in this group were affected."
         elif len(affected) == len(self._commands):
@@ -295,20 +333,24 @@ class _GroupConfigModal(Modal):
 
 @final
 class _GroupConfigButton(Button[UnnamedPaginator]):
-    def __init__(self, commands : CommandList, group_name : str) -> None:
+    def __init__(self, group_name : str, state : _State) -> None:
         super().__init__(emoji = PENCIL_EMOJI)
-        self._commands   = commands
         self._group_name = group_name
+        self._state      = state
 
     @override
     async def callback(self, interaction : Interaction) -> None:
-        await interaction.response.send_modal(_GroupConfigModal(self._commands, self._group_name))
+        if not self.view:
+            return
+
+        await interaction.response.send_modal(_GroupConfigModal(self._group_name, self.view, self._state))
 
 
 @final
 class _CategorySelect(Select[UnnamedPaginator]):
-    def __init__(self, bot : Cordex, commands : CommandList) -> None:
+    def __init__(self, bot : Cordex, commands : CommandList, state : _State) -> None:
         self._commands = commands
+        self._state    = state
         self._emojis : dict[str, str] = {}
 
         options = [
@@ -384,8 +426,11 @@ class _CategorySelect(Select[UnnamedPaginator]):
         for option in self.options:
             option.default = (option.value == value)
 
-        self.view.set_title_button(_GroupConfigButton(filtered, group_name) if group_name is not None else None)
-        self.view.update_data(title, _build_sections(interaction, filtered))
+        self._state.title    = title
+        self._state.commands = filtered
+
+        self.view.set_title_button(_GroupConfigButton(group_name, self._state) if group_name is not None else None)
+        self.view.update_data(title, _build_sections(interaction, self._state))
 
         await interaction.response.edit_message(view = self.view)
 
@@ -408,9 +453,11 @@ async def run_server_commands(interaction : Interaction) -> None:
 
     # ⸻ Build the view,
 
+    state = _State(f"# {HORIZONTAL_SETTINGS} All Commands", commands)
+
     view = UnnamedPaginator(
-        f"# {HORIZONTAL_SETTINGS} All Commands",
-        _build_sections(interaction, commands),
+        state.title,
+        _build_sections(interaction, state),
         footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Command{s}"),
         container = True,
     )
@@ -427,7 +474,7 @@ async def run_server_commands(interaction : Interaction) -> None:
                f"# {COMMAND_EMOJI} Command Browser\n"
                 "-# Select a category to view commands.",
             ),
-            ActionRow(_CategorySelect(interaction.client, commands)),
+            ActionRow(_CategorySelect(interaction.client, commands, state)),
         ),
     )
 
