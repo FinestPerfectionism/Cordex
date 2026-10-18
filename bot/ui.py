@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, Self, final, override
 from warnings import warn
 
 from discord import (
-    ButtonStyle,
     Color,
     SeparatorSpacing,
     TextStyle,
@@ -292,19 +291,9 @@ class TextInput[M : Modal](BaseTextInput[M]):
         )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Button Colors
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-blurple = ButtonStyle.blurple
-grey    = ButtonStyle.grey
-green   = ButtonStyle.green
-red     = ButtonStyle.red
-link    = ButtonStyle.link
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Separator Variants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
 
 _large = SeparatorSpacing.large
 _small = SeparatorSpacing.small

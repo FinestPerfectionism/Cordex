@@ -3,7 +3,7 @@
 from contextlib import suppress
 from typing import Self, final, override
 
-from discord import Member, User
+from discord import ButtonStyle, Member, User
 
 from bot import Interaction
 from bot.types import GuildMessagable
@@ -19,8 +19,6 @@ from bot.ui import (
     TextInput,
     VisibleLargeSeparator,
     button,
-    grey,
-    red,
 )
 from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 from core.exceptions import send_bad_argument
@@ -387,7 +385,7 @@ class _ModerationModal(Modal):
             )
 
         class EditOrExecuteRow(ActionRow["ModerationView"]):
-            @button(label = "Edit", style = grey)
+            @button(label = "Edit", style = ButtonStyle.grey)
             async def btn_edit(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
                 if not self.view:
                     return
@@ -402,7 +400,7 @@ class _ModerationModal(Modal):
                     ),
                 )
 
-            @button(label = "Execute", style = red)
+            @button(label = "Execute", style = ButtonStyle.red)
             async def btn_execute(self, interaction : Interaction, _button : Button[ModerationView]) -> None:
                 client = interaction.client
                 moderator = interaction.user

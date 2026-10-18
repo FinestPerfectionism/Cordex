@@ -6,7 +6,15 @@ from dataclasses import dataclass
 from typing import Protocol, Self, final, override
 from warnings import warn
 
-from discord import Color, Emoji, HTTPException, Message, NotFound, PartialEmoji
+from discord import (
+    ButtonStyle,
+    Color,
+    Emoji,
+    HTTPException,
+    Message,
+    NotFound,
+    PartialEmoji,
+)
 
 from bot import Interaction
 from bot.ui import (
@@ -18,7 +26,6 @@ from bot.ui import (
     Select,
     TextDisplay,
     VisibleLargeSeparator,
-    blurple,
 )
 from core.exceptions import DependentParameterError, send_bad_operation
 
@@ -77,7 +84,7 @@ class _NameRow(ActionRow["NamedPaginator"]):
             is_current = index == self.paginator.current_page
 
             button : Button[NamedPaginator] = (
-                Button(label = page.name, emoji = page.emoji, style = blurple, disabled = is_current)
+                Button(label = page.name, emoji = page.emoji, style = ButtonStyle.blurple, disabled = is_current)
                 if is_current else
                 Button(label = page.name, emoji = page.emoji)
             )

@@ -5,7 +5,7 @@ from contextlib import suppress
 from typing import Self, final, override
 from warnings import warn
 
-from discord import Color, HTTPException, Message, NotFound
+from discord import ButtonStyle, Color, HTTPException, Message, NotFound
 
 from bot import Interaction
 from bot.ui import (
@@ -22,7 +22,6 @@ from bot.ui import (
     TextInput,
     VisibleLargeSeparator,
     button,
-    green,
 )
 from core.exceptions import (
     DependentParameterError,
@@ -148,7 +147,7 @@ class _PageRow(ActionRow["UnnamedPaginator"]):
     async def btn_backward(self, interaction : Interaction, _button : Button[UnnamedPaginator]) -> None:
         await self.paginator._turn(interaction, self.paginator.current_page - 1)
 
-    @button(label = "1 / 1", style = green)
+    @button(label = "1 / 1", style = ButtonStyle.green)
     async def btn_page(self, interaction : Interaction, _button : Button[UnnamedPaginator]) -> None:
         await interaction.response.send_modal(_PageJumpModal(self.paginator))
 

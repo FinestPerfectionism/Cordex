@@ -1,7 +1,7 @@
 from io import BytesIO
 from typing import Self, final
 
-from discord import AllowedMentions, Message
+from discord import AllowedMentions, ButtonStyle, Message
 from discord import File as DiscordFile
 from discord.ext.commands import Cog
 from discord.utils import format_dt, utcnow
@@ -16,7 +16,6 @@ from bot.ui import (
     LayoutView,
     TextDisplay,
     VisibleLargeSeparator,
-    link,
 )
 from constants import COLOR_GREY
 from core.utilities import format_table, is_bot_owner
@@ -90,7 +89,7 @@ class MessageEditLogging(Cog):
                             "Channel" : channel_display(channel),
                         },
                     ),
-                    button = Button(label = "Jump to Message", style = link, url = after.jump_url),
+                    button = Button(label = "Jump to Message", style = ButtonStyle.link, url = after.jump_url),
                 ),
                 color = COLOR_GREY,
             )

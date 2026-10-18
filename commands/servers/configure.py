@@ -2,7 +2,7 @@
 
 from typing import Self, final, override
 
-from discord import ChannelType, Guild, Object, TextChannel
+from discord import ButtonStyle, ChannelType, Guild, Object, TextChannel
 
 from bot import Interaction
 from bot.ui import (
@@ -15,8 +15,6 @@ from bot.ui import (
     Modal,
     RoleSelect,
     TextDisplay,
-    green,
-    red,
 )
 from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
 from core.exceptions import send_bad_argument, send_bad_operation
@@ -143,12 +141,12 @@ class _MessagesPreviewButton(Button["_ConfigurationView"]):
     def __init__(self, *, enabled : bool) -> None:
         super().__init__(
             label = "Preview Enabled" if enabled else "Preview Disabled",
-            style = green             if enabled else red,
+            style = ButtonStyle.green if enabled else ButtonStyle.red,
         )
 
     def update_state(self, *, enabled : bool) -> None:
         self.label = "Preview Enabled" if enabled else "Preview Disabled"
-        self.style = green             if enabled else red
+        self.style = ButtonStyle.green if enabled else ButtonStyle.red
 
     @override
     async def callback(self, interaction : Interaction) -> None:
