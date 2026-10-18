@@ -178,23 +178,26 @@ class Footer:
     /
     *
     singularize : `bool = True`
-        Whether to remove the '{s}' placeholder on `footer` (if any) if only one item is provided in the paginator data list or not. Does nothing if `hide_on_single` is `True`.
-    hide_on_single : `bool = True`
-        Whether to remove the footer as a whole if only one page exists or not.
+        Whether to remove the '{s}' placeholder on `footer` (if any) if only one item is provided in the paginator data list or not. Does nothing if `on_single` is `None`.
+    on_single : `str | None = "{count} Item{s}"`
+        The footer (or lack thereof) to use when only a single page is present in the paginator.
+        - `{count}` will be replaced with the length of the paginator data list.
+        - `{s}` will be either 's', or nothing if only one item is provided in the paginator data list, but only if `singularize` is `True`.
+
     """
 
     def __init__(
         self,
-        content        : str | None = "Page {smallest_page} of {biggest_page} | {count} Item{s}",
+        content     : str | None = "Page {smallest_page} of {biggest_page} | {count} Item{s}",
         /,
         *,
-        singularize    : bool       = True,
-        hide_on_single : bool       = True,
+        singularize : bool       = True,
+        on_single   : str | None = "{count} Item{s}",
     ) -> None:
         super().__init__()
-        self.content        = f"-# {content}"
-        self.singularize    = singularize
-        self.hide_on_single = hide_on_single
+        self.content     = f"-# {content}" if content is not None else None
+        self.singularize = singularize
+        self.on_single   = f"-# {on_single}" if on_single is not None else None
 
 
 class UnnamedPaginator(LayoutView):
@@ -314,7 +317,15 @@ class UnnamedPaginator(LayoutView):
         if not self._footer:
             return None
 
-        footer = self._footer.content
+        if len(self.pages) == 1:
+            if self._footer.on_single is None:
+                return None
+            footer = self._footer.on_single
+        else:
+            if self._footer.content is None:
+                return None
+            footer = self._footer.content
+
         footer = footer.replace("{smallest_page}", str(self.current_page + 1))
         footer = footer.replace("{biggest_page}", str(len(self.pages)))
         footer = footer.replace("{count}", str(len(self._data)))
@@ -473,7 +484,7 @@ class UnnamedPaginator(LayoutView):
             TextDisplay(self._title)
         )
 
-        show_footer = self._footer is not None and not (self._footer.hide_on_single and len(self.pages) == 1)
+        show_footer = self._footer is not None
         footer_text = self._get_footer() if show_footer else None
 
         items : _ItemsList = [
