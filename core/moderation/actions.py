@@ -701,20 +701,51 @@ class Actions:
     # timeout_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def timeout_view(self) -> UnnamedPaginator:
+    async def timeout_view(self) -> UnnamedPaginator | None:
         """
         Display a paginator (`UnnamedPaginator`) of all members in timeout.
 
         Returns
         -------
-        `TimeoutPaginator`
-            The paginator displaying all members in timeout.
+        `TimeoutPaginator | None`
+            The paginator displaying all members in timeout, or `None` if no members are timed out.
         """
+        db_cases = await self.cases.filter_by(
+            action_type = ActionType.timeout_add,
+            expired     = False,
+        )
+
+        db_target_ids = {case.target.id for case in db_cases if case.target}
+        api_members = [
+            member async for member in self.guild.fetch_members()
+            if member.is_timed_out() and member.id not in db_target_ids
+        ]
+
+        if not db_cases and not api_members:
+            return None
+
         class TimeoutPaginator(UnnamedPaginator):
             def __init__(self) -> None:
                 super().__init__(
                     "# Server Timeouts",
-                    [],
+                    [
+                        *[
+                            (
+                                f"**{case.target.mention if case.target else "Unknown Member"} | {case.moderator.mention}**\n"
+                                f"*{escape_markdown(case.reason or "No reason provided")}*\n"
+                                f"-# Timed out at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}.\n"
+                                f"-# Case ID: #{case.id}"
+                            ) for case in db_cases
+                        ],
+                        *[
+                            (
+                                f"**{member.mention} | Unknown Moderator**\n"
+                                f"*No reason provided*\n"
+                                f"-# Timed out until {format_dt(member.timed_out_until, "F") if member.timed_out_until else "Unknown Time"} ({format_dt(member.timed_out_until, "R") if member.timed_out_until else ""}).\n"
+                                f"-# Case ID: N/A (Timeout is not managed by Cordex)"
+                            ) for member in api_members
+                        ],
+                    ],
                     footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Timeout{s}"),
                     per_page  = 10,
                     color     = COLOR_YELLOW,
