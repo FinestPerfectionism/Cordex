@@ -81,7 +81,6 @@ class LayoutView(BaseLayoutView):
 
     def add_text(self, text : str, /) -> Self:
         self.add_item(TextDisplay(text))
-
         return self
 
     def add_items(self, *items : Item[LayoutView | Self]) -> Self:
@@ -143,7 +142,6 @@ class Modal(BaseModal):
             The modal.
         """
         self.add_item(TextDisplay(text))
-
         return self
 
     def add_items(self, *items : Item[Self]) -> Self:
