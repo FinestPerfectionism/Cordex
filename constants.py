@@ -1,142 +1,10 @@
-from enum import Enum
+from enum import IntEnum, nonmember
 
 from discord import Color
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Constants
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# Enums
-# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-
-class DisplayNameFont(Enum):
-    """
-    Represents the available display name style fonts a Discord user can have.
-
-    `bangers`, `bio_rhyme`, `compagnon`, and `ribes` are not available for both bot and human users as they are deprecated; they are only listed here for consistency.
-
-    Attributes
-    ----------
-    cherry_bomb : `int`
-        Sakura font.
-    chicle : `int`
-        Jellybean font.
-    museo_moderno : `int`
-        Modern font.
-    neo_castel : `int`
-        Medieval font.
-    pixelify : `int`
-        8Bit font.
-    sinistre : `int`
-        Vampyre font.
-    default : `int`
-        Discord's GG Sans font.
-    zilla_slab : `int`
-        Tempo font.
-    playpen_sans : `int`
-        Monkey Bars font.
-    orbitron : `int`
-        Mainframe font.
-    new_rocker : `int`
-        Headbang font.
-    kalam : `int`
-        Journal font.
-    """
-
-    # bangers = 1
-
-    # bio_rhyme = 2
-
-    cherry_bomb = 3
-    """Sakura font."""
-
-    chicle = 4
-    """Jellybean font."""
-
-    # compagnon = 5
-
-    museo_moderno = 6
-    """Modern font."""
-
-    neo_castel = 7
-    """Medieval font."""
-
-    pixelify = 8
-    """8Bit font."""
-
-    # ribes = 9
-
-    sinistre = 10
-    """Vampyre font."""
-
-    default = 11
-    """Discord's GG Sans font."""
-
-    zilla_slab = 12
-    """Tempo font."""
-
-    playpen_sans = 13
-    """Monkey Bars font."""
-
-    orbitron = 14
-    """Mainframe font."""
-
-    new_rocker = 15
-    """Headbang font."""
-
-    kalam = 16
-    """Journal font."""
-
-
-class DisplayNameEffect(Enum):
-    """
-    Represents the available display name style effects a Discord user can have.
-
-    `glow` is not available for both bot and human users; it is only listed here for consistency.
-
-    Attributes
-    ----------
-    solid : `int`
-        Solid effect. Takes one color along side it.
-    gradient : `int`
-        Gradient effect. Takes two colors along side it.
-    neon : `int`
-        Neon effect. Takes one color along side it.
-    toon : `int`
-        Toon effect. Takes one color along side it.
-    pop : `int`
-        Pop effect. Takes one color along side it.
-    prism : `int`
-        Prism effect. Takes five colors along side it.
-    gummy : `int`
-        Gummy effect. Takes five colors along side it.
-    """
-
-    solid = 1
-    """Solid effect. Takes one color along side it."""
-
-    gradient = 2
-    """Gradient effect. Takes two colors along side it."""
-
-    neon = 3
-    """Neon effect. Takes one color along side it."""
-
-    toon = 4
-    """Toon effect. Takes one color along side it."""
-
-    pop = 5
-    """Pop effect. Takes one color along side it."""
-
-    # glow = 6
-
-    prism = 7
-    """Prism effect. Takes five colors along side it."""
-
-    gummy = 8
-    """Gummy effect. Takes five colors along side it."""
-
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Colors
@@ -262,3 +130,187 @@ HEADBANG_FONT_EMOJI    = "<:headbang_font:1558979103267225650>"
 JOURNAL_FONT_EMOJI     = "<:journal_font:1558979516368556125>"
 
 PET_CORDEX_EMOJI = "<a:pet_cordex:1526024713078571141>"
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Display Name Enums
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+class DisplayNameFont(IntEnum):
+    """
+    Represents the available display name style fonts a Discord user can have.
+
+    `bangers`, `bio_rhyme`, `compagnon`, and `ribes` are not available for both bot and human users as they are deprecated; they are only listed here for consistency.
+
+    Attributes
+    ----------
+    cherry_bomb : `int`
+        Sakura font.
+    chicle : `int`
+        Jellybean font.
+    museo_moderno : `int`
+        Modern font.
+    neo_castel : `int`
+        Medieval font.
+    pixelify : `int`
+        8Bit font.
+    sinistre : `int`
+        Vampyre font.
+    default : `int`
+        Discord's GG Sans font.
+    zilla_slab : `int`
+        Tempo font.
+    playpen_sans : `int`
+        Monkey Bars font.
+    orbitron : `int`
+        Mainframe font.
+    new_rocker : `int`
+        Headbang font.
+    kalam : `int`
+        Journal font.
+    """
+
+    # bangers = 1
+
+    # bio_rhyme = 2
+
+    cherry_bomb = 3
+    """Sakura font."""
+
+    chicle = 4
+    """Jellybean font."""
+
+    # compagnon = 5
+
+    museo_moderno = 6
+    """Modern font."""
+
+    neo_castel = 7
+    """Medieval font."""
+
+    pixelify = 8
+    """8Bit font."""
+
+    # ribes = 9
+
+    sinistre = 10
+    """Vampyre font."""
+
+    default = 11
+    """Discord's GG Sans font."""
+
+    zilla_slab = 12
+    """Tempo font."""
+
+    playpen_sans = 13
+    """Monkey Bars font."""
+
+    orbitron = 14
+    """Mainframe font."""
+
+    new_rocker = 15
+    """Headbang font."""
+
+    kalam = 16
+    """Journal font."""
+
+    FONT_OPTIONS = nonmember(
+        [
+            ("GG Sans",     "default",       "Discord's GG Sans font.", GG_SANS_FONT_EMOJI),
+            ("Tempo",       "zilla_slab",    "Tempo font.",             TEMPO_FONT_EMOJI),
+            ("Sakura",      "cherry_bomb",   "Sakura font.",            SAKURA_FONT_EMOJI),
+            ("Jellybean",   "chicle",        "Jellybean font.",         JELLYBEAN_FONT_EMOJI),
+            ("Modern",      "museo_moderno", "Modern font.",            MODERN_FONT_EMOJI),
+            ("Medieval",    "neo_castel",    "Medieval font.",          MEDIEVAL_FONT_EMOJI),
+            ("8Bit",        "pixelify",      "8Bit font.",              EIGHTBIT_FONT_EMOJI),
+            ("Vampyre",     "sinistre",      "Vampyre font.",           VAMPYRE_FONT_EMOJI),
+            ("Monkey Bars", "playpen_sans",  "Monkey Bars font.",       MONKEY_BARS_FONT_EMOJI),
+            ("Mainframe",   "orbitron",      "Mainframe font.",         MAINFRAME_FONT_EMOJI),
+            ("Headbang",    "new_rocker",    "Headbang font.",          HEADBANG_FONT_EMOJI),
+            ("Journal",     "kalam",         "Journal font.",           JOURNAL_FONT_EMOJI),
+        ],
+    )
+
+    @property
+    def display_name(self) -> str:
+        """The name of the font in the Discord."""
+        return next(option[0] for option in self.FONT_OPTIONS if option[1] == self.name)
+
+    @property
+    def description(self) -> str:
+        """The description of the font."""
+        return next(option[2] for option in self.FONT_OPTIONS if option[1] == self.name)
+
+    @property
+    def emoji(self) -> str:
+        """The emoji representation of the font."""
+        return next(option[3] for option in self.FONT_OPTIONS if option[1] == self.name)
+
+
+class DisplayNameEffect(IntEnum):
+    """
+    Represents the available display name style effects a Discord user can have.
+
+    `glow` is not available for both bot and human users; it is only listed here for consistency.
+
+    Attributes
+    ----------
+    solid : `int`
+        Solid effect. Takes one color along side it.
+    gradient : `int`
+        Gradient effect. Takes two colors along side it.
+    neon : `int`
+        Neon effect. Takes one color along side it.
+    toon : `int`
+        Toon effect. Takes one color along side it.
+    pop : `int`
+        Pop effect. Takes one color along side it.
+    prism : `int`
+        Prism effect. Takes five colors along side it.
+    gummy : `int`
+        Gummy effect. Takes five colors along side it.
+    """
+
+    solid = 1
+    """Solid effect. Takes one color along side it."""
+
+    gradient = 2
+    """Gradient effect. Takes two colors along side it."""
+
+    neon = 3
+    """Neon effect. Takes one color along side it."""
+
+    toon = 4
+    """Toon effect. Takes one color along side it."""
+
+    pop = 5
+    """Pop effect. Takes one color along side it."""
+
+    # glow = 6
+
+    prism = 7
+    """Prism effect. Takes five colors along side it."""
+
+    gummy = 8
+    """Gummy effect. Takes five colors along side it."""
+
+    EFFECT_OPTIONS = nonmember(
+        [
+            ("Solid",    "solid",    ""),
+            ("Gradient", "gradient", ""),
+            ("Neon",     "neon",     ""),
+            ("Toon",     "toon",     ""),
+            ("Pop",      "pop",      ""),
+            ("Prism",    "prism",    ""),
+            ("Gummy",    "gummy",    ""),
+        ],
+    )
+
+    @property
+    def display_name(self) -> str:
+        """The name of the effect in the Discord."""
+        return next(option[0] for option in self.EFFECT_OPTIONS if option[1] == self.name)
+
+    @property
+    def description(self) -> str:
+        """The description of the effect."""

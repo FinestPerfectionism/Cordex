@@ -2,30 +2,9 @@ from re import IGNORECASE
 from re import compile as regex_compile
 from re import escape as regex_escape
 from typing import cast
-from unicodedata import (
-    category as unicode_category,
-)
-from unicodedata import (
-    combining as unicode_combining,
-)
-from unicodedata import (
-    normalize as unicode_normalize,
-)
-
-from constants import (
-    EIGHTBIT_FONT_EMOJI,
-    GG_SANS_FONT_EMOJI,
-    HEADBANG_FONT_EMOJI,
-    JELLYBEAN_FONT_EMOJI,
-    JOURNAL_FONT_EMOJI,
-    MAINFRAME_FONT_EMOJI,
-    MEDIEVAL_FONT_EMOJI,
-    MODERN_FONT_EMOJI,
-    MONKEY_BARS_FONT_EMOJI,
-    SAKURA_FONT_EMOJI,
-    TEMPO_FONT_EMOJI,
-    VAMPYRE_FONT_EMOJI,
-)
+from unicodedata import category as unicode_category
+from unicodedata import combining as unicode_combining
+from unicodedata import normalize as unicode_normalize
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Server Commands Base
@@ -36,31 +15,6 @@ from constants import (
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 COLOR_PATTERN = regex_compile(r"^[0-9a-fA-F]{6}(?:-[0-9a-fA-F]{6}){0,4}$")
-
-FONT_OPTIONS = [
-    ("GG Sans",    "Discord's GG Sans font.", "default",       GG_SANS_FONT_EMOJI),
-    ("Tempo",      "Tempo font.",             "zilla_slab",    TEMPO_FONT_EMOJI),
-    ("Sakura",     "Sakura font.",            "cherry_bomb",   SAKURA_FONT_EMOJI),
-    ("Jellybean",  "Jellybean font.",         "chicle",        JELLYBEAN_FONT_EMOJI),
-    ("Modern",     "Modern font.",            "museo_moderno", MODERN_FONT_EMOJI),
-    ("Medieval",   "Medieval font.",          "neo_castel",    MEDIEVAL_FONT_EMOJI),
-    ("8Bit",       "8Bit font.",              "pixelify",      EIGHTBIT_FONT_EMOJI),
-    ("Vampyre",    "Vampyre font.",           "sinistre",      VAMPYRE_FONT_EMOJI),
-    ("Monkey Bars", "Monkey Bars font.",      "playpen_sans",  MONKEY_BARS_FONT_EMOJI),
-    ("Mainframe",  "Mainframe font.",         "orbitron",      MAINFRAME_FONT_EMOJI),
-    ("Headbang",   "Headbang font.",          "new_rocker",    HEADBANG_FONT_EMOJI),
-    ("Journal",    "Journal font.",           "kalam",         JOURNAL_FONT_EMOJI),
-]
-
-EFFECT_OPTIONS = [
-    ("Solid",    "solid"),
-    ("Gradient", "gradient"),
-    ("Neon",     "neon"),
-    ("Toon",     "toon"),
-    ("Pop",      "pop"),
-    ("Prism",    "prism"),
-    ("Gummy",    "gummy"),
-]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Biography

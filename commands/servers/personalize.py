@@ -22,7 +22,7 @@ from constants import DisplayNameEffect, DisplayNameFont
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import NamedPaginator, PageData
 
-from ._base import COLOR_PATTERN, EFFECT_OPTIONS, FONT_OPTIONS, find_violation
+from ._base import COLOR_PATTERN, find_violation
 
 type _ImageTypes = Literal["avatar", "banner"]
 
@@ -37,8 +37,12 @@ class _FontSelect(Select["_PersonalizationView"]):
         super().__init__(
             placeholder = "Select a font...",
             options     = [
-                SelectOption(label = label, value = value, description = description, emoji = emoji)
-                for label, description, value, emoji in FONT_OPTIONS
+                SelectOption(
+                    label       = font.display_name,
+                    value       = str(font.value),
+                    description = font.description,
+                    emoji       = font.emoji,
+                ) for font in DisplayNameFont
             ],
         )
 
@@ -55,7 +59,7 @@ class _EffectSelect(Select["_PersonalizationView"]):
     def __init__(self) -> None:
         super().__init__(
             placeholder = "Select an effect...",
-            options     = [SelectOption(label = label, value = value) for label, value in EFFECT_OPTIONS],
+            options     = [SelectOption(label = effect.display_name, value = str(effect.value)) for effect in DisplayNameEffect],
         )
 
     @override
