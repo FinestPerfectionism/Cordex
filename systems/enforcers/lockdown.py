@@ -1,3 +1,4 @@
+from contextlib import suppress
 from typing import final, override
 
 from discord import HTTPException
@@ -6,7 +7,10 @@ from discord.ext.commands import Cog
 from discord.ext.tasks import loop
 
 from bot import Cordex
+from bot.types import GuildMessagableChannel
 from core.moderation import LockdownManager
+from core.moderation.cases import CasesManager
+from core.moderation.payloads import LockdownRemovePayload
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Lockdown Enforcing
@@ -37,7 +41,7 @@ class LockdownEnforcer(Cog):
                     break
 
     @_loop_lockdownenforce.before_loop
-    async def _beforeloop_lockdowneenforce(self) -> None:
+    async def _beforeloop_lockdownenforce(self) -> None:
         await self.bot.wait_until_ready()
 
     @Cog.listener("on_guild_channel_update")
@@ -45,14 +49,36 @@ class LockdownEnforcer(Cog):
         if before.overwrites == after.overwrites:
             return
 
+        everyone = after.guild.default_role
+        if after.overwrites_for(everyone).send_messages is False:
+            return
+
         manager = LockdownManager(self.bot, after.guild)
-        await manager.enforce()
+        if after.id in await manager.get_channels(by_id = True):
+            with suppress(HTTPException):
+                await manager.enforce()
 
     @Cog.listener("on_guild_channel_delete")
     async def _listener_lockdownenforce_channeldelete(self, channel : GuildChannel) -> None:
-        manager = LockdownManager(self.bot, channel.guild)
-        if channel in await manager.get_channels():
-            ...  # should do some form of expiration with the case, and then remove the channel from lockdown internally.
+        if not isinstance(channel, GuildMessagableChannel):
+            return
+
+        guild   = channel.guild
+        manager = LockdownManager(self.bot, guild)
+        if channel.id not in await manager.get_channels(by_id = True):
+            return
+
+        await self.bot.db.execute(
+            t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {guild.id}",
+        )
+        await self.bot.db.commit()
+
+        payload = LockdownRemovePayload(
+            moderator = guild.me,
+            channel   = channel,
+            reason    = "The channel was deleted.",
+        )
+        await CasesManager(self.bot, guild).create_case(payload)
 
 
 async def setup(bot : Cordex) -> None:  # ruff: ignore[undocumented-public-function]

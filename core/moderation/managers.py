@@ -1,4 +1,4 @@
-from typing import Literal, cast, final
+from typing import Literal, cast, final, overload
 
 from discord import Color, Forbidden, Guild, HTTPException, Member, Permissions
 from discord.abc import GuildChannel
@@ -9,6 +9,8 @@ from core.responses import MessageType, format_send
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Managers
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+RATE_LIMITED = 429
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Lockdown Manager
@@ -47,25 +49,39 @@ class LockdownManager:
     # get_channels
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def get_channels(self) -> set[GuildChannel]:
+    @overload
+    async def get_channels(self, *, by_id : Literal[True]) -> set[int]: ...
+
+    @overload
+    async def get_channels(self, *, by_id : Literal[False] = False) -> set[GuildChannel]: ...
+
+    async def get_channels(self, *, by_id : bool = False) -> set[GuildChannel] | set[int]:
         """
         Fetch every channel in lockdown found in the database.
 
+        Parameters
+        ----------
+        *
+        by_id : `bool = False`
+            Whether to return the IDs of the channels over actual channel objects or not. This is useful in cases where a channel may have been deleted, as deleted channels are only included when this is `True`.
+
         Returns
         -------
-        `set[GuildChannel]`
-            Every channel in lockdown found in the database.
+        `set[GuildChannel] | set[int]`
+            Every channel or channel ID in lockdown found in the database.
         """
         async with self.bot.db.execute(
             t"SELECT channel_id FROM Lockdowns WHERE guild_id = {self.guild.id}",
         ) as cursor:
             rows = await cursor.fetchall()
-            if not rows:
-                return set()
+
+        channel_ids = {cast("int", row[0]) for row in rows}
+        if by_id:
+            return channel_ids
 
         return {
-            channel for row in rows
-            if (channel := self.guild.get_channel(cast("int", row[0])))
+            channel for channel_id in channel_ids
+            if (channel := self.guild.get_channel(channel_id))
         }
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -108,7 +124,7 @@ class LockdownManager:
             except Forbidden:
                 pass
             except HTTPException as e:
-                rate_limited = (e.status == 429)
+                rate_limited = (e.status == RATE_LIMITED)
                 self._log_failure("channel lockdown enforcement", rate_limited = rate_limited)
                 if rate_limited:
                     raise
@@ -215,7 +231,7 @@ class QuarantineManager:
             except Forbidden:
                 return
             except HTTPException as e:
-                rate_limited = (e.status == 429)
+                rate_limited = (e.status == RATE_LIMITED)
                 self._log_failure("quarantine enforcement", rate_limited = rate_limited)
                 if rate_limited:
                     raise
@@ -256,7 +272,7 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = (e.status == 429)
+                    rate_limited = (e.status == RATE_LIMITED)
                     self._log_failure("channel quarantine enforcement", rate_limited = rate_limited)
                     if rate_limited:
                         raise
@@ -279,7 +295,7 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = (e.status == 429)
+                    rate_limited = (e.status == RATE_LIMITED)
                     self._log_failure("role quarantine enforcement", rate_limited = rate_limited)
                     if rate_limited:
                         raise
@@ -290,7 +306,7 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = (e.status == 429)
+                    rate_limited = (e.status == RATE_LIMITED)
                     self._log_failure("role quarantine enforcement", rate_limited = rate_limited)
                     if rate_limited:
                         raise
@@ -322,7 +338,7 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = (e.status == 429)
+                    rate_limited = (e.status == RATE_LIMITED)
                     self._log_failure("member quarantine enforcement (removal)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
@@ -335,7 +351,7 @@ class QuarantineManager:
                 except Forbidden:
                     pass
                 except HTTPException as e:
-                    rate_limited = (e.status == 429)
+                    rate_limited = (e.status == RATE_LIMITED)
                     self._log_failure("member quarantine enforcement (addition)", rate_limited = rate_limited)
                     if rate_limited:
                         raise
