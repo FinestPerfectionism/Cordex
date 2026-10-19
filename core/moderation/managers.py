@@ -69,6 +69,30 @@ class LockdownManager:
         }
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # is_locked_down
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def is_locked_down(self, channel_id : int, /) -> bool:
+        """
+        Check whether a channel is currently in lockdown.
+
+        Parameters
+        ----------
+        channel_id : `int`
+            The ID of the channel to check.
+        /
+
+        Returns
+        -------
+        `bool`
+            `True` if the channel is in lockdown, otherwise `False`.
+        """
+        async with self.bot.db.execute(
+            t"SELECT 1 FROM Lockdowns WHERE channel_id = {channel_id} AND guild_id = {self.guild.id}",
+        ) as cursor:
+            return await cursor.fetchone() is not None
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 

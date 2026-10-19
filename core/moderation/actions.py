@@ -9,10 +9,11 @@ from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Cordex, log
 from bot.ui import LayoutView, TextDisplay, VisibleLargeSeparator
-from constants import COLOR_BLACK, COLOR_ORANGE, COLOR_YELLOW, WARNING_EMOJI
+from constants import COLOR_BLACK, COLOR_GREY, COLOR_ORANGE, COLOR_YELLOW, WARNING_EMOJI
 from core.paginator import Footer, UnnamedPaginator
 from core.utilities import format_now, format_table
 
+from .managers import LockdownManager
 from .payloads import (
     BanAddPayload,
     BanRemovePayload,
@@ -30,6 +31,8 @@ from .payloads import (
 class ActionType(Enum):
     """Represents all moderation actions."""
 
+    lockdown_add      = "lockdown_add"
+    lockdown_remove   = "lockdown_remove"
     ban_add           = "ban_add"
     ban_remove        = "ban_remove"
     kick              = "kick"
@@ -87,7 +90,7 @@ class Actions:
         The guild in which moderation actions are being executed.
     """
 
-    __slots__ = ("bot", "cases", "config", "guild")
+    __slots__ = ("bot", "cases", "config", "guild", "lockdown")
 
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
@@ -97,7 +100,8 @@ class Actions:
         self.guild  = guild
         self.config = self.bot.config(guild)
 
-        self.cases = CasesManager(bot, guild)
+        self.cases    = CasesManager(bot, guild)
+        self.lockdown = LockdownManager(bot, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure
@@ -195,13 +199,13 @@ class Actions:
         everyone  = self.guild.default_role
         overwrite = channel.overwrites_for(everyone)
 
-        try:
-            await self.bot.db.execute(
-                t"INSERT INTO Lockdowns (channel_id, guild_id) VALUES ({channel.id}, {self.guild.id}) "
-                t"ON CONFLICT (channel_id, guild_id) DO NOTHING",
-            )
-            await self.bot.db.commit()
+        await self.bot.db.execute(
+            t"INSERT INTO Lockdowns (channel_id, guild_id) VALUES ({channel.id}, {self.guild.id}) "
+            t"ON CONFLICT (channel_id, guild_id) DO NOTHING",
+        )
+        await self.bot.db.commit()
 
+        try:
             overwrite.send_messages = False
             await channel.set_permissions(
                 everyone,
@@ -210,9 +214,17 @@ class Actions:
             )
         except Forbidden:
             failed = True
+            await self.bot.db.execute(
+                t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
+            )
+            await self.bot.db.commit()
         except HTTPException:
             failed = True
             self._log_failure("lockdown add")
+            await self.bot.db.execute(
+                t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
+            )
+            await self.bot.db.commit()
         else:
             failed = False
 
@@ -228,7 +240,7 @@ class Actions:
     # lockdown_view
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def lockdown_view(self) -> None:
+    async def lockdown_view(self) -> UnnamedPaginator | None:
         """
         Display a paginator (`UnnamedPaginator`) of all channels in lockdown.
 
@@ -237,6 +249,42 @@ class Actions:
         `LockdownPaginator | None`
             The paginator displaying all lockdowned channels, or `None` if no channels are in lockdown.
         """
+        channels = await self.lockdown.get_channels()
+        if not channels:
+            return None
+
+        cases = await self.cases.filter_by(
+            action_type = ActionType.lockdown_add,
+            expired     = False,
+        )
+
+        case_by_channel = {case.channel.id : case for case in cases if case.channel is not None}
+
+        entries : list[str] = []
+        for channel in channels:
+            case = case_by_channel.get(channel.id)
+            if case is None:
+                continue
+
+            entries.append(
+                f"**{channel.mention} | {case.moderator.mention}**\n"
+                f"*{escape_markdown(case.reason)}*\n"
+                f"-# Locked down at {format_dt(case.created_at, "F")}, {format_dt(case.created_at, "R")}.\n"
+                f"-# Case ID: #{case.id}",
+            )
+
+        class LockdownPaginator(UnnamedPaginator):
+            def __init__(self) -> None:
+                super().__init__(
+                    "# Server Lockdowns",
+                    entries,
+                    footer    = Footer("Page {smallest_page} of {biggest_page} | {count} Lockdown{s}"),
+                    per_page  = 10,
+                    color     = COLOR_GREY,
+                    container = True,
+                )
+
+        return LockdownPaginator()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # lockdown_remove
@@ -259,11 +307,6 @@ class Actions:
         channel  = action.channel
         everyone = self.guild.default_role
 
-        await self.bot.db.execute(
-            t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
-        )
-        await self.bot.db.commit()
-
         try:
             overwrite = channel.overwrites_for(everyone)
             overwrite.send_messages = None
@@ -280,6 +323,10 @@ class Actions:
             self._log_failure("lockdown removal")
         else:
             failed = False
+            await self.bot.db.execute(
+                t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
+            )
+            await self.bot.db.commit()
 
         case = await self.cases.create_case(action)
 

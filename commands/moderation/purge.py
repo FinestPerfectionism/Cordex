@@ -22,7 +22,8 @@ async def run_moderation_purge(interaction : Interaction, target : Member | None
     target : `Member | None = None`
         The member to purge messages from.
     """
-    if not isinstance(interaction.channel, GuildMessagable):
+    channel = interaction.channel
+    if not isinstance(channel, GuildMessagable):
         return
 
-    await send_moderation_modal(interaction, ActionType.purge, interaction.channel, target)
+    await send_moderation_modal(interaction, ActionType.purge, channel, target)

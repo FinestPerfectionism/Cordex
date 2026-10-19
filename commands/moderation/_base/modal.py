@@ -6,7 +6,7 @@ from typing import Self, final, override
 from discord import ButtonStyle, Member, User
 
 from bot import Interaction
-from bot.types import GuildMessagable
+from bot.types import GuildMessagable, GuildMessagableChannel
 from bot.ui import (
     ActionRow,
     Button,
@@ -28,6 +28,9 @@ from core.moderation import (
     BanAddPayload,
     BanRemovePayload,
     KickPayload,
+    LockdownAddPayload,
+    LockdownManager,
+    LockdownRemovePayload,
     PurgePayload,
     QuarantineAddPayload,
     QuarantineManager,
@@ -73,8 +76,8 @@ class _ModerationModal(Modal):
         target_name = target.name
 
         channel_types = {
-            # ActionType.lockdown_add,
-            # ActionType.lockdown_remove,
+            ActionType.lockdown_add,
+            ActionType.lockdown_remove,
             ActionType.purge,
         }
 
@@ -103,6 +106,8 @@ class _ModerationModal(Modal):
             raise ValueError(error)
 
         title : dict[ActionType, str] = {
+            ActionType.lockdown_add      : f"Placing {target_name} in Lockdown",
+            ActionType.lockdown_remove   : f"Removing {target_name} from Lockdown",
             ActionType.ban_add           : f"Banning {target_name}",
             ActionType.ban_remove        : f"Unbanning {target_name}",
             ActionType.kick              : f"Kicking {target_name}",
@@ -113,6 +118,8 @@ class _ModerationModal(Modal):
             ActionType.purge             : f"Purging {target_name}",
         }
         name : dict[ActionType, str] = {
+            ActionType.lockdown_add      : "lockdown",
+            ActionType.lockdown_remove   : "lockdown removal",
             ActionType.ban_add           : "ban",
             ActionType.ban_remove        : "ban removal",
             ActionType.kick              : "kick",
@@ -126,6 +133,7 @@ class _ModerationModal(Modal):
         self.action_type : ActionType = action_type
         self.target                   = target
         self.name                     = name[action_type]
+        self.has_dm      : bool       = action_type not in channel_types
 
         super().__init__(title = title[action_type])
 
@@ -208,7 +216,7 @@ class _ModerationModal(Modal):
             case _:
                 pass
 
-        if action_type != ActionType.purge:
+        if self.has_dm:
             self._dm = Checkbox[Self](default = state._dm.value if state else False)
             self.dm  = Label[Self](
                 text        =  "DM",
@@ -240,7 +248,7 @@ class _ModerationModal(Modal):
             case _:
                 pass
 
-        if self.action_type != ActionType.purge:
+        if self.has_dm:
             self._dm.default = self._dm.value
 
         reason = self._reason.value
@@ -316,7 +324,7 @@ class _ModerationModal(Modal):
             case _:
                 pass
 
-        if self.action_type != ActionType.purge:
+        if self.has_dm:
             dm = self._dm.value
 
         action_table : dict[str, object] = {"Reason" : reason}
@@ -365,7 +373,8 @@ class _ModerationModal(Modal):
 
             summary = "\n".join(sections)
         else:
-            action_table["DM Member"] = dm
+            if self.has_dm:
+                action_table["DM Member"] = dm
 
             target_table : dict[str, object] = {
                 "User"     : self.target.mention,
@@ -414,6 +423,28 @@ class _ModerationModal(Modal):
                 actions = Actions(client, guild)
 
                 match modal.action_type:
+                    case ActionType.lockdown_add:
+                        if not isinstance(modal.target, GuildMessagableChannel):
+                            return
+
+                        result = await actions.lockdown_add(
+                            LockdownAddPayload(
+                                moderator = moderator,
+                                channel   = modal.target,
+                                reason    = reason,
+                            ),
+                        )
+                    case ActionType.lockdown_remove:
+                        if not isinstance(modal.target, GuildMessagableChannel):
+                            return
+
+                        result = await actions.lockdown_remove(
+                            LockdownRemovePayload(
+                                moderator = moderator,
+                                channel   = modal.target,
+                                reason    = reason,
+                            ),
+                        )
                     case ActionType.ban_add:
                         if not isinstance(modal.target, Member):
                             return
@@ -695,6 +726,23 @@ async def send_moderation_modal(
             await send_bad_argument(
                 interaction,
                 subtitle = {"target" : f"{check_target.mention} is already quarantined."},
+            )
+            return
+
+    if action_type in {ActionType.lockdown_add, ActionType.lockdown_remove} and isinstance(target, GuildMessagable):
+        locked_down = await LockdownManager(client, guild).is_locked_down(target.id)
+
+        if action_type == ActionType.lockdown_add and locked_down:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : f"{target.mention} is already in lockdown."},
+            )
+            return
+
+        if action_type == ActionType.lockdown_remove and not locked_down:
+            await send_bad_argument(
+                interaction,
+                subtitle = {"target" : f"{target.mention} is not in lockdown."},
             )
             return
 
