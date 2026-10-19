@@ -4,7 +4,7 @@ from discord import Color, Forbidden, Guild, HTTPException, Member, Permissions
 from discord.abc import GuildChannel
 
 from bot import Cordex, log
-from core.responses import MessageType, format_send
+from core.responses import FormatOverride, MessageType, format_send
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Moderation Managers
@@ -361,10 +361,11 @@ class QuarantineManager:
             await format_send(
                 channel,
                 MessageType.warning,
-                title    =  "The quarantine role was deleted",
+                title    = "The quarantine role was deleted",
                 subtitle = (
                    f"The quarantine role was deleted. I have created a new one ({quarantine_role.mention}) and transferred all quarantined members over.\n"
                     "If you'd like to remove quarantine operations, remove all members from quarantine first, then delete the role."
                 ),
-                footer   =  "Please do not delete the quarantine role!",
+                footer   = "Please do not delete the quarantine role!",
+                override = FormatOverride(prefix = False),
             )
