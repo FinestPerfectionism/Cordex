@@ -712,8 +712,7 @@ async def send_moderation_modal(
             )
             return
 
-        manager = QuarantineManager(client, guild)
-        quarantined_members = await manager.get_members()
+        quarantined_members = await QuarantineManager(client, guild).get_members()
 
         if action_type == ActionType.quarantine_remove and check_target not in quarantined_members:
             await send_bad_argument(
@@ -730,16 +729,16 @@ async def send_moderation_modal(
             return
 
     if action_type in {ActionType.lockdown_add, ActionType.lockdown_remove} and isinstance(target, GuildMessagable):
-        locked_down = await LockdownManager(client, guild).is_locked_down(target.id)
+        lockdowned_channels = await LockdownManager(client, guild).get_channels()
 
-        if action_type == ActionType.lockdown_add and locked_down:
+        if action_type == ActionType.lockdown_add and target in lockdowned_channels:
             await send_bad_argument(
                 interaction,
                 subtitle = {"target" : f"{target.mention} is already in lockdown."},
             )
             return
 
-        if action_type == ActionType.lockdown_remove and not locked_down:
+        if action_type == ActionType.lockdown_remove and target not in lockdowned_channels:
             await send_bad_argument(
                 interaction,
                 subtitle = {"target" : f"{target.mention} is not in lockdown."},
