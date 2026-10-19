@@ -107,18 +107,14 @@ async def run_moderation_cases_query(
         return
 
     cases_manager = CasesManager(interaction.client, guild)
-    cases         = list(
-        reversed(
-            await cases_manager.filter_by(
-                action_type  = parsed_action,
-                moderator_id = moderator.id if moderator else None,
-                target_id    = target.id    if target    else None,
-                channel_id   = channel.id   if channel   else None,
-                expired      = expired,
-                before       = before_datetime,
-                after        = after_datetime,
-            ),
-        ),
+    cases         = await cases_manager.filter_by(
+        action_type  = parsed_action,
+        moderator_id = moderator.id if moderator else None,
+        target_id    = target.id    if target    else None,
+        channel_id   = channel.id   if channel   else None,
+        expired      = expired,
+        before       = before_datetime,
+        after        = after_datetime,
     )
 
     if expired is False:

@@ -539,7 +539,7 @@ class CasesManager:
             self._log_failure("getting all cases")
             return []
 
-        return [await self._row_to_case(row) for row in rows]
+        return list(reversed([await self._row_to_case(row) for row in rows]))
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # filter_by
@@ -634,7 +634,7 @@ class CasesManager:
             self._log_failure("filtering cases")
             return []
 
-        return [await self._row_to_case(row) for row in rows]
+        return list(reversed([await self._row_to_case(row) for row in rows]))
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # delete_all_cases

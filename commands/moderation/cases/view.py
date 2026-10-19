@@ -33,7 +33,7 @@ async def run_moderation_cases_view(interaction : Interaction, case_id : int | N
         await send_case_view(interaction, cases_manager, case_id)
         return
 
-    cases = list(reversed(await cases_manager.get_all_cases()))
+    cases = await cases_manager.get_all_cases()
     if not cases:
         await format_send(
             interaction,
