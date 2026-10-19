@@ -59,7 +59,13 @@ class _EffectSelect(Select["_PersonalizationView"]):
     def __init__(self) -> None:
         super().__init__(
             placeholder = "Select an effect...",
-            options     = [SelectOption(label = effect.display_name, value = str(effect.value)) for effect in DisplayNameEffect],
+            options     = [
+                SelectOption(
+                    label       = effect.display_name,
+                    value       = str(effect.value),
+                    description = effect.description,
+                ) for effect in DisplayNameEffect
+            ],
         )
 
     @override

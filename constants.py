@@ -233,7 +233,7 @@ class DisplayNameFont(IntEnum):
 
     @property
     def display_name(self) -> str:
-        """The name of the font in the Discord."""
+        """The name of the font in Discord."""
         return next(option[0] for option in self.FONT_OPTIONS if option[1] == self.name)
 
     @property
@@ -296,21 +296,22 @@ class DisplayNameEffect(IntEnum):
 
     EFFECT_OPTIONS = nonmember(
         [
-            ("Solid",    "solid",    ""),
-            ("Gradient", "gradient", ""),
-            ("Neon",     "neon",     ""),
-            ("Toon",     "toon",     ""),
-            ("Pop",      "pop",      ""),
-            ("Prism",    "prism",    ""),
-            ("Gummy",    "gummy",    ""),
+            ("Solid",    "solid",    "1 color with no effect."),
+            ("Gradient", "gradient", "1-5 colors with a static gradient."),
+            ("Neon",     "neon",     "1 color with a neon glow."),
+            ("Toon",     "toon",     "1 color with a subtle vertical gradient and stroke around the name."),
+            ("Pop",      "pop",      "1 color with a colored dropshadow."),
+            ("Prism",    "prism",    "1-5 colors with a horizontally-moving gradient."),
+            ("Gummy",    "gummy",    "1-5 colors that squash and stretch."),
         ],
     )
 
     @property
     def display_name(self) -> str:
-        """The name of the effect in the Discord."""
+        """The name of the effect in Discord."""
         return next(option[0] for option in self.EFFECT_OPTIONS if option[1] == self.name)
 
     @property
     def description(self) -> str:
         """The description of the effect."""
+        return next(option[2] for option in self.EFFECT_OPTIONS if option[1] == self.name)

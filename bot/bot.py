@@ -371,19 +371,19 @@ class Cordex(Bot):
         }
 
         if len(colors) == 0 and effect not in multi_colored:
-            error = "0 colors were passed; exepected 1"
+            error = "0 colors were passed; expected 1"
             raise ValueError(error)
 
         if len(colors) == 0 and effect in multi_colored:
-            error = "0 colors were passed; exepected 1 to 5"
+            error = "0 colors were passed; expected 1 to 5"
             raise ValueError(error)
 
         if len(colors) > 1 and effect not in multi_colored:
-            error = f"{len(colors)} colors were passed; exepected 1"
+            error = f"{len(colors)} colors were passed; expected 1"
             raise ValueError(error)
 
         if len(colors) > 5 and effect in multi_colored:
-            error = f"{len(colors)} colors were passed; exepected 1 to 5"
+            error = f"{len(colors)} colors were passed; expected 1 to 5"
             raise ValueError(error)
 
         color_integers = [int(hex_code, 16) for hex_code in colors]
