@@ -74,6 +74,12 @@ class _ContextClass(BaseContext["Cordex"]):
     def __init__(self, **kwargs : Unpack[_ContextKwargs]) -> None:
         super().__init__(**kwargs)
 
+    async def safe_send(self, content : str) -> Message:
+        if len(content) < 2000:
+            return await self.send(content)
+
+        return await self.send(file = File(BytesIO(content.encode())))
+
     async def send_button(self, callback : LambdaInter, /) -> Message:
         @final
         class _ViewButton(View):
