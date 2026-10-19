@@ -99,10 +99,10 @@ async def run_moderation_cases_query(
         after_datetime = None
 
     parsed_action = ActionType(action_type) if action_type is not None else None
-    if channel is not None and parsed_action != ActionType.purge:
+    if channel is not None and parsed_action not in {ActionType.lockdown_add, ActionType.lockdown_remove, ActionType.purge}:
         await send_bad_argument(
             interaction,
-            subtitle = {("action-type", "channel") : "`channel` cannot be passed if `action-type` is not 'Purge'."},
+            subtitle = {("action-type", "channel") : "`channel` cannot be passed if `action-type` is not 'Lockdown Add', 'Lockdown Remove', or 'Purge'."},
         )
         return
 
