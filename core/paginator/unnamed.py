@@ -1,6 +1,7 @@
 # ruff: file-ignore[private-member-access]
 # pyright: reportPrivateUsage = false
 
+from collections.abc import Sequence
 from contextlib import suppress
 from typing import Self, final, override
 from warnings import warn
@@ -32,7 +33,7 @@ from core.exceptions import (
 __all__ = ["UnnamedPaginator"]
 
 type _ItemsList      = list[Item[UnnamedPaginator]]
-type _ItemsOrStrList = list[str | Item[UnnamedPaginator]]
+type _ItemsOrStrList = Sequence[str | Item[UnnamedPaginator]]
 type _TitleButton    = Button[UnnamedPaginator]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
