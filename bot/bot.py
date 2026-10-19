@@ -78,7 +78,7 @@ class _ContextClass(BaseContext["Cordex"]):
         if len(content) < 2000:
             return await self.send(content)
 
-        return await self.send(file = File(BytesIO(content.encode())))
+        return await self.send(file = File(BytesIO(content.encode()), filename = "content.txt"))
 
     async def send_button(self, callback : LambdaInter, /) -> Message:
         @final
