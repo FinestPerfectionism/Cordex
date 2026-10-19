@@ -192,7 +192,7 @@ class Footer:
         /,
         *,
         singularize : bool       = True,
-        on_single   : str | None = "{count} Item{s}",
+        on_single   : str | None = None,
     ) -> None:
         super().__init__()
         self.content     = f"-# {content}" if content is not None else None
