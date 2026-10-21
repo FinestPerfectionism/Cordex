@@ -16,7 +16,13 @@ from bot.ui import (
     RoleSelect,
     TextDisplay,
 )
-from constants import ACCEPTED_EMOJI, DENIED_EMOJI, WARNING_EMOJI
+from constants import (
+    ACCEPTED_EMOJI,
+    DENIED_EMOJI,
+    FORUM_EMOJI,
+    MODERATION_EMOJI,
+    WARNING_EMOJI,
+)
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.moderation import QuarantineManager
 from core.paginator import NamedPaginator, PageData
@@ -394,8 +400,18 @@ class _ConfigurationView(NamedPaginator):
             self.quarantine_select.default_values = [Object(id = self.quarantine_id)]
 
         initial_pages = [
-            PageData(name = "Messages",   content = []),
-            PageData(name = "Moderation", content = []),
+            PageData(
+                name        = "Messages",
+                emoji       = FORUM_EMOJI,
+                description = "Manage message edit and delete logging as well as message link previews.",
+                content     = [],
+            ),
+            PageData(
+                name        = "Moderation",
+                emoji       = MODERATION_EMOJI,
+                description = "Manage moderation logging and the quarantine role.",
+                content     = [],
+            ),
         ]
 
         super().__init__(initial_pages, container = True)
@@ -495,8 +511,10 @@ class _ConfigurationView(NamedPaginator):
 
         self.pages = [
             PageData(
-                name    = "Messages",
-                content = [
+                name        = "Messages",
+                emoji       = FORUM_EMOJI,
+                description = "Manage message edit and delete logging as well as message link previews.",
+                content     = [
                     "# Messages",
                     TextDisplay(txt_edit),
                     ActionRow(self.edit_select),
@@ -506,8 +524,10 @@ class _ConfigurationView(NamedPaginator):
                 ],
             ),
             PageData(
-                name    = "Moderation",
-                content = [
+                name        = "Moderation",
+                emoji       = MODERATION_EMOJI,
+                description = "Manage moderation logging and the quarantine role.",
+                content     = [
                     "# Moderation",
                     TextDisplay(txt_logging),
                     ActionRow(self.logging_select),

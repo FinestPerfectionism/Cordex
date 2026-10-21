@@ -18,7 +18,13 @@ from bot.ui import (
     TextDisplay,
     TextInput,
 )
-from constants import DisplayNameEffect, DisplayNameFont
+from constants import (
+    MEDIA_EMOJI,
+    MEMBER_EMOJI,
+    QUERY_EMOJI,
+    DisplayNameEffect,
+    DisplayNameFont,
+)
 from core.exceptions import send_bad_argument, send_bad_operation
 from core.paginator import NamedPaginator, PageData
 
@@ -316,9 +322,24 @@ class _PersonalizationView(NamedPaginator):
         self.bio_button    = _BioButton()
 
         initial_pages = [
-            PageData(name = "Name Style",      content = []),
-            PageData(name = "Avatar & Banner", content = []),
-            PageData(name = "Biography",       content = []),
+            PageData(
+                name        = "Name Style",
+                emoji       = MEMBER_EMOJI,
+                description = "Personalize my display name style's font, effect, and colors.",
+                content     = [],
+            ),
+            PageData(
+                name        = "Avatar & Banner",
+                emoji       = MEDIA_EMOJI,
+                description = "Personalize my avatar and banner.",
+                content     = [],
+            ),
+            PageData(
+                name        = "Biography",
+                emoji       = QUERY_EMOJI,
+                description = "Personalize my biography.",
+                content     = [],
+            ),
         ]
 
         super().__init__(initial_pages, container = True)
@@ -427,8 +448,10 @@ class _PersonalizationView(NamedPaginator):
 
         self.pages = [
             PageData(
-                name    = "Name Style",
-                content = [
+                name        = "Name Style",
+                emoji       = MEMBER_EMOJI,
+                description = "Personalize my display name style's font, effect, and colors.",
+                content     = [
                     "# Name Style",
                     TextDisplay("**Font**"),
                     ActionRow(self.font_select),
@@ -438,16 +461,20 @@ class _PersonalizationView(NamedPaginator):
                 ],
             ),
             PageData(
-                name    = "Avatar & Banner",
-                content = [
+                name        = "Avatar & Banner",
+                emoji       = MEDIA_EMOJI,
+                description = "Personalize my avatar and banner.",
+                content     = [
                     "# Avatar & Banner",
                     ButtonSection(txt_avatar, button = self.avatar_button),
                     ButtonSection(txt_banner, button = self.banner_button),
                 ],
             ),
             PageData(
-                name    = "Biography",
-                content = [
+                name        = "Biography",
+                emoji       = QUERY_EMOJI,
+                description = "Personalize my biography.",
+                content     = [
                     "# Biography",
                     ButtonSection(txt_bio, button = self.bio_button),
                 ],
