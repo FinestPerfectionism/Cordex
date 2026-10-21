@@ -80,7 +80,7 @@ if TYPE_CHECKING:
 
 
 class LayoutView(BaseLayoutView):
-    def __init__(self, *children : Item[Self], timeout : float | None = 600) -> None:
+    def __init__(self, *children : Item[LayoutView | Self], timeout : float | None = 600) -> None:
         super().__init__(timeout = timeout)
         self.append_items(children)
 
@@ -88,7 +88,7 @@ class LayoutView(BaseLayoutView):
         self.add_item(TextDisplay(text))
         return self
 
-    def add_items(self, *items : Item[Self]) -> Self:
+    def add_items(self, *items : Item[LayoutView | Self]) -> Self:
         if len(items) == 1:
             warn(
                 "Prefer LayoutView.add_item over LayoutView.add_items if only one item is being added.",
@@ -101,7 +101,7 @@ class LayoutView(BaseLayoutView):
 
         return self
 
-    def append_items(self, items : Iterable[Item[Self]], /) -> Self:
+    def append_items(self, items : Iterable[Item[LayoutView | Self]], /) -> Self:
         for item in items:
             self.add_item(item)
 
@@ -113,7 +113,7 @@ class LayoutView(BaseLayoutView):
 
 
 class AutoTimeoutLayoutView(LayoutView):
-    def __init__(self, *children : Item[Self], timeout : float | None = 600) -> None:
+    def __init__(self, *children : Item[LayoutView | Self], timeout : float | None = 600) -> None:
         super().__init__(*children, timeout = timeout)
         self.message : Message | None = None
 
