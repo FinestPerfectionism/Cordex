@@ -1,13 +1,10 @@
-from contextlib import suppress
-from typing import Self, final, override
+from typing import Self, final
 
 from discord import (
     AllowedMentions,
     Asset,
-    HTTPException,
     Member,
     Message,
-    NotFound,
     Role,
 )
 from discord.utils import format_dt
@@ -15,10 +12,9 @@ from discord.utils import format_dt
 from bot import Interaction
 from bot.ui import (
     ActionRow,
+    AutoTimeoutLayoutView,
     Button,
     Container,
-    LayoutView,
-    Select,
     TextDisplay,
     Thumbnail,
     ThumbnailSection,
@@ -105,7 +101,7 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
             await run_role_members(interaction, role, ephemeral = True)
 
     @final
-    class InfoView(LayoutView):
+    class InfoView(AutoTimeoutLayoutView):
         def __init__(self) -> None:
             super().__init__()
             self.message : Message | None = None
@@ -127,21 +123,6 @@ async def run_role_info(interaction : Interaction, role : Role) -> None:
             container.add_item(MemberRow())
 
             self.add_item(container)
-
-        @override
-        async def on_timeout(self) -> None:
-            for item in self.walk_children():
-                if isinstance(item, Button | Select):
-                    item.disabled = True
-
-            if self.message:
-                try:
-                    await self.message.edit(view = self)
-                except NotFound:
-                    pass
-                except HTTPException:
-                    with suppress(HTTPException):
-                        await self.message.delete()
 
     view = InfoView()
     view.message = await interaction.followup.send(

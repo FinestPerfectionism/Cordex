@@ -1,7 +1,6 @@
 # ruff: file-ignore[private-member-access]
 # pyright: reportPrivateUsage = false
 
-from contextlib import suppress
 from dataclasses import dataclass
 from typing import Protocol, Self, final, override
 from warnings import warn
@@ -10,20 +9,17 @@ from discord import (
     ButtonStyle,
     Color,
     Emoji,
-    HTTPException,
     Message,
-    NotFound,
     PartialEmoji,
 )
 
 from bot import Interaction
 from bot.ui import (
     ActionRow,
+    AutoTimeoutLayoutView,
     Button,
     Container,
     Item,
-    LayoutView,
-    Select,
     TextDisplay,
     VisibleLargeSeparator,
 )
@@ -102,7 +98,7 @@ class _NameRow(ActionRow["NamedPaginator"]):
         return callback
 
 
-class NamedPaginator(LayoutView):
+class NamedPaginator(AutoTimeoutLayoutView):
     """
     Paginate a list of pages cleanly using buttons.
 
@@ -211,18 +207,7 @@ class NamedPaginator(LayoutView):
             )
 
         if self.timeout is not None:
-            for item in self.walk_children():
-                if isinstance(item, Button | Select):
-                    item.disabled = True
-
-        if self.message:
-            try:
-                await self.message.edit(view = self)
-            except NotFound:
-                pass
-            except HTTPException:
-                with suppress(HTTPException):
-                    await self.message.delete()
+            await super().on_timeout()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # add_above

@@ -1,9 +1,14 @@
 from collections.abc import Iterable
+from contextlib import suppress
 from typing import TYPE_CHECKING, Self, final, override
 from warnings import warn
 
 from discord import (
+    ButtonStyle,
     Color,
+    HTTPException,
+    Message,
+    NotFound,
     SeparatorSpacing,
     TextStyle,
 )
@@ -101,6 +106,35 @@ class LayoutView(BaseLayoutView):
             self.add_item(item)
 
         return self
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# AutoTimeoutLayoutView
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+class AutoTimeoutLayoutView(LayoutView):
+    def __init__(self, *children : Item[LayoutView | Self], timeout : float | None = 600) -> None:
+        super().__init__(*children, timeout = timeout)
+        self.message : Message | None = None
+
+    @override
+    async def on_timeout(self) -> None:
+        for item in self.walk_children():
+            if isinstance(item, Button):
+                if item.style == ButtonStyle.url:
+                    continue
+                item.disabled = True
+            if isinstance(item, Select):
+                item.disabled = True
+
+        if self.message:
+            try:
+                await self.message.edit(view = self)
+            except NotFound:
+                pass
+            except HTTPException:
+                with suppress(HTTPException):
+                    await self.message.delete()
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Modal

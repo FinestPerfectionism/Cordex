@@ -2,11 +2,10 @@
 # pyright: reportPrivateUsage = false
 
 from collections.abc import Sequence
-from contextlib import suppress
 from typing import Self, final, override
 from warnings import warn
 
-from discord import ButtonStyle, Color, HTTPException, Message, NotFound
+from discord import ButtonStyle, Color, Message
 
 from bot import Interaction
 from bot.ui import (
@@ -18,7 +17,6 @@ from bot.ui import (
     Label,
     LayoutView,
     Modal,
-    Select,
     TextDisplay,
     TextInput,
     VisibleLargeSeparator,
@@ -296,18 +294,7 @@ class UnnamedPaginator(LayoutView):
             )
 
         if self.timeout is not None:
-            for item in self.walk_children():
-                if isinstance(item, Button | Select):
-                    item.disabled = True
-
-        if self.message:
-            try:
-                await self.message.edit(view = self)
-            except NotFound:
-                pass
-            except HTTPException:
-                with suppress(HTTPException):
-                    await self.message.delete()
+            await super().on_timeout()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _get_footer
