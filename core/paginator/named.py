@@ -2,24 +2,24 @@
 # pyright: reportPrivateUsage = false
 
 from dataclasses import dataclass
-from typing import Protocol, Self, final, override
+from typing import Self, final, override
 from warnings import warn
 
 from discord import (
-    ButtonStyle,
     Color,
     Emoji,
     Message,
     PartialEmoji,
+    SelectOption,
 )
 
 from bot import Interaction
 from bot.ui import (
     ActionRow,
     AutoTimeoutLayoutView,
-    Button,
     Container,
     Item,
+    Select,
     TextDisplay,
     VisibleLargeSeparator,
 )
@@ -36,23 +36,22 @@ class PageData:
     Parameters
     ----------
     name : `str`
-        The name of the page. Displayed on the page's button.
+        The name of the page. Displayed as the label of the page's select option.
     content : `list[str | Item[NamedPaginator]]`
         The content of the page.
     emoji : `str | Emoji | PartialEmoji | None = None`
-        The emoji displayed on the page's button.
+        The emoji displayed on the page's select option.
+    description : `str | None = None`
+        The description displayed under the page's select option.
     """
 
-    name    : str
-    content : list[str | Item[NamedPaginator]]
-    emoji   : str | Emoji | PartialEmoji | None = None
+    name        : str
+    content     : list[str | Item[NamedPaginator]]
+    emoji       : str | Emoji | PartialEmoji | None = None
+    description : str                        | None = None
 
 
 type _ItemsList = list[Item[NamedPaginator]]
-
-
-class _InteractionCallback(Protocol):
-    async def __call__(self, interaction : Interaction) -> None: ...
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Named Paginator
@@ -60,47 +59,34 @@ class _InteractionCallback(Protocol):
 
 
 @final
-class _NameRow(ActionRow["NamedPaginator"]):
-    def __init__(self, paginator : NamedPaginator, indices : range) -> None:
-        super().__init__()
+class _PageSelect(Select["NamedPaginator"]):
+    def __init__(self, paginator : NamedPaginator) -> None:
+        super().__init__(
+            options = [
+                SelectOption(
+                    label       = page.name,
+                    value       = str(index),
+                    description = page.description,
+                    emoji       = page.emoji,
+                    default     = index == paginator.current_page,
+                )
+                for index, page in enumerate(paginator.pages)
+            ],
+        )
         self.paginator = paginator
-        self.indices   = indices
-        self.update_states()
+        self.callback = self._on_select
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # update_states
+    # _on_select
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    def update_states(self) -> None:
-        self.clear_items()
-
-        for index in self.indices:
-            page = self.paginator.pages[index]
-
-            is_current = index == self.paginator.current_page
-
-            button : Button[NamedPaginator] = (
-                Button(label = page.name, emoji = page.emoji, style = ButtonStyle.blurple, disabled = is_current)
-                if is_current else
-                Button(label = page.name, emoji = page.emoji)
-            )
-            button.callback = self._make_callback(index)
-
-            self.add_item(button)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # _make_callback
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    def _make_callback(self, index : int) -> _InteractionCallback:
-        async def callback(interaction : Interaction) -> None:
-            await self.paginator._turn(interaction, index)
-        return callback
+    async def _on_select(self, interaction : Interaction) -> None:
+        await self.paginator._turn(interaction, int(self.values[0]))
 
 
 class NamedPaginator(AutoTimeoutLayoutView):
     """
-    Paginate a list of pages cleanly using buttons.
+    Paginate a list of pages cleanly using a select dropdown.
 
     Parameters
     ----------
@@ -115,12 +101,12 @@ class NamedPaginator(AutoTimeoutLayoutView):
     force : `bool = False`
         Whether multiple strings passed into data will be concatenated with newlines instead of TextDisplays.
     timeout : `int | None = 600`
-        The amount of seconds to pass before timing out, disabling all buttons and selects. If None, the paginator will never time out.
+        The amount of seconds to pass before timing out, disabling all buttons and selects. If `None`, the paginator will never time out.
 
     Raises
     ------
     ValueError
-        You passed only one page.
+        You passed only one page, or more than 25 pages.
     DependentParameter
         You passed `color` without passing `container`.
     """
@@ -149,20 +135,12 @@ class NamedPaginator(AutoTimeoutLayoutView):
             error = "data must contain more than one page"
             raise ValueError(error)
 
-        for page in data:
-            if page.name in {"<", "<<", ">", ">>"}:
-                warn(
-                    f"Prefer UnnamedPaginator over NamedPaginator if using unnamed button '{page.name}'.",
-                    category   = UserWarning,
-                    stacklevel = 2,
-                )
+        if len(data) > 25:
+            error = "data cannot contain more than 25 pages"
+            raise ValueError(error)
 
         self._pages       : list[PageData] = data or [PageData("No content available.", ["No content available."])]
         self.current_page : int            = 0
-        self._name_rows   : list[_NameRow] = [
-            _NameRow(self, range(i, min(i + 5, len(self._pages))))
-            for i in range(0, len(self._pages), 5)
-        ]
 
         self._above_items : _ItemsList = []
         self._over_items  : _ItemsList = []
@@ -187,6 +165,10 @@ class NamedPaginator(AutoTimeoutLayoutView):
 
     @pages.setter
     def pages(self, value : list[PageData]) -> None:
+        if len(value) > 25:
+            error = "pages cannot contain more than 25 pages"
+            raise ValueError(error)
+
         self._pages = value
         self._render()
 
@@ -311,14 +293,8 @@ class NamedPaginator(AutoTimeoutLayoutView):
 
         items : _ItemsList = [*self._over_items, *page_items, VisibleLargeSeparator()]
 
-        self._name_rows = [
-            _NameRow(self, range(i, min(i + 5, len(self.pages))))
-            for i in range(0, len(self.pages), 5)
-        ] if len(self.pages) >= 2 else []
-
-        for name_row in self._name_rows:
-            name_row.update_states()
-            items.append(name_row)
+        if len(self.pages) >= 2:
+            items.append(ActionRow(_PageSelect(self)))
 
         items.extend(self._under_items)
 
