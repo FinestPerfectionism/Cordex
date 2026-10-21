@@ -38,7 +38,7 @@ class BotOwnerCommands(Cog):
         self.bot = bot
 
     @Cog.listener("on_message_edit")
-    async def listener_cmdeval_messageedit(self, before : Message, after : Message) -> None:
+    async def listener_cmdbotownereval_messageedit(self, before : Message, after : Message) -> None:
         author = before.author
 
         # ⸻ Block bots and the bot itself.
@@ -63,7 +63,7 @@ class BotOwnerCommands(Cog):
         await self.bot.process_commands(after)
 
     @Cog.listener("on_reaction_add")
-    async def listener_cmdeval_reactionadd(self, reaction : Reaction, user : Member | User) -> None:
+    async def listener_cmdbotonwereval_reactionadd(self, reaction : Reaction, user : Member | User) -> None:
         message = reaction.message
 
         if not is_bot_owner(user):
@@ -79,7 +79,7 @@ class BotOwnerCommands(Cog):
 
     @prefix_command(name = "shutdown")
     @bot_owner_cmd
-    async def cmd_bo_shutdown(self, ctx : Context) -> None:
+    async def cmd_botowner_shutdown(self, ctx : Context) -> None:
         await run_botowner_shutdown(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -88,7 +88,7 @@ class BotOwnerCommands(Cog):
 
     @prefix_command(name = "restart")
     @bot_owner_cmd
-    async def cmd_bo_restart(self, ctx : Context) -> None:
+    async def cmd_botowner_restart(self, ctx : Context) -> None:
         await run_botowner_restart(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -97,7 +97,7 @@ class BotOwnerCommands(Cog):
 
     @prefix_command(name = "sync")
     @bot_owner_cmd
-    async def cmd_bo_sync(self, ctx : Context) -> None:
+    async def cmd_botowner_sync(self, ctx : Context) -> None:
         await run_botowner_sync(ctx)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -106,7 +106,7 @@ class BotOwnerCommands(Cog):
 
     @prefix_command(name = "eval")
     @bot_owner_cmd
-    async def cmd_bo_eval(self, ctx : Context, *, body : str) -> None:
+    async def cmd_botowner_eval(self, ctx : Context, *, body : str) -> None:
         await run_botowner_eval(ctx, body)
 
 
