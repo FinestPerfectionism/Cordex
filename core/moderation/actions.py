@@ -2,9 +2,9 @@
 
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import cast, final
+from typing import final
 
-from discord import Enum, Forbidden, Guild, HTTPException, Message, Role
+from discord import Enum, Forbidden, Guild, HTTPException, Message
 from discord.utils import escape_markdown, format_dt, utcnow
 
 from bot import Cordex, log
@@ -13,7 +13,7 @@ from constants import COLOR_BLACK, COLOR_GREY, COLOR_ORANGE, COLOR_YELLOW, WARNI
 from core.paginator import Footer, UnnamedPaginator
 from core.utilities import format_now, format_table
 
-from .managers import LockdownManager
+from .managers import LockdownManager, QuarantineManager
 from .payloads import (
     BanAddPayload,
     BanRemovePayload,
@@ -90,7 +90,7 @@ class Actions:
         The guild in which moderation actions are being executed.
     """
 
-    __slots__ = ("bot", "cases", "config", "guild", "lockdown")
+    __slots__ = ("bot", "cases", "config", "guild", "lockdown", "quarantine")
 
     def __init__(self, bot : Cordex, guild : Guild) -> None:
         super().__init__()
@@ -100,8 +100,9 @@ class Actions:
         self.guild  = guild
         self.config = self.bot.config(guild)
 
-        self.cases    = CasesManager(bot, guild)
-        self.lockdown = LockdownManager(bot, guild)
+        self.cases      = CasesManager(bot, guild)
+        self.lockdown   = LockdownManager(bot, guild)
+        self.quarantine = QuarantineManager(bot, guild)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # _log_failure
@@ -189,6 +190,7 @@ class Actions:
         ----------
         action : `LockdownAddPayload`
             The data associated with the lockdown addition.
+        /
 
         Returns
         -------
@@ -199,11 +201,7 @@ class Actions:
         everyone  = self.guild.default_role
         overwrite = channel.overwrites_for(everyone)
 
-        await self.bot.db.execute(
-            t"INSERT INTO Lockdowns (channel_id, guild_id) VALUES ({channel.id}, {self.guild.id}) "
-            t"ON CONFLICT (channel_id, guild_id) DO NOTHING",
-        )
-        await self.bot.db.commit()
+        await self.lockdown.add_channel(channel)
 
         try:
             overwrite.send_messages = False
@@ -214,17 +212,11 @@ class Actions:
             )
         except Forbidden:
             failed = True
-            await self.bot.db.execute(
-                t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
-            )
-            await self.bot.db.commit()
+            await self.lockdown.remove_channel(channel)
         except HTTPException:
             failed = True
             self._log_failure("lockdown add")
-            await self.bot.db.execute(
-                t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
-            )
-            await self.bot.db.commit()
+            await self.lockdown.remove_channel(channel)
         else:
             failed = False
 
@@ -298,6 +290,7 @@ class Actions:
         ----------
         action : `LockdownRemovePayload`
             The data associated with the lockdown removal.
+        /
 
         Returns
         -------
@@ -323,10 +316,7 @@ class Actions:
             self._log_failure("lockdown removal")
         else:
             failed = False
-            await self.bot.db.execute(
-                t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
-            )
-            await self.bot.db.commit()
+            await self.lockdown.remove_channel(channel)
 
         case = await self.cases.create_case(action)
 
@@ -348,6 +338,7 @@ class Actions:
         ----------
         action : `BanAddPayload`
             The data associated with the ban addition.
+        /
 
         Returns
         -------
@@ -444,6 +435,7 @@ class Actions:
         ----------
         action : `BanRemovePayload`
             The data associated with the ban removal.
+        /
 
         Returns
         -------
@@ -488,6 +480,7 @@ class Actions:
         ----------
         action : `KickPayload`
             The data associated with the kick.
+        /
 
         Returns
         -------
@@ -532,6 +525,7 @@ class Actions:
         ----------
         action : `QuarantineAddPayload`
             The data associated with the quarantine addition.
+        /
 
         Returns
         -------
@@ -552,15 +546,7 @@ class Actions:
             success = None
 
         try:
-            current_roles = [role for role in action.target.roles if not role.is_default()]
-            roles_str     = ",".join(str(role.id) for role in current_roles)
-
-            await self.bot.db.execute(
-                t"INSERT INTO Quarantines (member_id, guild_id, old_roles) VALUES ({action.target.id}, {action.target.guild.id}, {roles_str}) "
-                t"ON CONFLICT (member_id, guild_id) DO UPDATE SET old_roles = excluded.old_roles",
-            )
-            await self.bot.db.commit()
-
+            await self.quarantine.add_member(action.target)
             await action.target.edit(
                 roles  = [quarantine_role],
                 reason = f"Quarantined by {action.moderator.name}: {action.reason}",
@@ -633,6 +619,7 @@ class Actions:
         ----------
         action : `QuarantineRemovePayload`
             The data associated with the quarantine removal.
+        /
 
         Returns
         -------
@@ -652,25 +639,7 @@ class Actions:
         else:
             success = None
 
-        async with self.bot.db.execute(
-            t"SELECT old_roles FROM Quarantines WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
-        ) as cursor:
-            res = await cursor.fetchone()
-
-        roles : list[Role] | None = None
-        if res:
-            roles_str = cast("str", res[0])
-            await self.bot.db.execute(
-                t"DELETE FROM Quarantines WHERE member_id = {action.target.id} AND guild_id = {action.target.guild.id}",
-            )
-            await self.bot.db.commit()
-
-            roles = []
-            for role_id_str in roles_str.split(","):
-                if role_id_str:
-                    role = action.target.guild.get_role(int(role_id_str))
-                    if role:
-                        roles.append(role)
+        roles = await self.quarantine.remove_member(action.target)
 
         try:
             if roles is not None:

@@ -1,6 +1,6 @@
 from typing import Literal, cast, final, overload
 
-from discord import Color, Forbidden, Guild, HTTPException, Member, Permissions
+from discord import Color, Forbidden, Guild, HTTPException, Member, Permissions, Role
 from discord.abc import GuildChannel
 
 from bot import Cordex, log
@@ -83,6 +83,45 @@ class LockdownManager:
             channel for channel_id in channel_ids
             if (channel := self.guild.get_channel(channel_id))
         }
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # add_channel
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def add_channel(self, channel : GuildChannel, /) -> None:
+        """
+        Record a channel as being in lockdown in the database.
+
+        Parameters
+        ----------
+        channel : `GuildChannel`
+            The channel to record as being in lockdown.
+        /
+        """
+        await self.bot.db.execute(
+            t"INSERT INTO Lockdowns (channel_id, guild_id) VALUES ({channel.id}, {self.guild.id}) "
+            t"ON CONFLICT (channel_id, guild_id) DO NOTHING",
+        )
+        await self.bot.db.commit()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # remove_channel
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def remove_channel(self, channel : GuildChannel, /) -> None:
+        """
+        Remove a channel's lockdown record from the database.
+
+        Parameters
+        ----------
+        channel : `GuildChannel`
+            The channel to remove from the lockdown records.
+        /
+        """
+        await self.bot.db.execute(
+            t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
+        )
+        await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce
@@ -188,6 +227,68 @@ class QuarantineManager:
         }
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # add_member
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def add_member(self, member : Member, /) -> None:
+        """
+        Record a member as being in quarantine in the database, saving their current roles.
+
+        Parameters
+        ----------
+        member : `Member`
+            The member to record as being in quarantine.
+        /
+        """
+        current_roles = [role for role in member.roles if not role.is_default()]
+        roles_str     = ",".join(str(role.id) for role in current_roles)
+
+        await self.bot.db.execute(
+            t"INSERT INTO Quarantines (member_id, guild_id, old_roles) VALUES ({member.id}, {member.guild.id}, {roles_str}) "
+            t"ON CONFLICT (member_id, guild_id) DO UPDATE SET old_roles = excluded.old_roles",
+        )
+        await self.bot.db.commit()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # remove_member
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def remove_member(self, member : Member, /) -> list[Role] | None:
+        """
+        Remove a member's quarantine record from the database.
+
+        Parameters
+        ----------
+        member : `Member`
+            The member to remove from the quarantine records.
+        /
+
+        Returns
+        -------
+        `list[Role] | None`
+            The roles the member had before being quarantined, or `None` if the member has no quarantine record.
+        """
+        async with self.bot.db.execute(
+            t"SELECT old_roles FROM Quarantines WHERE member_id = {member.id} AND guild_id = {member.guild.id}",
+        ) as cursor:
+            row = await cursor.fetchone()
+
+        if not row:
+            return None
+
+        roles_str = cast("str", row[0])
+
+        await self.bot.db.execute(
+            t"DELETE FROM Quarantines WHERE member_id = {member.id} AND guild_id = {member.guild.id}",
+        )
+        await self.bot.db.commit()
+
+        return [
+            role for role_id_str in roles_str.split(",")
+            if role_id_str and (role := member.guild.get_role(int(role_id_str)))
+        ]
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -207,6 +308,7 @@ class QuarantineManager:
         ----------
         enforce_type : `Literal["Channels", "Role", "Members"]`
             The type of quarantine enforcement to execute.
+        /
 
         Raises
         ------
