@@ -1,4 +1,6 @@
-from collections.abc import Iterable
+# pyright: reportIncompatibleMethodOverride = false
+# ruff: file-ignore[quoted-annotation]
+from collections.abc import Awaitable, Callable, Iterable
 from contextlib import suppress
 from typing import TYPE_CHECKING, Self, final, override
 from warnings import warn
@@ -41,6 +43,8 @@ from discord.ui import Modal as BaseModal
 from discord.ui import TextDisplay as BaseTextDisplay
 from discord.ui import TextInput as BaseTextInput
 
+from constants import ACCEPTED_NOBG_EMOJI, DENIED_NOBG_EMOJI
+
 __all__ = [
     "ActionRow",
     "Button",
@@ -73,6 +77,8 @@ if TYPE_CHECKING:
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot UI
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+type _OnChoice = Callable[["Interaction"], Awaitable[None]]  # ruff: ignore[quoted-type-alias]
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # LayoutView
@@ -137,6 +143,67 @@ class AutoTimeoutLayoutView(LayoutView):
                     await self.message.delete()
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+# Confirmation
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+
+@final
+class _AcceptButton(Button["Confirmation"]):
+    def __init__(self, label : str, on_choice : _OnChoice) -> None:
+        super().__init__(label = label, style = ButtonStyle.green, emoji = ACCEPTED_NOBG_EMOJI)
+        self.on_choice = on_choice
+
+    @override
+    async def callback(self, interaction : "Interaction") -> None:
+        await self.on_choice(interaction)
+        if self.view:
+            await self.view.on_choice()
+
+
+@final
+class _DenyButton(Button["Confirmation"]):
+    def __init__(self, label : str, on_choice : _OnChoice) -> None:
+        super().__init__(label = label, style = ButtonStyle.red, emoji = DENIED_NOBG_EMOJI)
+        self.on_choice = on_choice
+
+    @override
+    async def callback(self, interaction : "Interaction") -> None:
+        await self.on_choice(interaction)
+        if self.view:
+            await self.view.on_choice()
+
+
+class Confirmation(AutoTimeoutLayoutView):
+    def __init__(
+        self,
+        *children        : Item[LayoutView | Self],
+        timeout          : float | None = None,
+        acceptance_label : str          = "Continue",
+        denial_label     : str          = "Abort",
+        on_acceptance    : _OnChoice,
+        on_denial        : _OnChoice,
+    ) -> None:
+        super().__init__(timeout = timeout)
+        self.message : Message | None = None
+
+        self.acceptance_label : str = acceptance_label
+        self.denial_label     : str = denial_label
+        self.on_acceptance : _OnChoice = on_acceptance
+        self.on_denial     : _OnChoice = on_denial
+
+        self.append_items(children)
+        self.add_item(
+            ActionRow(
+                _AcceptButton(acceptance_label, on_acceptance),
+                _DenyButton(denial_label, on_denial),
+            ),
+        )
+
+    async def on_choice(self) -> None:
+        await self.on_timeout()  # ⸻ on_timeout recursively disables all selects and non-link buttons.
+
+
+# ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Modal
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
@@ -157,7 +224,7 @@ class Modal(BaseModal):
     """
 
     @override
-    async def on_submit(self, interaction : "Interaction", /) -> None:  # pyright: ignore[reportIncompatibleMethodOverride] # ruff: ignore[quoted-annotation]
+    async def on_submit(self, interaction : "Interaction", /) -> None:
         ...
 
     def add_text(self, text : str, /) -> Self:

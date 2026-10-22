@@ -119,9 +119,11 @@ async def run_botowner_eval(ctx : Context, body : str) -> None:
         "ChannelSelect"     : ui.ChannelSelect,
         "TextInput"         : ui.TextInput,
 
-        "View"           : ui.View,
-        "LayoutView"     : ui.LayoutView,
-        "Modal"          : ui.Modal,
+        "View"                  : ui.View,
+        "LayoutView"            : ui.LayoutView,
+        "AutoTimeoutLayoutView" : ui.AutoTimeoutLayoutView,
+        "Confirmation"          : ui.Confirmation,
+        "Modal"                 : ui.Modal,
 
         "Container"     : ui.Container,
         "Section"       : ui.Section,
