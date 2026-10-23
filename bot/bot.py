@@ -39,7 +39,7 @@ from core.state import (
     is_restriction_required,
 )
 
-from .types import LambdaInter, NameStyleResult
+from .types import NOT_PASSED, LambdaInter, NameStyleResult
 from .ui import Button, LayoutView, Modal, View, button
 
 type _InspectableObject = (
@@ -338,9 +338,9 @@ class Cordex(Bot):
         guild  : Guild,
         /,
         *,
-        font   : DisplayNameFont,
-        effect : DisplayNameEffect,
-        colors : list[str],
+        font   : DisplayNameFont   | NOT_PASSED = NOT_PASSED,
+        effect : DisplayNameEffect | NOT_PASSED = NOT_PASSED,
+        colors : list[str]         | NOT_PASSED = NOT_PASSED,
     ) -> None:
         """
         Set the bot's display name style for this guild.
@@ -369,6 +369,14 @@ class Cordex(Bot):
             DisplayNameEffect.prism,
             DisplayNameEffect.gummy,
         }
+
+        current = await self.get_name_style(guild)
+        if font is NOT_PASSED:
+            font = current.font
+        if effect is NOT_PASSED:
+            effect = current.effect
+        if colors is NOT_PASSED:
+            colors = current.colors
 
         if len(colors) == 0 and effect not in multi_colored:
             error = "0 colors were passed; expected 1"
