@@ -31,7 +31,13 @@ from constants import (
 )
 from core import exceptions
 from core.paginator import NamedPaginator, PageData, UnnamedPaginator
-from core.responses import MessageType, format_message, format_send
+from core.responses import (
+    FormatOverride,
+    MessageType,
+    PunctuationOverride,
+    format_message,
+    format_send,
+)
 from core.utilities import (
     codeblock,
     format_command,
@@ -172,7 +178,9 @@ async def run_botowner_eval(ctx : Context, body : str) -> None:
         "UnnamedPaginator" : UnnamedPaginator,
         "PageData"         : PageData,
 
-        "MessageType" : MessageType,
+        "MessageType"         : MessageType,
+        "FormatOverride"      : FormatOverride,
+        "PunctuationOverride" : PunctuationOverride,
     }
 
     message = ctx.message
