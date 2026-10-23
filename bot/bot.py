@@ -74,11 +74,21 @@ class _ContextClass(BaseContext["Cordex"]):
     def __init__(self, **kwargs : Unpack[_ContextKwargs]) -> None:
         super().__init__(**kwargs)
 
+    async def send_file(
+        self,
+        content      : str | None = None,
+        /,
+        *,
+        file_content : str,
+        filename     : str,
+    ) -> Message:
+        return await self.send(content = content, file = File(BytesIO(file_content.encode()), filename = filename))
+
     async def safe_send(self, content : str) -> Message:
         if len(content) < 2000:
             return await self.send(content)
 
-        return await self.send(file = File(BytesIO(content.encode()), filename = "content.txt"))
+        return await self.send_file(file_content = content, filename = "content.txt")
 
     async def send_button(self, callback : LambdaInter, /) -> Message:
         @final
@@ -170,7 +180,7 @@ class _ContextClass(BaseContext["Cordex"]):
         qualname = getattr(target, "__qualname__", "object")
         content  = f"```{module}/{qualname}```"
         filename = f"{module.split('/')[-1]}.py"
-        return await self.send(content = content, file = File(BytesIO(joiner.join(attrs).encode()), filename = filename))
+        return await self.send_file(content, file_content = joiner.join(attrs), filename = filename)
 
     async def show_def(self, target : _InspectableObject, /) -> Message:
         if isinstance(target, property):
@@ -193,7 +203,7 @@ class _ContextClass(BaseContext["Cordex"]):
         qualname = getattr(target, "__qualname__", "object")
         content  = f"```{module}/{qualname}```"
         filename = f"{module.split('/')[-1]}.py"
-        return await self.send(content = content, file = File(BytesIO(source.encode()), filename = filename))
+        return await self.send_file(content, file_content = source, filename = filename)
 
 
 class _Tree(CommandTree):
