@@ -12,6 +12,7 @@ from discord import app_commands
 from discord.ext import commands as ext_commands
 from discord.utils import format_dt, get, utcnow
 
+from bot.types import NOT_PASSED
 import commands
 import constants
 import core
@@ -181,6 +182,8 @@ async def run_botowner_eval(ctx : Context, body : str) -> None:
         "MessageType"         : MessageType,
         "FormatOverride"      : FormatOverride,
         "PunctuationOverride" : PunctuationOverride,
+
+        "NOT_PASSED" : NOT_PASSED,
     }
 
     message = ctx.message
