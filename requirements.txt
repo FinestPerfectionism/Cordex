@@ -1,4 +1,4 @@
 discord.py[voice]
 aiosqlite
 python-dotenv
-dateparser
+typing_extensions>=4.16.0

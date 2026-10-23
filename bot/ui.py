@@ -123,8 +123,7 @@ class AutoTimeoutLayoutView(LayoutView):
         super().__init__(*children, timeout = timeout)
         self.message : Message | None = None
 
-    @override
-    async def on_timeout(self) -> None:
+    async def _expire(self) -> None:
         for item in self.walk_children():
             if isinstance(item, Button):
                 if item.style == ButtonStyle.url:
@@ -141,6 +140,10 @@ class AutoTimeoutLayoutView(LayoutView):
             except HTTPException:
                 with suppress(HTTPException):
                     await self.message.delete()
+
+    @override
+    async def on_timeout(self) -> None:
+        await self._expire()
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Confirmation
@@ -200,7 +203,7 @@ class Confirmation(AutoTimeoutLayoutView):
         )
 
     async def on_choice(self) -> None:
-        await self.on_timeout()  # ⸻ on_timeout recursively disables all selects and non-link buttons.
+        await self._expire()
 
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
