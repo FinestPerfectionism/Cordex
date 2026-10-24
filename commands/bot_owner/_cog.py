@@ -1,10 +1,8 @@
-from collections.abc import Awaitable, Callable
 from contextlib import suppress
-from typing import final
+from typing import final, override
 
 from discord import Forbidden, HTTPException, Member, Message, Reaction, User
 from discord.ext.commands import Cog
-from discord.ext.commands import check as prefix_check
 from discord.ext.commands import command as prefix_command
 
 from bot import Context, Cordex
@@ -14,17 +12,8 @@ from core.utilities import is_bot_owner
 from .eval import run_botowner_eval
 from .restart import run_botowner_restart
 from .shutdown import run_botowner_shutdown
+from .sql import run_botowner_sql
 from .sync import run_botowner_sync
-
-
-def bot_owner_cmd[F : Callable[..., Awaitable[None]]](func : F) -> F:
-    def predicate(ctx : Context) -> bool:
-        if is_bot_owner(ctx.author):
-            return True
-
-        raise BadPermissionsPrefixCommand
-
-    return prefix_check(predicate)(func)
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 # Bot Owner Group Commands
@@ -37,8 +26,15 @@ class BotOwnerCommands(Cog):
         super().__init__()
         self.bot = bot
 
+    @override
+    async def cog_check(self, ctx : Context) -> bool:  # pyright: ignore[reportIncompatibleMethodOverride]
+        if is_bot_owner(ctx.author):
+            return True
+
+        raise BadPermissionsPrefixCommand
+
     @Cog.listener("on_message_edit")
-    async def listener_cmdbotownereval_messageedit(self, before : Message, after : Message) -> None:
+    async def listener_messageedit(self, before : Message, after : Message) -> None:
         author = before.author
 
         # ⸻ Block bots and the bot itself.
@@ -48,7 +44,7 @@ class BotOwnerCommands(Cog):
 
         # ⸻ Process eval command edit.
 
-        if after.content.startswith(".eval") and self.bot.user and before.content != after.content:
+        if self.bot.user and before.content != after.content:
             try:
                 await after.clear_reactions()
             except Forbidden:
@@ -63,7 +59,7 @@ class BotOwnerCommands(Cog):
         await self.bot.process_commands(after)
 
     @Cog.listener("on_reaction_add")
-    async def listener_cmdbotonwereval_reactionadd(self, reaction : Reaction, user : Member | User) -> None:
+    async def listener_reactionadd(self, reaction : Reaction, user : Member | User) -> None:
         message = reaction.message
 
         if not is_bot_owner(user):
@@ -74,40 +70,44 @@ class BotOwnerCommands(Cog):
                 await message.delete()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # .shutdown Command
+    # .eval Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    @prefix_command(name = "shutdown")
-    @bot_owner_cmd
-    async def cmd_botowner_shutdown(self, ctx : Context) -> None:
-        await run_botowner_shutdown(ctx)
+    @prefix_command(name = "eval")
+    async def cmd_botowner_eval(self, ctx : Context, *, body : str) -> None:
+        await run_botowner_eval(ctx, body)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .restart Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @prefix_command(name = "restart")
-    @bot_owner_cmd
     async def cmd_botowner_restart(self, ctx : Context) -> None:
         await run_botowner_restart(ctx)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # .shutdown Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @prefix_command(name = "shutdown")
+    async def cmd_botowner_shutdown(self, ctx : Context) -> None:
+        await run_botowner_shutdown(ctx)
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # .sql Command
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    @prefix_command(name = "sql")
+    async def cmd_botowner_sql(self, ctx : Context, *, body : str) -> None:
+        await run_botowner_sql(ctx, body)
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # .sync Command
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
     @prefix_command(name = "sync")
-    @bot_owner_cmd
     async def cmd_botowner_sync(self, ctx : Context) -> None:
         await run_botowner_sync(ctx)
-
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # .eval Command
-    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-
-    @prefix_command(name = "eval")
-    @bot_owner_cmd
-    async def cmd_botowner_eval(self, ctx : Context, *, body : str) -> None:
-        await run_botowner_eval(ctx, body)
 
 
 async def setup(bot : Cordex) -> None:
