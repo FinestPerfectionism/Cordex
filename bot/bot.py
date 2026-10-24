@@ -14,7 +14,7 @@ from types import (
     ModuleType,
     TracebackType,
 )
-from typing import Self, TypedDict, Unpack, cast, final, override
+from typing import NotRequired, Self, TypedDict, Unpack, cast, final, override
 
 from aiosqlite import Row
 from discord import Embed, File, Guild, Intents, Member, Message, Status, User
@@ -78,15 +78,15 @@ class _ContextClass(BaseContext["Cordex"]):
         /,
         *,
         file_content : str,
-        filename     : str,
+        file_name    : str,
     ) -> Message:
-        return await self.send(content = content, file = File(BytesIO(file_content.encode()), filename = filename))
+        return await self.send(content = content, file = File(BytesIO(file_content.encode()), filename = file_name))
 
     async def safe_send(self, content : str) -> Message:
         if len(content) < 2000:
             return await self.send(content)
 
-        return await self.send_file(file_content = content, filename = "content.txt")
+        return await self.send_file(file_content = content, file_name = "content.txt")
 
     async def send_button(self, callback : LambdaInter, /) -> Message:
         @final
@@ -178,7 +178,7 @@ class _ContextClass(BaseContext["Cordex"]):
         qualname = getattr(target, "__qualname__", "object")
         content  = f"```{module}/{qualname}```"
         filename = f"{module.split('/')[-1]}.py"
-        return await self.send_file(content, file_content = joiner.join(attrs), filename = filename)
+        return await self.send_file(content, file_content = joiner.join(attrs), file_name = filename)
 
     async def show_def(self, target : _InspectableObject, /) -> Message:
         if isinstance(target, property):
@@ -201,7 +201,7 @@ class _ContextClass(BaseContext["Cordex"]):
         qualname = getattr(target, "__qualname__", "object")
         content  = f"```{module}/{qualname}```"
         filename = f"{module.split('/')[-1]}.py"
-        return await self.send_file(content, file_content = source, filename = filename)
+        return await self.send_file(content, file_content = source, file_name = filename)
 
 
 class _Tree(CommandTree):
@@ -326,11 +326,8 @@ class Cordex(Bot):
         str
             The biography for this guild.
         """
-        class BioPayload(TypedDict):
-            bio : str
-
         return cast(
-            "BioPayload",
+            "TypedDict[{'bio' : str}]",
             await self.http.request(
                 route = Route("PATCH", "/guilds/{guild_id}/members/@me", guild_id = guild.id),
                 json  = {},
@@ -433,19 +430,11 @@ class Cordex(Bot):
         RuntimeError
             The bot user is `None` (it is impossible for this to be raised).
         """
-        class NameStyleContent(TypedDict):
-            font_id   : int
-            effect_id : int
-            colors    : list[int]
-
-        class NameStylePayload(TypedDict, total = False):
-            display_name_styles : NameStyleContent | None
-
         if self.user is None:
             raise RuntimeError
 
         response = cast(
-            "NameStylePayload",
+            "TypedDict[{'display_name_styles' : NotRequired[TypedDict[{'font_id' : int, 'effect_id' : int, 'colors' : list[int]}] | None]}]",
             await self.http.request(
                 route = Route(
                     "GET", "/guilds/{guild_id}/members/{user_id}",
