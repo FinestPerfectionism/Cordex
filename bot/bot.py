@@ -1,6 +1,6 @@
 # pyright: reportImportCycles = false
 
-# ⸻ It's going to complain about 'Interaction'.
+# TODO(FinestPerfectionism): Deal with SQL when the bot leaves a guild and when commands get deletd.
 
 from asyncio import to_thread
 from collections.abc import Callable
@@ -226,7 +226,7 @@ class _Tree(CommandTree):
         if user == guild.owner:
             return True
 
-        restriction = client.get_restriction(guild.id, command.qualified_name)
+        restriction = client.get_command_restriction(guild.id, command.qualified_name)
         if restriction is None:
             if is_restriction_required(command):
                 await interaction.response.send_message(
@@ -276,8 +276,8 @@ class Cordex(Bot):
 
         self.db : Connection
 
-        self._api_commands_cache : list[APICommand]                   = []
-        self._restrictions_cache : dict[tuple[int, str], Restriction] = {}
+        self._api_commands_cache         : list[APICommand]                   = []
+        self._command_restrictions_cache : dict[tuple[int, str], Restriction] = {}
 
         self.restarting : bool = False
 
@@ -556,28 +556,37 @@ class Cordex(Bot):
 
         # ⸻ Cache
 
-        await self.build_api_commands_cache()
-        await self.build_restrictions_cache()
+        await self._build_api_commands_cache()
+        await self._build_command_restrictions_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # Commands Cache
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def build_api_commands_cache(self) -> None:
+    async def _build_api_commands_cache(self) -> None:
         self._api_commands_cache = await self.tree.fetch_commands()
 
     def get_api_commands_cache(self) -> list[APICommand]:
+        """
+        ...
+
+        Returns
+        -------
+        `list[APICommand]`
+            ...
+        """
         return self._api_commands_cache
 
     async def rebuild_api_commands_cache(self) -> None:
+        """..."""
         self._api_commands_cache.clear()
-        await self.build_api_commands_cache()
+        await self._build_api_commands_cache()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-    # Restrictions Cache
+    # Command Restrictions Cache
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
-    async def build_restrictions_cache(self) -> None:
+    async def _build_command_restrictions_cache(self) -> None:
         grouped : dict[tuple[int, str], tuple[set[int], set[int]]] = {}
 
         async with self.db.execute(
@@ -598,21 +607,30 @@ class Cordex(Bot):
             else:
                 users.add(target_id)
 
-        self._restrictions_cache = {
+        self._command_restrictions_cache = {
             key : Restriction(frozenset(users), frozenset(roles))
             for key, (users, roles) in grouped.items()
         }
 
-    def get_restriction(self, guild_id : int, command_name : str, /) -> Restriction | None:
-        return self._restrictions_cache.get((guild_id, command_name))
+    def get_command_restriction(self, guild_id : int, command_name : str, /) -> Restriction | None:
+        """
+        ...
 
-    def set_restriction(self, guild_id : int, command_name : str, restriction : Restriction | None, /) -> None:
+        Returns
+        -------
+        `Restriction | None`
+            ...
+        """
+        return self._command_restrictions_cache.get((guild_id, command_name))
+
+    def set_command_restriction(self, guild_id : int, command_name : str, restriction : Restriction | None, /) -> None:
+        """..."""
         key = (guild_id, command_name)
 
         if restriction is None:
-            self._restrictions_cache.pop(key, None)
+            self._command_restrictions_cache.pop(key, None)
         else:
-            self._restrictions_cache[key] = restriction
+            self._command_restrictions_cache[key] = restriction
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # close

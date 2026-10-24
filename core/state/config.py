@@ -61,7 +61,7 @@ class Config:
         `list[Role | Member]`
             The roles/members allowed to use the command.
         """
-        restriction = self.bot.get_restriction(self.guild.id, command_name)
+        restriction = self.bot.get_command_restriction(self.guild.id, command_name)
         if not restriction:
             return []
 
@@ -109,7 +109,7 @@ class Config:
             await self.bot.db.rollback()
             raise
 
-        self.bot.set_restriction(
+        self.bot.set_command_restriction(
             self.guild.id,
             command_name,
             Restriction(user_ids, role_ids) if (role_ids or user_ids) else None,

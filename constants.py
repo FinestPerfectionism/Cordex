@@ -260,7 +260,7 @@ class DisplayNameEffect(IntEnum):
     solid : `int`
         Solid effect. Takes one color along side it.
     gradient : `int`
-        Gradient effect. Takes two colors along side it.
+        Gradient effect. Takes up to five colors along side it.
     neon : `int`
         Neon effect. Takes one color along side it.
     toon : `int`
@@ -268,9 +268,9 @@ class DisplayNameEffect(IntEnum):
     pop : `int`
         Pop effect. Takes one color along side it.
     prism : `int`
-        Prism effect. Takes five colors along side it.
+        Prism effect. Takes up to five colors along side it.
     gummy : `int`
-        Gummy effect. Takes five colors along side it.
+        Gummy effect. Takes up to five colors along side it.
     """
 
     solid = 1

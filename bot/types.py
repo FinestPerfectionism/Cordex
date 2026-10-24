@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .bot import Interaction
 else:
     from typing_extensions import (
-        sentinel,  # ⸻ For whatever reason, pyright seems to not find the 4.6.0 typing-extensions sentinel function.
+        sentinel,  # ⸻ For whatever reason, pyright seems to not find the typing-extensions 4.16.0 sentinel function.
     )
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -50,6 +50,19 @@ GuildMessagableChannel = TextChannel | StageChannel | VoiceChannel
 
 @dataclass(frozen = True, slots = True)
 class DisplayNameStyle:
+    """
+    Represents a display name style.
+
+    Parameters
+    ----------
+    font : `DisplayNameFont`
+        The font of the display name style.
+    effect : `DisplayNameEffect`
+        The effect of the display name style.
+    colors : `list[str]`
+        The colors of the display name style. Up to five where the effect is either `gradient`, `prism`, or `gummy`, else one.
+    """
+
     font   : DisplayNameFont
     effect : DisplayNameEffect
     colors : list[str]
