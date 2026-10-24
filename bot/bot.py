@@ -1,7 +1,5 @@
 # pyright: reportImportCycles = false
 
-# TODO(FinestPerfectionism): Deal with SQL when the bot leaves a guild and when commands get deletd.
-
 from asyncio import to_thread
 from collections.abc import Callable
 from inspect import getattr_static, getsource
