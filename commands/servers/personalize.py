@@ -5,7 +5,7 @@ from typing import Literal, Self, final, override
 from discord import HTTPException, SelectOption, TextStyle
 
 from bot import Interaction
-from bot.types import NameStyleResult
+from bot.types import DisplayNameStyle
 from bot.ui import (
     ActionRow,
     Button,
@@ -303,7 +303,7 @@ class _BioButton(Button["_PersonalizationView"]):
 class _PersonalizationView(NamedPaginator):
     def __init__(
         self,
-        style      : NameStyleResult,
+        style      : DisplayNameStyle,
         *,
         avatar_url : str | None,
         banner_url : str | None,
