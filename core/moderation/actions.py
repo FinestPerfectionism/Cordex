@@ -332,7 +332,7 @@ class Actions:
 
     async def ban_add(self, action : BanAddPayload, /) -> _ActionResult:
         """
-        Ban a member from the server.
+        Ban a member from the server. This also removes the target's quarantine, if applicable.
 
         Parameters
         ----------
@@ -355,6 +355,8 @@ class Actions:
                 reason                 = f"Banned by {action.moderator.name}: {action.reason}",
                 delete_message_seconds = action.seconds_to_delete,
             )
+            if action.target in await self.quarantine.get_members():
+                await self.quarantine.remove_member(action.target)  # TODO(FinestPerfectiomism): Expire the related quarantine case.
         except Forbidden:
             failed = True
         except HTTPException:

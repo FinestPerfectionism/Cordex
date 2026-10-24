@@ -1,12 +1,12 @@
 from contextlib import suppress
-from typing import final, override
+from typing import cast, final, override
 
-from discord import HTTPException
+from discord import Guild, HTTPException
 from discord.abc import GuildChannel
 from discord.ext.commands import Cog
 from discord.ext.tasks import loop
 
-from bot import Cordex
+from bot import Cordex, log
 from bot.types import GuildMessagableChannel
 from core.moderation import LockdownManager
 from core.moderation.cases import CasesManager
@@ -32,6 +32,22 @@ class LockdownEnforcer(Cog):
 
     @loop(minutes = 10)
     async def _loop_lockdownenforce(self) -> None:
+        async with self.bot.db.execute(t"SELECT DISTINCT guild_id FROM Lockdowns;") as cursor:
+            rows = await cursor.fetchall()
+
+        locked_guild_ids = cast("set[int]", {row[0] for row in rows})
+        true_guild_ids   = {guild.id for guild in self.bot.guilds}
+        stale_guild_ids  = [guild_id for guild_id in locked_guild_ids if guild_id not in true_guild_ids]
+
+        if stale_guild_ids:
+            try:
+                await self.bot.db.execute(t"DELETE FROM Lockdowns WHERE guild_id IN {tuple(stale_guild_ids)}")
+                await self.bot.db.commit()
+            except Exception:
+                log.exception("An exception occurred during the lockdown resets. Moving on.")
+            else:
+                log.info("Lockdown reset complete. %s guilds reset.", len(stale_guild_ids))
+
         for guild in self.bot.guilds:
             manager = LockdownManager(self.bot, guild)
             try:
@@ -43,6 +59,10 @@ class LockdownEnforcer(Cog):
     @_loop_lockdownenforce.before_loop
     async def _beforeloop_lockdownenforce(self) -> None:
         await self.bot.wait_until_ready()
+
+    @Cog.listener("on_guild_remove")
+    async def _listener_lockdownenforce_guildleave(self, guild : Guild) -> None:
+        await LockdownManager(self.bot, guild).remove_all_channels()
 
     @Cog.listener("on_guild_channel_update")
     async def _listener_lockdownenforce_channelupdate(self, before : GuildChannel, after : GuildChannel) -> None:

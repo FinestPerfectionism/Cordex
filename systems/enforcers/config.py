@@ -54,10 +54,10 @@ class ConfigEnforcer(Cog):
     async def _beforeloop_configenforce(self) -> None:
         await self.bot.wait_until_ready()
 
-    @Cog.listener("on_guild_leave")
-    async def _listener_config_guildleave(self, guild : Guild) -> None:
+    @Cog.listener("on_guild_remove")
+    async def _listener_config_guildremove(self, guild : Guild) -> None:
         await self.bot.config(guild).reset()
-        await CasesManager(self.bot, guild).delete_all_cases()  # ⸻ This is probably not the right place to do this but whatever.
+        await CasesManager(self.bot, guild).delete_all_cases()  # ⸻ This is probably not the right place to do this.
 
     @Cog.listener("on_guild_channel_delete")
     async def _listener_config_channeldelete(self, channel : GuildChannel) -> None:

@@ -90,12 +90,12 @@ class LockdownManager:
 
     async def add_channel(self, channel : GuildChannel, /) -> None:
         """
-        Record a channel as being in lockdown in the database.
+        Mark a channel as locked down in the database.
 
         Parameters
         ----------
         channel : `GuildChannel`
-            The channel to record as being in lockdown.
+            The channel to mark as locked down.
         /
         """
         await self.bot.db.execute(
@@ -110,16 +110,27 @@ class LockdownManager:
 
     async def remove_channel(self, channel : GuildChannel, /) -> None:
         """
-        Remove a channel's lockdown record from the database.
+        Unmark a channel as locked down in the database.
 
         Parameters
         ----------
         channel : `GuildChannel`
-            The channel to remove from the lockdown records.
+            The channel to unmark as locked down.
         /
         """
         await self.bot.db.execute(
             t"DELETE FROM Lockdowns WHERE channel_id = {channel.id} AND guild_id = {self.guild.id}",
+        )
+        await self.bot.db.commit()
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # remove_all_channels
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def remove_all_channels(self) -> None:
+        """Unmark all of this guild's channels as locked down in the database."""
+        await self.bot.db.execute(
+            t"DELETE FROM Lockdowns WHERE guild_id = {self.guild.id}",
         )
         await self.bot.db.commit()
 
@@ -232,12 +243,12 @@ class QuarantineManager:
 
     async def add_member(self, member : Member, /) -> None:
         """
-        Record a member as being in quarantine in the database, saving their current roles.
+        Mark a member as quarantined in the database, saving their current roles.
 
         Parameters
         ----------
         member : `Member`
-            The member to record as being in quarantine.
+            The member to mark as quarantined.
         /
         """
         current_roles = [role for role in member.roles if not role.is_default()]
@@ -255,18 +266,18 @@ class QuarantineManager:
 
     async def remove_member(self, member : Member, /) -> list[Role] | None:
         """
-        Remove a member's quarantine record from the database.
+        Unmark a member as quarantined in the database.
 
         Parameters
         ----------
         member : `Member`
-            The member to remove from the quarantine records.
+            The member to unmark as quarantined.
         /
 
         Returns
         -------
         `list[Role] | None`
-            The roles the member had before being quarantined, or `None` if the member has no quarantine record.
+            The roles the member had before being quarantined, or `None` if the member was not marked to begin wtih.
         """
         async with self.bot.db.execute(
             t"SELECT old_roles FROM Quarantines WHERE member_id = {member.id} AND guild_id = {member.guild.id}",
@@ -287,6 +298,17 @@ class QuarantineManager:
             role for role_id_str in roles_str.split(",")
             if role_id_str and (role := member.guild.get_role(int(role_id_str)))
         ]
+
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+    # remove_all_members
+    # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
+
+    async def remove_all_members(self) -> None:
+        """Unmark all of this guild's members as quarantined in the database."""
+        await self.bot.db.execute(
+            t"DELETE FROM Quarantines WHERE guild_id = {self.guild.id}",
+        )
+        await self.bot.db.commit()
 
     # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
     # enforce

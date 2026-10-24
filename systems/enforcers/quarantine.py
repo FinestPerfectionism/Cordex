@@ -1,11 +1,11 @@
-from typing import final, override
+from typing import cast, final, override
 
-from discord import HTTPException, Member, Role
+from discord import Guild, HTTPException, Member, Role
 from discord.abc import GuildChannel
 from discord.ext.commands import Cog
 from discord.ext.tasks import loop
 
-from bot import Cordex
+from bot import Cordex, log
 from core.moderation import QuarantineManager
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
@@ -28,9 +28,25 @@ class QuarantineEnforcer(Cog):
 
     @loop(minutes = 10)
     async def _loop_quarantineenforce(self) -> None:
+        async with self.bot.db.execute(t"SELECT DISTINCT guild_id FROM Quarantines;") as cursor:
+            rows = await cursor.fetchall()
+
+        quarantined_guild_ids = cast("set[int]", {row[0] for row in rows})
+        true_guild_ids        = {guild.id for guild in self.bot.guilds}
+        stale_guild_ids       = [guild_id for guild_id in quarantined_guild_ids if guild_id not in true_guild_ids]
+
+        if stale_guild_ids:
+            try:
+                await self.bot.db.execute(t"DELETE FROM Quarantines WHERE guild_id IN {tuple(stale_guild_ids)}")
+                await self.bot.db.commit()
+            except Exception:
+                log.exception("An exception occurred during the quarantine resets. Moving on.")
+            else:
+                log.info("Quarantine reset complete. %s guilds reset.", len(stale_guild_ids))
+
         for guild in self.bot.guilds:
             manager = QuarantineManager(self.bot, guild)
-            config = self.bot.config(guild)
+            config  = self.bot.config(guild)
 
             before_role_id = await config.get_moderation_quarantine_role(by_id = True)
             try:
@@ -47,6 +63,10 @@ class QuarantineEnforcer(Cog):
     @_loop_quarantineenforce.before_loop
     async def _beforeloop_quarantineenforce(self) -> None:
         await self.bot.wait_until_ready()
+
+    @Cog.listener("on_guild_remove")
+    async def _listener_quarantineenforce_guildleave(self, guild : Guild) -> None:
+        await QuarantineManager(self.bot, guild).remove_all_members()
 
     @Cog.listener("on_guild_channel_update")
     async def _listener_quarantineenforce_channelupdate(self, before : GuildChannel, after : GuildChannel) -> None:

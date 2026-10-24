@@ -28,10 +28,10 @@ class BotOwnerCommands(Cog):
 
     @override
     async def cog_check(self, ctx : Context) -> bool:  # pyright: ignore[reportIncompatibleMethodOverride]
-        if is_bot_owner(ctx.author):
-            return True
+        if not is_bot_owner(ctx.author):
+            raise BadPermissionsPrefixCommand
 
-        raise BadPermissionsPrefixCommand
+        return True
 
     @Cog.listener("on_message_edit")
     async def listener_messageedit(self, before : Message, after : Message) -> None:
