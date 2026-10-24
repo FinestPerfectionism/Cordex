@@ -80,7 +80,7 @@ class PunctuationOverride:
 
         Returns
         -------
-        Self
+        `Self`
             A new `PunctuationOverride` instance with all overrides set to `True`.
         """
         return cls(title = True, subtitle = True, footer = True)
@@ -92,7 +92,7 @@ class PunctuationOverride:
 
         Returns
         -------
-        Self
+        `Self`
             A new `PunctuationOverride` instance with all overrides set to `False`.
         """
         return cls(title = False, subtitle = False, footer = False)

@@ -39,7 +39,7 @@ from core.state import (
     is_restriction_required,
 )
 
-from .types import NOT_PASSED, LambdaInter, NameStyleResult
+from .types import NOT_PASSED, DisplayNameStyle, LambdaInter
 from .ui import Button, LayoutView, Modal, View, button
 
 type _InspectableObject = (
@@ -415,7 +415,7 @@ class Cordex(Bot):
             },
         )
 
-    async def get_name_style(self, guild : Guild, /) -> NameStyleResult:
+    async def get_name_style(self, guild : Guild, /) -> DisplayNameStyle:
         """
         Get the bot's display name style for this guild.
 
@@ -427,7 +427,7 @@ class Cordex(Bot):
 
         Returns
         -------
-        `NameStyleResult`
+        `DisplayNameStyle`
             The result of the display name style call. Has `font`, `effect`, and `colors` attributes for accessing.
 
         Raises
@@ -460,13 +460,13 @@ class Cordex(Bot):
         styles = response.get("display_name_styles")
 
         if styles is None:
-            return NameStyleResult(
+            return DisplayNameStyle(
                 font   = DisplayNameFont(11),
                 effect = DisplayNameEffect(1),
                 colors = [f"{0xFFFFFF:06x}"],
             )
 
-        return NameStyleResult(
+        return DisplayNameStyle(
             font   = DisplayNameFont(styles["font_id"]),
             effect = DisplayNameEffect(styles["effect_id"]),
             colors = [f"{color:06x}" for color in styles["colors"]],

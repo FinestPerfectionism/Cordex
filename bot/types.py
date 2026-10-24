@@ -44,12 +44,12 @@ GuildMessagable        = TextChannel | StageChannel | VoiceChannel | Thread
 GuildMessagableChannel = TextChannel | StageChannel | VoiceChannel
 
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
-# NameStyleResult
+# DisplayNameStyle
 # ⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻⸻
 
 
 @dataclass(frozen = True, slots = True)
-class NameStyleResult:
+class DisplayNameStyle:
     font   : DisplayNameFont
     effect : DisplayNameEffect
     colors : list[str]
